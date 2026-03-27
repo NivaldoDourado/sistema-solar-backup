@@ -38,7 +38,7 @@ import {
   trocasPecasParteDiaria,
   temposDescarga as temposDescargaTable,
 } from "../drizzle/schema";
-import { eq, desc, asc, sql, and, gte, lte } from "drizzle-orm";
+import { eq, desc, asc, sql, and, gte, lte, count } from "drizzle-orm";
 
 /** Converte Date (vindo do superjson) para string YYYY-MM-DD compatível com MySQL DATE */
 function toDateStr(d: Date | string): string {
@@ -1687,15 +1687,34 @@ export const appRouter = router({
 
   abastecimento: router({
     list: protectedProcedure
-
-      .use(requirePermission("abastecimento", "view")).query(async () => {
+      .use(requirePermission("abastecimento", "view"))
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(200).default(50),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        equipamentoId: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) return [];
-      return await db.select().from(abastecimento).orderBy(desc(abastecimento.data));
+      if (!db) return { data: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+      const page = input?.page ?? 1;
+      const pageSize = input?.pageSize ?? 50;
+      const offset = (page - 1) * pageSize;
+      const conditions = [];
+      if (input?.dataInicio) conditions.push(gte(abastecimento.data, sql`${input.dataInicio}`));
+      if (input?.dataFim) conditions.push(lte(abastecimento.data, sql`${input.dataFim}`));
+      if (input?.equipamentoId) conditions.push(eq(abastecimento.equipamentoId, input.equipamentoId));
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const [rows, totalRows] = await Promise.all([
+        db.select().from(abastecimento).where(where).orderBy(desc(abastecimento.data)).limit(pageSize).offset(offset),
+        db.select({ total: count() }).from(abastecimento).where(where),
+      ]);
+      const total = Number(totalRows[0]?.total ?? 0);
+      return { data: rows, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }),
     
     create: protectedProcedure
-
     
       .use(requirePermission("abastecimento", "create"))
       .input(z.object({
@@ -1762,15 +1781,36 @@ export const appRouter = router({
 
   producao: router({
     list: protectedProcedure
-
-      .use(requirePermission("producao", "view")).query(async () => {
+      .use(requirePermission("producao", "view"))
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(200).default(50),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        equipamentoId: z.number().optional(),
+        produtoId: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) return [];
-      return await db.select().from(producao).orderBy(desc(producao.data));
+      if (!db) return { data: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+      const page = input?.page ?? 1;
+      const pageSize = input?.pageSize ?? 50;
+      const offset = (page - 1) * pageSize;
+      const conditions = [];
+      if (input?.dataInicio) conditions.push(gte(producao.data, sql`${input.dataInicio}`));
+      if (input?.dataFim) conditions.push(lte(producao.data, sql`${input.dataFim}`));
+      if (input?.equipamentoId) conditions.push(eq(producao.equipamentoId, input.equipamentoId));
+      if (input?.produtoId) conditions.push(eq(producao.produtoId, input.produtoId));
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const [rows, totalRows] = await Promise.all([
+        db.select().from(producao).where(where).orderBy(desc(producao.data)).limit(pageSize).offset(offset),
+        db.select({ total: count() }).from(producao).where(where),
+      ]);
+      const total = Number(totalRows[0]?.total ?? 0);
+      return { data: rows, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }),
     
     create: protectedProcedure
-
     
       .use(requirePermission("producao", "create"))
       .input(z.object({
@@ -1829,13 +1869,35 @@ export const appRouter = router({
       }),
   }),
 
-  custos: router({
+   custos: router({
     list: protectedProcedure
-
-      .use(requirePermission("custos", "view")).query(async () => {
+      .use(requirePermission("custos", "view"))
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(200).default(50),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        equipamentoId: z.number().optional(),
+        setorDeCustoId: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) return [];
-      return await db.select().from(custos).orderBy(desc(custos.data));
+      if (!db) return { data: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+      const page = input?.page ?? 1;
+      const pageSize = input?.pageSize ?? 50;
+      const offset = (page - 1) * pageSize;
+      const conditions = [];
+      if (input?.dataInicio) conditions.push(gte(custos.data, sql`${input.dataInicio}`));
+      if (input?.dataFim) conditions.push(lte(custos.data, sql`${input.dataFim}`));
+      if (input?.equipamentoId) conditions.push(eq(custos.equipamentoId, input.equipamentoId));
+      if (input?.setorDeCustoId) conditions.push(eq(custos.setorDeCustoId, input.setorDeCustoId));
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const [rows, totalRows] = await Promise.all([
+        db.select().from(custos).where(where).orderBy(desc(custos.data)).limit(pageSize).offset(offset),
+        db.select({ total: count() }).from(custos).where(where),
+      ]);
+      const total = Number(totalRows[0]?.total ?? 0);
+      return { data: rows, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }),
     
     create: protectedProcedure
@@ -1908,13 +1970,35 @@ export const appRouter = router({
   // MÓDULO DE MANUTENÇÃO
   // ============================================================================
 
-  manutencao: router({
+   manutencao: router({
     list: protectedProcedure
-
-      .use(requirePermission("manutencao", "view")).query(async () => {
+      .use(requirePermission("manutencao", "view"))
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(200).default(50),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        equipamentoId: z.number().optional(),
+        status: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) return [];
-      return await db.select().from(paradasMecanicas).orderBy(desc(paradasMecanicas.id));
+      if (!db) return { data: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+      const page = input?.page ?? 1;
+      const pageSize = input?.pageSize ?? 50;
+      const offset = (page - 1) * pageSize;
+      const conditions = [];
+      if (input?.dataInicio) conditions.push(gte(paradasMecanicas.dataInicio, new Date(`${input.dataInicio}T00:00:00`)));
+      if (input?.dataFim) conditions.push(lte(paradasMecanicas.dataInicio, new Date(`${input.dataFim}T23:59:59`)));
+      if (input?.equipamentoId) conditions.push(eq(paradasMecanicas.equipamentoId, input.equipamentoId));
+      if (input?.status) conditions.push(eq(paradasMecanicas.status, input.status as any));
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const [rows, totalRows] = await Promise.all([
+        db.select().from(paradasMecanicas).where(where).orderBy(desc(paradasMecanicas.id)).limit(pageSize).offset(offset),
+        db.select({ total: count() }).from(paradasMecanicas).where(where),
+      ]);
+      const total = Number(totalRows[0]?.total ?? 0);
+      return { data: rows, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }),
     
     create: protectedProcedure
@@ -2107,10 +2191,33 @@ export const appRouter = router({
   // ============================================================================
 
   medicaoPilhas: router({
-    list: protectedProcedure.query(async () => {
+    list: protectedProcedure
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(200).default(50),
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+        equipamentoId: z.number().optional(),
+        produtoId: z.number().optional(),
+      }).optional())
+      .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) throw new Error("Database not available");
-      return db.select().from(medicaoPilhas).orderBy(desc(medicaoPilhas.data));
+      if (!db) return { data: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+      const page = input?.page ?? 1;
+      const pageSize = input?.pageSize ?? 50;
+      const offset = (page - 1) * pageSize;
+      const conditions = [];
+      if (input?.dataInicio) conditions.push(gte(medicaoPilhas.data, sql`${input.dataInicio}`));
+      if (input?.dataFim) conditions.push(lte(medicaoPilhas.data, sql`${input.dataFim}`));
+      if (input?.equipamentoId) conditions.push(eq(medicaoPilhas.equipamentoId, input.equipamentoId));
+      if (input?.produtoId) conditions.push(eq(medicaoPilhas.produtoId, input.produtoId));
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const [rows, totalRows] = await Promise.all([
+        db.select().from(medicaoPilhas).where(where).orderBy(desc(medicaoPilhas.data)).limit(pageSize).offset(offset),
+        db.select({ total: count() }).from(medicaoPilhas).where(where),
+      ]);
+      const total = Number(totalRows[0]?.total ?? 0);
+      return { data: rows, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }),
 
     create: protectedProcedure

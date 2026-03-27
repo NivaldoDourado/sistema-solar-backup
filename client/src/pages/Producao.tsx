@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { formatters } from "@/lib/export-utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/Pagination";
 
 type ProducaoItem = {
   id: number;
@@ -41,11 +42,13 @@ export default function Producao() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState("");
-  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; });
+  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroGrupoId, setFiltroGrupoId] = useState("");
   const [filtroProdutoId, setFiltroProdutoId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<ProducaoItem | null>(null);
@@ -53,7 +56,16 @@ export default function Producao() {
   const { canCreate, canEdit, canDelete } = usePermissions();
 
   const utils = trpc.useUtils();
-  const { data: producoes, isLoading } = trpc.producao.list.useQuery();
+  const queryInput = useMemo(() => ({
+    page, pageSize,
+    dataInicio: filtroDataInicio || undefined,
+    dataFim: filtroDataFim || undefined,
+    equipamentoId: filtroEquipamentoId ? Number(filtroEquipamentoId) : undefined,
+    produtoId: filtroProdutoId ? Number(filtroProdutoId) : undefined,
+  }), [page, pageSize, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroProdutoId]);
+  const { data: producoesResult, isLoading } = trpc.producao.list.useQuery(queryInput);
+  const producoes = producoesResult?.data ?? [];
+  const paginacao = { total: producoesResult?.total ?? 0, totalPages: producoesResult?.totalPages ?? 0 };
   const { data: equipamentos } = trpc.equipamentos.list.useQuery();
   const { data: produtos } = trpc.produtos.list.useQuery();
   const { data: gruposEquipamentos } = trpc.gruposDeEquipamentos.list.useQuery();
@@ -187,27 +199,20 @@ export default function Producao() {
         const search = searchTerm.toLowerCase();
         if (!equipNome.includes(search) && !prodNome.includes(search)) return false;
       }
-      if (filtroDataInicio) {
-        const dataStr = prod.data instanceof Date ? prod.data.toISOString().split('T')[0] : String(prod.data).includes('T') ? String(prod.data).split('T')[0] : String(prod.data).slice(0, 10);
-        if (dataStr < filtroDataInicio) return false;
-      }
-      if (filtroDataFim) {
-        const dataStr = prod.data instanceof Date ? prod.data.toISOString().split('T')[0] : String(prod.data).includes('T') ? String(prod.data).split('T')[0] : String(prod.data).slice(0, 10);
-        if (dataStr > filtroDataFim) return false;
-      }
-      if (filtroEquipamentoId && prod.equipamentoId !== Number(filtroEquipamentoId)) return false;
       if (filtroGrupoId) {
         const equip = equipamentos?.find(e => e.id === prod.equipamentoId);
         if (!equip || equip.grupoId !== Number(filtroGrupoId)) return false;
       }
-      if (filtroProdutoId && prod.produtoId !== Number(filtroProdutoId)) return false;
       return true;
     });
-  }, [producoes, searchTerm, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroProdutoId, equipamentos]);
+  }, [producoes, searchTerm, filtroGrupoId, equipamentos]);
 
-  const limparFiltros = () => {
-    setFiltroDataInicio(""); setFiltroDataFim(""); setFiltroEquipamentoId(""); setFiltroGrupoId(""); setFiltroProdutoId(""); setSearchTerm("");
-  };
+  const limparFiltros = useCallback(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    setFiltroDataInicio(d.toISOString().split('T')[0]);
+    setFiltroDataFim(new Date().toISOString().split('T')[0]);
+    setFiltroEquipamentoId(""); setFiltroGrupoId(""); setFiltroProdutoId(""); setSearchTerm(""); setPage(1);
+  }, []);
 
   const filtrosAtivos = [filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroProdutoId].filter(Boolean).length;
 
@@ -390,8 +395,8 @@ export default function Producao() {
               <CardTitle>Registros de Produção</CardTitle>
               <CardDescription>
                 {filtrosAtivos > 0
-                  ? `${filteredProducoes.length} de ${producoes?.length || 0} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
-                  : `${filteredProducoes.length} registro(s) encontrado(s)`
+                  ? `${filteredProducoes.length} de ${paginacao.total} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
+                  : `${paginacao.total} registro(s) no período`
                 }
               </CardDescription>
             </div>
@@ -403,7 +408,7 @@ export default function Producao() {
               <ExportButtons
               options={{
                 title: "Relatório de Produção",
-                subtitle: `Total: ${filteredProducoes.length} registros${filtrosAtivos > 0 ? ' (filtrado)' : ''}`,
+                subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
                 filename: `producao-${new Date().toISOString().split("T")[0]}`,
                 columns: [
                   { header: "Data", key: "data", width: 12, format: formatters.date },
@@ -413,7 +418,7 @@ export default function Producao() {
                   { header: "Meta Diária", key: "metaDiaria", width: 14, format: formatters.decimal },
                   { header: "Observações", key: "observacoes", width: 30 },
                 ],
-                data: (filteredProducoes || []).map((p) => {
+                data: (filteredProducoes || []).map((p: typeof producoes[0]) => {
                   const equip = equipamentos?.find((e) => e.id === p.equipamentoId);
                   const prod = produtos?.find((pr) => pr.id === p.produtoId);
                   return {
@@ -526,6 +531,16 @@ export default function Producao() {
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? "Nenhum registro encontrado com esse termo de busca." : "Nenhum registro de produção encontrado. Clique em 'Nova Produção' para começar."}
             </div>
+          )}
+          {paginacao.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginacao.totalPages}
+              total={paginacao.total}
+              pageSize={pageSize}
+              onPageChange={(p) => { setPage(p); window.scrollTo(0, 0); }}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

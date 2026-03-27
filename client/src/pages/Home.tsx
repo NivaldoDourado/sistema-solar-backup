@@ -94,9 +94,13 @@ export default function Home() {
 
   const { data: equipamentos } = trpc.equipamentos.list.useQuery(undefined, { enabled: hasModuleAccess("equipamentos") });
   const { data: parteDiaria } = trpc.parteDiaria.list.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: abastecimentos } = trpc.abastecimento.list.useQuery(undefined, { enabled: hasModuleAccess("abastecimento") });
-  const { data: custos } = trpc.custos.list.useQuery(undefined, { enabled: hasModuleAccess("custos") });
-  const { data: manutencoes } = trpc.manutencao.list.useQuery(undefined, { enabled: hasModuleAccess("manutencao") });
+  const dashboardPeriodo = useMemo(() => ({ page: 1, pageSize: 9999, dataInicio: dataInicio || undefined, dataFim: dataFim || undefined }), [dataInicio, dataFim]);
+  const { data: abastecimentosResult } = trpc.abastecimento.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("abastecimento") });
+  const abastecimentos = abastecimentosResult?.data ?? [];
+  const { data: custosResult } = trpc.custos.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("custos") });
+  const custos = custosResult?.data ?? [];
+  const { data: manutencoesResult } = trpc.manutencao.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("manutencao") });
+  const manutencoes = manutencoesResult?.data ?? [];
   
   // Dados de produção agregados com filtro de período
   const { data: producaoPorSetor } = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
@@ -151,25 +155,8 @@ export default function Home() {
   const equipamentosAtivos = equipamentos?.filter(e => e.ativo === "sim").length || 0;
   
   // Filtrar custos e abastecimentos por período no frontend
-  const custosFiltrados = useMemo(() => {
-    if (!custos) return [];
-    return custos.filter(c => {
-      const d = typeof (c.data as any) === "string" ? (c.data as any).split("T")[0] : new Date(c.data).toISOString().split("T")[0];
-      if (dataInicio && d < dataInicio) return false;
-      if (dataFim && d > dataFim) return false;
-      return true;
-    });
-  }, [custos, dataInicio, dataFim]);
-
-  const abastecimentosFiltrados = useMemo(() => {
-    if (!abastecimentos) return [];
-    return abastecimentos.filter(a => {
-      const d = typeof (a.data as any) === "string" ? (a.data as any).split("T")[0] : new Date(a.data).toISOString().split("T")[0];
-      if (dataInicio && d < dataInicio) return false;
-      if (dataFim && d > dataFim) return false;
-      return true;
-    });
-  }, [abastecimentos, dataInicio, dataFim]);
+  const custosFiltrados = custos;
+  const abastecimentosFiltrados = abastecimentos;;
 
   const parteDiariaFiltrada = useMemo(() => {
     if (!parteDiaria) return [];
@@ -181,9 +168,9 @@ export default function Home() {
     });
   }, [parteDiaria, dataInicio, dataFim]);
 
-  const totalCustos = custosFiltrados.reduce((sum, c) => sum + parseFloat(c.valor), 0);
+  const totalCustos = custosFiltrados.reduce((sum: number, c: { valor: string }) => sum + parseFloat(c.valor), 0);
   const totalProducaoCaminhoes = producaoMetodoCaminhoes?.total || 0;
-  const totalAbastecimentos = abastecimentosFiltrados.reduce((sum, a) => sum + parseFloat(a.quantidade), 0);
+  const totalAbastecimentos = abastecimentosFiltrados.reduce((sum: number, a: { quantidade: string }) => sum + parseFloat(a.quantidade), 0);
   const totalPerfuracao = producaoPerfuracao?.total || 0;
   const totalFuros = producaoPerfuracao?.totalFuros || 0;
   const totalMetrosPerfurados = producaoPerfuracao?.totalMetros || 0;
@@ -454,7 +441,7 @@ export default function Home() {
       icone: Wrench,
       cor: "text-red-500",
       link: "/manutencao",
-      total: manutencoes?.length || 0,
+      total: manutencoesResult?.total || 0,
     },
   ];
 

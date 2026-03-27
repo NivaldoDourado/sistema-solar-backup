@@ -160,6 +160,7 @@ export default defineConfig({
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
       "xlsx": path.resolve(import.meta.dirname, "node_modules/xlsx/xlsx.mjs"),
+      "file-saver": path.resolve(import.meta.dirname, "node_modules/file-saver/dist/FileSaver.min.js"),
     },
   },
   envDir: path.resolve(import.meta.dirname),

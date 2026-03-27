@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { usePermissions } from "@/hooks/usePermissions";
+import { Pagination } from "@/components/Pagination";
 
 type Manutencao = {
   id: number;
@@ -52,12 +53,14 @@ export default function Manutencao() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState("");
-  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; });
+  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroGrupoId, setFiltroGrupoId] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<Manutencao | null>(null);
@@ -65,7 +68,15 @@ export default function Manutencao() {
   const { canCreate, canEdit, canDelete } = usePermissions();
 
   const utils = trpc.useUtils();
-  const { data: manutencoes, isLoading } = trpc.manutencao.list.useQuery();
+  const queryInput = useMemo(() => ({
+    page, pageSize,
+    dataInicio: filtroDataInicio || undefined,
+    dataFim: filtroDataFim || undefined,
+    equipamentoId: filtroEquipamentoId ? Number(filtroEquipamentoId) : undefined,
+  }), [page, pageSize, filtroDataInicio, filtroDataFim, filtroEquipamentoId]);
+  const { data: manutencoesResult, isLoading } = trpc.manutencao.list.useQuery(queryInput);
+  const manutencoes = manutencoesResult?.data ?? [];
+  const paginacao = { total: manutencoesResult?.total ?? 0, totalPages: manutencoesResult?.totalPages ?? 0 };
   const { data: equipamentos } = trpc.equipamentos.list.useQuery();
   const { data: gruposEquipamentos } = trpc.gruposDeEquipamentos.list.useQuery();
 
@@ -222,9 +233,6 @@ export default function Manutencao() {
         const search = searchTerm.toLowerCase();
         if (!equipNome.includes(search) && !desc.includes(search) && !tipo.includes(search)) return false;
       }
-      if (filtroDataInicio) { const d = man.dataInicio instanceof Date ? man.dataInicio.toISOString().split('T')[0] : String(man.dataInicio).includes('T') ? String(man.dataInicio).split('T')[0] : String(man.dataInicio).slice(0, 10); if (d < filtroDataInicio) return false; }
-      if (filtroDataFim) { const d = man.dataInicio instanceof Date ? man.dataInicio.toISOString().split('T')[0] : String(man.dataInicio).includes('T') ? String(man.dataInicio).split('T')[0] : String(man.dataInicio).slice(0, 10); if (d > filtroDataFim) return false; }
-      if (filtroEquipamentoId && man.equipamentoId !== Number(filtroEquipamentoId)) return false;
       if (filtroGrupoId) {
         const equip = equipamentos?.find(e => e.id === man.equipamentoId);
         if (!equip || equip.grupoId !== Number(filtroGrupoId)) return false;
@@ -233,11 +241,14 @@ export default function Manutencao() {
       if (filtroStatus && man.status !== filtroStatus) return false;
       return true;
     });
-  }, [manutencoes, searchTerm, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroTipo, filtroStatus, equipamentos]);
+  }, [manutencoes, searchTerm, filtroGrupoId, filtroTipo, filtroStatus, equipamentos]);
 
-  const limparFiltros = () => {
-    setFiltroDataInicio(""); setFiltroDataFim(""); setFiltroEquipamentoId(""); setFiltroGrupoId(""); setFiltroTipo(""); setFiltroStatus(""); setSearchTerm("");
-  };
+  const limparFiltros = useCallback(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    setFiltroDataInicio(d.toISOString().split('T')[0]);
+    setFiltroDataFim(new Date().toISOString().split('T')[0]);
+    setFiltroEquipamentoId(""); setFiltroGrupoId(""); setFiltroTipo(""); setFiltroStatus(""); setSearchTerm(""); setPage(1);
+  }, []);
 
   const filtrosAtivos = [filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroTipo, filtroStatus].filter(Boolean).length;
 
@@ -494,8 +505,8 @@ export default function Manutencao() {
               <CardTitle>Registros de Manutenção</CardTitle>
               <CardDescription>
                 {filtrosAtivos > 0
-                  ? `${filteredManutencoes.length} de ${manutencoes?.length || 0} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
-                  : `${filteredManutencoes.length} registro(s) encontrado(s)`
+                  ? `${filteredManutencoes.length} de ${paginacao.total} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
+                  : `${paginacao.total} registro(s) no período`
                 }
               </CardDescription>
             </div>
@@ -507,7 +518,7 @@ export default function Manutencao() {
               <ExportButtons
               options={{
                 title: "Relatório de Manutenções",
-                subtitle: `Total: ${filteredManutencoes.length} registros${filtrosAtivos > 0 ? ' (filtrado)' : ''}`,
+                subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
                 filename: `manutencoes-${new Date().toISOString().split("T")[0]}`,
                 columns: [
                   { header: "Equipamento", key: "equipamentoNome", width: 25 },
@@ -519,7 +530,7 @@ export default function Manutencao() {
                   { header: "Custo Estimado", key: "custoEstimado", width: 14, format: formatters.currency },
                   { header: "Status", key: "status", width: 12 },
                 ],
-                data: (filteredManutencoes || []).map((m) => {
+                data: (filteredManutencoes || []).map((m: typeof manutencoes[0]) => {
                   const equip = equipamentos?.find((e) => e.id === m.equipamentoId);
                   return {
                     ...m,
@@ -667,6 +678,16 @@ export default function Manutencao() {
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? "Nenhum registro encontrado com esse termo de busca." : "Nenhum registro de manutenção encontrado. Clique em 'Nova Manutenção' para começar."}
             </div>
+          )}
+          {paginacao.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginacao.totalPages}
+              total={paginacao.total}
+              pageSize={pageSize}
+              onPageChange={(p) => { setPage(p); window.scrollTo(0, 0); }}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

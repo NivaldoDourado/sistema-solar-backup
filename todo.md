@@ -54,3 +54,17 @@
 ## Testes
 - [x] Migrar testes existentes do repositório base
 - [x] Validar sistema completo (86 testes passando)
+
+## Performance - Paginação e Índices
+- [x] Criar 23 índices no banco para todas as tabelas operacionais
+- [x] Implementar paginação server-side nos routers tRPC (abastecimento, producao, custos, manutencao, medicaoPilhas)
+- [x] Implementar paginação + filtro de período no frontend (Abastecimento)
+- [x] Implementar paginação + filtro de período no frontend (Produção)
+- [x] Implementar paginação + filtro de período no frontend (Medição de Pilhas)
+- [x] Implementar paginação + filtro de período no frontend (Manutenção)
+- [x] Implementar paginação + filtro de período no frontend (Custos)
+- [x] Implementar paginação + filtro de período no frontend (Dashboard adaptado para queries paginadas)
+- [ ] Implementar paginação + filtro de período no frontend (Parte Diária) [futuro]
+- [ ] Implementar paginação + filtro de período no frontend (Vendas) [futuro]
+- [ ] Implementar paginação + filtro de período no frontend (Equipamentos) [futuro]
+- [ ] Implementar paginação + filtro de período no frontend (Peças de Desgaste) [futuro]

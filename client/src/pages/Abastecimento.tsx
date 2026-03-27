@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { formatters } from "@/lib/export-utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/Pagination";
 
 type Abastecimento = {
   id: number;
@@ -45,10 +46,15 @@ export default function Abastecimento() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState("");
-  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroCombustivelId, setFiltroCombustivelId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<Abastecimento | null>(null);
@@ -56,12 +62,20 @@ export default function Abastecimento() {
   const { canCreate, canEdit, canDelete } = usePermissions();
 
   const utils = trpc.useUtils();
-  const { data: abastecimentos, isLoading } = trpc.abastecimento.list.useQuery();
+  const [filtroGrupoId, setFiltroGrupoId] = useState("");
+  const queryInput = useMemo(() => ({
+    page,
+    pageSize,
+    dataInicio: filtroDataInicio || undefined,
+    dataFim: filtroDataFim || undefined,
+    equipamentoId: filtroEquipamentoId ? Number(filtroEquipamentoId) : undefined,
+  }), [page, pageSize, filtroDataInicio, filtroDataFim, filtroEquipamentoId]);
+  const { data: abastecimentosResult, isLoading } = trpc.abastecimento.list.useQuery(queryInput);
+  const abastecimentos = abastecimentosResult?.data ?? [];
+  const paginacao = { total: abastecimentosResult?.total ?? 0, totalPages: abastecimentosResult?.totalPages ?? 0 };
   const { data: equipamentos } = trpc.equipamentos.list.useQuery();
   const { data: combustiveis } = trpc.combustiveis.list.useQuery();
   const { data: gruposEquipamentos } = trpc.gruposDeEquipamentos.list.useQuery();
-
-  const [filtroGrupoId, setFiltroGrupoId] = useState("");
 
   const equipamentoOptions = useMemo(() => 
     equipamentos?.filter(eq => eq.ativo === "sim").map(eq => ({
@@ -206,43 +220,31 @@ export default function Abastecimento() {
   const filteredAbastecimentos = useMemo(() => {
     if (!abastecimentos) return [];
     return abastecimentos.filter((ab) => {
-      // Filtro por texto
       if (searchTerm) {
         const equipNome = getEquipamentoNome(ab.equipamentoId).toLowerCase();
         const combNome = getCombustivelNome(ab.combustivelId).toLowerCase();
         const search = searchTerm.toLowerCase();
         if (!equipNome.includes(search) && !combNome.includes(search)) return false;
       }
-      // Filtro por data
-      if (filtroDataInicio) {
-        const dataStr = ab.data instanceof Date ? ab.data.toISOString().split('T')[0] : String(ab.data).includes('T') ? String(ab.data).split('T')[0] : String(ab.data).slice(0, 10);
-        if (dataStr < filtroDataInicio) return false;
-      }
-      if (filtroDataFim) {
-        const dataStr = ab.data instanceof Date ? ab.data.toISOString().split('T')[0] : String(ab.data).includes('T') ? String(ab.data).split('T')[0] : String(ab.data).slice(0, 10);
-        if (dataStr > filtroDataFim) return false;
-      }
-      // Filtro por equipamento
-      if (filtroEquipamentoId && ab.equipamentoId !== Number(filtroEquipamentoId)) return false;
-      // Filtro por grupo de equipamento
       if (filtroGrupoId) {
         const equip = equipamentos?.find(e => e.id === ab.equipamentoId);
         if (!equip || equip.grupoId !== Number(filtroGrupoId)) return false;
       }
-      // Filtro por combustível
       if (filtroCombustivelId && ab.combustivelId !== Number(filtroCombustivelId)) return false;
       return true;
     });
-  }, [abastecimentos, searchTerm, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroCombustivelId, equipamentos]);
+  }, [abastecimentos, searchTerm, filtroGrupoId, filtroCombustivelId, equipamentos]);
 
-  const limparFiltros = () => {
-    setFiltroDataInicio("");
-    setFiltroDataFim("");
+  const limparFiltros = useCallback(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    setFiltroDataInicio(d.toISOString().split('T')[0]);
+    setFiltroDataFim(new Date().toISOString().split('T')[0]);
     setFiltroEquipamentoId("");
     setFiltroGrupoId("");
     setFiltroCombustivelId("");
     setSearchTerm("");
-  };
+    setPage(1);
+  }, []);
 
   const filtrosAtivos = [filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroCombustivelId].filter(Boolean).length;
 
@@ -454,8 +456,8 @@ export default function Abastecimento() {
               <CardTitle>Registros de Abastecimento</CardTitle>
               <CardDescription>
                 {filtrosAtivos > 0
-                  ? `${filteredAbastecimentos.length} de ${abastecimentos?.length || 0} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
-                  : `${filteredAbastecimentos.length} registro(s) encontrado(s)`
+                  ? `${filteredAbastecimentos.length} de ${paginacao.total} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
+                  : `${paginacao.total} registro(s) no período`
                 }
               </CardDescription>
             </div>
@@ -476,7 +478,7 @@ export default function Abastecimento() {
               <ExportButtons
               options={{
                 title: "Relatório de Abastecimentos",
-                subtitle: `Total: ${filteredAbastecimentos?.length || 0} registros`,
+                subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
                 filename: `abastecimentos-${new Date().toISOString().split("T")[0]}`,
                 columns: [
                   { header: "Data", key: "data", width: 12, format: formatters.date },
@@ -636,6 +638,16 @@ export default function Abastecimento() {
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? "Nenhum registro encontrado com esse termo de busca." : "Nenhum registro de abastecimento encontrado. Clique em 'Novo Abastecimento' para começar."}
             </div>
+          )}
+          {paginacao.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginacao.totalPages}
+              total={paginacao.total}
+              pageSize={pageSize}
+              onPageChange={(p) => { setPage(p); window.scrollTo(0, 0); }}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

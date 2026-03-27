@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { formatters } from "@/lib/export-utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/Pagination";
 
 type Custo = {
   id: number;
@@ -45,11 +46,13 @@ export default function Custos() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState("");
-  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; });
+  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroSetorId, setFiltroSetorId] = useState("");
   const [filtroPlanoContasId, setFiltroPlanoContasId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<Custo | null>(null);
@@ -57,7 +60,16 @@ export default function Custos() {
   const { canCreate, canEdit, canDelete } = usePermissions();
 
   const utils = trpc.useUtils();
-  const { data: custos, isLoading } = trpc.custos.list.useQuery();
+  const queryInput = useMemo(() => ({
+    page, pageSize,
+    dataInicio: filtroDataInicio || undefined,
+    dataFim: filtroDataFim || undefined,
+    equipamentoId: filtroEquipamentoId ? Number(filtroEquipamentoId) : undefined,
+    setorDeCustoId: filtroPlanoContasId ? Number(filtroPlanoContasId) : undefined,
+  }), [page, pageSize, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroPlanoContasId]);
+  const { data: custosResult, isLoading } = trpc.custos.list.useQuery(queryInput);
+  const custos = custosResult?.data ?? [];
+  const paginacao = { total: custosResult?.total ?? 0, totalPages: custosResult?.totalPages ?? 0 };
   const { data: equipamentos } = trpc.equipamentos.list.useQuery();
   const { data: setores } = trpc.setores.list.useQuery();
   const { data: planoContas } = trpc.setoresDeCusto.list.useQuery();
@@ -215,18 +227,17 @@ export default function Custos() {
         const search = searchTerm.toLowerCase();
         if (!desc.includes(search) && !equipNome.includes(search) && !setorNome.includes(search) && !planoNome.includes(search)) return false;
       }
-      if (filtroDataInicio) { const d = custo.data instanceof Date ? custo.data.toISOString().split('T')[0] : String(custo.data).includes('T') ? String(custo.data).split('T')[0] : String(custo.data).slice(0, 10); if (d < filtroDataInicio) return false; }
-      if (filtroDataFim) { const d = custo.data instanceof Date ? custo.data.toISOString().split('T')[0] : String(custo.data).includes('T') ? String(custo.data).split('T')[0] : String(custo.data).slice(0, 10); if (d > filtroDataFim) return false; }
-      if (filtroEquipamentoId && custo.equipamentoId !== Number(filtroEquipamentoId)) return false;
       if (filtroSetorId && custo.setorId !== Number(filtroSetorId)) return false;
-      if (filtroPlanoContasId && custo.setorDeCustoId !== Number(filtroPlanoContasId)) return false;
       return true;
     });
-  }, [custos, searchTerm, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroSetorId, filtroPlanoContasId]);
+  }, [custos, searchTerm, filtroSetorId]);
 
-  const limparFiltros = () => {
-    setFiltroDataInicio(""); setFiltroDataFim(""); setFiltroEquipamentoId(""); setFiltroSetorId(""); setFiltroPlanoContasId(""); setSearchTerm("");
-  };
+  const limparFiltros = useCallback(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    setFiltroDataInicio(d.toISOString().split('T')[0]);
+    setFiltroDataFim(new Date().toISOString().split('T')[0]);
+    setFiltroEquipamentoId(""); setFiltroSetorId(""); setFiltroPlanoContasId(""); setSearchTerm(""); setPage(1);
+  }, []);
 
   const filtrosAtivos = [filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroSetorId, filtroPlanoContasId].filter(Boolean).length;
 
@@ -432,8 +443,8 @@ export default function Custos() {
               <CardTitle>Registros de Custos</CardTitle>
               <CardDescription>
                 {filtrosAtivos > 0
-                  ? `${filteredCustos.length} de ${custos?.length || 0} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
-                  : `${filteredCustos.length} registro(s) encontrado(s)`
+                  ? `${filteredCustos.length} de ${paginacao.total} registros (${filtrosAtivos} filtro${filtrosAtivos > 1 ? 's' : ''} ativo${filtrosAtivos > 1 ? 's' : ''})`
+                  : `${paginacao.total} registro(s) no período`
                 }
               </CardDescription>
             </div>
@@ -445,7 +456,7 @@ export default function Custos() {
               <ExportButtons
               options={{
                 title: "Relatório de Custos",
-                subtitle: `Total: ${filteredCustos.length} registros${filtrosAtivos > 0 ? ' (filtrado)' : ''}`,
+                subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
                 filename: `custos-${new Date().toISOString().split("T")[0]}`,
                 columns: [
                   { header: "Data", key: "data", width: 12, format: formatters.date },
@@ -579,6 +590,16 @@ export default function Custos() {
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? "Nenhum registro encontrado com esse termo de busca." : "Nenhum registro de custo encontrado. Clique em 'Novo Custo' para começar."}
             </div>
+          )}
+          {paginacao.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginacao.totalPages}
+              total={paginacao.total}
+              pageSize={pageSize}
+              onPageChange={(p) => { setPage(p); window.scrollTo(0, 0); }}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

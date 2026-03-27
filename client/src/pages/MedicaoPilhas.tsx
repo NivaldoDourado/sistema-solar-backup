@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { formatters } from "@/lib/export-utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/Pagination";
 
 type MedicaoItem = {
   id: number;
@@ -63,11 +64,13 @@ export default function MedicaoPilhas() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState("");
-  const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; });
+  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroGrupoId, setFiltroGrupoId] = useState("");
   const [filtroProdutoId, setFiltroProdutoId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<MedicaoItem | null>(null);
@@ -75,7 +78,16 @@ export default function MedicaoPilhas() {
   const { canCreate, canEdit, canDelete } = usePermissions();
 
   const utils = trpc.useUtils();
-  const { data: medicoes, isLoading } = trpc.medicaoPilhas.list.useQuery();
+  const queryInput = useMemo(() => ({
+    page, pageSize,
+    dataInicio: filtroDataInicio || undefined,
+    dataFim: filtroDataFim || undefined,
+    equipamentoId: filtroEquipamentoId ? Number(filtroEquipamentoId) : undefined,
+    produtoId: filtroProdutoId ? Number(filtroProdutoId) : undefined,
+  }), [page, pageSize, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroProdutoId]);
+  const { data: medicoesResult, isLoading } = trpc.medicaoPilhas.list.useQuery(queryInput);
+  const medicoes = medicoesResult?.data ?? [];
+  const paginacao = { total: medicoesResult?.total ?? 0, totalPages: medicoesResult?.totalPages ?? 0 };
   const { data: equipamentos } = trpc.equipamentos.list.useQuery();
   const { data: produtos } = trpc.produtos.list.useQuery();
   const { data: gruposEquipamentos } = trpc.gruposDeEquipamentos.list.useQuery();
@@ -119,26 +131,20 @@ export default function MedicaoPilhas() {
   const medicoesFiltradas = useMemo(() => {
     if (!medicoes) return [];
     return medicoes.filter((m: MedicaoItem) => {
-      const dateStr = m.data instanceof Date ? m.data.toISOString().split('T')[0] : String(m.data).split('T')[0];
-      if (filtroDataInicio && dateStr < filtroDataInicio) return false;
-      if (filtroDataFim && dateStr > filtroDataFim) return false;
-      if (filtroEquipamentoId && m.equipamentoId !== Number(filtroEquipamentoId)) return false;
       if (filtroGrupoId) {
         const equip = equipamentos?.find(e => e.id === m.equipamentoId);
         if (!equip || equip.grupoId !== Number(filtroGrupoId)) return false;
       }
-      if (filtroProdutoId && m.produtoId !== Number(filtroProdutoId)) return false;
       return true;
     });
-  }, [medicoes, filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroProdutoId, equipamentos]);
+  }, [medicoes, filtroGrupoId, equipamentos]);
 
-  const limparFiltros = () => {
-    setFiltroDataInicio("");
-    setFiltroDataFim("");
-    setFiltroEquipamentoId("");
-    setFiltroGrupoId("");
-    setFiltroProdutoId("");
-  };
+  const limparFiltros = useCallback(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    setFiltroDataInicio(d.toISOString().split('T')[0]);
+    setFiltroDataFim(new Date().toISOString().split('T')[0]);
+    setFiltroEquipamentoId(""); setFiltroGrupoId(""); setFiltroProdutoId(""); setPage(1);
+  }, []);
 
   const createMutation = trpc.medicaoPilhas.create.useMutation({
     onSuccess: () => {
@@ -374,7 +380,7 @@ export default function MedicaoPilhas() {
             <div>
               <CardTitle>Registros</CardTitle>
               <CardDescription>
-                {medicoesFiltradas.length} de {medicoes?.length || 0} registro(s)
+                {paginacao.total} registro(s) no período
                 {activeFilterCount > 0 && ` (${activeFilterCount} filtro${activeFilterCount > 1 ? 's' : ''} ativo${activeFilterCount > 1 ? 's' : ''})`}
               </CardDescription>
             </div>
@@ -389,7 +395,7 @@ export default function MedicaoPilhas() {
               <ExportButtons
                 options={{
                   title: "Relatório de Medição das Pilhas",
-                  subtitle: `Total: ${medicoesFiltradas.length} registros${activeFilterCount > 0 ? ' (filtrado)' : ''}`,
+                  subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
                   filename: `medicao-pilhas-${new Date().toISOString().split("T")[0]}`,
                   columns: [
                     { header: "Data", key: "data", width: 12, format: formatters.date },
@@ -530,6 +536,16 @@ export default function MedicaoPilhas() {
                 </TableBody>
               </Table>
             </div>
+          )}
+          {paginacao.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginacao.totalPages}
+              total={paginacao.total}
+              pageSize={pageSize}
+              onPageChange={(p) => { setPage(p); window.scrollTo(0, 0); }}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>
