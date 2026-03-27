@@ -1,56 +1,56 @@
 # Sistema SOLAR - PEDREIRA SOLAR - TODO
 
 ## Banco de Dados
-- [ ] Migrar schema completo (drizzle/schema.ts) com todas as tabelas
-- [ ] Migrar relações (drizzle/relations.ts)
-- [ ] Aplicar migrações (pnpm db:push)
+- [x] Migrar schema completo (drizzle/schema.ts) com todas as tabelas
+- [x] Migrar relações (drizzle/relations.ts)
+- [x] Aplicar migrações (pnpm db:push)
 
 ## Backend - Servidor
-- [ ] Migrar sistema de autenticação local (bcrypt + perfis)
-- [ ] Migrar server/db.ts com todas as queries
-- [ ] Migrar server/permissions.ts
-- [ ] Migrar server/auth_router.ts
-- [ ] Migrar server/routers.ts (todos os routers tRPC)
-- [ ] Migrar server/usuarios_router.ts
-- [ ] Migrar server/permissoes_router.ts
-- [ ] Migrar server/vendas_router.ts
-- [ ] Migrar server/tempos_descarga_router.ts
-- [ ] Migrar shared/const.ts e shared/types.ts
+- [x] Migrar sistema de autenticação local (bcrypt + perfis)
+- [x] Migrar server/db.ts com todas as queries
+- [x] Migrar server/permissions.ts
+- [x] Migrar server/auth_router.ts
+- [x] Migrar server/routers.ts (todos os routers tRPC)
+- [x] Migrar server/usuarios_router.ts
+- [x] Migrar server/permissoes_router.ts
+- [x] Migrar server/vendas_router.ts
+- [x] Migrar server/tempos_descarga_router.ts
+- [x] Migrar shared/const.ts e shared/types.ts
 
 ## Frontend - Componentes
-- [ ] Migrar DashboardLayout personalizado com sidebar
-- [ ] Migrar client/src/const.ts
-- [ ] Migrar client/src/hooks/usePermissions.ts
-- [ ] Migrar client/src/lib/export-utils.ts
-- [ ] Migrar NotificationBell component
+- [x] Migrar DashboardLayout personalizado com sidebar
+- [x] Migrar client/src/const.ts
+- [x] Migrar client/src/hooks/usePermissions.ts
+- [x] Migrar client/src/lib/export-utils.ts
+- [x] Migrar NotificationBell component
 
 ## Frontend - Páginas
-- [ ] Migrar Login.tsx
-- [ ] Migrar Home.tsx (Dashboard com KPIs)
-- [ ] Migrar ParteDiaria.tsx
-- [ ] Migrar Abastecimento.tsx
-- [ ] Migrar Producao.tsx
-- [ ] Migrar Custos.tsx
-- [ ] Migrar Manutencao.tsx
-- [ ] Migrar MedicaoPilhas.tsx
-- [ ] Migrar PecasDesgaste.tsx
-- [ ] Migrar Vendas.tsx
-- [ ] Migrar Clientes.tsx
-- [ ] Migrar Equipamentos.tsx
-- [ ] Migrar Cadastros.tsx
-- [ ] Migrar Usuarios.tsx
-- [ ] Migrar Permissoes.tsx
-- [ ] Migrar MeuPerfil.tsx
-- [ ] Migrar TrocarSenha.tsx
-- [ ] Migrar páginas auxiliares (Setores, Servicos, Produtos, Unidades, etc.)
-- [ ] Migrar App.tsx com todas as rotas
+- [x] Migrar Login.tsx
+- [x] Migrar Home.tsx (Dashboard com KPIs)
+- [x] Migrar ParteDiaria.tsx
+- [x] Migrar Abastecimento.tsx
+- [x] Migrar Producao.tsx
+- [x] Migrar Custos.tsx
+- [x] Migrar Manutencao.tsx
+- [x] Migrar MedicaoPilhas.tsx
+- [x] Migrar PecasDesgaste.tsx
+- [x] Migrar Vendas.tsx
+- [x] Migrar Clientes.tsx
+- [x] Migrar Equipamentos.tsx
+- [x] Migrar Cadastros.tsx
+- [x] Migrar Usuarios.tsx
+- [x] Migrar Permissoes.tsx
+- [x] Migrar MeuPerfil.tsx
+- [x] Migrar TrocarSenha.tsx
+- [x] Migrar páginas auxiliares (Setores, Servicos, Produtos, Unidades, etc.)
+- [x] Migrar App.tsx com todas as rotas
 
 ## Personalização PEDREIRA SOLAR
-- [ ] Atualizar nome da empresa para "PEDREIRA SOLAR"
-- [ ] Atualizar cores e tema visual
-- [ ] Criar script de criação de admin (create_admin.mjs)
-- [ ] Criar repositório GitHub privado
+- [x] Atualizar nome da empresa para "PEDREIRA SOLAR"
+- [x] Atualizar cores e tema visual
+- [x] Criar script de criação de admin (create_admin.mjs)
+- [x] Criar repositório GitHub privado
 
 ## Testes
-- [ ] Migrar testes existentes do repositório base
-- [ ] Validar sistema completo
+- [x] Migrar testes existentes do repositório base
+- [x] Validar sistema completo (86 testes passando)
