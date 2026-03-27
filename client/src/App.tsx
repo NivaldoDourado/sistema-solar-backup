@@ -4,32 +4,242 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import DashboardLayout from "./components/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
+import Equipamentos from "./pages/Equipamentos";
+import Setores from "./pages/Setores";
+import Servicos from "./pages/Servicos";
+import Produtos from "./pages/Produtos";
+import Combustiveis from "./pages/Combustiveis";
+import ParteDiaria from "./pages/ParteDiaria";
+import Abastecimento from "./pages/Abastecimento";
+import Producao from "./pages/Producao";
+import Custos from "./pages/Custos";
+import Cadastros from "./pages/Cadastros";
+
+import Unidades from "./pages/Unidades";
+import GruposEquipamentos from "./pages/GruposEquipamentos";
+import SetoresCusto from "./pages/SetoresCusto";
+import ContasCusto from "./pages/ContasCusto";
+import Manutencao from "./pages/Manutencao";
+import Usuarios from "./pages/Usuarios";
+import MeuPerfil from "./pages/MeuPerfil";
+import OperadoresMotoristas from "./pages/OperadoresMotoristas";
+import MedicaoPilhas from "./pages/MedicaoPilhas";
+import DestinatariosWhatsapp from "./pages/DestinatariosWhatsapp";
+import PecasDesgaste from "./pages/PecasDesgaste";
+import Vendas from "./pages/Vendas";
+import Clientes from "./pages/Clientes";
+import Permissoes from "./pages/Permissoes";
+import Login from "./pages/Login";
+import TrocarSenha from "./pages/TrocarSenha";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      {/* Dashboard - acesso livre */}
+      <Route path={"/"}>
+        <DashboardLayout>
+          <Home />
+        </DashboardLayout>
+      </Route>
+      
+      {/* Página de Cadastros - acesso livre */}
+      <Route path={"/cadastros"}>
+        <DashboardLayout>
+          <Cadastros />
+        </DashboardLayout>
+      </Route>
+      
+      {/* Cadastros Básicos - protegidos por módulo */}
+      <Route path={"/equipamentos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="equipamentos">
+            <Equipamentos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/setores"}>
+        <DashboardLayout>
+          <ProtectedRoute module="setores">
+            <Setores />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/servicos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="servicos">
+            <Servicos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/produtos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="produtos">
+            <Produtos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/combustiveis"}>
+        <DashboardLayout>
+          <ProtectedRoute module="combustiveis">
+            <Combustiveis />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/unidades"}>
+        <DashboardLayout>
+          <ProtectedRoute module="unidades">
+            <Unidades />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/grupos-equipamentos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="gruposEquipamentos">
+            <GruposEquipamentos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/setores-custo"}>
+        <DashboardLayout>
+          <ProtectedRoute module="setorDeCusto">
+            <SetoresCusto />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/contas-custo"}>
+        <DashboardLayout>
+          <ProtectedRoute module="contaCusto">
+            <ContasCusto />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/operadores-motoristas"}>
+        <DashboardLayout>
+          <ProtectedRoute module="operadoresMotoristas">
+            <OperadoresMotoristas />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      
+      {/* Módulos Operacionais - protegidos por módulo */}
+      <Route path={"/parte-diaria"}>
+        <DashboardLayout>
+          <ProtectedRoute module="parteDiaria">
+            <ParteDiaria />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/abastecimento"}>
+        <DashboardLayout>
+          <ProtectedRoute module="abastecimento">
+            <Abastecimento />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/producao"}>
+        <DashboardLayout>
+          <ProtectedRoute module="producao">
+            <Producao />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/custos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <Custos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/manutencao"}>
+        <DashboardLayout>
+          <ProtectedRoute module="manutencao">
+            <Manutencao />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/medicao-pilhas"}>
+        <DashboardLayout>
+          <ProtectedRoute module="medicaoPilhas">
+            <MedicaoPilhas />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/destinatarios-whatsapp"}>
+        <DashboardLayout>
+          <DestinatariosWhatsapp />
+        </DashboardLayout>
+      </Route>
+      <Route path={"/pecas-desgaste"}>
+        <DashboardLayout>
+          <ProtectedRoute module="pecasDesgaste">
+            <PecasDesgaste />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/vendas"}>
+        <DashboardLayout>
+          <ProtectedRoute module="vendas">
+            <Vendas />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/clientes"}>
+        <DashboardLayout>
+          <ProtectedRoute module="clientes">
+            <Clientes />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/usuarios"}>
+        <DashboardLayout>
+          <ProtectedRoute module="usuarios">
+            <Usuarios />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/admin/usuarios"}>
+        <DashboardLayout>
+          <ProtectedRoute module="usuarios">
+            <Usuarios />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+
+      {/* Permissões - acesso restrito a Consultoria */}
+      <Route path={"/permissoes"}>
+        <DashboardLayout>
+          <Permissoes />
+        </DashboardLayout>
+      </Route>
+
+      {/* Meu Perfil - acesso livre (qualquer usuário autenticado) */}
+      <Route path={"/meu-perfil"}>
+        <DashboardLayout>
+          <MeuPerfil />
+        </DashboardLayout>
+      </Route>
+      
+      {/* Autenticação - páginas públicas (sem DashboardLayout) */}
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/trocar-senha">
+        <TrocarSenha />
+      </Route>
+
       <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />

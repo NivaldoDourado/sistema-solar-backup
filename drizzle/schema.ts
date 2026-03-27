@@ -1,22 +1,25 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, date } from "drizzle-orm/mysql-core";
 
 /**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
+ * Sistema de Gestão de Frotas e Operações
+ * Schema completo do banco de dados
  */
+
+// ============================================================================
+// TABELA DE USUÁRIOS E AUTENTICAÇÃO
+// ============================================================================
+
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  mustChangePassword: mysqlEnum("mustChangePassword", ["sim", "nao"]).default("nao").notNull(),
+  whatsapp: varchar("whatsapp", { length: 20 }),
+  cargo: varchar("cargo", { length: 100 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["admin", "diretor", "gerente", "consultoria", "coordenador", "usuario", "controle", "operador"]).default("usuario").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +28,658 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// ============================================================================
+// CADASTROS BÁSICOS
+// ============================================================================
+
+// Unidades de Medida
+export const unidades = mysqlTable("unidades", {
+  id: int("id").autoincrement().primaryKey(),
+  sigla: varchar("sigla", { length: 10 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Unidade = typeof unidades.$inferSelect;
+export type InsertUnidade = typeof unidades.$inferInsert;
+
+// Setores
+export const setores = mysqlTable("setores", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Setor = typeof setores.$inferSelect;
+export type InsertSetor = typeof setores.$inferInsert;
+
+// Grupos de Equipamentos
+export const gruposDeEquipamentos = mysqlTable("grupos_de_equipamentos", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GrupoDeEquipamento = typeof gruposDeEquipamentos.$inferSelect;
+export type InsertGrupoDeEquipamento = typeof gruposDeEquipamentos.$inferInsert;
+
+// Equipamentos
+export const equipamentos = mysqlTable("equipamentos", {
+  id: int("id").autoincrement().primaryKey(),
+  codigoTag: varchar("codigoTag", { length: 100 }),
+  nomeDoEquipamento: varchar("nomeDoEquipamento", { length: 255 }).notNull(),
+  modelo: varchar("modelo", { length: 255 }),
+  ano: varchar("ano", { length: 4 }),
+  serie: varchar("serie", { length: 255 }),
+  capacidade: varchar("capacidade", { length: 100 }),
+  hrAcumulado: decimal("hrAcumulado", { precision: 10, scale: 2 }),
+  kmAcumulado: decimal("kmAcumulado", { precision: 10, scale: 2 }),
+  siglaUnidadeId: int("siglaUnidadeId"),
+  grupoId: int("grupoId"),
+  setorId: int("setorId"),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Equipamento = typeof equipamentos.$inferSelect;
+export type InsertEquipamento = typeof equipamentos.$inferInsert;
+
+// Produtos
+export const produtos = mysqlTable("produtos", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  unidadeId: int("unidadeId"),
+  tipoId: int("tipoId"),
+  densidade: decimal("densidade", { precision: 10, scale: 4 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Produto = typeof produtos.$inferSelect;
+export type InsertProduto = typeof produtos.$inferInsert;
+
+// Tipos de Produtos
+export const tiposDeProdutos = mysqlTable("tipos_de_produtos", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TipoDeProduto = typeof tiposDeProdutos.$inferSelect;
+export type InsertTipoDeProduto = typeof tiposDeProdutos.$inferInsert;
+
+// Combustíveis (usando tabela de produtos com tipo específico)
+export const combustiveis = mysqlTable("combustiveis", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  unidadeId: int("unidadeId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Combustivel = typeof combustiveis.$inferSelect;
+export type InsertCombustivel = typeof combustiveis.$inferInsert;
+
+// Serviços
+export const servicos = mysqlTable("servicos", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Servico = typeof servicos.$inferSelect;
+export type InsertServico = typeof servicos.$inferInsert;
+
+// Operadores/Motoristas
+export const operadoresMotoristas = mysqlTable("operadores_motoristas", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  funcao: mysqlEnum("funcao", ["operador", "motorista", "ambos"]).default("ambos").notNull(),
+  matricula: varchar("matricula", { length: 50 }),
+  telefone: varchar("telefone", { length: 20 }),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OperadorMotorista = typeof operadoresMotoristas.$inferSelect;
+export type InsertOperadorMotorista = typeof operadoresMotoristas.$inferInsert;
+
+// Setor de Custo (Plano de Contas)
+export const setorDeCusto = mysqlTable("setor_de_custo", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SetorDeCusto = typeof setorDeCusto.$inferSelect;
+export type InsertSetorDeCusto = typeof setorDeCusto.$inferInsert;
+
+// Conta Custo
+export const contaCusto = mysqlTable("conta_custo", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  observacao: text("observacao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ContaCusto = typeof contaCusto.$inferSelect;
+export type InsertContaCusto = typeof contaCusto.$inferInsert;
+
+// ============================================================================
+// MÓDULOS OPERACIONAIS
+// ============================================================================
+
+// Parte Diária (Cabeçalho)
+export const parteDiaria = mysqlTable("parte_diaria", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  equipamentoId: int("equipamentoId").notNull(),
+  turno: varchar("turno", { length: 50 }),
+  // Campos de Hora/Km (renomeados de horímetro)
+  horaKmInicial: decimal("horaKmInicial", { precision: 10, scale: 2 }),
+  horaKmFinal: decimal("horaKmFinal", { precision: 10, scale: 2 }),
+  horaKmTrabalhados: decimal("horaKmTrabalhados", { precision: 10, scale: 2 }),
+  // Campos de tempo
+  tempoParadoLigado: decimal("tempoParadoLigado", { precision: 10, scale: 2 }),
+  tempoParadoDesligado: decimal("tempoParadoDesligado", { precision: 10, scale: 2 }),
+  tempoProdutivo: decimal("tempoProdutivo", { precision: 10, scale: 2 }),
+  // Campos de produção
+  producaoLivre: decimal("producaoLivre", { precision: 10, scale: 2 }),
+  qtdFuros: decimal("qtdFuros", { precision: 10, scale: 2 }),
+  profundidadeFuros: decimal("profundidadeFuros", { precision: 10, scale: 2 }),
+  producaoPerfuracao: decimal("producaoPerfuracao", { precision: 10, scale: 2 }),
+  // Campos de Produção Balança (para britadores e transportadoras de correia)
+  leituraInicialBalanca: decimal("leituraInicialBalanca", { precision: 12, scale: 2 }),
+  leituraFinalBalanca: decimal("leituraFinalBalanca", { precision: 12, scale: 2 }),
+  producaoBalanca: decimal("producaoBalanca", { precision: 12, scale: 2 }),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ParteDiaria = typeof parteDiaria.$inferSelect;
+export type InsertParteDiaria = typeof parteDiaria.$inferInsert;
+
+// Itens da Parte Diária (Múltiplas linhas de serviço)
+export const parteDiariaItens = mysqlTable("parte_diaria_itens", {
+  id: int("id").autoincrement().primaryKey(),
+  parteDiariaId: int("parteDiariaId").notNull(),
+  setorId: int("setorId").notNull(),
+  servicoId: int("servicoId").notNull(),
+  quantidade: decimal("quantidade", { precision: 10, scale: 2 }).notNull(), // Número de viagens/ciclos
+  producao: decimal("producao", { precision: 10, scale: 2 }), // Quantidade × Capacidade do equipamento
+  operadorMotoristaId: int("operadorMotoristaId"), // FK para tabela operadores_motoristas
+  operadorMotorista: varchar("operadorMotorista", { length: 255 }), // Campo legado - nome texto livre
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ParteDiariaItem = typeof parteDiariaItens.$inferSelect;
+export type InsertParteDiariaItem = typeof parteDiariaItens.$inferInsert;
+
+// Tempos de Descarga por Viagem (controle de produtividade no britador)
+export const temposDescarga = mysqlTable("tempos_descarga", {
+  id: int("id").autoincrement().primaryKey(),
+  parteDiariaItemId: int("parteDiariaItemId").notNull(), // FK para parte_diaria_itens
+  parteDiariaId: int("parteDiariaId").notNull(), // FK para parte_diaria (facilita consultas)
+  numeroViagem: int("numeroViagem").notNull(), // Sequencial da viagem (1, 2, 3...)
+  horaInicio: varchar("horaInicio", { length: 10 }).notNull(), // Formato HH:MM
+  horaFinal: varchar("horaFinal", { length: 10 }).notNull(), // Formato HH:MM
+  tempoMinutos: int("tempoMinutos"), // Tempo calculado em minutos
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TempoDescarga = typeof temposDescarga.$inferSelect;
+export type InsertTempoDescarga = typeof temposDescarga.$inferInsert;
+
+// Configurações do Sistema (feature flags por cliente)
+export const configuracoesSistema = mysqlTable("configuracoes_sistema", {
+  id: int("id").autoincrement().primaryKey(),
+  chave: varchar("chave", { length: 100 }).notNull().unique(),
+  valor: varchar("valor", { length: 500 }).notNull(),
+  descricao: text("descricao"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ConfiguracaoSistema = typeof configuracoesSistema.$inferSelect;
+export type InsertConfiguracaoSistema = typeof configuracoesSistema.$inferInsert;
+
+// Abastecimento
+export const abastecimento = mysqlTable("abastecimento", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  equipamentoId: int("equipamentoId").notNull(),
+  combustivelId: int("combustivelId").notNull(),
+  quantidade: decimal("quantidade", { precision: 10, scale: 2 }).notNull(),
+  horaKm: varchar("horaKm", { length: 50 }),
+  valorUnitario: decimal("valorUnitario", { precision: 10, scale: 2 }),
+  valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Abastecimento = typeof abastecimento.$inferSelect;
+export type InsertAbastecimento = typeof abastecimento.$inferInsert;
+
+// Produção
+export const producao = mysqlTable("producao", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  produtoId: int("produtoId").notNull(),
+  equipamentoId: int("equipamentoId").notNull(),
+  quantidade: decimal("quantidade", { precision: 10, scale: 2 }).notNull(),
+  metaDiaria: decimal("metaDiaria", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Producao = typeof producao.$inferSelect;
+export type InsertProducao = typeof producao.$inferInsert;
+
+// Custos
+export const custos = mysqlTable("custos", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  descricao: varchar("descricao", { length: 255 }).notNull(),
+  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+  setorDeCustoId: int("setorDeCustoId").notNull(),
+  setorId: int("setorId"),
+  equipamentoId: int("equipamentoId"),
+  contaCustoId: int("contaCustoId"),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Custo = typeof custos.$inferSelect;
+export type InsertCusto = typeof custos.$inferInsert;
+
+// ============================================================================
+// MÓDULO DE MANUTENÇÃO
+// ============================================================================
+
+// Manutenção Preventiva
+export const manutencaoPreventiva = mysqlTable("manutencao_preventiva", {
+  id: int("id").autoincrement().primaryKey(),
+  equipamentoId: int("equipamentoId").notNull(),
+  descricao: varchar("descricao", { length: 255 }).notNull(),
+  periodicidade: varchar("periodicidade", { length: 100 }),
+  ultimaManutencao: date("ultimaManutencao"),
+  proximaManutencao: date("proximaManutencao"),
+  status: mysqlEnum("status", ["pendente", "em_andamento", "concluida", "atrasada"]).default("pendente").notNull(),
+  observacoes: text("observacoes"),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ManutencaoPreventiva = typeof manutencaoPreventiva.$inferSelect;
+export type InsertManutencaoPreventiva = typeof manutencaoPreventiva.$inferInsert;
+
+// Manutenção Preditiva
+export const manutencaoPreditiva = mysqlTable("manutencao_preditiva", {
+  id: int("id").autoincrement().primaryKey(),
+  equipamentoId: int("equipamentoId").notNull(),
+  indicador: varchar("indicador", { length: 255 }).notNull(),
+  valorMedido: decimal("valorMedido", { precision: 10, scale: 2 }),
+  valorReferencia: decimal("valorReferencia", { precision: 10, scale: 2 }),
+  dataLeitura: date("dataLeitura").notNull(),
+  status: mysqlEnum("status", ["normal", "atencao", "critico"]).default("normal").notNull(),
+  observacoes: text("observacoes"),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ManutencaoPreditiva = typeof manutencaoPreditiva.$inferSelect;
+export type InsertManutencaoPreditiva = typeof manutencaoPreditiva.$inferInsert;
+
+// Paradas Mecânicas
+export const paradasMecanicas = mysqlTable("paradas_mecanicas", {
+  id: int("id").autoincrement().primaryKey(),
+  equipamentoId: int("equipamentoId").notNull(),
+  dataInicio: timestamp("dataInicio").notNull(),
+  dataFim: timestamp("dataFim"),
+  motivoParada: varchar("motivoParada", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  tempoParada: decimal("tempoParada", { precision: 10, scale: 2 }),
+  custoEstimado: decimal("custoEstimado", { precision: 10, scale: 2 }),
+  status: mysqlEnum("status", ["em_andamento", "concluida"]).default("em_andamento").notNull(),
+  horKmRevisao: decimal("horKmRevisao", { precision: 10, scale: 2 }),
+  intervaloRevisao: decimal("intervaloRevisao", { precision: 10, scale: 2 }),
+  horKmProximaRevisao: decimal("horKmProximaRevisao", { precision: 10, scale: 2 }),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ParadaMecanica = typeof paradasMecanicas.$inferSelect;
+export type InsertParadaMecanica = typeof paradasMecanicas.$inferInsert;
+
+// Paradas Normais
+export const paradasNormais = mysqlTable("paradas_normais", {
+  id: int("id").autoincrement().primaryKey(),
+  equipamentoId: int("equipamentoId").notNull(),
+  dataInicio: timestamp("dataInicio").notNull(),
+  dataFim: timestamp("dataFim"),
+  motivoParada: varchar("motivoParada", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  tempoParada: decimal("tempoParada", { precision: 10, scale: 2 }),
+  status: mysqlEnum("status", ["planejada", "em_andamento", "concluida"]).default("planejada").notNull(),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ParadaNormal = typeof paradasNormais.$inferSelect;
+export type InsertParadaNormal = typeof paradasNormais.$inferInsert;
+
+// ============================================================================
+// MÓDULO DE MEDIÇÃO DAS PILHAS
+// ============================================================================
+
+export const medicaoPilhas = mysqlTable("medicao_pilhas", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  equipamentoId: int("equipamentoId").notNull(),
+  produtoId: int("produtoId").notNull(),
+  medida1: decimal("medida1", { precision: 10, scale: 4 }).notNull(),
+  medida2: decimal("medida2", { precision: 10, scale: 4 }).notNull(),
+  medida3: decimal("medida3", { precision: 10, scale: 4 }).notNull(),
+  mediaMedidas: decimal("mediaMedidas", { precision: 10, scale: 4 }),
+  volumeRecipiente: decimal("volumeRecipiente", { precision: 10, scale: 4 }).notNull(),
+  horaProdutiva: decimal("horaProdutiva", { precision: 10, scale: 4 }).notNull(),
+  densidade: decimal("densidade", { precision: 10, scale: 4 }).notNull(),
+  qtdProduzida: decimal("qtdProduzida", { precision: 10, scale: 4 }),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MedicaoPilha = typeof medicaoPilhas.$inferSelect;
+export type InsertMedicaoPilha = typeof medicaoPilhas.$inferInsert;
+
+// ============================================================================
+// HISTÓRICO DE PESAGENS (CAPACIDADE POR VIGÊNCIA)
+// ============================================================================
+
+export const pesagensEquipamentos = mysqlTable("pesagens_equipamentos", {
+  id: int("id").autoincrement().primaryKey(),
+  equipamentoId: int("equipamentoId").notNull(),
+  capacidade: decimal("capacidade", { precision: 10, scale: 4 }).notNull(),
+  dataVigencia: date("dataVigencia").notNull(), // Data a partir da qual esta capacidade passa a valer
+  observacao: text("observacao"),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PesagemEquipamento = typeof pesagensEquipamentos.$inferSelect;
+export type InsertPesagemEquipamento = typeof pesagensEquipamentos.$inferInsert;
+
+// ============================================================================
+// SISTEMA DE ALERTAS
+// ============================================================================
+
+export const alertas = mysqlTable("alertas", {
+  id: int("id").autoincrement().primaryKey(),
+  tipo: mysqlEnum("tipo", ["consumo_anormal", "producao_baixa", "custo_elevado", "manutencao_vencida"]).notNull(),
+  titulo: varchar("titulo", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  equipamentoId: int("equipamentoId"),
+  severidade: mysqlEnum("severidade", ["baixa", "media", "alta", "critica"]).default("media").notNull(),
+  status: mysqlEnum("status", ["ativo", "resolvido", "ignorado"]).default("ativo").notNull(),
+  dataDeteccao: timestamp("dataDeteccao").defaultNow().notNull(),
+  dataResolucao: timestamp("dataResolucao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Alerta = typeof alertas.$inferSelect;
+export type InsertAlerta = typeof alertas.$inferInsert;
+
+// ============================================================================
+// LOGS DE AUDITORIA
+// ============================================================================
+
+export const logs = mysqlTable("logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  acao: varchar("acao", { length: 255 }).notNull(),
+  tabela: varchar("tabela", { length: 100 }),
+  registroId: int("registroId"),
+  detalhes: text("detalhes"),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Log = typeof logs.$inferSelect;
+export type InsertLog = typeof logs.$inferInsert;
+
+// ============================================================================
+// SISTEMA DE NOTIFICAÇÕES
+// ============================================================================
+
+export const notificacoes = mysqlTable("notificacoes", {
+  id: int("id").autoincrement().primaryKey(),
+  tipo: mysqlEnum("tipo", ["revisao_preventiva", "manutencao_vencida", "alerta_geral"]).notNull(),
+  titulo: varchar("titulo", { length: 255 }).notNull(),
+  mensagem: text("mensagem").notNull(),
+  equipamentoId: int("equipamentoId"),
+  lida: mysqlEnum("lida", ["sim", "nao"]).default("nao").notNull(),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notificacao = typeof notificacoes.$inferSelect;
+export type InsertNotificacao = typeof notificacoes.$inferInsert;
+
+// ============================================================================
+// CONFIGURAÇÕES DO SISTEMA
+// ============================================================================
+
+export const configuracoes = mysqlTable("configuracoes", {
+  id: int("id").autoincrement().primaryKey(),
+  chave: varchar("chave", { length: 100 }).notNull().unique(),
+  valor: text("valor").notNull(),
+  descricao: varchar("descricao", { length: 255 }),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Configuracao = typeof configuracoes.$inferSelect;
+export type InsertConfiguracao = typeof configuracoes.$inferInsert;
+
+// ============================================================================
+// DESTINATÁRIOS WHATSAPP
+// ============================================================================
+
+export const destinatariosWhatsapp = mysqlTable("destinatarios_whatsapp", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  telefone: varchar("telefone", { length: 20 }).notNull(),
+  cargo: varchar("cargo", { length: 100 }),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  // Cards que este destinatário recebe (JSON com array de strings)
+  cardsSelecionados: text("cardsSelecionados"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DestinatarioWhatsapp = typeof destinatariosWhatsapp.$inferSelect;
+export type InsertDestinatarioWhatsapp = typeof destinatariosWhatsapp.$inferInsert;
+
+// ============================================================================
+// MÓDULO DE PEÇAS DE DESGASTE
+// ============================================================================
+
+// Categorias de Peças de Desgaste
+export const categoriasPecasDesgaste = mysqlTable("categorias_pecas_desgaste", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CategoriaPecaDesgaste = typeof categoriasPecasDesgaste.$inferSelect;
+export type InsertCategoriaPecaDesgaste = typeof categoriasPecasDesgaste.$inferInsert;
+
+// Peças de Desgaste (Catálogo)
+export const pecasDesgaste = mysqlTable("pecas_desgaste", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  codigo: varchar("codigo", { length: 100 }),
+  categoriaId: int("categoriaId").notNull(),
+  unidade: varchar("unidade", { length: 50 }).default("un").notNull(),
+  vidaUtilEstimada: varchar("vidaUtilEstimada", { length: 100 }),
+  estoqueMinimo: int("estoqueMinimo").default(0),
+  observacoes: text("observacoes"),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PecaDesgaste = typeof pecasDesgaste.$inferSelect;
+export type InsertPecaDesgaste = typeof pecasDesgaste.$inferInsert;
+
+// Movimentações de Peças de Desgaste
+export const movimentacoesPecas = mysqlTable("movimentacoes_pecas", {
+  id: int("id").autoincrement().primaryKey(),
+  data: date("data").notNull(),
+  pecaId: int("pecaId").notNull(),
+  tipo: mysqlEnum("tipo", ["entrada", "saida", "troca"]).notNull(),
+  quantidade: int("quantidade").notNull(),
+  equipamentoId: int("equipamentoId"),
+  notaFiscal: varchar("notaFiscal", { length: 100 }),
+  fornecedor: varchar("fornecedor", { length: 255 }),
+  valorUnitario: decimal("valorUnitario", { precision: 10, scale: 2 }),
+  valorTotal: decimal("valorTotal", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MovimentacaoPeca = typeof movimentacoesPecas.$inferSelect;
+export type InsertMovimentacaoPeca = typeof movimentacoesPecas.$inferInsert;
+
+// Trocas de Peças vinculadas à Parte Diária
+export const trocasPecasParteDiaria = mysqlTable("trocas_pecas_parte_diaria", {
+  id: int("id").autoincrement().primaryKey(),
+  parteDiariaId: int("parteDiariaId").notNull(),
+  pecaId: int("pecaId").notNull(),
+  quantidade: int("quantidade").notNull().default(1),
+  custoUnitario: decimal("custoUnitario", { precision: 10, scale: 2 }),
+  custoTotal: decimal("custoTotal", { precision: 10, scale: 2 }),
+  observacoes: text("observacoes"),
+  movimentacaoId: int("movimentacaoId"), // FK para movimentacoes_pecas gerada automaticamente
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TrocaPecaParteDiaria = typeof trocasPecasParteDiaria.$inferSelect;
+export type InsertTrocaPecaParteDiaria = typeof trocasPecasParteDiaria.$inferInsert;
+
+// ============================================================================
+// MÓDULO DE VENDAS DE MATERIAL
+// ============================================================================
+
+// Clientes
+export const clientes = mysqlTable("clientes", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  cpfCnpj: varchar("cpfCnpj", { length: 20 }),
+  inscricaoEstadual: varchar("inscricaoEstadual", { length: 30 }),
+  telefone: varchar("telefone", { length: 20 }),
+  email: varchar("email", { length: 320 }),
+  endereco: varchar("endereco", { length: 500 }),
+  cidade: varchar("cidade", { length: 100 }),
+  estado: varchar("estado", { length: 2 }),
+  cep: varchar("cep", { length: 10 }),
+  observacoes: text("observacoes"),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Cliente = typeof clientes.$inferSelect;
+export type InsertCliente = typeof clientes.$inferInsert;
+
+// Vendas (Notas Fiscais)
+export const vendas = mysqlTable("vendas", {
+  id: int("id").autoincrement().primaryKey(),
+  tipo: mysqlEnum("tipo", ["venda", "amortizacao", "doacao"]).default("venda").notNull(),
+  numeroNF: varchar("numeroNF", { length: 50 }),
+  serieNF: varchar("serieNF", { length: 10 }),
+  data: date("data").notNull(),
+  clienteId: int("clienteId").notNull(),
+  valorTotal: decimal("valorTotal", { precision: 12, scale: 2 }).default("0"),
+  pesoTotal: decimal("pesoTotal", { precision: 12, scale: 2 }).default("0"),
+  observacoes: text("observacoes"),
+  transportadoraNome: varchar("transportadoraNome", { length: 200 }),
+  motoristaNome: varchar("motoristaNome", { length: 200 }),
+  placaVeiculo: varchar("placaVeiculo", { length: 20 }),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Venda = typeof vendas.$inferSelect;
+export type InsertVenda = typeof vendas.$inferInsert;
+
+// Itens de Venda (Produtos da Nota Fiscal)
+export const vendaItens = mysqlTable("venda_itens", {
+  id: int("id").autoincrement().primaryKey(),
+  vendaId: int("vendaId").notNull(),
+  produtoId: int("produtoId").notNull(),
+  quantidade: decimal("quantidade", { precision: 10, scale: 2 }).notNull(),
+  valorUnitario: decimal("valorUnitario", { precision: 10, scale: 2 }).notNull(),
+  valorTotal: decimal("valorTotal", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VendaItem = typeof vendaItens.$inferSelect;
+export type InsertVendaItem = typeof vendaItens.$inferInsert;
+
+// ============================================================================
+// SISTEMA DE PERMISSÕES CONFIGURÁVEIS
+// ============================================================================
+
+export const permissoesPerfilModulo = mysqlTable("permissoes_perfil_modulo", {
+  id: int("id").autoincrement().primaryKey(),
+  perfil: mysqlEnum("perfil", ["admin", "diretor", "gerente", "consultoria", "coordenador", "usuario", "controle", "operador"]).notNull(),
+  modulo: varchar("modulo", { length: 100 }).notNull(),
+  visualizar: mysqlEnum("visualizar", ["sim", "nao"]).default("nao").notNull(),
+  criar: mysqlEnum("criar", ["sim", "nao"]).default("nao").notNull(),
+  editar: mysqlEnum("editar", ["sim", "nao"]).default("nao").notNull(),
+  excluir: mysqlEnum("excluir", ["sim", "nao"]).default("nao").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PermissaoPerfilModulo = typeof permissoesPerfilModulo.$inferSelect;
+export type InsertPermissaoPerfilModulo = typeof permissoesPerfilModulo.$inferInsert;

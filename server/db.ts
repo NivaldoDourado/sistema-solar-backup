@@ -1,21 +1,58 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import mysql from "mysql2";
+import { 
+  InsertUser, 
+  users,
+  equipamentos,
+  setores,
+  servicos,
+  produtos,
+  combustiveis,
+  unidades,
+  gruposDeEquipamentos,
+  setorDeCusto,
+  tiposDeProdutos
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: mysql.Pool | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+// Lazily create the drizzle instance with a connection pool for reliability.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      // Use a connection pool instead of a single connection for better reliability
+      _pool = mysql.createPool({
+        uri: process.env.DATABASE_URL,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000,
+      });
+      _db = drizzle(_pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
+      _pool = null;
     }
   }
   return _db;
+}
+
+/** Reset the database connection (useful after ECONNRESET errors) */
+export async function resetDbConnection() {
+  if (_pool) {
+    try {
+      _pool.end();
+    } catch (e) {
+      // ignore
+    }
+  }
+  _db = null;
+  _pool = null;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -55,10 +92,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
     }
+    // Removido: lógica que forçava perfil 'diretor' para o owner
+    // O perfil do banco de dados agora é sempre respeitado
 
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
@@ -71,8 +107,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("[Database] Failed to upsert user:", error);
+    // If connection was reset, clear the cached connection so it reconnects
+    if (error?.cause?.code === 'ECONNRESET' || error?.message?.includes('ECONNRESET')) {
+      console.warn("[Database] Connection reset detected, will reconnect on next request");
+      await resetDbConnection();
+    }
     throw error;
   }
 }
@@ -89,4 +130,60 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ============================================================================
+// CADASTROS BÁSICOS - HELPERS
+// ============================================================================
+
+export async function getAllEquipamentos() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(equipamentos);
+}
+
+export async function getAllSetores() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(setores);
+}
+
+export async function getAllServicos() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(servicos);
+}
+
+export async function getAllProdutos() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(produtos);
+}
+
+export async function getAllCombustiveis() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(combustiveis);
+}
+
+export async function getAllUnidades() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(unidades);
+}
+
+export async function getAllGruposDeEquipamentos() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(gruposDeEquipamentos);
+}
+
+export async function getAllSetoresDeCusto() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(setorDeCusto);
+}
+
+export async function getAllTiposDeProdutos() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(tiposDeProdutos);
+}
