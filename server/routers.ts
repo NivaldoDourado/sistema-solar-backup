@@ -1777,8 +1777,28 @@ export const appRouter = router({
         await db.delete(abastecimento).where(eq(abastecimento.id, input.id));
         return { success: true };
       }),
-  }),
 
+    totais: protectedProcedure
+      .use(requirePermission("abastecimento", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalQuantidade: 0, totalRegistros: 0, totalValor: 0 };
+        const conditions = [];
+        if (input.dataInicio) conditions.push(gte(abastecimento.data, new Date(input.dataInicio + 'T00:00:00')));
+        if (input.dataFim) conditions.push(lte(abastecimento.data, new Date(input.dataFim + 'T23:59:59')));
+        const where = conditions.length > 0 ? and(...conditions) : undefined;
+        const [result] = await db.select({
+          totalQuantidade: sql<number>`COALESCE(SUM(CAST(${abastecimento.quantidade} AS DECIMAL(15,4))), 0)`,
+          totalRegistros: count(),
+          totalValor: sql<number>`COALESCE(SUM(CAST(${abastecimento.valorTotal} AS DECIMAL(15,4))), 0)`,
+        }).from(abastecimento).where(where);
+        return result ?? { totalQuantidade: 0, totalRegistros: 0, totalValor: 0 };
+      }),
+  }),
   producao: router({
     list: protectedProcedure
       .use(requirePermission("producao", "view"))
@@ -1964,10 +1984,29 @@ export const appRouter = router({
         await db.delete(custos).where(eq(custos.id, input.id));
         return { success: true };
       }),
-  }),
 
+    totais: protectedProcedure
+      .use(requirePermission("custos", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalValor: 0, totalRegistros: 0 };
+        const conditions = [];
+        if (input.dataInicio) conditions.push(gte(custos.data, new Date(input.dataInicio + 'T00:00:00')));
+        if (input.dataFim) conditions.push(lte(custos.data, new Date(input.dataFim + 'T23:59:59')));
+        const where = conditions.length > 0 ? and(...conditions) : undefined;
+        const [result] = await db.select({
+          totalValor: sql<number>`COALESCE(SUM(CAST(${custos.valor} AS DECIMAL(15,4))), 0)`,
+          totalRegistros: count(),
+        }).from(custos).where(where);
+        return result ?? { totalValor: 0, totalRegistros: 0 };
+      }),
+  }),
   // ============================================================================
-  // MÓDULO DE MANUTENÇÃO
+  // MÓDULO DE MANUTENÇÃOO
   // ============================================================================
 
    manutencao: router({
@@ -2111,10 +2150,30 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        await db.delete(paradasMecanicas).where(eq(paradasMecanicas.id, input.id));
+         await db.delete(paradasMecanicas).where(eq(paradasMecanicas.id, input.id));
         return { success: true };
       }),
 
+    totais: protectedProcedure
+      .use(requirePermission("manutencao", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalRegistros: 0, totalHorasParadas: 0, totalCusto: 0 };
+        const conditions = [];
+        if (input.dataInicio) conditions.push(gte(paradasMecanicas.dataInicio, new Date(input.dataInicio + 'T00:00:00')));
+        if (input.dataFim) conditions.push(lte(paradasMecanicas.dataInicio, new Date(input.dataFim + 'T23:59:59')));
+        const where = conditions.length > 0 ? and(...conditions) : undefined;
+        const [result] = await db.select({
+          totalRegistros: count(),
+          totalHorasParadas: sql<number>`COALESCE(SUM(CAST(${paradasMecanicas.tempoParada} AS DECIMAL(15,4))), 0)`,
+          totalCusto: sql<number>`COALESCE(SUM(CAST(${paradasMecanicas.custoEstimado} AS DECIMAL(15,4))), 0)`,
+        }).from(paradasMecanicas).where(where);
+        return result ?? { totalRegistros: 0, totalHorasParadas: 0, totalCusto: 0 };
+      }),
     revisoesPreventivas: protectedProcedure
       .use(requirePermission("manutencao", "view"))
       .query(async () => {

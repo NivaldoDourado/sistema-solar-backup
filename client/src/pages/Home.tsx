@@ -94,13 +94,11 @@ export default function Home() {
 
   const { data: equipamentos } = trpc.equipamentos.list.useQuery(undefined, { enabled: hasModuleAccess("equipamentos") });
   const { data: parteDiaria } = trpc.parteDiaria.list.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
-  const dashboardPeriodo = useMemo(() => ({ page: 1, pageSize: 9999, dataInicio: dataInicio || undefined, dataFim: dataFim || undefined }), [dataInicio, dataFim]);
-  const { data: abastecimentosResult } = trpc.abastecimento.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("abastecimento") });
-  const abastecimentos = abastecimentosResult?.data ?? [];
-  const { data: custosResult } = trpc.custos.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("custos") });
-  const custos = custosResult?.data ?? [];
-  const { data: manutencoesResult } = trpc.manutencao.list.useQuery(dashboardPeriodo, { enabled: hasModuleAccess("manutencao") });
-  const manutencoes = manutencoesResult?.data ?? [];
+  const dashboardFiltro = useMemo(() => ({ dataInicio: dataInicio || undefined, dataFim: dataFim || undefined }), [dataInicio, dataFim]);
+  // Usar queries de agregação dedicadas para o Dashboard (sem paginação)
+  const { data: abastecimentoTotais } = trpc.abastecimento.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("abastecimento") });
+  const { data: custoTotais } = trpc.custos.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("custos") });
+  const { data: manutencaoTotais } = trpc.manutencao.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("manutencao") });
   
   // Dados de produção agregados com filtro de período
   const { data: producaoPorSetor } = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
@@ -155,8 +153,12 @@ export default function Home() {
   const equipamentosAtivos = equipamentos?.filter(e => e.ativo === "sim").length || 0;
   
   // Filtrar custos e abastecimentos por período no frontend
-  const custosFiltrados = custos;
-  const abastecimentosFiltrados = abastecimentos;;
+  // Valores agregados do Dashboard via queries de totais
+  const totalCustosAgg = Number(custoTotais?.totalValor ?? 0);
+  const totalAbastecimentosAgg = Number(abastecimentoTotais?.totalQuantidade ?? 0);
+  const totalRegistrosCustos = custoTotais?.totalRegistros ?? 0;
+  const totalRegistrosAbastecimentos = abastecimentoTotais?.totalRegistros ?? 0;
+  const totalRegistrosManutencoes = manutencaoTotais?.totalRegistros ?? 0;
 
   const parteDiariaFiltrada = useMemo(() => {
     if (!parteDiaria) return [];
@@ -168,9 +170,9 @@ export default function Home() {
     });
   }, [parteDiaria, dataInicio, dataFim]);
 
-  const totalCustos = custosFiltrados.reduce((sum: number, c: { valor: string }) => sum + parseFloat(c.valor), 0);
+  const totalCustos = totalCustosAgg;
   const totalProducaoCaminhoes = producaoMetodoCaminhoes?.total || 0;
-  const totalAbastecimentos = abastecimentosFiltrados.reduce((sum: number, a: { quantidade: string }) => sum + parseFloat(a.quantidade), 0);
+  const totalAbastecimentos = totalAbastecimentosAgg;
   const totalPerfuracao = producaoPerfuracao?.total || 0;
   const totalFuros = producaoPerfuracao?.totalFuros || 0;
   const totalMetrosPerfurados = producaoPerfuracao?.totalMetros || 0;
@@ -409,7 +411,7 @@ export default function Home() {
       icone: Fuel,
       cor: "text-green-500",
       link: "/abastecimento",
-      total: abastecimentosFiltrados.length,
+      total: totalRegistrosAbastecimentos,
     },
     {
       titulo: "Produção",
@@ -425,7 +427,7 @@ export default function Home() {
       icone: DollarSign,
       cor: "text-orange-500",
       link: "/custos",
-      total: custosFiltrados.length,
+      total: totalRegistrosCustos,
     },
     {
       titulo: "Equipamentos",
@@ -441,7 +443,7 @@ export default function Home() {
       icone: Wrench,
       cor: "text-red-500",
       link: "/manutencao",
-      total: manutencoesResult?.total || 0,
+      total: totalRegistrosManutencoes,
     },
   ];
 
@@ -592,7 +594,7 @@ export default function Home() {
           <CardContent>
             <div className="text-2xl font-bold">R$ {totalCustos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <p className="text-xs text-muted-foreground">
-              {custosFiltrados.length} lançamentos
+              {totalRegistrosCustos} lançamentos
             </p>
           </CardContent>
         </Card>
@@ -607,7 +609,7 @@ export default function Home() {
           <CardContent>
             <div className="text-2xl font-bold">{totalAbastecimentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <p className="text-xs text-muted-foreground">
-              {abastecimentosFiltrados.length} abastecimentos
+              {totalRegistrosAbastecimentos} abastecimentos
             </p>
           </CardContent>
         </Card>

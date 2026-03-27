@@ -68,3 +68,6 @@
 - [ ] Implementar paginação + filtro de período no frontend (Vendas) [futuro]
 - [ ] Implementar paginação + filtro de período no frontend (Equipamentos) [futuro]
 - [ ] Implementar paginação + filtro de período no frontend (Peças de Desgaste) [futuro]
+
+## Correções
+- [x] Corrigir erro "pageSize too_big" no Dashboard (substituir pageSize:9999 por queries de agregação)
