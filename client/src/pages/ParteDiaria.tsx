@@ -7,8 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, ChevronDown, ChevronUp, Calculator, Pencil, Filter, X, Package, RefreshCw, Clock, Timer, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Trash2, Loader2, ChevronDown, ChevronUp, Calculator, Pencil, Filter, X, Package, RefreshCw, Clock, Timer, AlertTriangle, CheckCircle2, Copy, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExportButtons } from "@/components/ExportButtons";
 import { formatters, type ExportColumn } from "@/lib/export-utils";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -106,6 +109,63 @@ export default function ParteDiaria() {
   // Feature flag: controle de tempos de descarga
   const { data: configTemposDescarga } = trpc.configSistema.get.useQuery({ chave: 'FEATURE_TEMPOS_DESCARGA' });
   const temposDescargaHabilitado = configTemposDescarga?.valor === 'true';
+
+  // Estados para modal de Replicar para Equipamentos Agregados
+  const [showReplicarModal, setShowReplicarModal] = useState(false);
+  const [replicarParteDiariaId, setReplicarParteDiariaId] = useState<number | null>(null);
+  const [replicarEquipamentoOriginalId, setReplicarEquipamentoOriginalId] = useState<number | null>(null);
+  const [replicarEquipamentoOriginalNome, setReplicarEquipamentoOriginalNome] = useState("");
+  const [replicarEquipamentoOriginalData, setReplicarEquipamentoOriginalData] = useState("");
+  const [equipamentosSelecionados, setEquipamentosSelecionados] = useState<number[]>([]);
+  const [buscaEquipamento, setBuscaEquipamento] = useState("");
+
+  const replicarMutation = trpc.parteDiaria.replicarParaAgregados.useMutation({
+    onSuccess: (result) => {
+      if (result.criados > 0 && result.jaExistiam > 0) {
+        toast.success(`${result.criados} lançamento(s) criado(s). ${result.jaExistiam} equipamento(s) já possuíam lançamento nesta data e foram ignorados.`);
+      } else if (result.criados > 0) {
+        toast.success(`${result.criados} lançamento(s) replicado(s) com sucesso!`);
+      } else {
+        toast.warning(`Todos os equipamentos selecionados já possuem lançamento nesta data.`);
+      }
+      setShowReplicarModal(false);
+      setEquipamentosSelecionados([]);
+      setBuscaEquipamento("");
+      refetch();
+    },
+    onError: (err) => toast.error(`Erro ao replicar: ${err.message}`),
+  });
+
+  const abrirReplicarModal = (parte: { id: number; equipamentoId: number; data: string }) => {
+    const equip = equipamentos?.find(e => e.id === parte.equipamentoId);
+    setReplicarParteDiariaId(parte.id);
+    setReplicarEquipamentoOriginalId(parte.equipamentoId);
+    setReplicarEquipamentoOriginalNome(equip?.nomeDoEquipamento ?? `Equipamento #${parte.equipamentoId}`);
+    setReplicarEquipamentoOriginalData(parte.data);
+    setEquipamentosSelecionados([]);
+    setBuscaEquipamento("");
+    setShowReplicarModal(true);
+  };
+
+  const toggleEquipamentoSelecionado = (id: number) => {
+    setEquipamentosSelecionados(prev =>
+      prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
+    );
+  };
+
+  const equipamentosParaReplicar = useMemo(() => {
+    if (!equipamentos) return [];
+    return equipamentos.filter(e => {
+      if (e.id === replicarEquipamentoOriginalId) return false; // excluir o original
+      if (e.ativo !== 'sim') return false; // apenas ativos
+      if (!buscaEquipamento) return true;
+      const busca = buscaEquipamento.toLowerCase();
+      return (
+        e.nomeDoEquipamento?.toLowerCase().includes(busca) ||
+        e.codigoTag?.toLowerCase().includes(busca)
+      );
+    });
+  }, [equipamentos, replicarEquipamentoOriginalId, buscaEquipamento]);
 
   // Estado para trocas de peças
   const [showTrocaPecaDialog, setShowTrocaPecaDialog] = useState(false);
@@ -1636,6 +1696,21 @@ export default function ParteDiaria() {
                             <Package className="h-4 w-4" />
                             <span className="hidden sm:inline text-xs">Peças</span>
                           </Button>
+                          {canCreate("parteDiaria") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-blue-50 dark:bg-blue-950 border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                abrirReplicarModal({ id: parte.id, equipamentoId: parte.equipamentoId, data: typeof parte.data === 'string' ? parte.data : new Date(parte.data).toISOString().split('T')[0] });
+                              }}
+                              title="Replicar para equipamentos agregados"
+                            >
+                              <Copy className="h-4 w-4" />
+                              <span className="hidden sm:inline text-xs">Replicar</span>
+                            </Button>
+                          )}
                           {canDelete("parteDiaria") && (
                             <Button
                               variant="ghost"
@@ -1908,13 +1983,152 @@ export default function ParteDiaria() {
               {createTrocaPeca.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Registrar Troca
             </Button>
+           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================ */}
+      {/* MODAL: REPLICAR PARA EQUIPAMENTOS AGREGADOS                  */}
+      {/* ============================================================ */}
+      <Dialog open={showReplicarModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowReplicarModal(false);
+          setEquipamentosSelecionados([]);
+          setBuscaEquipamento("");
+        }
+      }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Copy className="h-5 w-5 text-blue-600" />
+              Replicar para Equipamentos Agregados
+            </DialogTitle>
+            <DialogDescription>
+              Selecione os equipamentos que devem receber uma cópia do lançamento de{" "}
+              <strong>{replicarEquipamentoOriginalNome}</strong>{" "}
+              do dia <strong>{replicarEquipamentoOriginalData}</strong>.
+              Todos os campos (horímetro, turnos, tempos, serviços) serão copiados.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Busca */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar por nome ou código..."
+              value={buscaEquipamento}
+              onChange={(e) => setBuscaEquipamento(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          {/* Seleção rápida */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {equipamentosSelecionados.length} de {equipamentosParaReplicar.length} selecionado(s)
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="text-blue-600 hover:underline text-xs"
+                onClick={() => setEquipamentosSelecionados(equipamentosParaReplicar.map(e => e.id))}
+              >
+                Selecionar todos
+              </button>
+              <span className="text-muted-foreground">|</span>
+              <button
+                type="button"
+                className="text-muted-foreground hover:underline text-xs"
+                onClick={() => setEquipamentosSelecionados([])}
+              >
+                Limpar
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de equipamentos */}
+          <ScrollArea className="h-64 border rounded-md">
+            {equipamentosParaReplicar.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground text-sm">
+                <Search className="h-8 w-8 mb-2 opacity-40" />
+                {buscaEquipamento
+                  ? "Nenhum equipamento encontrado para esta busca."
+                  : "Nenhum outro equipamento ativo disponível."}
+              </div>
+            ) : (
+              <div className="divide-y">
+                {equipamentosParaReplicar.map((equip) => {
+                  const selecionado = equipamentosSelecionados.includes(equip.id);
+                  const grupoNome = equip.grupoNome ?? "";
+                  return (
+                    <div
+                      key={equip.id}
+                      className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors ${
+                        selecionado ? "bg-blue-50 dark:bg-blue-950/30" : ""
+                      }`}
+                      onClick={() => toggleEquipamentoSelecionado(equip.id)}
+                    >
+                      <Checkbox
+                        checked={selecionado}
+                        onCheckedChange={() => toggleEquipamentoSelecionado(equip.id)}
+                        className="pointer-events-none"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{equip.nomeDoEquipamento}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          {equip.codigoTag && <span className="font-mono">{equip.codigoTag}</span>}
+                          {grupoNome && (
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                              {grupoNome}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {selecionado && (
+                        <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowReplicarModal(false);
+                setEquipamentosSelecionados([]);
+                setBuscaEquipamento("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!replicarParteDiariaId || equipamentosSelecionados.length === 0) return;
+                replicarMutation.mutate({
+                  parteDiariaId: replicarParteDiariaId,
+                  equipamentosIds: equipamentosSelecionados,
+                });
+              }}
+              disabled={equipamentosSelecionados.length === 0 || replicarMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+            >
+              {replicarMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Replicando...</>
+              ) : (
+                <><Copy className="h-4 w-4" /> Replicar para {equipamentosSelecionados.length} equipamento(s)</>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
 // Componente para controle de tempos de descarga por viagem
 function TemposDescargaSection({ parteDiariaId, itens, equipamento, servicos, setores }: {
   parteDiariaId: number;

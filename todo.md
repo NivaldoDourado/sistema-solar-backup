@@ -71,3 +71,10 @@
 
 ## Correções
 - [x] Corrigir erro "pageSize too_big" no Dashboard (substituir pageSize:9999 por queries de agregação)
+
+## Funcionalidade: Replicar para Equipamentos Agregados (Parte Diária)
+- [x] Criar procedure replicarParaAgregados no backend (tRPC router parteDiaria)
+- [x] Implementar modal inline com busca, checkbox e seleção múltipla de equipamentos
+- [x] Adicionar botão "Replicar" (azul) na tabela de lançamentos da Parte Diária
+- [x] Validar que o horímetro é compartilhado (copiado do lançamento original)
+- [x] Validação de duplicidade: equipamentos com lançamento existente na mesma data são ignorados

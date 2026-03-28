@@ -1128,7 +1128,110 @@ export const appRouter = router({
         
         return { success: true };
       }),
-    
+
+    // ============================================================
+    // REPLICAR PARA EQUIPAMENTOS AGREGADOS
+    // Copia todos os campos de um lançamento para N equipamentos
+    // ============================================================
+    replicarParaAgregados: protectedProcedure
+      .use(requirePermission("parteDiaria", "create"))
+      .input(z.object({
+        parteDiariaId: z.number(),             // ID do lançamento original
+        equipamentosIds: z.array(z.number()),  // IDs dos equipamentos destino
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // 1. Buscar o lançamento original
+        const [original] = await db
+          .select()
+          .from(parteDiaria)
+          .where(eq(parteDiaria.id, input.parteDiariaId))
+          .limit(1);
+
+        if (!original) throw new Error("Lançamento original não encontrado");
+
+        // 2. Buscar os itens do lançamento original
+        const itensOriginais = await db
+          .select()
+          .from(parteDiariaItens)
+          .where(eq(parteDiariaItens.parteDiariaId, input.parteDiariaId));
+
+        const dataStr = typeof original.data === 'string'
+          ? original.data
+          : new Date(original.data).toISOString().split('T')[0];
+
+        const resultados: { equipamentoId: number; parteDiariaId: number; jaExistia: boolean }[] = [];
+
+        for (const equipId of input.equipamentosIds) {
+          // 3. Verificar se já existe lançamento para este equipamento na mesma data
+          const [existente] = await db
+            .select({ id: parteDiaria.id })
+            .from(parteDiaria)
+            .where(and(
+              eq(parteDiaria.equipamentoId, equipId),
+              sql`DATE(${parteDiaria.data}) = ${dataStr}`
+            ))
+            .limit(1);
+
+          if (existente) {
+            resultados.push({ equipamentoId: equipId, parteDiariaId: existente.id, jaExistia: true });
+            continue;
+          }
+
+          // 4. Buscar capacidade vigente do equipamento destino
+          const capacidade = await getCapacidadeVigente(db, equipId, dataStr);
+
+          // 5. Inserir cabeçalho copiado (mesmo horímetro, mesmos tempos)
+          const novoResult = await db.insert(parteDiaria).values({
+            data: sql`${dataStr}`,
+            equipamentoId: equipId,
+            turno: original.turno,
+            horaKmInicial: original.horaKmInicial,
+            horaKmFinal: original.horaKmFinal,
+            horaKmTrabalhados: original.horaKmTrabalhados,
+            tempoParadoLigado: original.tempoParadoLigado,
+            tempoParadoDesligado: original.tempoParadoDesligado,
+            tempoProdutivo: original.tempoProdutivo,
+            producaoLivre: original.producaoLivre,
+            qtdFuros: original.qtdFuros,
+            profundidadeFuros: original.profundidadeFuros,
+            producaoPerfuracao: original.producaoPerfuracao,
+            leituraInicialBalanca: original.leituraInicialBalanca,
+            leituraFinalBalanca: original.leituraFinalBalanca,
+            producaoBalanca: original.producaoBalanca,
+            observacoes: original.observacoes
+              ? `[Replicado de Equip. #${original.equipamentoId}] ${original.observacoes}`
+              : `[Replicado de Equip. #${original.equipamentoId}]`,
+            userId: ctx.user.id,
+          });
+
+          const novoParteDiariaId = Number(novoResult[0].insertId);
+
+          // 6. Inserir itens copiados (recalculando produção com capacidade do equipamento destino)
+          if (itensOriginais.length > 0) {
+            const novosItens = itensOriginais.map(item => ({
+              parteDiariaId: novoParteDiariaId,
+              setorId: item.setorId,
+              servicoId: item.servicoId,
+              quantidade: item.quantidade,
+              producao: (parseFloat(item.quantidade ?? '0') * capacidade).toString(),
+              operadorMotoristaId: item.operadorMotoristaId,
+              operadorMotorista: item.operadorMotorista,
+            }));
+            await db.insert(parteDiariaItens).values(novosItens);
+          }
+
+          resultados.push({ equipamentoId: equipId, parteDiariaId: novoParteDiariaId, jaExistia: false });
+        }
+
+        const criados = resultados.filter(r => !r.jaExistia).length;
+        const jaExistiam = resultados.filter(r => r.jaExistia).length;
+
+        return { success: true, criados, jaExistiam, resultados };
+      }),
+
     // Agregação de produção por Setor
     producaoPorSetor: protectedProcedure
       .use(requirePermission("parteDiaria", "view"))
