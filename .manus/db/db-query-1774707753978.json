@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, name, email, openId, role FROM users WHERE name LIKE '%jrdouradus%' OR email LIKE '%jrdouradus%' OR openId LIKE '%jrdouradus%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, name, email, openId, role FROM users WHERE name LIKE '%jrdouradus%' OR email LIKE '%jrdouradus%' OR openId LIKE '%jrdouradus%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "jrdouradus",
+      "email": "jrdouradus@hotmail.com",
+      "openId": "HCSE6Q7eEUsAGz2Sk65HTJ",
+      "role": "usuario"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\topenId\trole\n1\tjrdouradus\tjrdouradus@hotmail.com\tHCSE6Q7eEUsAGz2Sk65HTJ\tusuario\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

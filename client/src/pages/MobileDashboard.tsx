@@ -24,15 +24,16 @@ import {
   ChevronRight,
   AlertTriangle,
   CheckCircle2,
+  CalendarRange,
 } from "lucide-react";
 import { toast } from "sonner";
 
 // ============================================================
 // Tipos e helpers
 // ============================================================
-type Periodo = "semana" | "mes" | "trimestre" | "ano";
+type Periodo = "semana" | "mes" | "trimestre" | "ano" | "personalizado";
 
-function getPeriodoDates(periodo: Periodo): { dataInicio: string; dataFim: string; label: string } {
+function getPeriodoDates(periodo: Periodo, customInicio?: string, customFim?: string): { dataInicio: string; dataFim: string; label: string } {
   const now = new Date();
   const fmt = (d: Date) => d.toISOString().split("T")[0];
 
@@ -55,6 +56,19 @@ function getPeriodoDates(periodo: Periodo): { dataInicio: string; dataFim: strin
     case "ano": {
       const start = new Date(now.getFullYear(), 0, 1);
       return { dataInicio: fmt(start), dataFim: fmt(now), label: "Este ano" };
+    }
+    case "personalizado": {
+      const inicio = customInicio || fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+      const fim = customFim || fmt(now);
+      const fmtDisplay = (s: string) => {
+        const [y, m, d] = s.split("-");
+        return `${d}/${m}/${y.slice(2)}`;
+      };
+      return {
+        dataInicio: inicio,
+        dataFim: fim,
+        label: `${fmtDisplay(inicio)} a ${fmtDisplay(fim)}`,
+      };
     }
   }
 }
@@ -195,9 +209,20 @@ export default function MobileDashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const push = usePushNotifications();
 
+  // Estado para período personalizado
+  const today = new Date().toISOString().split("T")[0];
+  const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
+  const [customInicio, setCustomInicio] = useState(firstOfMonth);
+  const [customFim, setCustomFim] = useState(today);
+  // Datas "aplicadas" (só mudam ao clicar Aplicar)
+  const [appliedInicio, setAppliedInicio] = useState(firstOfMonth);
+  const [appliedFim, setAppliedFim] = useState(today);
+
   const { dataInicio, dataFim, label: periodoLabel } = useMemo(
-    () => getPeriodoDates(periodo),
-    [periodo]
+    () => getPeriodoDates(periodo, appliedInicio, appliedFim),
+    [periodo, appliedInicio, appliedFim]
   );
 
   // Queries de totais
@@ -324,7 +349,7 @@ export default function MobileDashboard() {
           Olá, <span className="font-semibold">{user?.name?.split(" ")[0]}</span>
         </p>
 
-        {/* Filtros de Período */}
+        {/* Filtros de Período — linha 1: botões rápidos */}
         <div className="flex gap-2 mt-3">
           {periodos.map((p) => (
             <button
@@ -339,7 +364,69 @@ export default function MobileDashboard() {
               {p.label}
             </button>
           ))}
+          {/* Botão Personalizado */}
+          <button
+            onClick={() => setPeriodo("personalizado")}
+            className={`px-2 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
+              periodo === "personalizado"
+                ? "bg-white text-amber-700 shadow-md"
+                : "bg-white/20 text-white"
+            }`}
+            title="Período personalizado"
+          >
+            <CalendarRange className="w-3.5 h-3.5" />
+          </button>
         </div>
+
+        {/* Seletor de datas personalizadas */}
+        {periodo === "personalizado" && (
+          <div className="mt-3 bg-white/15 rounded-2xl p-3 space-y-2">
+            <div className="flex gap-2 items-center">
+              <div className="flex-1">
+                <p className="text-amber-100 text-xs mb-1">Data inicial</p>
+                <input
+                  type="date"
+                  value={customInicio}
+                  max={customFim}
+                  onChange={(e) => setCustomInicio(e.target.value)}
+                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white placeholder-white/50"
+                  style={{ colorScheme: "dark" }}
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-amber-100 text-xs mb-1">Data final</p>
+                <input
+                  type="date"
+                  value={customFim}
+                  min={customInicio}
+                  max={today}
+                  onChange={(e) => setCustomFim(e.target.value)}
+                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white placeholder-white/50"
+                  style={{ colorScheme: "dark" }}
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (!customInicio || !customFim) {
+                  toast.error("Preencha as duas datas");
+                  return;
+                }
+                if (customInicio > customFim) {
+                  toast.error("A data inicial deve ser anterior à data final");
+                  return;
+                }
+                setAppliedInicio(customInicio);
+                setAppliedFim(customFim);
+                refetchAll();
+              }}
+              className="w-full py-2 bg-white text-amber-700 font-semibold rounded-xl text-sm transition-all active:scale-95"
+            >
+              Aplicar filtro
+            </button>
+          </div>
+        )}
+
         <p className="text-amber-100/70 text-xs mt-2">{periodoLabel}</p>
       </div>
 
