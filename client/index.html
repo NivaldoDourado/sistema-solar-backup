@@ -38,13 +38,49 @@
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-    <!-- Registrar Service Worker -->
+    <!-- Registrar Service Worker com auto-update -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('[SW] Registered:', reg.scope))
+          navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+              console.log('[SW] Registered:', reg.scope);
+
+              // Verifica atualizações a cada 60 segundos
+              setInterval(() => reg.update(), 60000);
+
+              // Quando um novo SW estiver esperando, ativa imediatamente
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Novo SW instalado: força ativação imediata
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              });
+            })
             .catch(err => console.warn('[SW] Registration failed:', err));
+
+          // Quando o SW assume controle (após update), recarrega a página
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
+
+          // Recebe mensagem SW_UPDATED e recarrega
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SW_UPDATED') {
+              if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+              }
+            }
+          });
         });
       }
     </script>

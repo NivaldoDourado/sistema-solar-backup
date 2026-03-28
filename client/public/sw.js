@@ -1,29 +1,24 @@
 // Service Worker - Sistema SOLAR PWA
-// Versão do cache
-const CACHE_VERSION = 'solar-v1';
-const CACHE_NAME = `${CACHE_VERSION}-assets`;
+// ESTRATÉGIA: Network-First para TUDO.
+// O app sempre busca a versão mais recente do servidor.
+// Cache é usado APENAS como fallback quando não há conexão.
+// Isso garante que qualquer atualização do sistema apareça
+// imediatamente no celular, sem precisar reinstalar o app.
 
-// Assets para cache offline (apenas shell do app)
-const PRECACHE_ASSETS = [
-  '/',
-  '/mobile',
-];
+const CACHE_VERSION = 'solar-v4';
+const CACHE_NAME = `${CACHE_VERSION}-shell`;
 
 // ============================================================
-// INSTALL: Pré-cache dos assets principais
+// INSTALL: Instala novo SW imediatamente, sem esperar
 // ============================================================
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch(() => {
-        // Silenciar erros de pré-cache (assets podem não existir ainda)
-      });
-    }).then(() => self.skipWaiting())
-  );
+  // skipWaiting faz o novo SW assumir o controle imediatamente,
+  // sem esperar o usuário fechar todas as abas.
+  event.waitUntil(self.skipWaiting());
 });
 
 // ============================================================
-// ACTIVATE: Limpar caches antigos
+// ACTIVATE: Limpa todos os caches antigos e assume controle
 // ============================================================
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -31,46 +26,89 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Removendo cache antigo:', name);
+            return caches.delete(name);
+          })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      // clients.claim() faz o SW controlar as abas abertas imediatamente
+      return self.clients.claim();
+    }).then(() => {
+      // Notifica todas as abas abertas para recarregar
+      return self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SW_UPDATED' });
+        });
+      });
+    })
   );
 });
 
 // ============================================================
-// FETCH: Network-first para API, Cache-first para assets
+// FETCH: Network-First para TUDO
+// O servidor sempre é consultado primeiro.
+// O cache só é usado se a rede falhar (modo offline).
 // ============================================================
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Ignorar requisições de extensões e não-HTTP
+  // Ignorar requisições não-HTTP (extensões, chrome-extension, etc.)
   if (!url.protocol.startsWith('http')) return;
 
-  // API sempre vai para a rede (sem cache)
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
+  // Ignorar requisições de outros domínios (CDN, analytics, etc.)
+  if (url.origin !== self.location.origin) return;
+
+  // Para requisições GET: Network-First com fallback de cache
+  if (event.request.method === 'GET') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Resposta da rede recebida com sucesso
+          // Atualiza o cache com a versão mais recente
+          if (networkResponse.ok) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Rede falhou → tenta servir do cache (modo offline)
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // Fallback final: retorna a página principal do app
+            return caches.match('/mobile') || caches.match('/') ||
+              new Response(
+                '<html><body style="font-family:sans-serif;text-align:center;padding:2rem">' +
+                '<h2>Sem conexão</h2><p>Verifique sua internet e tente novamente.</p>' +
+                '<button onclick="location.reload()">Tentar novamente</button>' +
+                '</body></html>',
+                { headers: { 'Content-Type': 'text/html' } }
+              );
+          });
+        })
+    );
     return;
   }
 
-  // Assets estáticos: cache-first
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Cachear apenas respostas válidas de assets estáticos
-        if (response.ok && (
-          url.pathname.match(/\.(js|css|png|jpg|svg|woff2|ico)$/)
-        )) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        // Fallback para o index.html em caso de erro de rede
-        return caches.match('/') || new Response('Offline', { status: 503 });
-      });
-    })
-  );
+  // Para POST/PUT/DELETE (API calls): sempre vai para a rede, sem cache
+  // Não interceptamos — deixamos o browser tratar normalmente
+});
+
+// ============================================================
+// MESSAGE: Receber comandos do app principal
+// ============================================================
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then((names) => Promise.all(names.map((n) => caches.delete(n))));
+  }
 });
 
 // ============================================================
@@ -117,14 +155,12 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      // Se já há uma janela aberta, focar nela
       for (const client of clients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.navigate(targetUrl);
           return client.focus();
         }
       }
-      // Caso contrário, abrir nova janela
       if (self.clients.openWindow) {
         return self.clients.openWindow(targetUrl);
       }
