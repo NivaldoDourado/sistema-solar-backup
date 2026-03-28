@@ -94,3 +94,6 @@
 - [x] Implementar sistema de notificações push (Web Push API + VAPID)
 - [x] Implementar verificação automática de metas e disparo de alertas ao abrir o app
 - [x] Adicionar links no DashboardLayout (Metas e Alertas, App Mobile)
+
+## Correção: Menu Lateral
+- [x] Corrigir sumiço dos botões "Usuários" e "Permissões" no menu lateral (regressão após adição dos itens PWA)

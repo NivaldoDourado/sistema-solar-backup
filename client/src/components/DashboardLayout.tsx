@@ -92,15 +92,22 @@ export default function DashboardLayout({
     { icon: Smartphone, label: "App Mobile", path: "/mobile", module: null },
   ];
 
+  // Perfis com acesso administrativo
+  const isAdminRole = userRole === "admin" || userRole === "consultoria" || userRole === "diretor";
+
   // Filtrar itens do menu baseado nas permissões
   const menuItems = allMenuItems.filter(item => {
     // Permissões: visível apenas para Consultoria e Admin
     if (item.path === "/permissoes") {
       return userRole === "consultoria" || userRole === "admin";
     }
+    // Usuários: visível apenas para Admin, Consultoria e Diretor
+    if (item.path === "/usuarios" || item.path === "/admin/usuarios") {
+      return isAdminRole;
+    }
     // Metas e Alertas: visível apenas para Admin, Consultoria e Diretor
     if (item.path === "/metas-alertas") {
-      return userRole === "admin" || userRole === "consultoria" || userRole === "diretor";
+      return isAdminRole;
     }
     // App Mobile: visível para todos
     if (item.path === "/mobile") {
