@@ -39,7 +39,9 @@ import {
   Package,
   ShoppingCart,
   Building2,
-  Shield
+  Shield,
+  Bell,
+  Smartphone,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -86,6 +88,8 @@ export default function DashboardLayout({
     { icon: Settings, label: "Cadastros", path: "/cadastros", module: null },
     { icon: Users, label: "Usuários", path: "/usuarios", module: "usuarios" as const },
     { icon: Shield, label: "Permissões", path: "/permissoes", module: null },
+    { icon: Bell, label: "Metas e Alertas", path: "/metas-alertas", module: null },
+    { icon: Smartphone, label: "App Mobile", path: "/mobile", module: null },
   ];
 
   // Filtrar itens do menu baseado nas permissões
@@ -93,6 +97,14 @@ export default function DashboardLayout({
     // Permissões: visível apenas para Consultoria e Admin
     if (item.path === "/permissoes") {
       return userRole === "consultoria" || userRole === "admin";
+    }
+    // Metas e Alertas: visível apenas para Admin, Consultoria e Diretor
+    if (item.path === "/metas-alertas") {
+      return userRole === "admin" || userRole === "consultoria" || userRole === "diretor";
+    }
+    // App Mobile: visível para todos
+    if (item.path === "/mobile") {
+      return true;
     }
     if (!item.module) return true; // Dashboard e Cadastros sempre visíveis
     return hasModuleAccess(item.module);

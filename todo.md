@@ -78,3 +78,19 @@
 - [x] Adicionar botão "Replicar" (azul) na tabela de lançamentos da Parte Diária
 - [x] Validar que o horímetro é compartilhado (copiado do lançamento original)
 - [x] Validação de duplicidade: equipamentos com lançamento existente na mesma data são ignorados
+
+## PWA Mobile - Dashboard para Diretores
+- [x] Configurar manifest.json com ícone PEDREIRA SOLAR e tema
+- [x] Criar service worker para cache de assets e suporte a push
+- [x] Adicionar meta tags mobile no index.html (viewport, apple-mobile-web-app, theme-color)
+- [x] Gerar ícones PWA (192x192 e 512x512) e publicar no CDN
+- [x] Criar schema de metas (tabelas metas_indicadores e push_subscriptions) no banco
+- [x] Criar procedure backend para CRUD de metas e verificação de alertas (routers pwa/metas)
+- [x] Criar rota /mobile com layout mobile-first
+- [x] Implementar MobileDashboard com os mesmos KPIs do Dashboard web
+- [x] Implementar filtros de período (Semana / Mês / Trimestre / Ano) para toque
+- [x] Implementar controle de permissões no acesso mobile
+- [x] Criar tela de configuração de metas por indicador (MetasAlertas.tsx)
+- [x] Implementar sistema de notificações push (Web Push API + VAPID)
+- [x] Implementar verificação automática de metas e disparo de alertas ao abrir o app
+- [x] Adicionar links no DashboardLayout (Metas e Alertas, App Mobile)

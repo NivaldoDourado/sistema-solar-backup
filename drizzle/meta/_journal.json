@@ -15,6 +15,13 @@
       "when": 1774618294526,
       "tag": "0001_overrated_mauler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1774705867798,
+      "tag": "0002_dapper_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }

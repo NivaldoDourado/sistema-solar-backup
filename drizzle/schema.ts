@@ -683,3 +683,37 @@ export const permissoesPerfilModulo = mysqlTable("permissoes_perfil_modulo", {
 
 export type PermissaoPerfilModulo = typeof permissoesPerfilModulo.$inferSelect;
 export type InsertPermissaoPerfilModulo = typeof permissoesPerfilModulo.$inferInsert;
+// ============================================================================
+// METAS DE INDICADORES (PWA Mobile)
+// ============================================================================
+export const metasIndicadores = mysqlTable("metas_indicadores", {
+  id: int("id").autoincrement().primaryKey(),
+  indicador: varchar("indicador", { length: 100 }).notNull().unique(),
+  // ex: "combustivel_litros", "custo_total", "producao_m3", "manutencoes_abertas"
+  descricao: varchar("descricao", { length: 255 }),
+  valorMeta: decimal("valorMeta", { precision: 15, scale: 2 }),
+  valorLimiteAlerta: decimal("valorLimiteAlerta", { precision: 15, scale: 2 }),
+  // "acima" = alerta quando valor > limite, "abaixo" = alerta quando valor < limite
+  tipoAlerta: mysqlEnum("tipoAlerta", ["acima", "abaixo"]).default("acima").notNull(),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type MetaIndicador = typeof metasIndicadores.$inferSelect;
+export type InsertMetaIndicador = typeof metasIndicadores.$inferInsert;
+
+// ============================================================================
+// PUSH SUBSCRIPTIONS (Web Push API - PWA Mobile)
+// ============================================================================
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: varchar("userAgent", { length: 512 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;

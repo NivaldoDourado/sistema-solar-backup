@@ -34,6 +34,8 @@ import Clientes from "./pages/Clientes";
 import Permissoes from "./pages/Permissoes";
 import Login from "./pages/Login";
 import TrocarSenha from "./pages/TrocarSenha";
+import MobileDashboard from "./pages/MobileDashboard";
+import MetasAlertas from "./pages/MetasAlertas";
 
 function Router() {
   return (
@@ -222,6 +224,18 @@ function Router() {
         </DashboardLayout>
       </Route>
       
+      {/* PWA Mobile - Dashboard para celular, sem DashboardLayout */}
+      <Route path="/mobile">
+        <MobileDashboard />
+      </Route>
+
+      {/* Metas e Alertas Push - dentro do DashboardLayout */}
+      <Route path="/metas-alertas">
+        <DashboardLayout>
+          <MetasAlertas />
+        </DashboardLayout>
+      </Route>
+
       {/* Autenticação - páginas públicas (sem DashboardLayout) */}
       <Route path="/login">
         <Login />

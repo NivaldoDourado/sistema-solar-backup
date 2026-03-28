@@ -37,8 +37,11 @@ import {
   movimentacoesPecas,
   trocasPecasParteDiaria,
   temposDescarga as temposDescargaTable,
+  metasIndicadores,
+  pushSubscriptions,
 } from "../drizzle/schema";
 import { eq, desc, asc, sql, and, gte, lte, count } from "drizzle-orm";
+import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
 
 /** Converte Date (vindo do superjson) para string YYYY-MM-DD compatível com MySQL DATE */
 function toDateStr(d: Date | string): string {
@@ -1987,11 +1990,30 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        await db.delete(producao).where(eq(producao.id, input.id));
+         await db.delete(producao).where(eq(producao.id, input.id));
         return { success: true };
       }),
-  }),
 
+    totais: protectedProcedure
+      .use(requirePermission("producao", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalQuantidade: 0, totalRegistros: 0 };
+        const conditions = [];
+        if (input.dataInicio) conditions.push(gte(producao.data, sql`${input.dataInicio}`));
+        if (input.dataFim) conditions.push(lte(producao.data, sql`${input.dataFim}`));
+        const where = conditions.length > 0 ? and(...conditions) : undefined;
+        const [result] = await db.select({
+          totalQuantidade: sql<number>`COALESCE(SUM(CAST(${producao.quantidade} AS DECIMAL(15,4))), 0)`,
+          totalRegistros: count(),
+        }).from(producao).where(where);
+        return result ?? { totalQuantidade: 0, totalRegistros: 0 };
+      }),
+  }),
    custos: router({
     list: protectedProcedure
       .use(requirePermission("custos", "view"))
@@ -3263,12 +3285,155 @@ export const appRouter = router({
           await db.delete(movimentacoesPecas).where(eq(movimentacoesPecas.id, troca.movimentacaoId));
         }
         
-        // Remover a troca
+         // Remover a troca
         await db.delete(trocasPecasParteDiaria).where(eq(trocasPecasParteDiaria.id, input.id));
         
         return { success: true };
       }),
   }),
-});
 
+  // ============================================================================
+  // PWA MOBILE: METAS DE INDICADORES
+  // ============================================================================
+  metas: router({
+    list: protectedProcedure
+      .query(async () => {
+        const db = await getDb();
+        if (!db) return [];
+        return await db.select().from(metasIndicadores).orderBy(asc(metasIndicadores.indicador));
+      }),
+
+    upsert: protectedProcedure
+      .input(z.object({
+        indicador: z.string().min(1),
+        descricao: z.string().optional(),
+        valorMeta: z.string().nullable().optional(),
+        valorLimiteAlerta: z.string().nullable().optional(),
+        tipoAlerta: z.enum(["acima", "abaixo"]).default("acima"),
+        ativo: z.enum(["sim", "nao"]).default("sim"),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.insert(metasIndicadores)
+          .values(input)
+          .onDuplicateKeyUpdate({ set: {
+            descricao: input.descricao,
+            valorMeta: input.valorMeta ?? null,
+            valorLimiteAlerta: input.valorLimiteAlerta ?? null,
+            tipoAlerta: input.tipoAlerta,
+            ativo: input.ativo,
+          }});
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.delete(metasIndicadores).where(eq(metasIndicadores.id, input.id));
+        return { success: true };
+      }),
+
+    // Verificar metas e disparar push notifications se necessário
+    verificarAlertas: protectedProcedure
+      .input(z.object({
+        indicador: z.string(),
+        valorAtual: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { alertaDisparado: false };
+
+        const [meta] = await db
+          .select()
+          .from(metasIndicadores)
+          .where(and(
+            eq(metasIndicadores.indicador, input.indicador),
+            eq(metasIndicadores.ativo, "sim")
+          ))
+          .limit(1);
+
+        if (!meta || !meta.valorLimiteAlerta) return { alertaDisparado: false };
+
+        const limite = parseFloat(String(meta.valorLimiteAlerta));
+        let disparar = false;
+
+        if (meta.tipoAlerta === "acima" && input.valorAtual > limite) disparar = true;
+        if (meta.tipoAlerta === "abaixo" && input.valorAtual < limite) disparar = true;
+
+        if (disparar) {
+          const direcao = meta.tipoAlerta === "acima" ? "acima" : "abaixo";
+          await sendPushToAll({
+            title: `⚠️ Alerta SOLAR: ${meta.descricao || meta.indicador}`,
+            body: `Valor atual ${input.valorAtual.toLocaleString("pt-BR")} está ${direcao} do limite ${limite.toLocaleString("pt-BR")}`,
+            tag: `alerta-${meta.indicador}`,
+            data: { url: "/mobile", indicador: meta.indicador },
+            requireInteraction: true,
+          });
+          return { alertaDisparado: true, meta };
+        }
+
+        return { alertaDisparado: false };
+      }),
+  }),
+
+  // ============================================================================
+  // PWA MOBILE: PUSH SUBSCRIPTIONS
+  // ============================================================================
+  push: router({
+    getVapidKey: publicProcedure
+      .query(() => ({ publicKey: vapidPublicKey })),
+
+    subscribe: protectedProcedure
+      .input(z.object({
+        endpoint: z.string().url(),
+        p256dh: z.string().min(1),
+        auth: z.string().min(1),
+        userAgent: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        const userId = ctx.user!.id;
+        // Verificar se já existe esta subscription
+        const existing = await db
+          .select()
+          .from(pushSubscriptions)
+          .where(eq(pushSubscriptions.endpoint, input.endpoint))
+          .limit(1);
+        if (existing.length > 0) {
+          // Atualizar
+          await db.update(pushSubscriptions)
+            .set({ p256dh: input.p256dh, auth: input.auth, userId })
+            .where(eq(pushSubscriptions.endpoint, input.endpoint));
+        } else {
+          await db.insert(pushSubscriptions).values({ ...input, userId });
+        }
+        return { success: true };
+      }),
+
+    unsubscribe: protectedProcedure
+      .input(z.object({ endpoint: z.string() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, input.endpoint));
+        return { success: true };
+      }),
+
+    testPush: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const userId = ctx.user!.id;
+        const result = await sendPushToUser(userId, {
+          title: "✅ SOLAR - Teste de Notificação",
+          body: "Notificações push estão funcionando corretamente!",
+          tag: "test-push",
+          data: { url: "/mobile" },
+        });
+        return result;
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;
