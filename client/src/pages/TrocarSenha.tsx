@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { KeyRound, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 
+const LOGO_URL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/icon2-512_56ba32c6.png";
+
 export default function TrocarSenha() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const isPrimeiroLogin = searchString.includes("primeiro=1");
-  
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,7 +26,6 @@ export default function TrocarSenha() {
     onSuccess: () => {
       toast.success("Senha alterada com sucesso!");
       if (isPrimeiroLogin) {
-        // Redirecionar para o Dashboard após troca de senha no primeiro login
         window.location.href = "/";
       } else {
         setLocation("/meu-perfil");
@@ -37,7 +38,6 @@ export default function TrocarSenha() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!isPrimeiroLogin && !currentPassword) {
       toast.error("Informe a senha atual");
       return;
@@ -50,7 +50,6 @@ export default function TrocarSenha() {
       toast.error("As senhas não coincidem");
       return;
     }
-
     changePasswordMutation.mutate({
       currentPassword: isPrimeiroLogin ? undefined : currentPassword,
       newPassword,
@@ -58,120 +57,171 @@ export default function TrocarSenha() {
     });
   };
 
-  const appTitle = import.meta.env.VITE_APP_TITLE || "Sistema de Gestão Estratégica";
+  const passwordsMatch = !confirmPassword || newPassword === confirmPassword;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{appTitle}</h1>
-          <p className="text-slate-400">Sistema de Gestão Estratégica</p>
+    <div className="min-h-screen flex bg-slate-900">
+      {/* Painel esquerdo — identidade visual */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center bg-gradient-to-br from-amber-800 via-amber-700 to-amber-900 p-12 relative overflow-hidden">
+        {/* Círculos decorativos */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white/5" />
+        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-black/10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-white/[0.03]" />
+
+        {/* Conteúdo central */}
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-2xl mb-8 border-4 border-white/20">
+            <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Sistema SOLAR</h1>
+          <p className="text-amber-200 text-lg font-semibold mb-3">Dourado Gestão e Negócios</p>
+          <p className="text-amber-100/70 text-sm max-w-xs leading-relaxed">
+            {isPrimeiroLogin
+              ? "Defina sua senha pessoal para acessar o sistema com segurança."
+              : "Mantenha sua conta segura com uma senha forte e exclusiva."}
+          </p>
         </div>
 
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-amber-500/20 flex items-center justify-center">
-              <ShieldCheck className="h-6 w-6 text-amber-400" />
+        <p className="absolute bottom-6 text-amber-200/40 text-xs">Pedreira Solar © 2025</p>
+      </div>
+
+      {/* Painel direito — formulário */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12">
+        {/* Logo visível apenas em mobile */}
+        <div className="flex flex-col items-center mb-8 lg:hidden">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-xl mb-4 border-2 border-amber-500/40">
+            <img src={LOGO_URL} alt="SOLAR" className="w-full h-full object-cover" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Sistema SOLAR</h1>
+          <p className="text-amber-400 text-sm font-semibold">Dourado Gestão e Negócios</p>
+        </div>
+
+        <div className="w-full max-w-sm">
+          {/* Cabeçalho do formulário */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <ShieldCheck className="h-5 w-5 text-amber-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">
+                {isPrimeiroLogin ? "Defina sua Senha" : "Alterar Senha"}
+              </h2>
             </div>
-            <CardTitle className="text-white text-xl">
-              {isPrimeiroLogin ? "Defina sua Nova Senha" : "Alterar Senha"}
-            </CardTitle>
-            <CardDescription className="text-slate-400">
+            <p className="text-slate-400 text-sm">
               {isPrimeiroLogin
-                ? "Por segurança, você precisa definir uma nova senha antes de acessar o sistema."
-                : "Informe sua senha atual e defina uma nova senha."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isPrimeiroLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword" className="text-slate-300">Senha Atual</Label>
-                  <div className="relative">
-                    <Input
-                      id="currentPassword"
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                    >
-                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                ? "Por segurança, defina uma senha pessoal antes de acessar o sistema."
+                : "Informe sua senha atual e escolha uma nova senha."}
+            </p>
+          </div>
+
+          {/* Formulário */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isPrimeiroLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword" className="text-slate-300 text-sm font-medium">
+                  Senha Atual
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="currentPassword"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 h-11 pr-10 focus:border-amber-500 focus:ring-amber-500/20"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition-colors"
+                  >
+                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword" className="text-slate-300 text-sm font-medium">
+                Nova Senha
+              </Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 h-11 pr-10 focus:border-amber-500 focus:ring-amber-500/20"
+                  autoFocus={isPrimeiroLogin}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition-colors"
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {newPassword && newPassword.length < 6 && (
+                <p className="text-xs text-amber-400">A senha deve ter pelo menos 6 caracteres</p>
               )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-slate-300">Nova Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                  >
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">
+                Confirmar Nova Senha
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repita a nova senha"
+                  className={`bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 h-11 pr-10 focus:ring-amber-500/20 transition-colors ${
+                    !passwordsMatch ? "border-red-500 focus:border-red-500" : "focus:border-amber-500"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-400 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
+              {!passwordsMatch && (
+                <p className="text-xs text-red-400">As senhas não coincidem</p>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-slate-300">Confirmar Nova Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repita a nova senha"
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-xs text-red-400">As senhas não coincidem</p>
-                )}
-              </div>
+            <Button
+              type="submit"
+              className="w-full h-11 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-amber-900/40 mt-2"
+              disabled={changePasswordMutation.isPending}
+            >
+              {changePasswordMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  {isPrimeiroLogin ? "Definir Senha e Acessar" : "Alterar Senha"}
+                </>
+              )}
+            </Button>
+          </form>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={changePasswordMutation.isPending}
-              >
-                {changePasswordMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="h-4 w-4 mr-2" />
-                    {isPrimeiroLogin ? "Definir Senha e Acessar" : "Alterar Senha"}
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          {!isPrimeiroLogin && (
+            <p className="text-center text-slate-600 text-xs mt-8">
+              Após alterar a senha, você será redirecionado ao seu perfil.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
