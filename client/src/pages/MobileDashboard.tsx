@@ -20,13 +20,15 @@ import {
   Settings,
   LogOut,
   RefreshCw,
-  Sun,
   ChevronRight,
   AlertTriangle,
   CheckCircle2,
   CalendarRange,
 } from "lucide-react";
+
 import { toast } from "sonner";
+
+const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/icon-512_c4dc8f11.png";
 
 // ============================================================
 // Tipos e helpers
@@ -278,8 +280,8 @@ export default function MobileDashboard() {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Sun className="w-8 h-8 text-amber-400" />
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4 animate-pulse shadow-lg">
+            <img src={LOGO_URL} alt="SOLAR" className="w-full h-full object-cover" />
           </div>
           <p className="text-white/60 text-sm">Carregando...</p>
         </div>
@@ -290,19 +292,26 @@ export default function MobileDashboard() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6">
-        <div className="w-20 h-20 rounded-full bg-amber-500/20 flex items-center justify-center mb-6">
-          <Sun className="w-10 h-10 text-amber-400" />
+        {/* Logo */}
+        <div className="w-32 h-32 rounded-3xl overflow-hidden mb-6 shadow-2xl border-2 border-amber-500/30">
+          <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">SOLAR</h1>
-        <p className="text-white/60 text-sm mb-8 text-center">
-          Gestão Operacional da Pedreira Solar
-        </p>
+
+        {/* Título */}
+        <h1 className="text-2xl font-bold text-white mb-1 tracking-wide">Sistema SOLAR</h1>
+        <p className="text-amber-400 text-sm font-semibold mb-1">Dourado Gestão e Negócios</p>
+        <p className="text-white/50 text-xs mb-10 text-center">Gestão Operacional da Pedreira Solar</p>
+
+        {/* Botão de login */}
         <a
           href={getLoginUrl()}
-          className="w-full max-w-xs bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-4 px-6 rounded-2xl text-center text-base transition-colors"
+          className="w-full max-w-xs bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-900 font-bold py-4 px-6 rounded-2xl text-center text-base transition-colors shadow-lg shadow-amber-500/30"
         >
           Entrar no Sistema
         </a>
+
+        {/* Rodapé */}
+        <p className="text-slate-600 text-xs mt-10">Pedreira Solar © 2025</p>
       </div>
     );
   }
@@ -320,8 +329,8 @@ export default function MobileDashboard() {
       <div className="bg-gradient-to-br from-amber-600 to-amber-800 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <Sun className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md border border-white/20">
+              <img src={LOGO_URL} alt="SOLAR" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-white font-bold text-lg leading-tight">SOLAR</h1>
