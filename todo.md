@@ -108,3 +108,7 @@
 ## Parte Diária - Campo Qtd Opcional
 - [x] Tornar "Qtd (viagens/ciclos)" opcional no frontend com valor padrão 0
 - [x] Ajustar validação Zod no backend para aceitar campo ausente/vazio como 0
+
+## Dashboard - Card Estoque Mínimo de Peças
+- [x] Criar procedure tRPC para buscar estoque atual de peças com campo estoqueMinimo
+- [x] Implementar card no dashboard após card Combustível com lista de peças e alertas visuais

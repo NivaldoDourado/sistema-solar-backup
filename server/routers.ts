@@ -2957,6 +2957,38 @@ export const appRouter = router({
       }));
     }),
 
+    estoqueMinimoDashboard: protectedProcedure
+      .use(requirePermission("pecasDesgaste", "view"))
+      .query(async () => {
+        const db = await getDb();
+        if (!db) return [];
+        const pecas = await db
+          .select()
+          .from(pecasDesgaste)
+          .where(eq(pecasDesgaste.ativo, 'sim'))
+          .orderBy(asc(pecasDesgaste.nome));
+
+        const movimentacoes = await db.select().from(movimentacoesPecas);
+        const estoqueMap = new Map<number, number>();
+        for (const mov of movimentacoes) {
+          const atual = estoqueMap.get(mov.pecaId) || 0;
+          if (mov.tipo === 'entrada') {
+            estoqueMap.set(mov.pecaId, atual + mov.quantidade);
+          } else {
+            estoqueMap.set(mov.pecaId, atual - mov.quantidade);
+          }
+        }
+
+        return pecas.map(p => ({
+          id: p.id,
+          nome: p.nome,
+          unidade: p.unidade || 'un',
+          estoqueMinimo: p.estoqueMinimo || 0,
+          estoqueAtual: estoqueMap.get(p.id) || 0,
+          abaixoMinimo: (estoqueMap.get(p.id) || 0) < (p.estoqueMinimo || 0),
+        }));
+      }),
+
     create: protectedProcedure
       .input(z.object({
         nome: z.string().min(1),

@@ -27,6 +27,8 @@ import {
   ChevronDown,
   ChevronUp,
   ShoppingCart,
+  Package,
+  PackageX,
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -121,6 +123,7 @@ export default function Home() {
   });
   const [metaDiariaLocal, setMetaDiariaLocal] = useState("");
   const [metaEditando, setMetaEditando] = useState(false);
+  const { data: estoqueMinimoPecas } = trpc.pecasDesgaste.estoqueMinimoDashboard.useQuery(undefined, { enabled: hasModuleAccess("pecasDesgaste") });
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const [enviandoWhatsapp, setEnviandoWhatsapp] = useState(false);
 
@@ -613,6 +616,55 @@ export default function Home() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Card Estoque Mínimo de Peças */}
+        {hasModuleAccess("pecasDesgaste") && estoqueMinimoPecas && estoqueMinimoPecas.length > 0 && (() => {
+          const abaixoMinimo = estoqueMinimoPecas.filter(p => p.abaixoMinimo);
+          return (
+            <Card className={abaixoMinimo.length > 0 ? "border-orange-400 dark:border-orange-600 border-2" : ""}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Estoque Mínimo de Peças</CardTitle>
+                {abaixoMinimo.length > 0
+                  ? <PackageX className="h-4 w-4 text-orange-500" />
+                  : <Package className="h-4 w-4 text-muted-foreground" />}
+              </CardHeader>
+              <CardContent className="pt-0">
+                {abaixoMinimo.length > 0 && (
+                  <div className="flex items-center gap-1 mb-3 text-orange-600 dark:text-orange-400">
+                    <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="text-xs font-semibold">{abaixoMinimo.length} peça{abaixoMinimo.length > 1 ? 's' : ''} abaixo do mínimo</span>
+                  </div>
+                )}
+                <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                  {estoqueMinimoPecas.map(peca => (
+                    <div
+                      key={peca.id}
+                      className={`flex items-center justify-between rounded px-2 py-1 text-xs ${
+                        peca.abaixoMinimo
+                          ? 'bg-orange-50 dark:bg-orange-950 border border-orange-300 dark:border-orange-700'
+                          : 'bg-muted/40'
+                      }`}
+                    >
+                      <span className={`truncate max-w-[55%] font-medium ${
+                        peca.abaixoMinimo ? 'text-orange-700 dark:text-orange-300' : 'text-foreground'
+                      }`}>{peca.nome}</span>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {peca.abaixoMinimo && <AlertTriangle className="h-3 w-3 text-orange-500" />}
+                        <span className={`font-bold ${
+                          peca.abaixoMinimo ? 'text-orange-600 dark:text-orange-400' : 'text-foreground'
+                        }`}>{peca.estoqueAtual}</span>
+                        <span className="text-muted-foreground">{peca.unidade}</span>
+                        {peca.estoqueMinimo > 0 && (
+                          <span className="text-muted-foreground">(mín: {peca.estoqueMinimo})</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
       </div>
 
       {/* Cards de Vendas por Tipo */}
