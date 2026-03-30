@@ -28,7 +28,8 @@ import {
 
 import { toast } from "sonner";
 
-const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/icon-512_c4dc8f11.png";
+const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/dgsolar-icon-192-v1774802666_01352d9a.png";
+const LOGO_SOLAR_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-horizontal_c2527f96.png";
 
 // ============================================================
 // Tipos e helpers
@@ -329,13 +330,11 @@ export default function MobileDashboard() {
       <div className="bg-gradient-to-br from-amber-600 to-amber-800 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md border border-white/20">
-              <img src={LOGO_URL} alt="SOLAR" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg leading-tight">SOLAR</h1>
-              <p className="text-amber-100 text-xs">Pedreira Solar</p>
-            </div>
+            <img
+              src={LOGO_SOLAR_URL}
+              alt="SOLAR - Pedreira Solar"
+              className="h-10 object-contain"
+            />
           </div>
           <div className="flex items-center gap-2">
             <button

@@ -234,10 +234,18 @@ function DashboardLayoutContent({
       >
         <SidebarHeader className="p-4 border-b">
           <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-            <LayoutDashboard className="h-6 w-6 text-primary shrink-0" />
-            <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">
-              PEDREIRA SOLAR
-            </span>
+            {/* Ícone compacto quando sidebar recolhida */}
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/dgsolar-icon-192-v1774802666_01352d9a.png"
+              alt="SOLAR"
+              className="h-7 w-7 rounded-md shrink-0 object-cover"
+            />
+            {/* Logomarca horizontal quando sidebar expandida */}
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-horizontal_c2527f96.png"
+              alt="SOLAR - Pedreira Solar"
+              className="h-8 object-contain group-data-[collapsible=icon]:hidden"
+            />
           </div>
         </SidebarHeader>
 
