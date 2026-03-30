@@ -717,3 +717,34 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 });
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+// ============================================================================
+// MÓDULO OUTRAS PARADAS (Cadastro de motivos de parada)
+// ============================================================================
+export const outrasParadas = mysqlTable("outras_paradas", {
+  id: int("id").autoincrement().primaryKey(),
+  descricao: varchar("descricao", { length: 255 }).notNull(),
+  observacao: text("observacao"),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type OutraParada = typeof outrasParadas.$inferSelect;
+export type InsertOutraParada = typeof outrasParadas.$inferInsert;
+
+// ============================================================================
+// ITENS DE PARADA DA PARTE DIÁRIA (subgrupos Ligado e Desligado)
+// ============================================================================
+export const parteDiariaParadas = mysqlTable("parte_diaria_paradas", {
+  id: int("id").autoincrement().primaryKey(),
+  parteDiariaId: int("parteDiariaId").notNull(),
+  tipo: mysqlEnum("tipo", ["ligado", "desligado"]).notNull(), // subgrupo
+  horaInicial: varchar("horaInicial", { length: 10 }).notNull(), // HH:MM
+  horaFinal: varchar("horaFinal", { length: 10 }).notNull(),     // HH:MM
+  tempoDecorrido: decimal("tempoDecorrido", { precision: 10, scale: 2 }), // calculado
+  motivoId: int("motivoId"), // FK para outras_paradas.id
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ParteDiariaParada = typeof parteDiariaParadas.$inferSelect;
+export type InsertParteDiariaParada = typeof parteDiariaParadas.$inferInsert;

@@ -39,6 +39,8 @@ import {
   temposDescarga as temposDescargaTable,
   metasIndicadores,
   pushSubscriptions,
+  outrasParadas,
+  parteDiariaParadas,
 } from "../drizzle/schema";
 import { eq, desc, asc, sql, and, gte, lte, count } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
@@ -3376,6 +3378,120 @@ export const appRouter = router({
         }
 
         return { alertaDisparado: false };
+      }),
+  }),
+
+  // ============================================================================
+  // OUTRAS PARADAS (Cadastro de motivos)
+  // ============================================================================
+  outrasParadas: router({
+    list: protectedProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(outrasParadas).orderBy(asc(outrasParadas.descricao));
+    }),
+    listAtivos: protectedProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(outrasParadas)
+        .where(eq(outrasParadas.ativo, "sim"))
+        .orderBy(asc(outrasParadas.descricao));
+    }),
+    create: protectedProcedure
+      .input(z.object({
+        descricao: z.string().min(1),
+        observacao: z.string().optional(),
+        ativo: z.enum(["sim", "nao"]).default("sim"),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        const result = await db.insert(outrasParadas).values(input);
+        return { id: Number(result[0].insertId), ...input };
+      }),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        descricao: z.string().min(1),
+        observacao: z.string().optional(),
+        ativo: z.enum(["sim", "nao"]).default("sim"),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        const { id, ...data } = input;
+        await db.update(outrasParadas).set(data).where(eq(outrasParadas.id, id));
+        return { success: true };
+      }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.delete(outrasParadas).where(eq(outrasParadas.id, input.id));
+        return { success: true };
+      }),
+  }),
+
+  // ============================================================================
+  // PARADAS DA PARTE DIÁRIA (linhas de parada ligado/desligado)
+  // ============================================================================
+  parteDiariaParadas: router({
+    listByParteDiaria: protectedProcedure
+      .input(z.object({ parteDiariaId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return [];
+        return await db.select({
+          id: parteDiariaParadas.id,
+          parteDiariaId: parteDiariaParadas.parteDiariaId,
+          tipo: parteDiariaParadas.tipo,
+          horaInicial: parteDiariaParadas.horaInicial,
+          horaFinal: parteDiariaParadas.horaFinal,
+          tempoDecorrido: parteDiariaParadas.tempoDecorrido,
+          motivoId: parteDiariaParadas.motivoId,
+          motivoDescricao: outrasParadas.descricao,
+        })
+        .from(parteDiariaParadas)
+        .leftJoin(outrasParadas, eq(parteDiariaParadas.motivoId, outrasParadas.id))
+        .where(eq(parteDiariaParadas.parteDiariaId, input.parteDiariaId))
+        .orderBy(asc(parteDiariaParadas.id));
+      }),
+    upsertMany: protectedProcedure
+      .input(z.object({
+        parteDiariaId: z.number(),
+        tipo: z.enum(["ligado", "desligado"]),
+        paradas: z.array(z.object({
+          id: z.number().optional(),
+          horaInicial: z.string(),
+          horaFinal: z.string(),
+          tempoDecorrido: z.string().optional(),
+          motivoId: z.number().nullable().optional(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        // Deletar paradas existentes desse tipo para essa parte diária
+        await db.delete(parteDiariaParadas)
+          .where(and(
+            eq(parteDiariaParadas.parteDiariaId, input.parteDiariaId),
+            eq(parteDiariaParadas.tipo, input.tipo)
+          ));
+        // Inserir novas
+        if (input.paradas.length > 0) {
+          await db.insert(parteDiariaParadas).values(
+            input.paradas.map(p => ({
+              parteDiariaId: input.parteDiariaId,
+              tipo: input.tipo,
+              horaInicial: p.horaInicial,
+              horaFinal: p.horaFinal,
+              tempoDecorrido: p.tempoDecorrido || null,
+              motivoId: p.motivoId || null,
+            }))
+          );
+        }
+        return { success: true };
       }),
   }),
 

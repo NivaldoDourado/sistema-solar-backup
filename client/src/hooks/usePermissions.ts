@@ -26,7 +26,8 @@ export type Module =
   | "vendas"
   | "clientes"
   | "contaCusto"
-  | "usuarios";
+  | "usuarios"
+  | "outrasParadas";
 
 /**
  * Matriz de permissões padrão (fallback enquanto o banco não responde)
@@ -36,7 +37,7 @@ const ALL_MODULES: Module[] = [
   "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos",
   "operadoresMotoristas", "parteDiaria", "abastecimento", "producao",
   "custos", "manutencao", "medicaoPilhas", "pecasDesgaste", "vendas",
-  "clientes", "contaCusto", "usuarios",
+  "clientes", "contaCusto", "usuarios", "outrasParadas",
 ];
 
 type PermMap = Record<string, { view: boolean; create: boolean; edit: boolean; delete: boolean }>;

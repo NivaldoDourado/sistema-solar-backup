@@ -38,6 +38,13 @@ interface TempoDescargaFormItem {
   horaFinal: string;
 }
 
+interface ParadaFormItem {
+  horaInicial: string;
+  horaFinal: string;
+  tempoDecorrido: string; // calculado automaticamente
+  motivoId: string;
+}
+
 export default function ParteDiaria() {
   const { canCreate, canDelete, canEdit } = usePermissions();
   
@@ -79,6 +86,13 @@ export default function ParteDiaria() {
 
   // Tempos de descarga no formulário
   const [temposDescargaForm, setTemposDescargaForm] = useState<TempoDescargaFormItem[]>([{ horaInicio: "", horaFinal: "" }]);
+
+  // Subgrupos de paradas
+  const [paradasLigado, setParadasLigado] = useState<ParadaFormItem[]>([]);
+  const [paradasDesligado, setParadasDesligado] = useState<ParadaFormItem[]>([]);
+  const [totalParadoLigado, setTotalParadoLigado] = useState("0.00");
+  const [totalParadoDesligado, setTotalParadoDesligado] = useState("0.00");
+  const [totalTempoParado, setTotalTempoParado] = useState("0.00");
   
   const [showForm, setShowForm] = useState(false);
   const [editingParteId, setEditingParteId] = useState<number | null>(null);
@@ -105,6 +119,7 @@ export default function ParteDiaria() {
   const { data: gruposEquipamentos } = trpc.gruposDeEquipamentos.list.useQuery();
   const { data: pecasDesgaste } = trpc.pecasDesgaste.list.useQuery();
   const { data: categoriasPecas } = trpc.categoriasPecasDesgaste.list.useQuery();
+  const { data: outrasParadasList } = trpc.outrasParadas.listAtivos.useQuery();
 
   // Feature flag: controle de tempos de descarga
   const { data: configTemposDescarga } = trpc.configSistema.get.useQuery({ chave: 'FEATURE_TEMPOS_DESCARGA' });
@@ -249,16 +264,50 @@ export default function ParteDiaria() {
     }
   }, [horaKmInicial, horaKmFinal, isCaminhaoEntrega]);
 
-  // Cálculo automático de Tempo Produtivo
+  // Função para calcular tempo decorrido entre HH:MM (suporta virada de meia-noite)
+  function calcTempoDecorrido(inicio: string, fim: string): string {
+    if (!inicio || !fim) return "0.00";
+    const [h1, m1] = inicio.split(":").map(Number);
+    const [h2, m2] = fim.split(":").map(Number);
+    if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return "0.00";
+    let minutos = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (minutos < 0) minutos += 24 * 60; // virada de meia-noite
+    return (minutos / 60).toFixed(2);
+  }
+
+  // Recalcular totais sempre que as listas de paradas mudarem
+  useEffect(() => {
+    const total = paradasLigado.reduce((acc, p) => acc + (parseFloat(p.tempoDecorrido) || 0), 0);
+    const totalStr = total.toFixed(2);
+    setTotalParadoLigado(totalStr);
+    setTempoParadoLigado(totalStr);
+  }, [paradasLigado]);
+
+  useEffect(() => {
+    const total = paradasDesligado.reduce((acc, p) => acc + (parseFloat(p.tempoDecorrido) || 0), 0);
+    const totalStr = total.toFixed(2);
+    setTotalParadoDesligado(totalStr);
+    setTempoParadoDesligado(totalStr);
+  }, [paradasDesligado]);
+
+  useEffect(() => {
+    const ligado = parseFloat(totalParadoLigado) || 0;
+    const desligado = parseFloat(totalParadoDesligado) || 0;
+    setTotalTempoParado((ligado + desligado).toFixed(2));
+  }, [totalParadoLigado, totalParadoDesligado]);
+
+  // Cálculo automático de Tempo Produtivo (agora usa total do subgrupo Ligado)
   useEffect(() => {
     const trabalhados = parseFloat(horaKmTrabalhados) || 0;
-    const paradoLigado = parseFloat(tempoParadoLigado) || 0;
+    const paradoLigado = parseFloat(totalParadoLigado) || 0;
     if (trabalhados > 0 && paradoLigado > 0) {
       setTempoProdutivo((trabalhados - paradoLigado).toFixed(2));
     } else if (trabalhados > 0 && paradoLigado === 0) {
       setTempoProdutivo(trabalhados.toFixed(2));
+    } else {
+      setTempoProdutivo("0.00");
     }
-  }, [horaKmTrabalhados, tempoParadoLigado]);
+  }, [horaKmTrabalhados, totalParadoLigado]);
 
   // Cálculo automático de Produção Perfuração
   useEffect(() => {
@@ -278,6 +327,35 @@ export default function ParteDiaria() {
     }
   }, [leituraInicialBalanca, leituraFinalBalanca]);
 
+  // Carregar paradas existentes ao editar
+  const { data: paradasExistentes } = trpc.parteDiariaParadas.listByParteDiaria.useQuery(
+    { parteDiariaId: editingParteId! },
+    { enabled: !!editingParteId && showForm }
+  );
+
+  useEffect(() => {
+    if (editingParteId && paradasExistentes) {
+      const ligadas = paradasExistentes
+        .filter((p: any) => p.tipo === "ligado")
+        .map((p: any) => ({
+          horaInicial: p.horaInicial || "",
+          horaFinal: p.horaFinal || "",
+          tempoDecorrido: p.tempoDecorrido ? String(p.tempoDecorrido) : "0.00",
+          motivoId: p.motivoId ? String(p.motivoId) : "",
+        }));
+      const desligadas = paradasExistentes
+        .filter((p: any) => p.tipo === "desligado")
+        .map((p: any) => ({
+          horaInicial: p.horaInicial || "",
+          horaFinal: p.horaFinal || "",
+          tempoDecorrido: p.tempoDecorrido ? String(p.tempoDecorrido) : "0.00",
+          motivoId: p.motivoId ? String(p.motivoId) : "",
+        }));
+      setParadasLigado(ligadas);
+      setParadasDesligado(desligadas);
+    }
+  }, [editingParteId, paradasExistentes]);
+
   // Carregar tempos de descarga ao editar
   const { data: temposDescargaExistentes } = trpc.temposDescarga.listByParteDiaria.useQuery(
     { parteDiariaId: editingParteId! },
@@ -295,8 +373,21 @@ export default function ParteDiaria() {
     }
   }, [editingParteId, temposDescargaExistentes]);
 
+  // Mutations para salvar paradas
+  const upsertParadasMutation = trpc.parteDiariaParadas.upsertMany.useMutation();
+
   const createMutation = trpc.parteDiaria.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async (result: any) => {
+      // Salvar paradas dos subgrupos
+      const parteDiariaId = result?.id;
+      if (parteDiariaId) {
+        const paradasLigadoValidas = paradasLigado.filter(p => p.horaInicial && p.horaFinal);
+        const paradasDesligadoValidas = paradasDesligado.filter(p => p.horaInicial && p.horaFinal);
+        await Promise.all([
+          upsertParadasMutation.mutateAsync({ parteDiariaId, tipo: "ligado", paradas: paradasLigadoValidas.map(p => ({ horaInicial: p.horaInicial, horaFinal: p.horaFinal, tempoDecorrido: p.tempoDecorrido, motivoId: p.motivoId ? Number(p.motivoId) : null })) }),
+          upsertParadasMutation.mutateAsync({ parteDiariaId, tipo: "desligado", paradas: paradasDesligadoValidas.map(p => ({ horaInicial: p.horaInicial, horaFinal: p.horaFinal, tempoDecorrido: p.tempoDecorrido, motivoId: p.motivoId ? Number(p.motivoId) : null })) }),
+        ]);
+      }
       toast.success("Parte diária registrada com sucesso!");
       refetch();
       limparFormulario();
@@ -308,7 +399,16 @@ export default function ParteDiaria() {
   });
 
   const updateMutation = trpc.parteDiaria.update.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Salvar paradas dos subgrupos
+      if (editingParteId) {
+        const paradasLigadoValidas = paradasLigado.filter(p => p.horaInicial && p.horaFinal);
+        const paradasDesligadoValidas = paradasDesligado.filter(p => p.horaInicial && p.horaFinal);
+        await Promise.all([
+          upsertParadasMutation.mutateAsync({ parteDiariaId: editingParteId, tipo: "ligado", paradas: paradasLigadoValidas.map(p => ({ horaInicial: p.horaInicial, horaFinal: p.horaFinal, tempoDecorrido: p.tempoDecorrido, motivoId: p.motivoId ? Number(p.motivoId) : null })) }),
+          upsertParadasMutation.mutateAsync({ parteDiariaId: editingParteId, tipo: "desligado", paradas: paradasDesligadoValidas.map(p => ({ horaInicial: p.horaInicial, horaFinal: p.horaFinal, tempoDecorrido: p.tempoDecorrido, motivoId: p.motivoId ? Number(p.motivoId) : null })) }),
+        ]);
+      }
       toast.success("Parte diária atualizada com sucesso!");
       refetch();
       limparFormulario();
@@ -456,6 +556,11 @@ export default function ParteDiaria() {
     setItensServico([{ setorId: 0, servicoId: 0, quantidade: "", operadorMotoristaId: 0 }]);
     setTrocasPecasForm([]);
     setTemposDescargaForm([{ horaInicio: "", horaFinal: "" }]);
+    setParadasLigado([]);
+    setParadasDesligado([]);
+    setTotalParadoLigado("0.00");
+    setTotalParadoDesligado("0.00");
+    setTotalTempoParado("0.00");
     setShowAddTrocaForm(false);
     setNovaTrocaPecaId("");
     setNovaTrocaQtd("1");
@@ -818,47 +923,221 @@ export default function ParteDiaria() {
                 </CardContent>
               </Card>
 
-              {/* Campos de Tempo */}
+              {/* Controle de Tempo - Subgrupos */}
               <Card className="bg-amber-50 dark:bg-amber-950">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Controle de Tempo</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="tempoParadoLigado">Tempo Parado Ligado (h)</Label>
-                      <Input
-                        id="tempoParadoLigado"
-                        type="number"
-                        step="0.01"
-                        value={tempoParadoLigado}
-                        onChange={(e) => setTempoParadoLigado(e.target.value)}
-                        placeholder="0.00"
-                      />
+                <CardContent className="space-y-6">
+
+                  {/* Subgrupo: Tempo Parado Ligado */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm text-amber-800 dark:text-amber-200">Tempo Parado Ligado</h4>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setParadasLigado([...paradasLigado, { horaInicial: "", horaFinal: "", tempoDecorrido: "0.00", motivoId: "" }])}
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Adicionar Parada
+                      </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="tempoParadoDesligado">Tempo Parado Desligado (h)</Label>
-                      <Input
-                        id="tempoParadoDesligado"
-                        type="number"
-                        step="0.01"
-                        value={tempoParadoDesligado}
-                        onChange={(e) => setTempoParadoDesligado(e.target.value)}
-                        placeholder="0.00"
-                      />
+                    {paradasLigado.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma parada ligado registrada. Clique em "+ Adicionar Parada" para iniciar.</p>
+                    )}
+
+                    {paradasLigado.map((parada, idx) => (
+                      <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-white dark:bg-slate-800 rounded-md p-3 border">
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Hora Inicial</Label>
+                          <Input
+                            type="time"
+                            value={parada.horaInicial}
+                            onChange={(e) => {
+                              const novo = [...paradasLigado];
+                              novo[idx].horaInicial = e.target.value;
+                              novo[idx].tempoDecorrido = calcTempoDecorrido(e.target.value, novo[idx].horaFinal);
+                              setParadasLigado(novo);
+                            }}
+                          />
+                        </div>
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Hora Final</Label>
+                          <Input
+                            type="time"
+                            value={parada.horaFinal}
+                            onChange={(e) => {
+                              const novo = [...paradasLigado];
+                              novo[idx].horaFinal = e.target.value;
+                              novo[idx].tempoDecorrido = calcTempoDecorrido(novo[idx].horaInicial, e.target.value);
+                              setParadasLigado(novo);
+                            }}
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Tempo (h)</Label>
+                          <div className="h-10 px-2 py-2 bg-amber-100 dark:bg-amber-900 border border-amber-300 rounded-md flex items-center text-sm font-semibold text-amber-800 dark:text-amber-200">
+                            {parada.tempoDecorrido || "0.00"}
+                          </div>
+                        </div>
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Motivo</Label>
+                          <Select
+                            value={parada.motivoId}
+                            onValueChange={(val) => {
+                              const novo = [...paradasLigado];
+                              novo[idx].motivoId = val;
+                              setParadasLigado(novo);
+                            }}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {outrasParadasList?.map((op: any) => (
+                                <SelectItem key={op.id} value={String(op.id)}>{op.descricao}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setParadasLigado(paradasLigado.filter((_, i) => i !== idx))}
+                            className="text-destructive hover:text-destructive h-10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {paradasLigado.length > 0 && (
+                      <div className="flex justify-end">
+                        <div className="bg-amber-200 dark:bg-amber-800 rounded-md px-4 py-2 text-sm font-semibold text-amber-900 dark:text-amber-100">
+                          Total Parado Ligado: <span className="text-base">{totalParadoLigado} h</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Subgrupo: Tempo Parado Desligado */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm text-slate-700 dark:text-slate-300">Tempo Parado Desligado</h4>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setParadasDesligado([...paradasDesligado, { horaInicial: "", horaFinal: "", tempoDecorrido: "0.00", motivoId: "" }])}
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Adicionar Parada
+                      </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="tempoProdutivo">Tempo Produtivo (h)</Label>
+                    {paradasDesligado.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma parada desligado registrada. Clique em "+ Adicionar Parada" para iniciar.</p>
+                    )}
+
+                    {paradasDesligado.map((parada, idx) => (
+                      <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-white dark:bg-slate-800 rounded-md p-3 border">
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Hora Inicial</Label>
+                          <Input
+                            type="time"
+                            value={parada.horaInicial}
+                            onChange={(e) => {
+                              const novo = [...paradasDesligado];
+                              novo[idx].horaInicial = e.target.value;
+                              novo[idx].tempoDecorrido = calcTempoDecorrido(e.target.value, novo[idx].horaFinal);
+                              setParadasDesligado(novo);
+                            }}
+                          />
+                        </div>
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Hora Final</Label>
+                          <Input
+                            type="time"
+                            value={parada.horaFinal}
+                            onChange={(e) => {
+                              const novo = [...paradasDesligado];
+                              novo[idx].horaFinal = e.target.value;
+                              novo[idx].tempoDecorrido = calcTempoDecorrido(novo[idx].horaInicial, e.target.value);
+                              setParadasDesligado(novo);
+                            }}
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Tempo (h)</Label>
+                          <div className="h-10 px-2 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 rounded-md flex items-center text-sm font-semibold">
+                            {parada.tempoDecorrido || "0.00"}
+                          </div>
+                        </div>
+                        <div className="col-span-3 space-y-1">
+                          <Label className="text-xs">Motivo</Label>
+                          <Select
+                            value={parada.motivoId}
+                            onValueChange={(val) => {
+                              const novo = [...paradasDesligado];
+                              novo[idx].motivoId = val;
+                              setParadasDesligado(novo);
+                            }}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {outrasParadasList?.map((op: any) => (
+                                <SelectItem key={op.id} value={String(op.id)}>{op.descricao}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setParadasDesligado(paradasDesligado.filter((_, i) => i !== idx))}
+                            className="text-destructive hover:text-destructive h-10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {paradasDesligado.length > 0 && (
+                      <div className="flex justify-end">
+                        <div className="bg-slate-200 dark:bg-slate-700 rounded-md px-4 py-2 text-sm font-semibold">
+                          Total Parado Desligado: <span className="text-base">{totalParadoDesligado} h</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Totalizadores finais */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-amber-200 dark:border-amber-800">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Total Tempo Parado (h)</Label>
+                      <div className="h-10 px-3 py-2 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-md flex items-center font-semibold text-red-700 dark:text-red-300">
+                        {totalTempoParado}
+                      </div>
+                      <p className="text-xs text-muted-foreground">= Ligado + Desligado</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Tempo Produtivo (h)</Label>
                       <div className="h-10 px-3 py-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-md flex items-center font-semibold text-green-700 dark:text-green-300">
                         {tempoProdutivo || "0.00"}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        = Hora/Km Trabalhados - Tempo Parado Ligado
-                      </p>
+                      <p className="text-xs text-muted-foreground">= Hora/Km Trabalhados - Total Parado Ligado</p>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
 

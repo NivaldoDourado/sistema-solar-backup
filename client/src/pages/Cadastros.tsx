@@ -11,7 +11,8 @@ import {
   DollarSign,
   HardHat,
   MessageSquare,
-  Wallet
+  Wallet,
+  PauseCircle
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -44,6 +45,13 @@ export default function Cadastros() {
       icone: CircleStop,
       cor: "text-red-500",
       link: "/manutencao",
+    },
+    {
+      titulo: "Outras Paradas",
+      descricao: "Cadastrar motivos de parada para a Parte Diária",
+      icone: PauseCircle,
+      cor: "text-rose-600",
+      link: "/outras-paradas",
     },
     {
       titulo: "Produtos",

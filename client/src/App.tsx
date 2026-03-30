@@ -36,6 +36,7 @@ import Login from "./pages/Login";
 import TrocarSenha from "./pages/TrocarSenha";
 import MobileDashboard from "./pages/MobileDashboard";
 import MetasAlertas from "./pages/MetasAlertas";
+import OutrasParadas from "./pages/OutrasParadas";
 
 function Router() {
   return (
@@ -115,6 +116,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="contaCusto">
             <ContasCusto />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/outras-paradas"}>
+        <DashboardLayout>
+          <ProtectedRoute module="outrasParadas">
+            <OutrasParadas />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

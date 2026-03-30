@@ -43,6 +43,7 @@ export default function ProtectedRoute({ module, children }: ProtectedRouteProps
     vendas: "Vendas",
     clientes: "Clientes",
     usuarios: "Usuários",
+    outrasParadas: "Outras Paradas",
   };
 
   useEffect(() => {
