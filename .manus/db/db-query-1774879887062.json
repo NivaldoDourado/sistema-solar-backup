@@ -1,0 +1,98 @@
+{
+  "query": "\nSELECT perfil, modulo FROM permissoes_perfil_modulo WHERE perfil = 'coordenador' ORDER BY modulo;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT perfil, modulo FROM permissoes_perfil_modulo WHERE perfil = 'coordenador' ORDER BY modulo;\n",
+  "rows": [
+    {
+      "perfil": "coordenador",
+      "modulo": "abastecimento"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "clientes"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "combustiveis"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "contaCusto"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "custos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "equipamentos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "gruposEquipamentos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "manutencao"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "medicaoPilhas"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "operadoresMotoristas"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "outrasParadas"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "parteDiaria"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "pecasDesgaste"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "producao"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "produtos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "servicos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "setorDeCusto"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "setores"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "tiposProdutos"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "unidades"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "usuarios"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "vendas"
+    }
+  ],
+  "messages": [],
+  "stdout": "perfil\tmodulo\ncoordenador\tabastecimento\ncoordenador\tclientes\ncoordenador\tcombustiveis\ncoordenador\tcontaCusto\ncoordenador\tcustos\ncoordenador\tequipamentos\ncoordenador\tgruposEquipamentos\ncoordenador\tmanutencao\ncoordenador\tmedicaoPilhas\ncoordenador\toperadoresMotoristas\ncoordenador\toutrasParadas\ncoordenador\tparteDiaria\ncoordenador\tpecasDesgaste\ncoordenador\tproducao\ncoordenador\tprodutos\ncoordenador\tservicos\ncoordenador\tsetorDeCusto\ncoordenador\tsetores\ncoordenador\ttiposProdutos\ncoordenador\tunidades\ncoordenador\tusuarios\ncoordenador\tvendas\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

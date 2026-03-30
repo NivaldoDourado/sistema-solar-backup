@@ -1,0 +1,362 @@
+{
+  "query": "\nSELECT perfil, modulo, visualizar, criar, editar, excluir FROM permissoes_perfil_modulo ORDER BY perfil, modulo;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT perfil, modulo, visualizar, criar, editar, excluir FROM permissoes_perfil_modulo ORDER BY perfil, modulo;\n",
+  "rows": [
+    {
+      "perfil": "consultoria",
+      "modulo": "abastecimento",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "clientes",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "combustiveis",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "contaCusto",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "custos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "equipamentos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "gruposEquipamentos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "manutencao",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "medicaoPilhas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "operadoresMotoristas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "outrasParadas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "parteDiaria",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "pecasDesgaste",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "producao",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "produtos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "servicos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "setorDeCusto",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "setores",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "tiposProdutos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "unidades",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "usuarios",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "vendas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "abastecimento",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "clientes",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "combustiveis",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "contaCusto",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "custos",
+      "visualizar": "nao",
+      "criar": "nao",
+      "editar": "nao",
+      "excluir": "nao"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "equipamentos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "gruposEquipamentos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "manutencao",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "medicaoPilhas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "operadoresMotoristas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "outrasParadas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "parteDiaria",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "pecasDesgaste",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "producao",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "produtos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "servicos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "setorDeCusto",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "setores",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "tiposProdutos",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "unidades",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "usuarios",
+      "visualizar": "nao",
+      "criar": "nao",
+      "editar": "nao",
+      "excluir": "nao"
+    },
+    {
+      "perfil": "coordenador",
+      "modulo": "vendas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    }
+  ],
+  "messages": [],
+  "stdout": "perfil\tmodulo\tvisualizar\tcriar\teditar\texcluir\nconsultoria\tabastecimento\tsim\tsim\tsim\tsim\nconsultoria\tclientes\tsim\tsim\tsim\tsim\nconsultoria\tcombustiveis\tsim\tsim\tsim\tsim\nconsultoria\tcontaCusto\tsim\tsim\tsim\tsim\nconsultoria\tcustos\tsim\tsim\tsim\tsim\nconsultoria\tequipamentos\tsim\tsim\tsim\tsim\nconsultoria\tgruposEquipamentos\tsim\tsim\tsim\tsim\nconsultoria\tmanutencao\tsim\tsim\tsim\tsim\nconsultoria\tmedicaoPilhas\tsim\tsim\tsim\tsim\nconsultoria\toperadoresMotoristas\tsim\tsim\tsim\tsim\nconsultoria\toutrasParadas\tsim\tsim\tsim\tsim\nconsultoria\tparteDiaria\tsim\tsim\tsim\tsim\nconsultoria\tpecasDesgaste\tsim\tsim\tsim\tsim\nconsultoria\tproducao\tsim\tsim\tsim\tsim\nconsultoria\tprodutos\tsim\tsim\tsim\tsim\nconsultoria\tservicos\tsim\tsim\tsim\tsim\nconsultoria\tsetorDeCusto\tsim\tsim\tsim\tsim\nconsultoria\tsetores\tsim\tsim\tsim\tsim\nconsultoria\ttiposProdutos\tsim\tsim\tsim\tsim\nconsultoria\tunidades\tsim\tsim\tsim\tsim\nconsultoria\tusuarios\tsim\tsim\tsim\tsim\nconsultoria\tvendas\tsim\tsim\tsim\tsim\ncoordenador\tabastecimento\tsim\tsim\tsim\tsim\ncoordenador\tclientes\tsim\tsim\tsim\tsim\ncoordenador\tcombustiveis\tsim\tsim\tsim\tsim\ncoordenador\tcontaCusto\tsim\tsim\tsim\tsim\ncoordenador\tcustos\tnao\tnao\tnao\tnao\ncoordenador\tequipamentos\tsim\tsim\tsim\tsim\ncoordenador\tgruposEquipamentos\tsim\tsim\tsim\tsim\ncoordenador\tmanutencao\tsim\tsim\tsim\tsim\ncoordenador\tmedicaoPilhas\tsim\tsim\tsim\tsim\ncoordenador\toperadoresMotoristas\tsim\tsim\tsim\tsim\ncoordenador\toutrasParadas\tsim\tsim\tsim\tsim\ncoordenador\tparteDiaria\tsim\tsim\tsim\tsim\ncoordenador\tpecasDesgaste\tsim\tsim\tsim\tsim\ncoordenador\tproducao\tsim\tsim\tsim\tsim\ncoordenador\tprodutos\tsim\tsim\tsim\tsim\ncoordenador\tservicos\tsim\tsim\tsim\tsim\ncoordenador\tsetorDeCusto\tsim\tsim\tsim\tsim\ncoordenador\tsetores\tsim\tsim\tsim\tsim\ncoordenador\ttiposProdutos\tsim\tsim\tsim\tsim\ncoordenador\tunidades\tsim\tsim\tsim\tsim\ncoordenador\tusuarios\tnao\tnao\tnao\tnao\ncoordenador\tvendas\tsim\tsim\tsim\tsim\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

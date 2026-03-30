@@ -97,3 +97,10 @@
 
 ## Correção: Menu Lateral
 - [x] Corrigir sumiço dos botões "Usuários" e "Permissões" no menu lateral (regressão após adição dos itens PWA)
+
+## Controle de Permissões - Auditoria e Proteção
+- [x] Auditar todos os módulos registrados no ALL_MODULES do backend
+- [x] Verificar todos os perfis existentes no banco de dados
+- [x] Sincronizar permissões: garantir que todos os módulos existam para todos os perfis no banco
+- [x] Proteger tela de Permissões para acesso exclusivo do perfil Consultoria (frontend + backend)
+- [x] Testar que outros perfis não conseguem acessar a tela de Permissões

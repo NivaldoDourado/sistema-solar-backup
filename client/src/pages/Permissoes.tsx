@@ -47,7 +47,7 @@ const moduleGroups = [
   },
   {
     label: "Cadastros",
-    modules: ["equipamentos", "setores", "servicos", "produtos", "combustiveis", "unidades", "gruposEquipamentos", "setorDeCusto", "contaCusto", "tiposProdutos", "operadoresMotoristas", "outrasParadas"],
+    modules: ["equipamentos", "setores", "servicos", "produtos", "combustiveis", "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos", "operadoresMotoristas", "outrasParadas"],
   },
   {
     label: "Administração",
@@ -64,7 +64,6 @@ const moduleLabels: Record<string, string> = {
   unidades: "Unidades",
   gruposEquipamentos: "Grupos de Equipamentos",
   setorDeCusto: "Plano de Contas",
-  contaCusto: "Conta Custo",
   tiposProdutos: "Tipos de Produtos",
   operadoresMotoristas: "Operadores/Motoristas",
   parteDiaria: "Parte Diária",
