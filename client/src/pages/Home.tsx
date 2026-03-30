@@ -269,7 +269,7 @@ export default function Home() {
     setEnviandoWhatsapp(true);
 
     // Montar mensagem com dados dos cards
-    let msg = "\u2699\ufe0f *RELAT\u00d3RIO - PEDREIRA SOLAR*\n";
+    let msg = "\u2699\ufe0f *RELAT\u00d3RIO - PEDREIRA SOUZA E OLIVEIRA*\n";
     msg += `\ud83d\udcc5 ${new Date().toLocaleDateString('pt-BR')}\n\n`;
 
     // Produ\u00e7\u00e3o M\u00e9todo Caminh\u00f5es
@@ -377,7 +377,7 @@ export default function Home() {
       }
     }
 
-    msg += `_Enviado pelo Sistema de Gest\u00e3o - PEDREIRA SOLAR_`;
+    msg += `_Enviado pelo Sistema de Gest\u00e3o - Pedreira Souza e Oliveira Ltda_`;
 
     // Abrir WhatsApp para cada destinat\u00e1rio
     const encodedMsg = encodeURIComponent(msg);
@@ -474,7 +474,7 @@ export default function Home() {
             Bem-vindo, {user?.name || "usuário"}!
           </h1>
           <p className="text-muted-foreground mt-2">
-            PEDREIRA SOLAR INDUSTRIA E COMERCIO LTDA
+            Pedreira Souza e Oliveira Ltda
           </p>
         </div>
         {destinatariosWpp && destinatariosWpp.filter(d => d.ativo === "sim").length > 0 && (
