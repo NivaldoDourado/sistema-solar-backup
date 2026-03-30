@@ -39,7 +39,7 @@ export default function Cadastros() {
       link: "/servicos",
     },
     {
-      titulo: "Paradas",
+      titulo: "Manutenções",
       descricao: "Gerenciar paradas e manutenções",
       icone: CircleStop,
       cor: "text-red-500",
