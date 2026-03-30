@@ -632,11 +632,11 @@ export default function ParteDiaria() {
     }
 
     const itensValidos = itensServico
-      .filter(item => item.setorId > 0 && item.servicoId > 0 && item.quantidade)
+      .filter(item => item.setorId > 0 && item.servicoId > 0)
       .map(item => ({
         setorId: item.setorId,
         servicoId: item.servicoId,
-        quantidade: item.quantidade,
+        quantidade: item.quantidade || "0",
         operadorMotoristaId: item.operadorMotoristaId > 0 ? item.operadorMotoristaId : undefined,
       }));
 
@@ -1218,7 +1218,7 @@ export default function ParteDiaria() {
                         {/* Linha 2: Quantidade, Produção e Operador */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-2">
-                            <Label>Qtd (viagens/ciclos) *</Label>
+                            <Label>Qtd (viagens/ciclos)</Label>
                             <Input
                               type="number"
                               step="1"

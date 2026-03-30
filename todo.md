@@ -104,3 +104,7 @@
 - [x] Sincronizar permissões: garantir que todos os módulos existam para todos os perfis no banco
 - [x] Proteger tela de Permissões para acesso exclusivo do perfil Consultoria (frontend + backend)
 - [x] Testar que outros perfis não conseguem acessar a tela de Permissões
+
+## Parte Diária - Campo Qtd Opcional
+- [x] Tornar "Qtd (viagens/ciclos)" opcional no frontend com valor padrão 0
+- [x] Ajustar validação Zod no backend para aceitar campo ausente/vazio como 0

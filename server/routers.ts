@@ -817,7 +817,7 @@ export const appRouter = router({
         itens: z.array(z.object({
           setorId: z.number(),
           servicoId: z.number(),
-          quantidade: z.string(),
+          quantidade: z.string().optional().default("0"),
           operadorMotoristaId: z.number().optional(),
         })),
         trocasPecas: z.array(z.object({
@@ -890,8 +890,8 @@ export const appRouter = router({
             parteDiariaId,
             setorId: item.setorId,
             servicoId: item.servicoId,
-            quantidade: item.quantidade,
-            producao: (parseFloat(item.quantidade) * capacidade).toString(),
+            quantidade: item.quantidade ?? "0",
+            producao: (parseFloat(item.quantidade ?? "0") * capacidade).toString(),
             operadorMotoristaId: item.operadorMotoristaId || null,
           }));
           
@@ -992,7 +992,7 @@ export const appRouter = router({
         itens: z.array(z.object({
           setorId: z.number(),
           servicoId: z.number(),
-          quantidade: z.string(),
+          quantidade: z.string().optional().default("0"),
           operadorMotoristaId: z.number().optional(),
         })).optional(),
         temposDescarga: z.array(z.object({
@@ -1073,8 +1073,8 @@ export const appRouter = router({
               parteDiariaId: id,
               setorId: item.setorId,
               servicoId: item.servicoId,
-              quantidade: item.quantidade,
-              producao: (parseFloat(item.quantidade) * capacidade).toString(),
+              quantidade: item.quantidade ?? "0",
+              producao: (parseFloat(item.quantidade ?? "0") * capacidade).toString(),
               operadorMotoristaId: item.operadorMotoristaId || null,
             }));
             
