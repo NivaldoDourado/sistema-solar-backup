@@ -1,0 +1,26 @@
+{
+  "query": "\nSELECT perfil, modulo, visualizar, criar, editar, excluir \nFROM permissoes_perfil_modulo \nWHERE modulo = 'outrasParadas';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT perfil, modulo, visualizar, criar, editar, excluir \nFROM permissoes_perfil_modulo \nWHERE modulo = 'outrasParadas';\n",
+  "rows": [
+    {
+      "perfil": "coordenador",
+      "modulo": "outrasParadas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    },
+    {
+      "perfil": "consultoria",
+      "modulo": "outrasParadas",
+      "visualizar": "sim",
+      "criar": "sim",
+      "editar": "sim",
+      "excluir": "sim"
+    }
+  ],
+  "messages": [],
+  "stdout": "perfil\tmodulo\tvisualizar\tcriar\teditar\texcluir\ncoordenador\toutrasParadas\tsim\tsim\tsim\tsim\nconsultoria\toutrasParadas\tsim\tsim\tsim\tsim\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

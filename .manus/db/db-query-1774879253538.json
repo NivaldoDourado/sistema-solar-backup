@@ -1,0 +1,9 @@
+{
+  "query": "\nINSERT IGNORE INTO permissoes_perfil_modulo (perfil, modulo, visualizar, criar, editar, excluir)\nSELECT DISTINCT perfil, 'outrasParadas', 'sim', 'sim', 'sim', 'sim'\nFROM permissoes_perfil_modulo\nWHERE perfil IN ('admin', 'diretor', 'gerente', 'consultoria', 'coordenador', 'usuario', 'controle', 'operador');\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nINSERT IGNORE INTO permissoes_perfil_modulo (perfil, modulo, visualizar, criar, editar, excluir)\nSELECT DISTINCT perfil, 'outrasParadas', 'sim', 'sim', 'sim', 'sim'\nFROM permissoes_perfil_modulo\nWHERE perfil IN ('admin', 'diretor', 'gerente', 'consultoria', 'coordenador', 'usuario', 'controle', 'operador');\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 127
+}

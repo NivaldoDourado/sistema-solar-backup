@@ -30,6 +30,7 @@ const ALL_MODULES = [
   "vendas",
   "clientes",
   "usuarios",
+  "outrasParadas",
 ] as const;
 
 const ALL_ROLES = [
@@ -65,6 +66,7 @@ const MODULE_LABELS: Record<string, string> = {
   vendas: "Vendas",
   clientes: "Clientes",
   usuarios: "Usuários",
+  outrasParadas: "Outras Paradas",
 };
 
 // Permissões padrão (fallback) - mesmas regras que existiam antes

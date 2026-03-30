@@ -47,7 +47,7 @@ const moduleGroups = [
   },
   {
     label: "Cadastros",
-    modules: ["equipamentos", "setores", "servicos", "produtos", "combustiveis", "unidades", "gruposEquipamentos", "setorDeCusto", "contaCusto", "tiposProdutos", "operadoresMotoristas"],
+    modules: ["equipamentos", "setores", "servicos", "produtos", "combustiveis", "unidades", "gruposEquipamentos", "setorDeCusto", "contaCusto", "tiposProdutos", "operadoresMotoristas", "outrasParadas"],
   },
   {
     label: "Administração",
@@ -77,6 +77,7 @@ const moduleLabels: Record<string, string> = {
   vendas: "Vendas",
   clientes: "Clientes",
   usuarios: "Usuários",
+  outrasParadas: "Outras Paradas",
 };
 
 type PermMap = Record<string, { view: boolean; create: boolean; edit: boolean; delete: boolean }>;
