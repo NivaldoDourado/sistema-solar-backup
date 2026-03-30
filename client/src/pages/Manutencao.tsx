@@ -33,6 +33,18 @@ type Manutencao = {
   status: string;
 };
 
+// Calcula a diferença entre Hora Fim e Hora Início em horas decimais
+// Suporta virada de meia-noite (ex: 23:00 -> 01:00 = 2.00h)
+const calcularHorasParadas = (inicio: string, fim: string): string => {
+  if (!inicio || !fim) return "";
+  const [hI, mI] = inicio.split(":").map(Number);
+  const [hF, mF] = fim.split(":").map(Number);
+  let totalMinutos = (hF * 60 + mF) - (hI * 60 + mI);
+  if (totalMinutos < 0) totalMinutos += 24 * 60; // virada de meia-noite
+  if (totalMinutos === 0) return "";
+  return (totalMinutos / 60).toFixed(2);
+};
+
 const emptyFormData = {
   data: new Date().toISOString().split('T')[0],
   equipamentoId: "",
@@ -178,14 +190,18 @@ export default function Manutencao() {
     const dataInicio = new Date(item.dataInicio);
     const dataFim = item.dataFim ? new Date(item.dataFim) : null;
     
+    const horaInicioStr = dataInicio.toTimeString().slice(0, 5);
+    const horaFimStr = dataFim ? dataFim.toTimeString().slice(0, 5) : "";
+    // Recalcula horas paradas a partir dos horários; usa valor salvo como fallback
+    const horasParadasCalc = calcularHorasParadas(horaInicioStr, horaFimStr) || item.tempoParada || "";
     setFormData({
       data: dataInicio.toISOString().split('T')[0],
       equipamentoId: String(item.equipamentoId),
       tipo: item.motivoParada,
       descricao: item.descricao || "",
-      horaInicio: dataInicio.toTimeString().slice(0, 5),
-      horaFim: dataFim ? dataFim.toTimeString().slice(0, 5) : "",
-      horasParadas: item.tempoParada || "",
+      horaInicio: horaInicioStr,
+      horaFim: horaFimStr,
+      horasParadas: horasParadasCalc,
       custo: item.custoEstimado || "",
       observacoes: "",
       horKmRevisao: item.horKmRevisao || "",
@@ -310,7 +326,11 @@ export default function Manutencao() {
             id="horaInicio"
             type="time"
             value={formData.horaInicio}
-            onChange={(e) => setFormData({ ...formData, horaInicio: e.target.value })}
+            onChange={(e) => {
+              const novoInicio = e.target.value;
+              const horasParadas = calcularHorasParadas(novoInicio, formData.horaFim);
+              setFormData({ ...formData, horaInicio: novoInicio, horasParadas });
+            }}
           />
         </div>
         <div className="space-y-2">
@@ -319,7 +339,11 @@ export default function Manutencao() {
             id="horaFim"
             type="time"
             value={formData.horaFim}
-            onChange={(e) => setFormData({ ...formData, horaFim: e.target.value })}
+            onChange={(e) => {
+              const novoFim = e.target.value;
+              const horasParadas = calcularHorasParadas(formData.horaInicio, novoFim);
+              setFormData({ ...formData, horaFim: novoFim, horasParadas });
+            }}
           />
         </div>
         <div className="space-y-2">
@@ -329,8 +353,9 @@ export default function Manutencao() {
             type="number"
             step="0.01"
             value={formData.horasParadas}
-            onChange={(e) => setFormData({ ...formData, horasParadas: e.target.value })}
-            placeholder="0.00"
+            readOnly
+            className="bg-muted cursor-not-allowed"
+            placeholder="Calculado automaticamente"
           />
         </div>
       </div>
