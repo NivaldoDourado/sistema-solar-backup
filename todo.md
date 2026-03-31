@@ -130,3 +130,6 @@
 ## Produção Método Caminhões - Separar por Vigência de Pesagem
 - [x] Ajustar backend para retornar viagens/peso agrupados por vigência de pesagem por equipamento
 - [x] Atualizar frontend do card para exibir uma linha por período de capacidade diferente
+
+## Produção de Perfuração - Filtro por Grupo de Equipamento
+- [x] Filtrar producaoPerfuracao para incluir apenas equipamentos dos grupos PERFURATRIZES HIDRAULICAS e PERFURATRIZES PNEUMÁTICAS

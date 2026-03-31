@@ -42,7 +42,7 @@ import {
   outrasParadas,
   parteDiariaParadas,
 } from "../drizzle/schema";
-import { eq, desc, asc, sql, and, gte, lte, count } from "drizzle-orm";
+import { eq, desc, asc, sql, and, or, gte, lte, count, like, inArray } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
 
 /** Converte Date (vindo do superjson) para string YYYY-MM-DD compatível com MySQL DATE */
@@ -1574,7 +1574,34 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const db = await getDb();
         if (!db) return { total: 0, totalFuros: 0, totalMetros: 0 };
-        
+
+        // Buscar IDs dos grupos de perfuratrizes (hidráulicas e pneumáticas)
+        const gruposPerf = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(
+            or(
+              like(gruposDeEquipamentos.nome, '%PERFURATRIZ%HIDRAUL%'),
+              like(gruposDeEquipamentos.nome, '%PERFURATRIZ%PNEUM%'),
+              like(gruposDeEquipamentos.nome, '%PERFURATRIZES%HIDRAUL%'),
+              like(gruposDeEquipamentos.nome, '%PERFURATRIZES%PNEUM%'),
+            )
+          );
+        const gruposIds = gruposPerf.map(g => g.id);
+
+        // Buscar IDs dos equipamentos pertencentes a esses grupos
+        let equipIds: number[] = [];
+        if (gruposIds.length > 0) {
+          const equips = await db
+            .select({ id: equipamentos.id })
+            .from(equipamentos)
+            .where(inArray(equipamentos.grupoId, gruposIds));
+          equipIds = equips.map(e => e.id);
+        }
+
+        // Se não há equipamentos nos grupos, retornar zeros
+        if (equipIds.length === 0) return { total: 0, totalFuros: 0, totalMetros: 0 };
+
         const registros = await db
           .select({
             qtdFuros: parteDiaria.qtdFuros,
@@ -1582,8 +1609,9 @@ export const appRouter = router({
             producaoPerfuracao: parteDiaria.producaoPerfuracao,
             data: parteDiaria.data,
           })
-          .from(parteDiaria);
-        
+          .from(parteDiaria)
+          .where(inArray(parteDiaria.equipamentoId, equipIds));
+
         let filtrados = registros;
         if (input?.dataInicio || input?.dataFim) {
           filtrados = filtrados.filter(item => {
@@ -1593,7 +1621,7 @@ export const appRouter = router({
             return true;
           });
         }
-        
+
         const total = filtrados.reduce((acc, item) => acc + parseFloat(item.producaoPerfuracao || '0'), 0);
         const totalFuros = filtrados.reduce((acc, item) => acc + parseFloat(item.qtdFuros || '0'), 0);
         const totalMetros = filtrados.reduce((acc, item) => acc + parseFloat(item.profundidadeFuros || '0'), 0);
