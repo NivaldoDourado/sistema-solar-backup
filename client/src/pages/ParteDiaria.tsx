@@ -240,6 +240,13 @@ export default function ParteDiaria() {
     );
   }, [grupoDoEquipamento]);
 
+  // Verificar se o equipamento é Balança Integradora
+  const isBalancaIntegradora = useMemo(() => {
+    if (!grupoDoEquipamento?.nome) return false;
+    const nomeGrupo = grupoDoEquipamento.nome.toUpperCase();
+    return nomeGrupo.includes("BALAN") && (nomeGrupo.includes("INTEGR") || nomeGrupo.includes("ÇA") || nomeGrupo.includes("CA"));
+  }, [grupoDoEquipamento]);
+
   // Estado para mensagem de validação do horaKmTrabalhados
   const [horaKmValidationMsg, setHoraKmValidationMsg] = useState("");
 
@@ -319,13 +326,25 @@ export default function ParteDiaria() {
   }, [qtdFuros, profundidadeFuros]);
 
   // Cálculo automático de Produção Balança
+  // Para Balanças Integradoras: usa Hora/Km Final - Hora/Km Inicial
+  // Para Britadores/Transportadoras: usa Leitura Final - Leitura Inicial Balança
   useEffect(() => {
-    const inicial = parseFloat(leituraInicialBalanca) || 0;
-    const final_ = parseFloat(leituraFinalBalanca) || 0;
-    if (leituraInicialBalanca && leituraFinalBalanca) {
-      setProducaoBalanca((final_ - inicial).toFixed(2));
+    if (isBalancaIntegradora) {
+      const ini = parseFloat(horaKmInicial) || 0;
+      const fin = parseFloat(horaKmFinal) || 0;
+      if (horaKmInicial && horaKmFinal) {
+        setProducaoBalanca((fin - ini).toFixed(2));
+      } else {
+        setProducaoBalanca("");
+      }
+    } else {
+      const inicial = parseFloat(leituraInicialBalanca) || 0;
+      const final_ = parseFloat(leituraFinalBalanca) || 0;
+      if (leituraInicialBalanca && leituraFinalBalanca) {
+        setProducaoBalanca((final_ - inicial).toFixed(2));
+      }
     }
-  }, [leituraInicialBalanca, leituraFinalBalanca]);
+  }, [isBalancaIntegradora, horaKmInicial, horaKmFinal, leituraInicialBalanca, leituraFinalBalanca]);
 
   // Carregar paradas existentes ao editar
   const { data: paradasExistentes } = trpc.parteDiariaParadas.listByParteDiaria.useQuery(
@@ -876,12 +895,16 @@ export default function ParteDiaria() {
               {/* Campos de Hora/Km */}
               <Card className="bg-slate-50 dark:bg-slate-900">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Hora/Km do Equipamento</CardTitle>
+                  <CardTitle className="text-base">
+                    {isBalancaIntegradora ? "Leituras da Balança" : "Hora/Km do Equipamento"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="horaKmInicial">Hora/Km Inicial</Label>
+                      <Label htmlFor="horaKmInicial">
+                        {isBalancaIntegradora ? "Leitura Inicial" : "Hora/Km Inicial"}
+                      </Label>
                       <Input
                         id="horaKmInicial"
                         type="number"
@@ -893,7 +916,9 @@ export default function ParteDiaria() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="horaKmFinal">Hora/Km Final</Label>
+                      <Label htmlFor="horaKmFinal">
+                        {isBalancaIntegradora ? "Leitura Final" : "Hora/Km Final"}
+                      </Label>
                       <Input
                         id="horaKmFinal"
                         type="number"
@@ -904,27 +929,37 @@ export default function ParteDiaria() {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="horaKmTrabalhados">Hora/Km Trabalhados</Label>
-                      <div className={`h-10 px-3 py-2 border rounded-md flex items-center font-semibold ${
-                        horaKmValidationMsg 
-                          ? 'bg-red-100 dark:bg-red-900 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300' 
-                          : 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
-                      }`}>
-                        {horaKmTrabalhados || "0.00"}
+                    {isBalancaIntegradora ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="producaoBalancaDisplay">Produção Balança</Label>
+                        <div className="h-10 px-3 py-2 bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 rounded-md flex items-center font-semibold text-amber-700 dark:text-amber-300">
+                          {producaoBalanca || "0.00"}
+                        </div>
+                        <p className="text-xs text-muted-foreground">= Leitura Final − Leitura Inicial</p>
                       </div>
-                      {horaKmValidationMsg && (
-                        <p className="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
-                          <span className="text-red-500">⚠</span> {horaKmValidationMsg}
-                        </p>
-                      )}
-                    </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="horaKmTrabalhados">Hora/Km Trabalhados</Label>
+                        <div className={`h-10 px-3 py-2 border rounded-md flex items-center font-semibold ${
+                          horaKmValidationMsg 
+                            ? 'bg-red-100 dark:bg-red-900 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300' 
+                            : 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                        }`}>
+                          {horaKmTrabalhados || "0.00"}
+                        </div>
+                        {horaKmValidationMsg && (
+                          <p className="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
+                            <span className="text-red-500">⚠</span> {horaKmValidationMsg}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Controle de Tempo - Subgrupos */}
-              <Card className="bg-amber-50 dark:bg-amber-950">
+              {/* Controle de Tempo - Subgrupos - oculto para Balanças Integradoras */}
+              {!isBalancaIntegradora && <Card className="bg-amber-50 dark:bg-amber-950">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Controle de Tempo</CardTitle>
                 </CardHeader>
@@ -1131,10 +1166,10 @@ export default function ParteDiaria() {
                   </div>
 
                 </CardContent>
-              </Card>
+              </Card>}
 
-              {/* Informação da capacidade do equipamento */}
-              {equipamentoId && (
+              {/* Informação da capacidade do equipamento - oculto para Balanças Integradoras */}
+              {!isBalancaIntegradora && equipamentoId && (
                 <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                     <Calculator className="h-5 w-5" />
@@ -1148,8 +1183,8 @@ export default function ParteDiaria() {
                 </div>
               )}
 
-              {/* Múltiplas linhas de serviço */}
-              <div className="space-y-4">
+              {/* Múltiplas linhas de serviço - oculto para Balanças Integradoras */}
+              {!isBalancaIntegradora && <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-lg font-semibold">Serviços Realizados</Label>
                   <Button type="button" onClick={adicionarLinha} size="sm" variant="outline">
@@ -1265,9 +1300,10 @@ export default function ParteDiaria() {
                     </CardContent>
                   </Card>
                 )}
-              </div>
+              </div>}
 
-              {/* Produção Livre - visível para todos os equipamentos */}
+              {/* Produção Livre - oculto para Balanças Integradoras */}
+              {!isBalancaIntegradora && <>
               <Card className="bg-indigo-50 dark:bg-indigo-950">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Produção Livre</CardTitle>
@@ -1378,6 +1414,8 @@ export default function ParteDiaria() {
                   </CardContent>
                 </Card>
               )}
+              </>
+              }
 
               {/* Seção de Trocas de Peças de Desgaste */}
               <Card className="bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700">

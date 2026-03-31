@@ -1801,6 +1801,96 @@ export const appRouter = router({
         
         return { total, caminhoes, dataReferencia: ultimoDia };
       }),
+
+    // Produção das Balanças Integradoras por equipamento e período
+    producaoBalancasIntegradoras: protectedProcedure
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }))
+      .use(requirePermission("parteDiaria", "view"))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { equipamentos: [] };
+
+        // Buscar grupos de equipamentos que sejam Balanças Integradoras
+        const grupos = await db.select().from(gruposDeEquipamentos);
+        const gruposBalanca = grupos.filter(g => {
+          const nome = g.nome.toUpperCase();
+          return nome.includes("BALAN") && (nome.includes("INTEGR") || nome.includes("ÇA") || nome.includes("CA"));
+        });
+        if (gruposBalanca.length === 0) return { equipamentos: [] };
+        const grupoIds = gruposBalanca.map(g => g.id);
+
+        // Buscar equipamentos desses grupos
+        const equips = await db.select().from(equipamentos)
+          .where(inArray(equipamentos.grupoId, grupoIds));
+        if (equips.length === 0) return { equipamentos: [] };
+        const equipIds = equips.map(e => e.id);
+
+        // Buscar partes diárias desses equipamentos no período
+        const conditions = [inArray(parteDiaria.equipamentoId, equipIds)];
+        if (input.dataInicio) conditions.push(gte(parteDiaria.data, new Date(input.dataInicio)));
+        if (input.dataFim) conditions.push(lte(parteDiaria.data, new Date(input.dataFim)));
+
+        const partes = await db.select({
+          equipamentoId: parteDiaria.equipamentoId,
+          horaKmInicial: parteDiaria.horaKmInicial,
+          horaKmFinal: parteDiaria.horaKmFinal,
+          producaoBalanca: parteDiaria.producaoBalanca,
+        }).from(parteDiaria).where(and(...conditions));
+
+        if (partes.length === 0) return { equipamentos: [] };
+
+        // Agrupar por equipamento
+        const equipMap = new Map(equips.map(e => [e.id, e.nomeDoEquipamento]));
+        const porEquip = new Map<number, {
+          nome: string;
+          leituraInicial: number;
+          leituraFinal: number;
+          somaSubtracoes: number;
+          registros: number;
+        }>();
+
+        for (const p of partes) {
+          const eqId = p.equipamentoId;
+          const ini = parseFloat(p.horaKmInicial || '0');
+          const fin = parseFloat(p.horaKmFinal || '0');
+          const prod = parseFloat(p.producaoBalanca || '0');
+          const existing = porEquip.get(eqId);
+          if (existing) {
+            if (ini < existing.leituraInicial) existing.leituraInicial = ini;
+            if (fin > existing.leituraFinal) existing.leituraFinal = fin;
+            existing.somaSubtracoes += prod;
+            existing.registros++;
+          } else {
+            porEquip.set(eqId, {
+              nome: equipMap.get(eqId) || `Equipamento #${eqId}`,
+              leituraInicial: ini,
+              leituraFinal: fin,
+              somaSubtracoes: prod,
+              registros: 1,
+            });
+          }
+        }
+
+        const result = Array.from(porEquip.entries()).map(([eqId, data]) => {
+          const producaoConferencia = data.leituraFinal - data.leituraInicial;
+          const divergencia = Math.abs(producaoConferencia - data.somaSubtracoes) > 0.01;
+          return {
+            equipamentoId: eqId,
+            nome: data.nome,
+            leituraInicial: data.leituraInicial,
+            leituraFinal: data.leituraFinal,
+            producaoBalanca: data.somaSubtracoes,
+            producaoConferencia,
+            divergencia,
+            registros: data.registros,
+          };
+        }).sort((a, b) => a.nome.localeCompare(b.nome));
+
+        return { equipamentos: result };
+      }),
   }),
 
   // ============================================================================

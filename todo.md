@@ -133,3 +133,10 @@
 
 ## Produção de Perfuração - Filtro por Grupo de Equipamento
 - [x] Filtrar producaoPerfuracao para incluir apenas equipamentos dos grupos PERFURATRIZES HIDRAULICAS e PERFURATRIZES PNEUMÁTICAS
+
+## Parte Diária - Balanças Integradoras
+- [x] Detectar grupo BALANÇAS INTEGRADORAS no formulário e exibir apenas campos: Data, Equipamento, Turno, Hora/Km Inicial, Hora/Km Final, Observações, Produção Balança
+- [x] Calcular automaticamente Produção Balança = Hora/Km Final - Hora/Km Inicial no formulário
+- [x] Criar procedure tRPC producaoBalancasIntegradoras com Leitura Inicial, Leitura Final, Produção Balança por equipamento e alerta de divergência
+- [x] Criar card Produção Balança no dashboard após card Produção Método Caminhões
+- [x] Exibir alerta de divergência quando soma das subtrações ≠ Leitura Final máx - Leitura Inicial mín

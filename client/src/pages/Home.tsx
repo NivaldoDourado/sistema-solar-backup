@@ -29,6 +29,7 @@ import {
   ShoppingCart,
   Package,
   PackageX,
+  Scale,
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -124,6 +125,7 @@ export default function Home() {
   const [metaDiariaLocal, setMetaDiariaLocal] = useState("");
   const [metaEditando, setMetaEditando] = useState(false);
   const { data: estoqueMinimoPecas } = trpc.pecasDesgaste.estoqueMinimoDashboard.useQuery(undefined, { enabled: hasModuleAccess("pecasDesgaste") });
+  const { data: producaoBalancasData } = trpc.parteDiaria.producaoBalancasIntegradoras.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const [enviandoWhatsapp, setEnviandoWhatsapp] = useState(false);
 
@@ -1066,6 +1068,74 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Card Produção Balanças Integradoras */}
+      {producaoBalancasData && producaoBalancasData.equipamentos.length > 0 && (
+        <Card className="bg-teal-50 dark:bg-teal-950 border-teal-200 dark:border-teal-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-teal-700 dark:text-teal-300">
+                Produção Balanças Integradoras
+              </CardTitle>
+              <CardDescription className="text-teal-600 dark:text-teal-400 text-xs mt-1">
+                {producaoBalancasData.equipamentos.some(e => e.divergencia) && (
+                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
+                    <AlertTriangle className="h-3 w-3" />
+                    Divergência detectada em {producaoBalancasData.equipamentos.filter(e => e.divergencia).length} equipamento(s)
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            <Scale className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Cabeçalho da tabela */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 text-[10px] text-teal-500 dark:text-teal-400 font-medium border-b border-teal-200 dark:border-teal-800 pb-1">
+                <span>Equipamento</span>
+                <span className="text-right">Leit. Inicial</span>
+                <span className="text-right">Leit. Final</span>
+                <span className="text-right">Produção</span>
+              </div>
+              {producaoBalancasData.equipamentos.map((eq) => (
+                <div key={eq.equipamentoId}>
+                  <div className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-3 text-xs items-center ${
+                    eq.divergencia ? 'text-orange-700 dark:text-orange-300' : 'text-teal-700 dark:text-teal-300'
+                  }`}>
+                    <div className="flex items-center gap-1 truncate">
+                      {eq.divergencia && <AlertTriangle className="h-3 w-3 text-orange-500 shrink-0" />}
+                      <span className="truncate" title={eq.nome}>{eq.nome}</span>
+                    </div>
+                    <span className="text-right font-mono text-[11px]">
+                      {eq.leituraInicial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-right font-mono text-[11px]">
+                      {eq.leituraFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-right font-semibold">
+                      {eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {eq.divergencia && (
+                    <div className="mt-1 ml-4 text-[10px] text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded px-2 py-1">
+                      ⚠ Divergência: soma das subtrações ({eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}) ≠ leit. final − leit. inicial ({eq.producaoConferencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}). Revise os lançamentos.
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Total */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 text-xs items-center border-t border-teal-200 dark:border-teal-800 pt-2 font-semibold text-teal-800 dark:text-teal-200">
+                <span>Total</span>
+                <span></span>
+                <span></span>
+                <span className="text-right">
+                  {producaoBalancasData.equipamentos.reduce((acc, e) => acc + e.producaoBalanca, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Card Produção Último Dia Caminhões */}
       <Card className="bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
