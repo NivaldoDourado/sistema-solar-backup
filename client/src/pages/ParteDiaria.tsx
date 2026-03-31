@@ -719,7 +719,7 @@ export default function ParteDiaria() {
   const equipamentoOptions = useMemo(() => 
     equipamentos?.map(eq => ({
       value: String(eq.id),
-      label: `${eq.codigoTag || eq.nomeDoEquipamento} - ${eq.modelo}${eq.capacidade ? ` (Cap: ${eq.capacidade} ton)` : ''}`
+      label: `${eq.nomeDoEquipamento}${eq.codigoTag ? ` [${eq.codigoTag}]` : ''}${eq.modelo ? ` - ${eq.modelo}` : ''}${eq.capacidade ? ` (Cap: ${eq.capacidade} ton)` : ''}`
     })) || []
   , [equipamentos]);
 
@@ -1789,7 +1789,7 @@ export default function ParteDiaria() {
                   const producaoTotal = p.itens?.reduce((acc, item) => acc + parseFloat(item.producao || '0'), 0) || 0;
                   return {
                     ...p,
-                    equipamentoNome: equip?.codigoTag || equip?.nomeDoEquipamento || "",
+                    equipamentoNome: equip?.nomeDoEquipamento || equip?.codigoTag || "",
                     producaoTotal,
                   };
                 }),
@@ -1910,7 +1910,7 @@ export default function ParteDiaria() {
                           </div>
                           <div className="text-sm text-muted-foreground mt-1">
                             <span className="font-medium">Equipamento:</span>{" "}
-                            {equipamento?.codigoTag || equipamento?.nomeDoEquipamento || parte.equipamentoId}
+                            {equipamento?.nomeDoEquipamento || equipamento?.codigoTag || parte.equipamentoId}
                             {capacidadeEquip > 0 && ` (Cap: ${capacidadeEquip} ton)`}
                           </div>
                           <div className="text-sm mt-1 flex flex-wrap gap-x-4 gap-y-1">

@@ -121,3 +121,8 @@
 ## Importação de Operadores/Motoristas
 - [x] Extrair nomes únicos de operador_ou_motorista cruzando com equipamentos para definir função
 - [x] Importar para tabela Operadores/Motoristas do sistema SOLAR com campo Função correto
+
+## Parte Diária - Campo Equipamento por Nome
+- [x] Ajustar backend para retornar nome do equipamento na lista de seleção
+- [x] Substituir dropdown de Equipamento por SearchableSelect exibindo Nome
+- [x] Garantir que a exibição na listagem/tabela também mostre o Nome
