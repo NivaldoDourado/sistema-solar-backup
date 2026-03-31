@@ -126,3 +126,7 @@
 - [x] Ajustar backend para retornar nome do equipamento na lista de seleção
 - [x] Substituir dropdown de Equipamento por SearchableSelect exibindo Nome
 - [x] Garantir que a exibição na listagem/tabela também mostre o Nome
+
+## Produção Método Caminhões - Separar por Vigência de Pesagem
+- [x] Ajustar backend para retornar viagens/peso agrupados por vigência de pesagem por equipamento
+- [x] Atualizar frontend do card para exibir uma linha por período de capacidade diferente

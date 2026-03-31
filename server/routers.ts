@@ -1494,46 +1494,61 @@ export const appRouter = router({
         // Buscar todas as pesagens para cache
         const todasPesagens = await db.select().from(pesagensEquipamentos).orderBy(desc(pesagensEquipamentos.dataVigencia));
         
-        // Função para agrupar itens por equipamento e gerar dados
+        // Função para agrupar itens por equipamento e vigência de pesagem
         const agruparPorEquipamento = async (itensGrupo: typeof itensFiltrados, totalGeral: number) => {
-          const porEquipamento = new Map<number, { equipamentoId: number; totalProduzido: number; totalViagens: number; datasRegistros: string[] }>();
+          // Chave: "equipamentoId|capacidade" para separar por vigência
+          type ChaveVigencia = string;
+          const porVigencia = new Map<ChaveVigencia, {
+            equipamentoId: number;
+            capacidade: number;
+            totalProduzido: number;
+            totalViagens: number;
+            dataInicio: string;
+            dataFim: string;
+          }>();
+
           for (const item of itensGrupo) {
             const qtd = parseFloat(item.producao || '0');
             const viagens = parseFloat(item.quantidade || '0');
             const eqId = item.equipamentoId;
             const dataStr = extractDateStr(item.data);
-            const existing = porEquipamento.get(eqId);
+            // Determinar a capacidade vigente nesta data específica
+            const cap = await getCapacidadeVigente(db, eqId, dataStr, todasPesagens, equipMap as any);
+            const chave: ChaveVigencia = `${eqId}|${cap}`;
+            const existing = porVigencia.get(chave);
             if (existing) {
               existing.totalProduzido += qtd;
               existing.totalViagens += viagens;
-              if (!existing.datasRegistros.includes(dataStr)) {
-                existing.datasRegistros.push(dataStr);
-              }
+              if (dataStr < existing.dataInicio) existing.dataInicio = dataStr;
+              if (dataStr > existing.dataFim) existing.dataFim = dataStr;
             } else {
-              porEquipamento.set(eqId, { equipamentoId: eqId, totalProduzido: qtd, totalViagens: viagens, datasRegistros: [dataStr] });
+              porVigencia.set(chave, { equipamentoId: eqId, capacidade: cap, totalProduzido: qtd, totalViagens: viagens, dataInicio: dataStr, dataFim: dataStr });
             }
           }
-          
+
           const totalGrupo = itensGrupo.reduce((acc, item) => acc + parseFloat(item.producao || '0'), 0);
           const totalViagensGrupo = itensGrupo.reduce((acc, item) => acc + parseFloat(item.quantidade || '0'), 0);
-          
-          const caminhoesPromises = Array.from(porEquipamento.values()).map(async (c) => {
+
+          const caminhoes = Array.from(porVigencia.values()).map(c => {
             const equip = equipMap.get(c.equipamentoId);
-            const dataRecente = c.datasRegistros.sort().reverse()[0] || '';
-            const capacidadeVigente = await getCapacidadeVigente(db, c.equipamentoId, dataRecente, todasPesagens, equipMap as any);
             return {
               equipamentoId: c.equipamentoId,
-              placa: equip?.codigoTag || equip?.nomeDoEquipamento || 'Desconhecido',
+              placa: equip?.nomeDoEquipamento || equip?.codigoTag || 'Desconhecido',
               totalProduzido: c.totalProduzido,
               totalViagens: c.totalViagens,
-              capacidade: capacidadeVigente,
+              capacidade: c.capacidade,
+              dataInicio: c.dataInicio,
+              dataFim: c.dataFim,
               percentual: totalGeral > 0 ? (c.totalProduzido / totalGeral) * 100 : 0,
             };
+          }).sort((a, b) => {
+            // Ordenar por nome do equipamento, depois por data de início
+            const nomeA = (equipMap.get(a.equipamentoId)?.nomeDoEquipamento || '').toLowerCase();
+            const nomeB = (equipMap.get(b.equipamentoId)?.nomeDoEquipamento || '').toLowerCase();
+            if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
+            return a.dataInicio.localeCompare(b.dataInicio);
           });
-          
-          const caminhoes = (await Promise.all(caminhoesPromises))
-            .sort((a, b) => b.totalProduzido - a.totalProduzido);
-          
+
           return { total: totalGrupo, totalViagens: totalViagensGrupo, caminhoes };
         };
         

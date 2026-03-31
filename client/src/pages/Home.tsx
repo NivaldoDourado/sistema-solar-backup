@@ -920,9 +920,9 @@ export default function Home() {
                   <span className="text-right">Produção</span>
                   <span className="text-right">%</span>
                 </div>
-                {producaoMetodoCaminhoes.britagemFixa.caminhoes.map((c: any) => (
-                  <div key={c.equipamentoId} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
-                    <span className="text-green-600 dark:text-green-400 break-words leading-tight" title={c.placa}>
+                {producaoMetodoCaminhoes.britagemFixa.caminhoes.map((c: any, idx: number) => (
+                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
+                    <span className="text-green-600 dark:text-green-400 break-words leading-tight" title={`${c.placa} | Pes: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t | ${c.dataInicio}${c.dataFim !== c.dataInicio ? ` a ${c.dataFim}` : ''}`}>
                       {c.placa}
                     </span>
                     <span className="text-right text-green-600 dark:text-green-400 whitespace-nowrap">
@@ -972,9 +972,9 @@ export default function Home() {
                   <span className="text-right">Produção</span>
                   <span className="text-right">%</span>
                 </div>
-                {producaoMetodoCaminhoes.britagemMovel.caminhoes.map((c: any) => (
-                  <div key={c.equipamentoId} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
-                    <span className="text-emerald-600 dark:text-emerald-400 break-words leading-tight" title={c.placa}>
+                {producaoMetodoCaminhoes.britagemMovel.caminhoes.map((c: any, idx: number) => (
+                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
+                    <span className="text-emerald-600 dark:text-emerald-400 break-words leading-tight" title={`${c.placa} | Pes: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t | ${c.dataInicio}${c.dataFim !== c.dataInicio ? ` a ${c.dataFim}` : ''}`}>
                       {c.placa}
                     </span>
                     <span className="text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
