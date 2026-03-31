@@ -112,3 +112,8 @@
 ## Dashboard - Card Estoque Mínimo de Peças
 - [x] Criar procedure tRPC para buscar estoque atual de peças com campo estoqueMinimo
 - [x] Implementar card no dashboard após card Combustível com lista de peças e alertas visuais
+
+## Importação de Paradas e Dropdown com Pesquisa
+- [x] Extrair dados de paradas_normais e paradas_mecanicas do SQL externo
+- [x] Importar registros para tabela Outras Paradas com campo Observação identificando origem
+- [x] Implementar campo de pesquisa nos dropdowns de Motivo (Tempo Parado Ligado e Desligado) na Parte Diária

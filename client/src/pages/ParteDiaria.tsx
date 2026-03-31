@@ -984,23 +984,19 @@ export default function ParteDiaria() {
                         </div>
                         <div className="col-span-3 space-y-1">
                           <Label className="text-xs">Motivo</Label>
-                          <Select
-                            value={parada.motivoId}
+                          <SearchableSelect
+                            options={(outrasParadasList || []).map((op: any) => ({ value: String(op.id), label: op.descricao }))}
+                            value={parada.motivoId || ""}
                             onValueChange={(val) => {
                               const novo = [...paradasLigado];
                               novo[idx].motivoId = val;
                               setParadasLigado(novo);
                             }}
-                          >
-                            <SelectTrigger className="h-10">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {outrasParadasList?.map((op: any) => (
-                                <SelectItem key={op.id} value={String(op.id)}>{op.descricao}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            placeholder="Selecione o motivo"
+                            searchPlaceholder="Pesquisar motivo..."
+                            emptyMessage="Nenhum motivo encontrado."
+                            className="h-10"
+                          />
                         </div>
                         <div className="col-span-1 flex justify-end">
                           <Button
@@ -1079,23 +1075,19 @@ export default function ParteDiaria() {
                         </div>
                         <div className="col-span-3 space-y-1">
                           <Label className="text-xs">Motivo</Label>
-                          <Select
-                            value={parada.motivoId}
+                          <SearchableSelect
+                            options={(outrasParadasList || []).map((op: any) => ({ value: String(op.id), label: op.descricao }))}
+                            value={parada.motivoId || ""}
                             onValueChange={(val) => {
                               const novo = [...paradasDesligado];
                               novo[idx].motivoId = val;
                               setParadasDesligado(novo);
                             }}
-                          >
-                            <SelectTrigger className="h-10">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {outrasParadasList?.map((op: any) => (
-                                <SelectItem key={op.id} value={String(op.id)}>{op.descricao}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            placeholder="Selecione o motivo"
+                            searchPlaceholder="Pesquisar motivo..."
+                            emptyMessage="Nenhum motivo encontrado."
+                            className="h-10"
+                          />
                         </div>
                         <div className="col-span-1 flex justify-end">
                           <Button
