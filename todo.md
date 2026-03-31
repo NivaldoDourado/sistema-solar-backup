@@ -117,3 +117,7 @@
 - [x] Extrair dados de paradas_normais e paradas_mecanicas do SQL externo
 - [x] Importar registros para tabela Outras Paradas com campo Observação identificando origem
 - [x] Implementar campo de pesquisa nos dropdowns de Motivo (Tempo Parado Ligado e Desligado) na Parte Diária
+
+## Importação de Operadores/Motoristas
+- [x] Extrair nomes únicos de operador_ou_motorista cruzando com equipamentos para definir função
+- [x] Importar para tabela Operadores/Motoristas do sistema SOLAR com campo Função correto
