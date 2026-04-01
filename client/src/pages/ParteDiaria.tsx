@@ -261,7 +261,7 @@ export default function ParteDiaria() {
       // Validação
       if (resultado < 0) {
         setHoraKmValidationMsg("Reveja os horímetros ou Km lançados: não existe hora/km negativo");
-      } else if (resultado > 24 && !isCaminhaoEntrega) {
+      } else if (resultado > 24 && !isCaminhaoEntrega && !isBalancaIntegradora) {
         setHoraKmValidationMsg("Reveja os horímetros lançados: horas trabalhadas não pode ser maior que 24 horas");
       } else {
         setHoraKmValidationMsg("");
@@ -269,8 +269,7 @@ export default function ParteDiaria() {
     } else {
       setHoraKmValidationMsg("");
     }
-  }, [horaKmInicial, horaKmFinal, isCaminhaoEntrega]);
-
+   }, [horaKmInicial, horaKmFinal, isCaminhaoEntrega, isBalancaIntegradora]);
   // Função para calcular tempo decorrido entre HH:MM (suporta virada de meia-noite)
   function calcTempoDecorrido(inicio: string, fim: string): string {
     if (!inicio || !fim) return "0.00";
@@ -645,7 +644,7 @@ export default function ParteDiaria() {
       toast.error("Reveja os horímetros ou Km lançados: não existe hora/km negativo");
       return;
     }
-    if (horaKmTrab > 24 && !isCaminhaoEntrega) {
+    if (horaKmTrab > 24 && !isCaminhaoEntrega && !isBalancaIntegradora) {
       toast.error("Reveja os horímetros lançados: horas trabalhadas não pode ser maior que 24 horas");
       return;
     }

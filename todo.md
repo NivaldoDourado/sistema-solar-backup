@@ -140,3 +140,6 @@
 - [x] Criar procedure tRPC producaoBalancasIntegradoras com Leitura Inicial, Leitura Final, Produção Balança por equipamento e alerta de divergência
 - [x] Criar card Produção Balança no dashboard após card Produção Método Caminhões
 - [x] Exibir alerta de divergência quando soma das subtrações ≠ Leitura Final máx - Leitura Inicial mín
+
+## Parte Diária - Correção Validação Balanças Integradoras
+- [x] Remover validação de 24h para horímetro quando equipamento for do grupo BALANÇAS INTEGRADORAS (backend e frontend)
