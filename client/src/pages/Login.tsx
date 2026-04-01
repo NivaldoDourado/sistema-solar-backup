@@ -109,12 +109,12 @@ export default function Login() {
 
         {/* Conteúdo central */}
         <div className="relative z-10 flex flex-col items-center text-center">
-          {/* Logos lado a lado */}
-          <div className="flex items-end gap-4 mb-8">
-            <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20">
+          {/* Logos lado a lado - mesmo tamanho */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
               <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
             </div>
-            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-xl mb-2">
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-xl">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
           </div>
