@@ -109,16 +109,17 @@ export default function Login() {
 
         {/* Conteúdo central */}
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-2xl mb-8 border-4 border-white/20">
-            <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Sistema SOLAR</h1>
-          <div className="flex items-center gap-3 mb-3">
-            <p className="text-amber-200 text-lg font-semibold">Dourado Gestão e Negócios</p>
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30 shadow-lg flex-shrink-0">
+          {/* Logos lado a lado */}
+          <div className="flex items-end gap-4 mb-8">
+            <div className="w-40 h-40 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20">
+              <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
+            </div>
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-xl mb-2">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
           </div>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Sistema SOLAR</h1>
+          <p className="text-amber-200 text-lg font-semibold mb-3">Dourado Gestão e Negócios</p>
           <p className="text-amber-100/70 text-sm max-w-xs leading-relaxed">
             Gestão Operacional Integrada da Pedreira Solar — controle de equipamentos, combustível, produção e custos em um só lugar.
           </p>
