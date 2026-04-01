@@ -161,3 +161,8 @@
 - [x] Alterar "Sistema SOLAR" para "GEM - Sistema de Gestão Estratégica em Mineração" na tela de login
 - [x] Alterar "DOURADO GESTÃO EM MINERAÇÃO" para "SOLAR PEDREIRA" (sem negrito) na tela de login
 - [x] Garantir que as alterações funcionem no mobile também
+
+## Auditoria de Segurança - Permissões
+- [x] Corrigir fallback do hook usePermissions (somente leitura em vez de acesso total durante carregamento)
+- [x] Auditar todos os módulos e identificar os sem controle de permissão nos botões criar/editar/excluir
+- [x] Corrigir módulos sem controle de permissão identificados

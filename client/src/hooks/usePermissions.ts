@@ -53,7 +53,7 @@ const defaultPermsForRole = (role: UserRole): PermMap => {
     case "consultoria":
       return Object.fromEntries(ALL_MODULES.map(m => [m, allAccess]));
     case "diretor":
-      return Object.fromEntries(ALL_MODULES.map(m => [m, allAccess]));
+      return Object.fromEntries(ALL_MODULES.map(m => [m, viewOnly]));
     case "gerente":
       return Object.fromEntries(ALL_MODULES.map(m => [m, m === "usuarios" ? noAccess : viewOnly]));
     case "coordenador":

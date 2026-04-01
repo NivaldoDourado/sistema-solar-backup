@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Trash2, User, Edit, UserPlus, KeyRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const roleLabels: Record<string, string> = {
   diretor: "Diretor",
@@ -35,6 +36,7 @@ const roleColors: Record<string, string> = {
 export default function Usuarios() {
   const { user } = useAuth();
   const isConsultoria = user?.role === "consultoria" || user?.role === "admin";
+  const { canCreate: canCreatePerm, canEdit: canEditPerm, canDelete: canDeletePerm } = usePermissions();
   
   const { data: usuarios, refetch } = trpc.usuarios.list.useQuery();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -229,6 +231,7 @@ export default function Usuarios() {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  {canEditPerm("usuarios") && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -237,6 +240,8 @@ export default function Usuarios() {
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
+                  )}
+                  {canEditPerm("usuarios") && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -249,6 +254,8 @@ export default function Usuarios() {
                   >
                     <KeyRound className="h-4 w-4" />
                   </Button>
+                  )}
+                  {canDeletePerm("usuarios") && (
                   <Button
                     variant="destructive"
                     size="sm"
@@ -256,6 +263,7 @@ export default function Usuarios() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
+                  )}
                 </div>
               </div>
             ))}

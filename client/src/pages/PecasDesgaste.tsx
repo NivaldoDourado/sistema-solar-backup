@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ import {
 
 export default function PecasDesgaste() {
   const [activeTab, setActiveTab] = useState("estoque");
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   // ============================================================================
   // CATEGORIAS
@@ -484,9 +486,11 @@ export default function PecasDesgaste() {
         <TabsContent value="categorias" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Categorias de Peças</h2>
+            {canCreate("pecasDesgaste") && (
             <Button onClick={() => abrirCategoriaDialog()} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4" /> Nova Categoria
             </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -503,14 +507,18 @@ export default function PecasDesgaste() {
                     </div>
                   </div>
                   <div className="flex gap-1">
+                    {canEdit("pecasDesgaste") && (
                     <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => abrirCategoriaDialog(cat)}>
                       <Pencil className="h-4 w-4 text-blue-500" />
                     </Button>
+                    )}
+                    {canDelete("pecasDesgaste") && (
                     <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
                       if (confirm("Excluir esta categoria?")) deleteCategoria.mutate({ id: cat.id });
                     }}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -531,9 +539,11 @@ export default function PecasDesgaste() {
         <TabsContent value="pecas" className="space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Catálogo de Peças</h2>
+            {canCreate("pecasDesgaste") && (
             <Button onClick={() => abrirPecaDialog()} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4" /> Nova Peça
             </Button>
+            )}
           </div>
 
           {/* Filtros */}
@@ -588,14 +598,18 @@ export default function PecasDesgaste() {
                       <td className="p-3 text-center font-bold text-gray-900 dark:text-gray-100">{p.estoqueAtual}</td>
                       <td className="p-3 text-center">
                         <div className="flex justify-center gap-1">
+                          {canEdit("pecasDesgaste") && (
                           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => abrirPecaDialog(p)}>
                             <Pencil className="h-4 w-4 text-blue-500" />
                           </Button>
+                          )}
+                          {canDelete("pecasDesgaste") && (
                           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
                             if (confirm("Excluir esta peça?")) deletePeca.mutate({ id: p.id });
                           }}>
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -618,9 +632,11 @@ export default function PecasDesgaste() {
         <TabsContent value="movimentacoes" className="space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Movimentações</h2>
+            {canCreate("pecasDesgaste") && (
             <Button onClick={() => abrirMovDialog()} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4" /> Nova Movimentação
             </Button>
+            )}
           </div>
 
           {/* Filtros */}
@@ -690,14 +706,18 @@ export default function PecasDesgaste() {
                         <td className="p-3 text-right text-gray-600 dark:text-gray-300">{m.valorUnitario ? `R$ ${Number(m.valorUnitario).toFixed(2)}` : "-"}</td>
                         <td className="p-3 text-center">
                           <div className="flex justify-center gap-1">
+                            {canEdit("pecasDesgaste") && (
                             <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => abrirMovDialog(m)}>
                               <Pencil className="h-4 w-4 text-blue-500" />
                             </Button>
+                            )}
+                            {canDelete("pecasDesgaste") && (
                             <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
                               if (confirm("Excluir esta movimentação?")) deleteMov.mutate({ id: m.id });
                             }}>
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

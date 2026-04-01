@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +64,8 @@ const FORM_VAZIO: MetaForm = {
 };
 
 export default function MetasAlertas() {
+  const { user } = useAuth();
+  const isConsultoria = user?.role === "consultoria" || user?.role === "admin";
   const [modalAberto, setModalAberto] = useState(false);
   const [form, setForm] = useState<MetaForm>(FORM_VAZIO);
   const [editando, setEditando] = useState(false);
@@ -134,10 +137,12 @@ export default function MetasAlertas() {
             Configure os limites dos indicadores para receber alertas push no celular.
           </p>
         </div>
+        {isConsultoria && (
         <Button onClick={abrirNova} className="gap-2">
           <Plus className="w-4 h-4" />
           Nova Meta
         </Button>
+        )}
       </div>
 
       {/* Aviso informativo */}
@@ -219,6 +224,7 @@ export default function MetasAlertas() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    {isConsultoria && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -227,6 +233,8 @@ export default function MetasAlertas() {
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
+                    )}
+                    {isConsultoria && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -239,6 +247,7 @@ export default function MetasAlertas() {
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

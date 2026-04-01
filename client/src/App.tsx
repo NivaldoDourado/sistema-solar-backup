@@ -179,7 +179,9 @@ function Router() {
       </Route>
       <Route path={"/destinatarios-whatsapp"}>
         <DashboardLayout>
-          <DestinatariosWhatsapp />
+          <ProtectedRoute module="usuarios">
+            <DestinatariosWhatsapp />
+          </ProtectedRoute>
         </DashboardLayout>
       </Route>
       <Route path={"/pecas-desgaste"}>
@@ -240,7 +242,9 @@ function Router() {
       {/* Metas e Alertas Push - dentro do DashboardLayout */}
       <Route path="/metas-alertas">
         <DashboardLayout>
-          <MetasAlertas />
+          <ProtectedRoute module="usuarios">
+            <MetasAlertas />
+          </ProtectedRoute>
         </DashboardLayout>
       </Route>
 

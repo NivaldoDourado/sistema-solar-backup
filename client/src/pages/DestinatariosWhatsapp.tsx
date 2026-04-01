@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,8 @@ const emptyFormData: FormData = {
 };
 
 export default function DestinatariosWhatsapp() {
+  const { user } = useAuth();
+  const isConsultoria = user?.role === "consultoria" || user?.role === "admin";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -262,6 +265,7 @@ export default function DestinatariosWhatsapp() {
             Cadastre os números que receberão os relatórios do Dashboard via WhatsApp
           </p>
         </div>
+        {isConsultoria && (
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="bg-green-600 hover:bg-green-700">
@@ -279,6 +283,7 @@ export default function DestinatariosWhatsapp() {
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <Card>
@@ -325,12 +330,16 @@ export default function DestinatariosWhatsapp() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        {isConsultoria && (
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
+                        )}
+                        {isConsultoria && (
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
