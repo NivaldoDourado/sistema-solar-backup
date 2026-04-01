@@ -152,3 +152,7 @@
 ## Tela de Login - Logomarca Solar Pedreira
 - [x] Fazer upload da logomarca Solar Pedreira para CDN
 - [x] Inserir logomarca ao lado da Dourado Gestão na tela de login
+
+## Login - Eliminar tela intermediária branca
+- [x] Remover tela branca "Faça login para continuar" e ir direto para /login
+- [x] Garantir que logoff redireciona para /login (não para tela branca)

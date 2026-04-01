@@ -122,29 +122,9 @@ export default function DashboardLayout({
   }
 
   if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Faça login para continuar
-            </h1>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              O acesso ao sistema requer autenticação. Continue para fazer login.
-            </p>
-          </div>
-          <Button
-            onClick={() => {
-              window.location.href = "/login";
-            }}
-            size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
-          >
-            Fazer Login
-          </Button>
-        </div>
-      </div>
-    );
+    // Redirecionar automaticamente para a tela de login personalizada
+    window.location.href = "/login";
+    return null;
   }
 
   return (
@@ -308,31 +288,10 @@ function DashboardLayoutContent({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  // Determinar para onde redirecionar após logout:
-                  // Usuários locais (loginMethod === 'local') vão para /login
-                  // Usuários OAuth do Manus vão para o portal OAuth
-                  const isLocalUser = user?.loginMethod === 'local';
-                  const redirectUrl = isLocalUser ? "/login" : getLoginUrl();
-                  const doRedirect = (url: string) => {
-                    if (url.startsWith("/")) {
-                      // Rota interna: sempre no frame atual
-                      window.location.href = url;
-                    } else {
-                      // URL externa (portal OAuth): usar frame pai se dentro de iframe
-                      try {
-                        if (window.top && window.top !== window) {
-                          window.top.location.href = url;
-                        } else {
-                          window.location.href = url;
-                        }
-                      } catch {
-                        window.open(url, "_blank");
-                      }
-                    }
-                  };
+                  // Sempre redirecionar para a tela de login personalizada após logout
                   logout.mutate(undefined, {
-                    onSuccess: () => doRedirect(redirectUrl),
-                    onError: () => doRedirect(redirectUrl),
+                    onSuccess: () => { window.location.href = "/login"; },
+                    onError: () => { window.location.href = "/login"; },
                   });
                 }}
                 className="text-destructive focus:text-destructive cursor-pointer"

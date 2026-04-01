@@ -307,7 +307,7 @@ export default function MobileDashboard() {
 
         {/* Botão de login */}
         <a
-          href={getLoginUrl()}
+          href="/login"
           className="w-full max-w-xs bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-900 font-bold py-4 px-6 rounded-2xl text-center text-base transition-colors shadow-lg shadow-amber-500/30"
         >
           Entrar no Sistema
@@ -491,7 +491,9 @@ export default function MobileDashboard() {
 
           <div className="mt-3 pt-3 border-t border-slate-700">
             <button
-              onClick={() => logout()}
+              onClick={() => {
+                logout().then(() => { window.location.href = "/login"; }).catch(() => { window.location.href = "/login"; });
+              }}
               className="flex items-center gap-2 text-red-400 text-sm"
             >
               <LogOut className="w-4 h-4" />
