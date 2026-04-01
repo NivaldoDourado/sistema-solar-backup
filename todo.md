@@ -143,3 +143,8 @@
 
 ## Parte Diária - Correção Validação Balanças Integradoras
 - [x] Remover validação de 24h para horímetro quando equipamento for do grupo BALANÇAS INTEGRADORAS (backend e frontend)
+
+## Parte Diária - Balanças Integradoras: Desativar Todas as Validações
+- [x] Remover validação de "pelo menos um serviço" para balanças integradoras
+- [x] Ocultar card "Trocas de Peças de Desgaste" para balanças integradoras
+- [x] Verificar e remover demais validações não aplicáveis (turno, capacidade, etc.)

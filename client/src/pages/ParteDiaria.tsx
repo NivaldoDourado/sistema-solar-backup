@@ -658,7 +658,7 @@ export default function ParteDiaria() {
         operadorMotoristaId: item.operadorMotoristaId > 0 ? item.operadorMotoristaId : undefined,
       }));
 
-    if (itensValidos.length === 0) {
+    if (itensValidos.length === 0 && !isBalancaIntegradora) {
       toast.error("Adicione pelo menos um serviço");
       return;
     }
@@ -1417,7 +1417,7 @@ export default function ParteDiaria() {
               }
 
               {/* Seção de Trocas de Peças de Desgaste */}
-              <Card className="bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700">
+              {!isBalancaIntegradora && <Card className="bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1547,7 +1547,7 @@ export default function ParteDiaria() {
                     <p className="text-sm text-muted-foreground text-center py-2">Nenhuma troca de peça registrada para este lançamento.</p>
                   )}
                 </CardContent>
-              </Card>
+              </Card>}
 
               {/* Seção de Tempos de Descarga - só para CAMINHÕES INTERNOS e CAMINHÕES DA ENTREGA DE MATERIAL */}
               {showTemposDescarga && (() => {
