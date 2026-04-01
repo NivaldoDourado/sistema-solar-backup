@@ -301,8 +301,8 @@ export default function MobileDashboard() {
         </div>
 
         {/* Título */}
-        <h1 className="text-2xl font-bold text-white mb-1 tracking-wide">Sistema SOLAR</h1>
-        <p className="text-amber-400 text-sm font-semibold mb-1">Dourado Gestão e Negócios</p>
+        <h1 className="text-2xl font-bold text-white mb-1 tracking-wide">GEM - Sistema de Gestão Estratégica em Mineração</h1>
+        <p className="text-amber-400 text-sm mb-1">SOLAR PEDREIRA</p>
         <p className="text-white/50 text-xs mb-10 text-center">Gestão Operacional da Pedreira Solar</p>
 
         {/* Botão de login */}

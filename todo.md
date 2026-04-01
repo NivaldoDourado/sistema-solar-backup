@@ -156,3 +156,8 @@
 ## Login - Eliminar tela intermediária branca
 - [x] Remover tela branca "Faça login para continuar" e ir direto para /login
 - [x] Garantir que logoff redireciona para /login (não para tela branca)
+
+## Tela de Login - Alteração de Textos
+- [x] Alterar "Sistema SOLAR" para "GEM - Sistema de Gestão Estratégica em Mineração" na tela de login
+- [x] Alterar "DOURADO GESTÃO EM MINERAÇÃO" para "SOLAR PEDREIRA" (sem negrito) na tela de login
+- [x] Garantir que as alterações funcionem no mobile também

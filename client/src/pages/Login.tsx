@@ -118,8 +118,8 @@ export default function Login() {
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Sistema SOLAR</h1>
-          <p className="text-amber-200 text-lg font-semibold mb-3">DOURADO GESTÃO EM MINERAÇÃO</p>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">GEM - Sistema de Gestão Estratégica em Mineração</h1>
+          <p className="text-amber-200 text-lg mb-3">SOLAR PEDREIRA</p>
           <p className="text-amber-100/70 text-sm max-w-xs leading-relaxed">
             Gestão Operacional Integrada da Pedreira Solar — controle de equipamentos, combustível, produção e custos em um só lugar.
           </p>
@@ -136,9 +136,9 @@ export default function Login() {
           <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-xl mb-4 border-2 border-amber-500/40">
             <img src={LOGO_URL} alt="SOLAR" className="w-full h-full object-cover" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Sistema SOLAR</h1>
+          <h1 className="text-2xl font-bold text-white">GEM - Sistema de Gestão Estratégica em Mineração</h1>
           <div className="flex items-center gap-2">
-            <p className="text-amber-400 text-sm font-semibold">DOURADO GESTÃO EM MINERAÇÃO</p>
+            <p className="text-amber-400 text-sm">SOLAR PEDREIRA</p>
             <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/40 flex-shrink-0">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
