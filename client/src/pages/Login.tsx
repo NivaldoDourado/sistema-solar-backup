@@ -112,14 +112,14 @@ export default function Login() {
           {/* Logos lado a lado - mesmo tamanho */}
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
-              <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
+              <img src={LOGO_URL} alt="DOURADO GESTÃO EM MINERAÇÃO" className="w-full h-full object-cover" />
             </div>
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-xl">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Sistema SOLAR</h1>
-          <p className="text-amber-200 text-lg font-semibold mb-3">Dourado Gestão e Negócios</p>
+          <p className="text-amber-200 text-lg font-semibold mb-3">DOURADO GESTÃO EM MINERAÇÃO</p>
           <p className="text-amber-100/70 text-sm max-w-xs leading-relaxed">
             Gestão Operacional Integrada da Pedreira Solar — controle de equipamentos, combustível, produção e custos em um só lugar.
           </p>
@@ -138,7 +138,7 @@ export default function Login() {
           </div>
           <h1 className="text-2xl font-bold text-white">Sistema SOLAR</h1>
           <div className="flex items-center gap-2">
-            <p className="text-amber-400 text-sm font-semibold">Dourado Gestão e Negócios</p>
+            <p className="text-amber-400 text-sm font-semibold">DOURADO GESTÃO EM MINERAÇÃO</p>
             <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-500/40 flex-shrink-0">
               <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-pedreira_7ccf55d9.png" alt="Solar Pedreira" className="w-full h-full object-cover" />
             </div>
