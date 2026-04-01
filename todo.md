@@ -148,3 +148,7 @@
 - [x] Remover validação de "pelo menos um serviço" para balanças integradoras
 - [x] Ocultar card "Trocas de Peças de Desgaste" para balanças integradoras
 - [x] Verificar e remover demais validações não aplicáveis (turno, capacidade, etc.)
+
+## Tela de Login - Logomarca Solar Pedreira
+- [x] Fazer upload da logomarca Solar Pedreira para CDN
+- [x] Inserir logomarca ao lado da Dourado Gestão na tela de login
