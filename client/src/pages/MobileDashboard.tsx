@@ -627,12 +627,7 @@ export default function MobileDashboard() {
                   )}
                 </div>
               ))}
-              <div className="border-t border-teal-700 pt-2 flex justify-between">
-                <span className="text-teal-400 text-xs font-semibold">Total</span>
-                <span className="text-white text-sm font-bold">
-                  {producaoBalancasData.data.equipamentos.reduce((acc, e) => acc + e.producaoBalanca, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
+
             </div>
           </div>
         </div>

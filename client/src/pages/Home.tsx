@@ -1123,15 +1123,7 @@ export default function Home() {
                   )}
                 </div>
               ))}
-              {/* Total */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 text-xs items-center border-t border-teal-200 dark:border-teal-800 pt-2 font-semibold text-teal-800 dark:text-teal-200">
-                <span>Total</span>
-                <span></span>
-                <span></span>
-                <span className="text-right">
-                  {producaoBalancasData.equipamentos.reduce((acc, e) => acc + e.producaoBalanca, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
+
             </div>
           </CardContent>
         </Card>
