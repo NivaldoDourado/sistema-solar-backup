@@ -166,3 +166,7 @@
 - [x] Corrigir fallback do hook usePermissions (somente leitura em vez de acesso total durante carregamento)
 - [x] Auditar todos os módulos e identificar os sem controle de permissão nos botões criar/editar/excluir
 - [x] Corrigir módulos sem controle de permissão identificados
+
+## Dashboard Mobile - Sincronização de Cards
+- [x] Auditar cards do dashboard web vs mobile
+- [x] Adicionar cards faltantes no MobileDashboard.tsx

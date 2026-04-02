@@ -1,16 +1,16 @@
 /**
  * MobileDashboard.tsx
  * Dashboard PWA otimizado para celular - PEDREIRA SOLAR
- * Exibe os mesmos KPIs do Dashboard web com filtros de período
+ * Exibe os mesmos KPIs e cards do Dashboard web com filtros de período
  */
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Fuel,
   DollarSign,
   Package,
+  PackageX,
   Wrench,
   Truck,
   TrendingUp,
@@ -21,12 +21,18 @@ import {
   LogOut,
   RefreshCw,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   AlertTriangle,
   CheckCircle2,
   CalendarRange,
   Scale,
+  ShieldCheck,
+  Settings2,
+  Factory,
+  ShoppingCart,
+  Layers,
 } from "lucide-react";
-
 import { toast } from "sonner";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/dgsolar-icon-192-v1774802666_01352d9a.png";
@@ -83,6 +89,11 @@ function formatNumber(n: number, decimals = 0): string {
 
 function formatCurrency(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatDateBR(dateStr: string) {
+  const [y, m, d] = dateStr.split("-");
+  return `${d}/${m}/${y}`;
 }
 
 // ============================================================
@@ -220,21 +231,43 @@ export default function MobileDashboard() {
     .split("T")[0];
   const [customInicio, setCustomInicio] = useState(firstOfMonth);
   const [customFim, setCustomFim] = useState(today);
-  // Datas "aplicadas" (só mudam ao clicar Aplicar)
   const [appliedInicio, setAppliedInicio] = useState(firstOfMonth);
   const [appliedFim, setAppliedFim] = useState(today);
+
+  // Expandir/recolher listas
+  const [expandSetor, setExpandSetor] = useState(false);
+  const [expandServico, setExpandServico] = useState(false);
+  const [expandEquipamento, setExpandEquipamento] = useState(false);
 
   const { dataInicio, dataFim, label: periodoLabel } = useMemo(
     () => getPeriodoDates(periodo, appliedInicio, appliedFim),
     [periodo, appliedInicio, appliedFim]
   );
 
-  // Queries de totais
-  const abastecimentoTotais = trpc.abastecimento.totais.useQuery({ dataInicio, dataFim });
-  const custosTotais = trpc.custos.totais.useQuery({ dataInicio, dataFim });
-  const manutencaoTotais = trpc.manutencao.totais.useQuery({ dataInicio, dataFim });
-  const producaoTotais = trpc.producao.totais.useQuery({ dataInicio, dataFim });
+  const filtroParams = useMemo(() => ({ dataInicio, dataFim }), [dataInicio, dataFim]);
+
+  // ---- Queries ----
+  const abastecimentoTotais = trpc.abastecimento.totais.useQuery(filtroParams);
+  const custosTotais = trpc.custos.totais.useQuery(filtroParams);
+  const manutencaoTotais = trpc.manutencao.totais.useQuery(filtroParams);
+  const producaoTotais = trpc.producao.totais.useQuery(filtroParams);
   const equipamentosLista = trpc.equipamentos.list.useQuery();
+  const producaoBalancasData = trpc.parteDiaria.producaoBalancasIntegradoras.useQuery(filtroParams);
+  const producaoMetodoCaminhoes = trpc.parteDiaria.producaoMetodoCaminhoes.useQuery(filtroParams);
+  const producaoPerfuracao = trpc.parteDiaria.producaoPerfuracao.useQuery(filtroParams);
+  const medicaoPilhasData = trpc.medicaoPilhas.producaoPorProduto.useQuery(filtroParams as any);
+  const producaoMotoristasData = trpc.parteDiaria.producaoMotoristas.useQuery(filtroParams);
+  const revisoesPreventivas = trpc.manutencao.revisoesPreventivas.useQuery();
+  const vendasData = trpc.vendas.vendasList.useQuery();
+  const producaoUltimoDia = trpc.parteDiaria.producaoUltimoDia.useQuery();
+  const estoqueMinimoPecas = trpc.pecasDesgaste.estoqueMinimoDashboard.useQuery();
+  const producaoPorSetor = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams);
+  const producaoPorServico = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams);
+  const producaoPorEquipamento = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams);
+  const metaCaminhoesConfig = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
+  const metaDiariaConfig = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
+  const metasList = trpc.metas.list.useQuery();
+  const verificarAlerta = trpc.metas.verificarAlertas.useMutation();
 
   const isLoading =
     abastecimentoTotais.isLoading ||
@@ -246,7 +279,52 @@ export default function MobileDashboard() {
     () => (equipamentosLista.data ?? []).filter((e) => e.ativo === "sim").length,
     [equipamentosLista.data]
   );
-  const producaoBalancasData = trpc.parteDiaria.producaoBalancasIntegradoras.useQuery({ dataInicio, dataFim });
+
+  // Vendas filtradas por período
+  const vendasFiltradas = useMemo(() => {
+    if (!vendasData.data) return [];
+    return vendasData.data.filter((v: any) => {
+      const d = typeof v.data === "string" ? v.data.split("T")[0] : new Date(v.data).toISOString().split("T")[0];
+      if (dataInicio && d < dataInicio) return false;
+      if (dataFim && d > dataFim) return false;
+      return true;
+    });
+  }, [vendasData.data, dataInicio, dataFim]);
+
+  const vendasPorTipo = useMemo(() => {
+    const r = {
+      venda: { totalM3: 0, totalTon: 0, valor: 0 },
+      amortizacao: { totalM3: 0, totalTon: 0, valor: 0 },
+      doacao: { totalM3: 0, totalTon: 0, valor: 0 },
+    };
+    vendasFiltradas.forEach((v: any) => {
+      const tipo = (v.tipo || "venda") as keyof typeof r;
+      if (r[tipo]) {
+        const qtdM3 = parseFloat(String(v.pesoTotal || "0"));
+        r[tipo].totalM3 += qtdM3;
+        r[tipo].valor += parseFloat(String(v.valorTotal || "0"));
+        if (v.itens && Array.isArray(v.itens)) {
+          v.itens.forEach((item: any) => {
+            const qtdItem = parseFloat(String(item.quantidade || "0"));
+            const densidade = item.produto?.densidade ? parseFloat(String(item.produto.densidade)) : 0;
+            r[tipo].totalTon += qtdItem * densidade;
+          });
+        }
+      }
+    });
+    return r;
+  }, [vendasFiltradas]);
+
+  const totalProducaoCaminhoes = producaoMetodoCaminhoes.data?.total || 0;
+  const totalPerfuracao = producaoPerfuracao.data?.total || 0;
+  const totalFuros = producaoPerfuracao.data?.totalFuros || 0;
+  const totalMetrosPerfurados = producaoPerfuracao.data?.totalMetros || 0;
+  const metaCaminhoesVal = parseFloat(metaCaminhoesConfig.data?.valor || "0");
+  const metaDiariaVal = parseFloat(metaDiariaConfig.data?.valor || "0");
+
+  const maxProducaoSetor = Math.max(...(producaoPorSetor.data?.map((s: any) => s.producaoTotal) || [1]));
+  const maxProducaoServico = Math.max(...(producaoPorServico.data?.map((s: any) => s.producaoTotal) || [1]));
+  const maxProducaoEquipamento = Math.max(...(producaoPorEquipamento.data?.map((e: any) => e.producaoTotal) || [1]));
 
   const refetchAll = () => {
     abastecimentoTotais.refetch();
@@ -254,11 +332,19 @@ export default function MobileDashboard() {
     manutencaoTotais.refetch();
     producaoTotais.refetch();
     equipamentosLista.refetch();
+    producaoBalancasData.refetch();
+    producaoMetodoCaminhoes.refetch();
+    producaoPerfuracao.refetch();
+    medicaoPilhasData.refetch();
+    producaoMotoristasData.refetch();
+    revisoesPreventivas.refetch();
+    vendasData.refetch();
+    producaoUltimoDia.refetch();
+    estoqueMinimoPecas.refetch();
+    producaoPorSetor.refetch();
+    producaoPorServico.refetch();
+    producaoPorEquipamento.refetch();
   };
-
-  // Verificar alertas de metas
-  const verificarAlerta = trpc.metas.verificarAlertas.useMutation();
-  const metasList = trpc.metas.list.useQuery();
 
   useEffect(() => {
     if (!abastecimentoTotais.data || !custosTotais.data || !producaoTotais.data) return;
@@ -271,12 +357,7 @@ export default function MobileDashboard() {
     indicadores.forEach(({ indicador, valorAtual }) => {
       verificarAlerta.mutate({ indicador, valorAtual });
     });
-  }, [
-    abastecimentoTotais.data,
-    custosTotais.data,
-    producaoTotais.data,
-    manutencaoTotais.data,
-  ]);
+  }, [abastecimentoTotais.data, custosTotais.data, producaoTotais.data, manutencaoTotais.data]);
 
   // ---- Auth Guard ----
   if (loading) {
@@ -295,25 +376,18 @@ export default function MobileDashboard() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6">
-        {/* Logo */}
         <div className="w-32 h-32 rounded-3xl overflow-hidden mb-6 shadow-2xl border-2 border-amber-500/30">
           <img src={LOGO_URL} alt="Dourado Gestão e Negócios" className="w-full h-full object-cover" />
         </div>
-
-        {/* Título */}
         <h1 className="text-2xl font-bold text-white mb-1 tracking-wide">GEM - Sistema de Gestão Estratégica em Mineração</h1>
         <p className="text-amber-400 text-sm mb-1">SOLAR PEDREIRA</p>
         <p className="text-white/50 text-xs mb-10 text-center">Gestão Operacional da Pedreira Solar</p>
-
-        {/* Botão de login */}
         <a
           href="/login"
           className="w-full max-w-xs bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-900 font-bold py-4 px-6 rounded-2xl text-center text-base transition-colors shadow-lg shadow-amber-500/30"
         >
           Entrar no Sistema
         </a>
-
-        {/* Rodapé */}
         <p className="text-slate-600 text-xs mt-10">Pedreira Solar © 2025</p>
       </div>
     );
@@ -332,11 +406,7 @@ export default function MobileDashboard() {
       <div className="bg-gradient-to-br from-amber-600 to-amber-800 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img
-              src={LOGO_SOLAR_URL}
-              alt="SOLAR - Pedreira Solar"
-              className="h-10 object-contain"
-            />
+            <img src={LOGO_SOLAR_URL} alt="SOLAR - Pedreira Solar" className="h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -359,28 +429,23 @@ export default function MobileDashboard() {
           Olá, <span className="font-semibold">{user?.name?.split(" ")[0]}</span>
         </p>
 
-        {/* Filtros de Período — linha 1: botões rápidos */}
+        {/* Filtros de Período */}
         <div className="flex gap-2 mt-3">
           {periodos.map((p) => (
             <button
               key={p.key}
               onClick={() => setPeriodo(p.key)}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
-                periodo === p.key
-                  ? "bg-white text-amber-700 shadow-md"
-                  : "bg-white/20 text-white"
+                periodo === p.key ? "bg-white text-amber-700 shadow-md" : "bg-white/20 text-white"
               }`}
             >
               {p.label}
             </button>
           ))}
-          {/* Botão Personalizado */}
           <button
             onClick={() => setPeriodo("personalizado")}
             className={`px-2 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
-              periodo === "personalizado"
-                ? "bg-white text-amber-700 shadow-md"
-                : "bg-white/20 text-white"
+              periodo === "personalizado" ? "bg-white text-amber-700 shadow-md" : "bg-white/20 text-white"
             }`}
             title="Período personalizado"
           >
@@ -388,7 +453,6 @@ export default function MobileDashboard() {
           </button>
         </div>
 
-        {/* Seletor de datas personalizadas */}
         {periodo === "personalizado" && (
           <div className="mt-3 bg-white/15 rounded-2xl p-3 space-y-2">
             <div className="flex gap-2 items-center">
@@ -399,7 +463,7 @@ export default function MobileDashboard() {
                   value={customInicio}
                   max={customFim}
                   onChange={(e) => setCustomInicio(e.target.value)}
-                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white placeholder-white/50"
+                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white"
                   style={{ colorScheme: "dark" }}
                 />
               </div>
@@ -411,21 +475,15 @@ export default function MobileDashboard() {
                   min={customInicio}
                   max={today}
                   onChange={(e) => setCustomFim(e.target.value)}
-                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white placeholder-white/50"
+                  className="w-full bg-white/20 text-white text-sm rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:border-white"
                   style={{ colorScheme: "dark" }}
                 />
               </div>
             </div>
             <button
               onClick={() => {
-                if (!customInicio || !customFim) {
-                  toast.error("Preencha as duas datas");
-                  return;
-                }
-                if (customInicio > customFim) {
-                  toast.error("A data inicial deve ser anterior à data final");
-                  return;
-                }
+                if (!customInicio || !customFim) { toast.error("Preencha as duas datas"); return; }
+                if (customInicio > customFim) { toast.error("A data inicial deve ser anterior à data final"); return; }
                 setAppliedInicio(customInicio);
                 setAppliedFim(customFim);
                 refetchAll();
@@ -440,60 +498,42 @@ export default function MobileDashboard() {
         <p className="text-amber-100/70 text-xs mt-2">{periodoLabel}</p>
       </div>
 
-      {/* Painel de Configurações (Push) */}
+      {/* Painel de Configurações */}
       {showSettings && (
         <div className="mx-4 mt-4 bg-slate-800 rounded-2xl p-4 border border-slate-700">
           <h3 className="text-white font-semibold mb-3 text-sm">Configurações</h3>
-
           {push.isPushSupported ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {push.isSubscribed ? (
-                    <Bell className="w-4 h-4 text-green-400" />
-                  ) : (
-                    <BellOff className="w-4 h-4 text-slate-400" />
-                  )}
+                  {push.isSubscribed ? <Bell className="w-4 h-4 text-green-400" /> : <BellOff className="w-4 h-4 text-slate-400" />}
                   <div>
                     <p className="text-white text-sm font-medium">Notificações Push</p>
-                    <p className="text-slate-400 text-xs">
-                      {push.isSubscribed ? "Ativas neste dispositivo" : "Desativadas"}
-                    </p>
+                    <p className="text-slate-400 text-xs">{push.isSubscribed ? "Ativas neste dispositivo" : "Desativadas"}</p>
                   </div>
                 </div>
                 <button
                   onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
                   disabled={push.isLoading}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                    push.isSubscribed
-                      ? "bg-red-500/20 text-red-400"
-                      : "bg-green-500/20 text-green-400"
+                    push.isSubscribed ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"
                   }`}
                 >
                   {push.isLoading ? "..." : push.isSubscribed ? "Desativar" : "Ativar"}
                 </button>
               </div>
-
               {push.isSubscribed && (
-                <button
-                  onClick={push.testPush}
-                  className="w-full py-2 bg-slate-700 rounded-xl text-slate-300 text-xs"
-                >
+                <button onClick={push.testPush} className="w-full py-2 bg-slate-700 rounded-xl text-slate-300 text-xs">
                   Enviar notificação de teste
                 </button>
               )}
             </div>
           ) : (
-            <p className="text-slate-400 text-xs">
-              Notificações push não são suportadas neste navegador.
-            </p>
+            <p className="text-slate-400 text-xs">Notificações push não são suportadas neste navegador.</p>
           )}
-
           <div className="mt-3 pt-3 border-t border-slate-700">
             <button
-              onClick={() => {
-                logout().then(() => { window.location.href = "/login"; }).catch(() => { window.location.href = "/login"; });
-              }}
+              onClick={() => { logout().then(() => { window.location.href = "/login"; }).catch(() => { window.location.href = "/login"; }); }}
               className="flex items-center gap-2 text-red-400 text-sm"
             >
               <LogOut className="w-4 h-4" />
@@ -503,7 +543,9 @@ export default function MobileDashboard() {
         </div>
       )}
 
-      {/* KPIs Grid */}
+      {/* ============================================================ */}
+      {/* KPIs Grid - Cards Básicos */}
+      {/* ============================================================ */}
       <div className="px-4 mt-4 grid grid-cols-2 gap-3">
         <KpiCard
           icon={<Truck className="w-5 h-5 text-white" />}
@@ -513,7 +555,6 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-blue-600 to-blue-800"
         />
-
         <KpiCard
           icon={<Fuel className="w-5 h-5 text-white" />}
           label="Combustível (L)"
@@ -522,7 +563,6 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-orange-600 to-orange-800"
         />
-
         <KpiCard
           icon={<Package className="w-5 h-5 text-white" />}
           label="Produção (m³)"
@@ -531,7 +571,6 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-green-600 to-green-800"
         />
-
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custos Totais"
@@ -540,7 +579,6 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-red-600 to-red-800"
         />
-
         <KpiCard
           icon={<Wrench className="w-5 h-5 text-white" />}
           label="Manutenções"
@@ -549,7 +587,6 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
         />
-
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custo Combustível"
@@ -560,14 +597,510 @@ export default function MobileDashboard() {
         />
       </div>
 
-      {/* Metas configuradas */}
-      {metasList.data && metasList.data.filter(m => m.ativo === "sim").length > 0 && (
+      {/* ============================================================ */}
+      {/* Estoque Mínimo de Peças */}
+      {/* ============================================================ */}
+      {estoqueMinimoPecas.data && estoqueMinimoPecas.data.length > 0 && (() => {
+        const abaixoMinimo = estoqueMinimoPecas.data!.filter((p: any) => p.abaixoMinimo);
+        return (
+          <div className="px-4 mt-4">
+            <div className={`rounded-2xl p-4 ${abaixoMinimo.length > 0 ? "bg-orange-900/80 border border-orange-600" : "bg-slate-800 border border-slate-700"}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${abaixoMinimo.length > 0 ? "bg-orange-500/20" : "bg-slate-700"}`}>
+                    {abaixoMinimo.length > 0
+                      ? <PackageX className="w-4 h-4 text-orange-400" />
+                      : <Package className="w-4 h-4 text-slate-400" />}
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-semibold">Estoque Mínimo de Peças</p>
+                    {abaixoMinimo.length > 0 && (
+                      <p className="text-orange-400 text-xs">{abaixoMinimo.length} peça{abaixoMinimo.length > 1 ? "s" : ""} abaixo do mínimo</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {estoqueMinimoPecas.data!.map((peca: any) => (
+                  <div key={peca.id} className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs ${peca.abaixoMinimo ? "bg-orange-800/60 border border-orange-600" : "bg-slate-700/60"}`}>
+                    <span className={`truncate max-w-[55%] font-medium ${peca.abaixoMinimo ? "text-orange-300" : "text-white"}`}>{peca.nome}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {peca.abaixoMinimo && <AlertTriangle className="w-3 h-3 text-orange-400" />}
+                      <span className={`font-bold ${peca.abaixoMinimo ? "text-orange-300" : "text-white"}`}>{peca.estoqueAtual}</span>
+                      <span className="text-white/50">{peca.unidade}</span>
+                      {peca.estoqueMinimo > 0 && <span className="text-white/40">(mín: {peca.estoqueMinimo})</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ============================================================ */}
+      {/* Cards de Vendas por Tipo */}
+      {/* ============================================================ */}
+      {(vendasPorTipo.venda.totalM3 > 0 || vendasPorTipo.amortizacao.totalM3 > 0 || vendasPorTipo.doacao.totalM3 > 0) && (
         <div className="px-4 mt-4">
-          <h3 className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-2">
-            Metas Configuradas
-          </h3>
+          <h3 className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-2">Vendas por Tipo</h3>
+          <div className="space-y-3">
+            {/* Vendas */}
+            <div className="bg-blue-900/70 rounded-2xl p-4 border border-blue-700">
+              <div className="flex items-center gap-2 mb-2">
+                <ShoppingCart className="w-4 h-4 text-blue-400" />
+                <p className="text-blue-300 text-sm font-semibold">Vendas</p>
+              </div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-blue-400/70 text-xs">Qtd Total (m³)</p>
+                  <p className="text-white text-xl font-bold">{formatNumber(vendasPorTipo.venda.totalM3, 2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-blue-400/70 text-xs">Valor Total</p>
+                  <p className="text-white text-base font-bold">{formatCurrency(vendasPorTipo.venda.valor)}</p>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-blue-700">
+                <p className="text-blue-400/70 text-xs">{formatNumber(vendasPorTipo.venda.totalM3, 2)} m³ = {formatNumber(vendasPorTipo.venda.totalTon, 2)} ton</p>
+              </div>
+            </div>
+            {/* Amortizações */}
+            <div className="bg-amber-900/70 rounded-2xl p-4 border border-amber-700">
+              <div className="flex items-center gap-2 mb-2">
+                <RefreshCw className="w-4 h-4 text-amber-400" />
+                <p className="text-amber-300 text-sm font-semibold">Amortizações</p>
+              </div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-amber-400/70 text-xs">Qtd Total (m³)</p>
+                  <p className="text-white text-xl font-bold">{formatNumber(vendasPorTipo.amortizacao.totalM3, 2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-amber-400/70 text-xs">Valor Total</p>
+                  <p className="text-white text-base font-bold">{formatCurrency(vendasPorTipo.amortizacao.valor)}</p>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-amber-700">
+                <p className="text-amber-400/70 text-xs">{formatNumber(vendasPorTipo.amortizacao.totalM3, 2)} m³ = {formatNumber(vendasPorTipo.amortizacao.totalTon, 2)} ton</p>
+              </div>
+            </div>
+            {/* Doações */}
+            <div className="bg-green-900/70 rounded-2xl p-4 border border-green-700">
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="w-4 h-4 text-green-400" />
+                <p className="text-green-300 text-sm font-semibold">Doações</p>
+              </div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-green-400/70 text-xs">Qtd Total (m³)</p>
+                  <p className="text-white text-xl font-bold">{formatNumber(vendasPorTipo.doacao.totalM3, 2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-green-400/70 text-xs">Valor Total</p>
+                  <p className="text-white text-base font-bold">{formatCurrency(vendasPorTipo.doacao.valor)}</p>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-green-700">
+                <p className="text-green-400/70 text-xs">{formatNumber(vendasPorTipo.doacao.totalM3, 2)} m³ = {formatNumber(vendasPorTipo.doacao.totalTon, 2)} ton</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção Método Caminhões */}
+      {/* ============================================================ */}
+      <div className="px-4 mt-4">
+        <div className="bg-green-900/70 rounded-2xl p-4 border border-green-700">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <p className="text-green-300 text-sm font-semibold">Produção Método Caminhões</p>
+          </div>
+          <p className="text-white text-2xl font-bold">{formatNumber(totalProducaoCaminhoes, 2)} ton</p>
+          {metaCaminhoesVal > 0 && (() => {
+            const aProduzir = metaCaminhoesVal - totalProducaoCaminhoes;
+            const perc = (totalProducaoCaminhoes / metaCaminhoesVal) * 100;
+            return (
+              <div className="mt-3 space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-green-400/70">Meta:</span>
+                  <span className="text-white font-semibold">{formatNumber(metaCaminhoesVal, 2)} ton</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-green-400/70">Produzido:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold">{formatNumber(totalProducaoCaminhoes, 2)} ton</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${perc >= 100 ? "bg-green-700 text-green-200" : "bg-yellow-800 text-yellow-200"}`}>{perc.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-green-400/70">A Produzir:</span>
+                  <span className={`font-semibold ${aProduzir <= 0 ? "text-green-400" : "text-orange-400"}`}>
+                    {aProduzir <= 0 ? "Meta atingida!" : `${formatNumber(aProduzir, 2)} ton`}
+                  </span>
+                </div>
+                <div className="w-full bg-green-800 rounded-full h-2">
+                  <div className={`h-2 rounded-full ${perc >= 100 ? "bg-green-400" : "bg-green-500"}`} style={{ width: `${Math.min(perc, 100)}%` }} />
+                </div>
+              </div>
+            );
+          })()}
+          {/* Britagem Fixa */}
+          {producaoMetodoCaminhoes.data?.britagemFixa?.caminhoes && producaoMetodoCaminhoes.data.britagemFixa.caminhoes.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-green-700 space-y-1">
+              <div className="flex justify-between text-xs font-bold text-green-300 mb-1">
+                <span>🏭 Britagem Fixa</span>
+                <span>{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)} ton</span>
+              </div>
+              {producaoMetodoCaminhoes.data.britagemFixa.caminhoes.map((c: any, idx: number) => (
+                <div key={idx} className="flex justify-between text-xs text-green-400/80">
+                  <span className="truncate max-w-[55%]">{c.placa}</span>
+                  <span>{formatNumber(c.totalProducao || 0, 2)} ton</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Britagem Móvel */}
+          {producaoMetodoCaminhoes.data?.britagemMovel?.caminhoes && producaoMetodoCaminhoes.data.britagemMovel.caminhoes.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-green-700 space-y-1">
+              <div className="flex justify-between text-xs font-bold text-green-300 mb-1">
+                <span>🚛 Britagem Móvel</span>
+                <span>{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)} ton</span>
+              </div>
+              {producaoMetodoCaminhoes.data.britagemMovel.caminhoes.map((c: any, idx: number) => (
+                <div key={idx} className="flex justify-between text-xs text-green-400/80">
+                  <span className="truncate max-w-[55%]">{c.placa}</span>
+                  <span>{formatNumber(c.totalProducao || 0, 2)} ton</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* Medição das Pilhas */}
+      {/* ============================================================ */}
+      {medicaoPilhasData.data && ((medicaoPilhasData.data as any).produtos?.length ?? 0) > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-teal-900/70 rounded-2xl p-4 border border-teal-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Layers className="w-4 h-4 text-teal-400" />
+              <p className="text-teal-300 text-sm font-semibold">Medição das Pilhas</p>
+            </div>
+            <div className="space-y-2">
+              {((medicaoPilhasData.data as any).produtos ?? []).map((item: any) => (
+                <div key={item.produtoId} className="flex justify-between text-xs">
+                  <span className="text-teal-300/80 truncate max-w-[60%]">{item.produtoNome}</span>
+                  <span className="text-white font-semibold">{formatNumber(item.totalProducao, 2)} m³</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção Último Dia Caminhões */}
+      {/* ============================================================ */}
+      <div className="px-4 mt-4">
+        <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Truck className="w-4 h-4 text-cyan-400" />
+              <p className="text-cyan-300 text-sm font-semibold">Produção Último Dia Caminhões</p>
+            </div>
+          </div>
+          {producaoUltimoDia.data?.dataReferencia && (
+            <p className="text-cyan-400/60 text-xs mb-2">Referência: {formatDateBR(producaoUltimoDia.data.dataReferencia)}</p>
+          )}
+          <p className="text-white text-2xl font-bold">{formatNumber(producaoUltimoDia.data?.total || 0, 2)} ton</p>
+          {metaDiariaVal > 0 && (() => {
+            const totalUltimoDia = producaoUltimoDia.data?.total || 0;
+            const aProduzir = metaDiariaVal - totalUltimoDia;
+            const perc = (totalUltimoDia / metaDiariaVal) * 100;
+            const metaAtingida = totalUltimoDia >= metaDiariaVal;
+            return (
+              <div className="mt-3 space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-cyan-400/70">Meta diária:</span>
+                  <span className="text-white font-semibold">{formatNumber(metaDiariaVal, 2)} ton</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-cyan-400/70">A produzir:</span>
+                  <span className={`font-semibold ${metaAtingida ? "text-green-400" : "text-red-400"}`}>
+                    {metaAtingida ? "Meta atingida!" : `${formatNumber(aProduzir, 2)} ton`}
+                  </span>
+                </div>
+                <div className="w-full bg-cyan-800 rounded-full h-2">
+                  <div className={`h-2 rounded-full ${metaAtingida ? "bg-emerald-400" : "bg-cyan-400"}`} style={{ width: `${Math.min(perc, 100)}%` }} />
+                </div>
+              </div>
+            );
+          })()}
+          {producaoUltimoDia.data?.caminhoes && producaoUltimoDia.data.caminhoes.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-cyan-700 space-y-1.5">
+              {producaoUltimoDia.data.caminhoes.map((c: any, idx: number) => (
+                <div key={idx} className="flex justify-between text-xs">
+                  <span className="text-cyan-300/80 truncate max-w-[60%]">{c.placa}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold">{formatNumber(c.totalProduzido, 2)}</span>
+                    <span className="text-cyan-400/60 bg-cyan-800/60 px-1.5 py-0.5 rounded text-[10px]">{c.percentual.toFixed(1)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* Produção de Perfuração */}
+      {/* ============================================================ */}
+      <div className="px-4 mt-4">
+        <div className="bg-amber-900/70 rounded-2xl p-4 border border-amber-700">
+          <div className="flex items-center gap-2 mb-2">
+            <Settings2 className="w-4 h-4 text-amber-400" />
+            <p className="text-amber-300 text-sm font-semibold">Produção de Perfuração</p>
+          </div>
+          <p className="text-white text-2xl font-bold">{formatNumber(totalPerfuracao, 2)} m</p>
+          <div className="flex gap-4 mt-1">
+            <p className="text-amber-400/70 text-xs">{formatNumber(totalFuros)} furos</p>
+            <p className="text-amber-400/70 text-xs">{formatNumber(totalMetrosPerfurados, 2)} m perfurados</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* Revisões Preventivas */}
+      {/* ============================================================ */}
+      {revisoesPreventivas.data && revisoesPreventivas.data.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-slate-400" />
+              <p className="text-white text-sm font-semibold">Revisões Preventivas</p>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {revisoesPreventivas.data.map((rev: any, idx: number) => {
+                const faltam = rev.faltam;
+                const isVencida = faltam <= 0;
+                const isProxima = faltam > 0 && faltam <= 25;
+                return (
+                  <div key={idx} className={`flex justify-between items-center rounded-xl px-3 py-2 text-xs ${isVencida ? "bg-red-900/60 border border-red-700" : isProxima ? "bg-orange-900/60 border border-orange-700" : "bg-slate-700/60"}`}>
+                    <span className={`truncate max-w-[55%] font-medium ${isVencida ? "text-red-300" : isProxima ? "text-orange-300" : "text-white"}`}>{rev.equipamentoTag}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-white/50">{rev.proximaRevisao}</span>
+                      <span className={`font-bold ${isVencida ? "text-red-400" : isProxima ? "text-orange-400" : "text-green-400"}`}>
+                        {faltam > 0 ? `+${formatNumber(faltam, 1)}` : formatNumber(faltam, 1)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção dos Motoristas */}
+      {/* ============================================================ */}
+      {producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
+            <div className="flex items-center gap-2 mb-2">
+              <Truck className="w-4 h-4 text-cyan-400" />
+              <p className="text-cyan-300 text-sm font-semibold">Produção dos Motoristas</p>
+            </div>
+            <p className="text-white text-xl font-bold">{formatNumber(producaoMotoristasData.data.totalProducao || 0, 2)} ton</p>
+            <p className="text-cyan-400/70 text-xs mb-3">{formatNumber(producaoMotoristasData.data.totalViagens || 0)} viagens no total</p>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {producaoMotoristasData.data.motoristas.map((m: any, idx: number) => (
+                <div key={idx} className="bg-cyan-800/40 rounded-xl p-3 border border-cyan-700/50">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-white text-xs font-semibold truncate max-w-[55%]">{m.motoristaNome}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-cyan-400/70 text-xs">{formatNumber(m.totalViagens)} viag.</span>
+                      <span className="text-white text-xs font-bold">{formatNumber(m.totalProducao, 2)}</span>
+                      <span className="text-cyan-400/60 bg-cyan-800 px-1.5 py-0.5 rounded text-[10px]">{m.percentual.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  <div className="space-y-0.5 pl-2 border-l border-cyan-700">
+                    {m.servicos.map((s: any, sIdx: number) => (
+                      <div key={sIdx} className="flex justify-between text-[11px]">
+                        <span className="text-cyan-400/70 truncate max-w-[55%]">{s.servicoNome}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-cyan-500">{formatNumber(s.viagens)} viag.</span>
+                          <span className="text-white/80 font-medium">{formatNumber(s.producao, 2)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Balanças Integradoras */}
+      {/* ============================================================ */}
+      {producaoBalancasData.data && producaoBalancasData.data.equipamentos.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-teal-900/80 rounded-2xl p-4 border border-teal-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                  <Scale className="w-4 h-4 text-teal-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Produção Balanças</p>
+                  <p className="text-teal-400 text-xs">Integradoras</p>
+                </div>
+              </div>
+              {producaoBalancasData.data.equipamentos.some((e: any) => e.divergencia) && (
+                <div className="flex items-center gap-1 bg-orange-500/20 rounded-lg px-2 py-1">
+                  <AlertTriangle className="w-3 h-3 text-orange-400" />
+                  <span className="text-orange-400 text-xs font-semibold">Divergência</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              {producaoBalancasData.data.equipamentos.map((eq: any) => (
+                <div key={eq.equipamentoId} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {eq.divergencia && <AlertTriangle className="w-3 h-3 text-orange-400 shrink-0" />}
+                      <span className={`text-xs truncate max-w-[160px] ${eq.divergencia ? "text-orange-300" : "text-teal-300"}`} title={eq.nome}>{eq.nome}</span>
+                    </div>
+                    <span className={`text-sm font-bold ${eq.divergencia ? "text-orange-300" : "text-white"}`}>
+                      {eq.producaoBalanca.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-teal-500 pl-4">
+                    <span>Ini: {eq.leituraInicial.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    <span>Fin: {eq.leituraFinal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {eq.divergencia && (
+                    <div className="ml-4 text-[10px] text-orange-400 bg-orange-900/40 rounded px-2 py-1">
+                      ⚠ Conferência: {eq.producaoConferencia.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} ≠ Soma: {eq.producaoBalanca.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção por Setor */}
+      {/* ============================================================ */}
+      {producaoPorSetor.data && producaoPorSetor.data.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Factory className="w-4 h-4 text-blue-400" />
+              <p className="text-white text-sm font-semibold">Produção por Setor</p>
+            </div>
+            <div className="space-y-2">
+              {(producaoPorSetor.data.length <= 8 ? producaoPorSetor.data : expandSetor ? producaoPorSetor.data : producaoPorSetor.data.slice(0, 8)).map((item: any) => (
+                <div key={item.setorId} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/80 truncate max-w-[65%]">{item.setorNome}</span>
+                    <span className="text-blue-400 font-semibold shrink-0">{formatNumber(item.producaoTotal)}</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(item.producaoTotal / maxProducaoSetor) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+              {producaoPorSetor.data.length > 8 && (
+                <button onClick={() => setExpandSetor(!expandSetor)} className="flex items-center justify-center gap-1 w-full text-xs text-blue-400 pt-1">
+                  {expandSetor ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {producaoPorSetor.data.length - 8} setores</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção por Serviço */}
+      {/* ============================================================ */}
+      {producaoPorServico.data && producaoPorServico.data.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Settings2 className="w-4 h-4 text-purple-400" />
+              <p className="text-white text-sm font-semibold">Produção por Serviço</p>
+            </div>
+            <div className="space-y-2">
+              {(producaoPorServico.data.length <= 8 ? producaoPorServico.data : expandServico ? producaoPorServico.data : producaoPorServico.data.slice(0, 8)).map((item: any) => (
+                <div key={item.servicoId} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/80 truncate max-w-[65%]">{item.servicoNome}</span>
+                    <span className="text-purple-400 font-semibold shrink-0">{formatNumber(item.producaoTotal)}</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(item.producaoTotal / maxProducaoServico) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+              {producaoPorServico.data.length > 8 && (
+                <button onClick={() => setExpandServico(!expandServico)} className="flex items-center justify-center gap-1 w-full text-xs text-purple-400 pt-1">
+                  {expandServico ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {producaoPorServico.data.length - 8} serviços</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Produção por Equipamento */}
+      {/* ============================================================ */}
+      {producaoPorEquipamento.data && producaoPorEquipamento.data.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+            <div className="flex items-center gap-2 mb-3">
+              <Truck className="w-4 h-4 text-green-400" />
+              <p className="text-white text-sm font-semibold">Produção por Equipamento</p>
+            </div>
+            <div className="space-y-2">
+              {(producaoPorEquipamento.data.length <= 8 ? producaoPorEquipamento.data : expandEquipamento ? producaoPorEquipamento.data : producaoPorEquipamento.data.slice(0, 8)).map((item: any) => (
+                <div key={item.equipamentoId} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-white/80 truncate max-w-[65%]">{item.equipamentoTag || item.equipamentoNome}</span>
+                    <span className="text-green-400 font-semibold shrink-0">{formatNumber(item.producaoTotal)}</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${(item.producaoTotal / maxProducaoEquipamento) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+              {producaoPorEquipamento.data.length > 8 && (
+                <button onClick={() => setExpandEquipamento(!expandEquipamento)} className="flex items-center justify-center gap-1 w-full text-xs text-green-400 pt-1">
+                  {expandEquipamento ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {producaoPorEquipamento.data.length - 8} equipamentos</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* Metas configuradas */}
+      {/* ============================================================ */}
+      {metasList.data && metasList.data.filter((m: any) => m.ativo === "sim").length > 0 && (
+        <div className="px-4 mt-4">
+          <h3 className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-2">Metas Configuradas</h3>
           <div className="space-y-2">
-            {metasList.data.filter(m => m.ativo === "sim").map((meta) => (
+            {metasList.data.filter((m: any) => m.ativo === "sim").map((meta: any) => (
               <div key={meta.id} className="bg-slate-800 rounded-xl p-3 flex items-center justify-between">
                 <div>
                   <p className="text-white text-sm font-medium">{meta.descricao || meta.indicador}</p>
@@ -583,64 +1116,9 @@ export default function MobileDashboard() {
         </div>
       )}
 
-      {/* Card Produção Balanças Integradoras */}
-      {producaoBalancasData.data && producaoBalancasData.data.equipamentos.length > 0 && (
-        <div className="px-4 mt-4">
-          <div className="bg-teal-900/80 rounded-2xl p-4 border border-teal-700">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-teal-500/20 flex items-center justify-center">
-                  <Scale className="w-4 h-4 text-teal-400" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">Produção Balanças</p>
-                  <p className="text-teal-400 text-xs">Integradoras</p>
-                </div>
-              </div>
-              {producaoBalancasData.data.equipamentos.some(e => e.divergencia) && (
-                <div className="flex items-center gap-1 bg-orange-500/20 rounded-lg px-2 py-1">
-                  <AlertTriangle className="w-3 h-3 text-orange-400" />
-                  <span className="text-orange-400 text-xs font-semibold">Divergência</span>
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              {producaoBalancasData.data.equipamentos.map((eq) => (
-                <div key={eq.equipamentoId} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      {eq.divergencia && <AlertTriangle className="w-3 h-3 text-orange-400 shrink-0" />}
-                      <span className={`text-xs truncate max-w-[160px] ${eq.divergencia ? 'text-orange-300' : 'text-teal-300'}`} title={eq.nome}>
-                        {eq.nome}
-                      </span>
-                    </div>
-                    <span className={`text-sm font-bold ${eq.divergencia ? 'text-orange-300' : 'text-white'}`}>
-                      {eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[10px] text-teal-500 pl-4">
-                    <span>Ini: {eq.leituraInicial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                    <span>Fin: {eq.leituraFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  {eq.divergencia && (
-                    <div className="ml-4 text-[10px] text-orange-400 bg-orange-900/40 rounded px-2 py-1">
-                      ⚠ Conferência: {eq.producaoConferencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ≠ Soma: {eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Link para versão web */}
       <div className="px-4 mt-6">
-        <a
-          href="/"
-          className="flex items-center justify-between bg-slate-800 rounded-2xl p-4 border border-slate-700"
-        >
+        <a href="/" className="flex items-center justify-between bg-slate-800 rounded-2xl p-4 border border-slate-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-amber-400" />
