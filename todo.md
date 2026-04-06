@@ -184,3 +184,7 @@
 - [x] Criar modal de envio com seleção de destinatários cadastrados e cards a enviar
 - [x] Adicionar botão "Relatório WhatsApp" no topo do dashboard web
 - [x] Montar mensagem consolidada com dados de todos os cards selecionados por destinatário
+
+## WhatsAppReportModal - Correções
+- [x] Corrigir erro "button cannot contain nested button" nos checkboxes/botão Nenhum
+- [x] Enriquecer mensagem WhatsApp com detalhes completos de todos os cards (viagens, serviços, etc.)

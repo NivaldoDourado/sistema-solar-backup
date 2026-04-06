@@ -414,16 +414,26 @@ export default function Home() {
         id: 'producao_motoristas',
         label: 'Produção dos Motoristas',
         temDados: (producaoMotoristasData?.motoristas?.length || 0) > 0,
-        mensagem: producaoMotoristasData && producaoMotoristasData.motoristas.length > 0
-          ? `🚛 *Produção dos Motoristas*\nTotal: ${fmt(producaoMotoristasData.totalProducao)} ton | ${fmtInt(producaoMotoristasData.totalViagens)} viagens\n${producaoMotoristasData.motoristas.slice(0, 5).map((m: any) => `  ${m.motoristaNome}: ${fmt(m.totalProducao)} ton (${m.percentual.toFixed(1)}%)`).join('\n')}${producaoMotoristasData.motoristas.length > 5 ? `\n  ...e mais ${producaoMotoristasData.motoristas.length - 5}` : ''}\n`
-          : undefined,
+        mensagem: (() => {
+          if (!producaoMotoristasData || producaoMotoristasData.motoristas.length === 0) return undefined;
+          let m = `🚛 *Produção dos Motoristas*\nTotal: ${fmt(producaoMotoristasData.totalProducao)} ton | ${fmtInt(producaoMotoristasData.totalViagens)} viagens\n`;
+          producaoMotoristasData.motoristas.forEach((mot: any) => {
+            m += `\n  *${mot.motoristaNome}*: ${fmt(mot.totalProducao)} ton | ${fmtInt(mot.totalViagens)} viag. (${mot.percentual.toFixed(1)}%)\n`;
+            if (mot.servicos && mot.servicos.length > 0) {
+              mot.servicos.forEach((s: any) => {
+                m += `    - ${s.servicoNome}: ${fmtInt(s.viagens)} viag. | ${fmt(s.producao)} ton\n`;
+              });
+            }
+          });
+          return m;
+        })(),
       },
       {
         id: 'producao_setor',
         label: 'Produção por Setor',
         temDados: (producaoPorSetor?.length || 0) > 0,
         mensagem: producaoPorSetor && producaoPorSetor.length > 0
-          ? `🏭 *Produção por Setor*\n${producaoPorSetor.slice(0, 5).map((s: any) => `  ${s.setorNome}: ${fmt(s.producaoTotal)}`).join('\n')}${producaoPorSetor.length > 5 ? `\n  ...e mais ${producaoPorSetor.length - 5}` : ''}\n`
+          ? `🏭 *Produção por Setor*\n${producaoPorSetor.map((s: any) => `  ${s.setorNome}: ${fmt(s.producaoTotal)} ton`).join('\n')}\n`
           : undefined,
       },
       {
@@ -431,7 +441,7 @@ export default function Home() {
         label: 'Produção por Serviço',
         temDados: (producaoPorServico?.length || 0) > 0,
         mensagem: producaoPorServico && producaoPorServico.length > 0
-          ? `⚙️ *Produção por Serviço*\n${producaoPorServico.slice(0, 5).map((s: any) => `  ${s.servicoNome}: ${fmt(s.producaoTotal)}`).join('\n')}${producaoPorServico.length > 5 ? `\n  ...e mais ${producaoPorServico.length - 5}` : ''}\n`
+          ? `⚙️ *Produção por Serviço*\n${producaoPorServico.map((s: any) => `  ${s.servicoNome}: ${fmt(s.producaoTotal)} ton`).join('\n')}\n`
           : undefined,
       },
       {
@@ -439,7 +449,7 @@ export default function Home() {
         label: 'Produção por Equipamento',
         temDados: (producaoPorEquipamento?.length || 0) > 0,
         mensagem: producaoPorEquipamento && producaoPorEquipamento.length > 0
-          ? `🚜 *Produção por Equipamento (Caminhões Internos)*\n${producaoPorEquipamento.slice(0, 5).map((e: any) => `  ${e.equipamentoTag || e.equipamentoNome}: ${fmt(e.producaoTotal)}`).join('\n')}${producaoPorEquipamento.length > 5 ? `\n  ...e mais ${producaoPorEquipamento.length - 5}` : ''}\n`
+          ? `🚜 *Produção por Equipamento (Caminhões Internos)*\n${producaoPorEquipamento.map((e: any) => `  ${e.equipamentoTag || e.equipamentoNome}: ${fmt(e.producaoTotal)} ton`).join('\n')}\n`
           : undefined,
       },
     ];

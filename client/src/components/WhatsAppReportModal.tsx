@@ -233,9 +233,12 @@ export function WhatsAppReportModal({
 
             {/* ── Seção Destinatários ── */}
             <div className="border rounded-xl overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors"
+              <div
+                role="button"
+                tabIndex={0}
+                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors cursor-pointer select-none"
                 onClick={() => setShowDestinatarios(v => !v)}
+                onKeyDown={e => e.key === 'Enter' && setShowDestinatarios(v => !v)}
               >
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-muted-foreground" />
@@ -245,22 +248,28 @@ export function WhatsAppReportModal({
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    className="text-xs text-primary hover:underline"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="text-xs text-primary hover:underline cursor-pointer"
                     onClick={e => { e.stopPropagation(); selectAllDests(); }}
+                    onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), selectAllDests())}
                   >
                     Todos
-                  </button>
+                  </span>
                   <span className="text-muted-foreground text-xs">|</span>
-                  <button
-                    className="text-xs text-muted-foreground hover:underline"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="text-xs text-muted-foreground hover:underline cursor-pointer"
                     onClick={e => { e.stopPropagation(); clearAllDests(); }}
+                    onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), clearAllDests())}
                   >
                     Nenhum
-                  </button>
+                  </span>
                   {showDestinatarios ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </div>
-              </button>
+              </div>
 
               {showDestinatarios && (
                 <div className="divide-y">
@@ -317,9 +326,12 @@ export function WhatsAppReportModal({
 
             {/* ── Seção Cards ── */}
             <div className="border rounded-xl overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors"
+              <div
+                role="button"
+                tabIndex={0}
+                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors cursor-pointer select-none"
                 onClick={() => setShowCards(v => !v)}
+                onKeyDown={e => e.key === 'Enter' && setShowCards(v => !v)}
               >
                 <div className="flex items-center gap-2">
                   <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
@@ -329,22 +341,28 @@ export function WhatsAppReportModal({
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    className="text-xs text-primary hover:underline"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="text-xs text-primary hover:underline cursor-pointer"
                     onClick={e => { e.stopPropagation(); selectAllCards(); }}
+                    onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), selectAllCards())}
                   >
                     Todos
-                  </button>
+                  </span>
                   <span className="text-muted-foreground text-xs">|</span>
-                  <button
-                    className="text-xs text-muted-foreground hover:underline"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="text-xs text-muted-foreground hover:underline cursor-pointer"
                     onClick={e => { e.stopPropagation(); clearAllCards(); }}
+                    onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), clearAllCards())}
                   >
                     Nenhum
-                  </button>
+                  </span>
                   {showCards ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </div>
-              </button>
+              </div>
 
               {showCards && (
                 <div className="px-4 py-3 grid grid-cols-2 gap-2">
@@ -382,9 +400,12 @@ export function WhatsAppReportModal({
 
             {/* ── Preview da Mensagem ── */}
             <div className="border rounded-xl overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors"
+              <div
+                role="button"
+                tabIndex={0}
+                className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors cursor-pointer select-none"
                 onClick={() => setShowPreview(v => !v)}
+                onKeyDown={e => e.key === 'Enter' && setShowPreview(v => !v)}
               >
                 <div className="flex items-center gap-2">
                   {showPreview ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
@@ -393,7 +414,7 @@ export function WhatsAppReportModal({
                   </span>
                 </div>
                 {showPreview ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-              </button>
+              </div>
               {showPreview && (
                 <div className="px-4 py-3">
                   <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
