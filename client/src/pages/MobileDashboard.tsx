@@ -6,6 +6,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import {
   Fuel,
   DollarSign,
@@ -268,6 +269,7 @@ export default function MobileDashboard() {
   const metaDiariaConfig = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const metasList = trpc.metas.list.useQuery();
   const verificarAlerta = trpc.metas.verificarAlertas.useMutation();
+  const destinatariosWpp = trpc.destinatariosWhatsapp.list.useQuery();
 
   const isLoading =
     abastecimentoTotais.isLoading ||
@@ -563,14 +565,7 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-orange-600 to-orange-800"
         />
-        <KpiCard
-          icon={<Package className="w-5 h-5 text-white" />}
-          label="Produção (m³)"
-          value={formatNumber(Number(producaoTotais.data?.totalQuantidade ?? 0), 1)}
-          sub={`${formatNumber(Number(producaoTotais.data?.totalRegistros ?? 0))} registros`}
-          color="text-white"
-          bgColor="bg-gradient-to-br from-green-600 to-green-800"
-        />
+        {/* Card Produção (m³) temporariamente desabilitado */}
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custos Totais"
@@ -579,14 +574,7 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-red-600 to-red-800"
         />
-        <KpiCard
-          icon={<Wrench className="w-5 h-5 text-white" />}
-          label="Manutenções"
-          value={formatNumber(Number(manutencaoTotais.data?.totalRegistros ?? 0))}
-          sub={`${formatNumber(Number(manutencaoTotais.data?.totalHorasParadas ?? 0), 1)}h paradas`}
-          color="text-white"
-          bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
-        />
+        {/* Card Manutenções temporariamente desabilitado */}
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custo Combustível"
@@ -714,9 +702,30 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       <div className="px-4 mt-4">
         <div className="bg-green-900/70 rounded-2xl p-4 border border-green-700">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-400" />
-            <p className="text-green-300 text-sm font-semibold">Produção Método Caminhões</p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-400" />
+              <p className="text-green-300 text-sm font-semibold">Produção Método Caminhões</p>
+            </div>
+            <DashboardExportMenu
+              variant="mobile"
+              title="Produção Método Caminhões"
+              subtitle={`Período: ${dataInicio} a ${dataFim}`}
+              filename="producao-caminhoes-mobile"
+              exportOptions={{
+                columns: [
+                  { header: 'Caminhão', key: 'placa', width: 20 },
+                  { header: 'Britagem', key: 'britagem', width: 15 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                ],
+                data: [
+                  ...(producaoMetodoCaminhoes.data?.britagemFixa?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Fixa', producao: c.totalProducao || 0 })),
+                  ...(producaoMetodoCaminhoes.data?.britagemMovel?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Móvel', producao: c.totalProducao || 0 })),
+                ],
+              }}
+              whatsappMessage={`🚛 *Produção Método Caminhões*\nTotal: ${formatNumber(totalProducaoCaminhoes, 2)} ton`}
+              whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+            />
           </div>
           <p className="text-white text-2xl font-bold">{formatNumber(totalProducaoCaminhoes, 2)} ton</p>
           {metaCaminhoesVal > 0 && (() => {
@@ -786,9 +795,30 @@ export default function MobileDashboard() {
       {medicaoPilhasData.data && ((medicaoPilhasData.data as any).produtos?.length ?? 0) > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-teal-900/70 rounded-2xl p-4 border border-teal-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Layers className="w-4 h-4 text-teal-400" />
-              <p className="text-teal-300 text-sm font-semibold">Medição das Pilhas</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-teal-400" />
+                <p className="text-teal-300 text-sm font-semibold">Medição das Pilhas</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Medição das Pilhas"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="medicao-pilhas-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Produto', key: 'produto', width: 25 },
+                    { header: 'Produção (m³)', key: 'producao', width: 15 },
+                  ],
+                  data: ((medicaoPilhasData.data as any).produtos ?? []).map((item: any) => ({ produto: item.produtoNome, producao: item.totalProducao })),
+                }}
+                whatsappMessage={(() => {
+                  let msg = `📦 *Medição das Pilhas*\n`;
+                  ((medicaoPilhasData.data as any).produtos ?? []).forEach((item: any) => { msg += `  ${item.produtoNome}: ${formatNumber(item.totalProducao, 2)} m³\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <div className="space-y-2">
               {((medicaoPilhasData.data as any).produtos ?? []).map((item: any) => (
@@ -812,6 +842,22 @@ export default function MobileDashboard() {
               <Truck className="w-4 h-4 text-cyan-400" />
               <p className="text-cyan-300 text-sm font-semibold">Produção Último Dia Caminhões</p>
             </div>
+            <DashboardExportMenu
+              variant="mobile"
+              title="Produção Último Dia Caminhões"
+              subtitle={producaoUltimoDia.data?.dataReferencia ? `Data: ${formatDateBR(producaoUltimoDia.data.dataReferencia)}` : undefined}
+              filename="producao-ultimo-dia-mobile"
+              exportOptions={{
+                columns: [
+                  { header: 'Caminhão', key: 'placa', width: 20 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: '%', key: 'percentual', width: 8 },
+                ],
+                data: (producaoUltimoDia.data?.caminhoes || []).map((c: any) => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
+              }}
+              whatsappMessage={producaoUltimoDia.data?.total ? `📅 *Produção Último Dia*\nTotal: ${formatNumber(producaoUltimoDia.data.total, 2)} ton` : undefined}
+              whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+            />
           </div>
           {producaoUltimoDia.data?.dataReferencia && (
             <p className="text-cyan-400/60 text-xs mb-2">Referência: {formatDateBR(producaoUltimoDia.data.dataReferencia)}</p>
@@ -861,9 +907,30 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       <div className="px-4 mt-4">
         <div className="bg-amber-900/70 rounded-2xl p-4 border border-amber-700">
-          <div className="flex items-center gap-2 mb-2">
-            <Settings2 className="w-4 h-4 text-amber-400" />
-            <p className="text-amber-300 text-sm font-semibold">Produção de Perfuração</p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Settings2 className="w-4 h-4 text-amber-400" />
+              <p className="text-amber-300 text-sm font-semibold">Produção de Perfuração</p>
+            </div>
+            <DashboardExportMenu
+              variant="mobile"
+              title="Produção de Perfuração"
+              subtitle={`Período: ${dataInicio} a ${dataFim}`}
+              filename="producao-perfuracao-mobile"
+              exportOptions={{
+                columns: [
+                  { header: 'Métrica', key: 'metrica', width: 20 },
+                  { header: 'Valor', key: 'valor', width: 15 },
+                ],
+                data: [
+                  { metrica: 'Total (m)', valor: totalPerfuracao },
+                  { metrica: 'Furos', valor: totalFuros },
+                  { metrica: 'Metros Perfurados', valor: totalMetrosPerfurados },
+                ],
+              }}
+              whatsappMessage={`⛏️ *Produção de Perfuração*\nTotal: ${formatNumber(totalPerfuracao, 2)} m\nFuros: ${formatNumber(totalFuros)}\nMetros: ${formatNumber(totalMetrosPerfurados, 2)} m`}
+              whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+            />
           </div>
           <p className="text-white text-2xl font-bold">{formatNumber(totalPerfuracao, 2)} m</p>
           <div className="flex gap-4 mt-1">
@@ -879,9 +946,34 @@ export default function MobileDashboard() {
       {revisoesPreventivas.data && revisoesPreventivas.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck className="w-4 h-4 text-slate-400" />
-              <p className="text-white text-sm font-semibold">Revisões Preventivas</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-slate-400" />
+                <p className="text-white text-sm font-semibold">Revisões Preventivas</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Revisões Preventivas"
+                filename="revisoes-preventivas-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 20 },
+                    { header: 'Próxima Revisão', key: 'proxima', width: 15 },
+                    { header: 'Faltam (h)', key: 'faltam', width: 12 },
+                    { header: 'Status', key: 'status', width: 12 },
+                  ],
+                  data: (revisoesPreventivas.data || []).map((rev: any) => ({ equipamento: rev.equipamentoTag, proxima: rev.proximaRevisao, faltam: rev.faltam, status: rev.faltam <= 0 ? 'Vencida' : rev.faltam <= 25 ? 'Próxima' : 'OK' })),
+                }}
+                whatsappMessage={(() => {
+                  const vencidas = (revisoesPreventivas.data || []).filter((r: any) => r.faltam <= 0);
+                  const proximas = (revisoesPreventivas.data || []).filter((r: any) => r.faltam > 0 && r.faltam <= 25);
+                  let msg = `🔧 *Revisões Preventivas*\n`;
+                  if (vencidas.length > 0) msg += `⚠️ Vencidas: ${vencidas.length}\n`;
+                  if (proximas.length > 0) msg += `⏰ Próximas: ${proximas.length}\n`;
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {revisoesPreventivas.data.map((rev: any, idx: number) => {
@@ -911,9 +1003,28 @@ export default function MobileDashboard() {
       {producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
-            <div className="flex items-center gap-2 mb-2">
-              <Truck className="w-4 h-4 text-cyan-400" />
-              <p className="text-cyan-300 text-sm font-semibold">Produção dos Motoristas</p>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-cyan-400" />
+                <p className="text-cyan-300 text-sm font-semibold">Produção dos Motoristas</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Produção dos Motoristas"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="producao-motoristas-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Motorista', key: 'motorista', width: 25 },
+                    { header: 'Viagens', key: 'viagens', width: 10 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: '%', key: 'percentual', width: 8 },
+                  ],
+                  data: (producaoMotoristasData.data?.motoristas || []).map((m: any) => ({ motorista: m.motoristaNome, viagens: m.totalViagens, producao: m.totalProducao, percentual: `${m.percentual.toFixed(1)}%` })),
+                }}
+                whatsappMessage={`🚛 *Produção dos Motoristas*\nTotal: ${formatNumber(producaoMotoristasData.data?.totalProducao || 0, 2)} ton\n${formatNumber(producaoMotoristasData.data?.totalViagens || 0)} viagens`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <p className="text-white text-xl font-bold">{formatNumber(producaoMotoristasData.data.totalProducao || 0, 2)} ton</p>
             <p className="text-cyan-400/70 text-xs mb-3">{formatNumber(producaoMotoristasData.data.totalViagens || 0)} viagens no total</p>
@@ -962,12 +1073,35 @@ export default function MobileDashboard() {
                   <p className="text-teal-400 text-xs">Integradoras</p>
                 </div>
               </div>
-              {producaoBalancasData.data.equipamentos.some((e: any) => e.divergencia) && (
-                <div className="flex items-center gap-1 bg-orange-500/20 rounded-lg px-2 py-1">
-                  <AlertTriangle className="w-3 h-3 text-orange-400" />
-                  <span className="text-orange-400 text-xs font-semibold">Divergência</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {producaoBalancasData.data.equipamentos.some((e: any) => e.divergencia) && (
+                  <div className="flex items-center gap-1 bg-orange-500/20 rounded-lg px-2 py-1">
+                    <AlertTriangle className="w-3 h-3 text-orange-400" />
+                    <span className="text-orange-400 text-xs font-semibold">Divergência</span>
+                  </div>
+                )}
+                <DashboardExportMenu
+                  variant="mobile"
+                  title="Produção Balanças Integradoras"
+                  subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                  filename="producao-balancas-mobile"
+                  exportOptions={{
+                    columns: [
+                      { header: 'Equipamento', key: 'equipamento', width: 25 },
+                      { header: 'Leit. Inicial', key: 'leitInicial', width: 15 },
+                      { header: 'Leit. Final', key: 'leitFinal', width: 15 },
+                      { header: 'Produção', key: 'producao', width: 15 },
+                      { header: 'Divergência', key: 'divergencia', width: 12 },
+                    ],
+                    data: producaoBalancasData.data.equipamentos.map((e: any) => ({ equipamento: e.nome, leitInicial: e.leituraInicial, leitFinal: e.leituraFinal, producao: e.producaoBalanca, divergencia: e.divergencia ? 'SIM' : 'Não' })),
+                  }}
+                  whatsappMessage={(() => {
+                    const total = producaoBalancasData.data!.equipamentos.reduce((acc: number, e: any) => acc + e.producaoBalanca, 0);
+                    return `⚖️ *Produção Balanças*\nTotal: ${formatNumber(total, 2)} ton`;
+                  })()}
+                  whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               {producaoBalancasData.data.equipamentos.map((eq: any) => (
@@ -1003,9 +1137,26 @@ export default function MobileDashboard() {
       {producaoPorSetor.data && producaoPorSetor.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Factory className="w-4 h-4 text-blue-400" />
-              <p className="text-white text-sm font-semibold">Produção por Setor</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Factory className="w-4 h-4 text-blue-400" />
+                <p className="text-white text-sm font-semibold">Produção por Setor</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Produção por Setor"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="producao-setor-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Setor', key: 'setor', width: 25 },
+                    { header: 'Produção', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorSetor.data || []).map((item: any) => ({ setor: item.setorNome, producao: item.producaoTotal })),
+                }}
+                whatsappMessage={`🏭 *Produção por Setor*\n${(producaoPorSetor.data || []).map((item: any) => `  ${item.setorNome}: ${formatNumber(item.producaoTotal)}`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <div className="space-y-2">
               {(producaoPorSetor.data.length <= 8 ? producaoPorSetor.data : expandSetor ? producaoPorSetor.data : producaoPorSetor.data.slice(0, 8)).map((item: any) => (
@@ -1035,9 +1186,26 @@ export default function MobileDashboard() {
       {producaoPorServico.data && producaoPorServico.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Settings2 className="w-4 h-4 text-purple-400" />
-              <p className="text-white text-sm font-semibold">Produção por Serviço</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Settings2 className="w-4 h-4 text-purple-400" />
+                <p className="text-white text-sm font-semibold">Produção por Serviço</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Produção por Serviço"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="producao-servico-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Serviço', key: 'servico', width: 25 },
+                    { header: 'Produção', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorServico.data || []).map((item: any) => ({ servico: item.servicoNome, producao: item.producaoTotal })),
+                }}
+                whatsappMessage={`⚙️ *Produção por Serviço*\n${(producaoPorServico.data || []).map((item: any) => `  ${item.servicoNome}: ${formatNumber(item.producaoTotal)}`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <div className="space-y-2">
               {(producaoPorServico.data.length <= 8 ? producaoPorServico.data : expandServico ? producaoPorServico.data : producaoPorServico.data.slice(0, 8)).map((item: any) => (
@@ -1067,9 +1235,26 @@ export default function MobileDashboard() {
       {producaoPorEquipamento.data && producaoPorEquipamento.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Truck className="w-4 h-4 text-green-400" />
-              <p className="text-white text-sm font-semibold">Produção por Equipamento</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-green-400" />
+                <p className="text-white text-sm font-semibold">Produção por Equipamento</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Produção por Equipamento"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="producao-equipamento-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 25 },
+                    { header: 'Produção', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorEquipamento.data || []).map((item: any) => ({ equipamento: item.equipamentoTag || item.equipamentoNome, producao: item.producaoTotal })),
+                }}
+                whatsappMessage={`🚛 *Produção por Equipamento*\n${(producaoPorEquipamento.data || []).map((item: any) => `  ${item.equipamentoTag || item.equipamentoNome}: ${formatNumber(item.producaoTotal)}`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
             </div>
             <div className="space-y-2">
               {(producaoPorEquipamento.data.length <= 8 ? producaoPorEquipamento.data : expandEquipamento ? producaoPorEquipamento.data : producaoPorEquipamento.data.slice(0, 8)).map((item: any) => (

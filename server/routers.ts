@@ -1348,6 +1348,22 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) return [];
         
+        // Buscar IDs dos equipamentos do grupo CAMINHÕES INTERNOS
+        const gruposCaminhoes = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(like(gruposDeEquipamentos.nome, '%CAMINH%INTERNO%'));
+        const equipsCaminhoes = gruposCaminhoes.length > 0
+          ? await db
+              .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag, capacidade: equipamentos.capacidade })
+              .from(equipamentos)
+              .where(inArray(equipamentos.grupoId, gruposCaminhoes.map(g => g.id)))
+          : [];
+        const equipIdsPermitidos = new Set(equipsCaminhoes.map(e => e.id));
+        const equipamentosMap = new Map(equipsCaminhoes.map(e => [e.id, { nome: e.nome, tag: e.tag, capacidade: e.capacidade }]));
+        
+        if (equipIdsPermitidos.size === 0) return [];
+        
         // Buscar todos os itens com seus relacionamentos
         const itens = await db
           .select({
@@ -1356,7 +1372,8 @@ export const appRouter = router({
             data: parteDiaria.data,
           })
           .from(parteDiariaItens)
-          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id));
+          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id))
+          .where(inArray(parteDiaria.equipamentoId, Array.from(equipIdsPermitidos)));
         
         // Filtrar por data se especificado
         let itensFiltrados = itens;
@@ -1375,14 +1392,6 @@ export const appRouter = router({
           const atual = porEquipamento.get(item.equipamentoId) || 0;
           porEquipamento.set(item.equipamentoId, atual + parseFloat(item.producao || '0'));
         });
-        
-        // Buscar dados dos equipamentos
-        const equipamentosData = await db.select().from(equipamentos);
-        const equipamentosMap = new Map(equipamentosData.map(e => [e.id, { 
-          nome: e.nomeDoEquipamento, 
-          tag: e.codigoTag,
-          capacidade: e.capacidade
-        }]));
         
         return Array.from(porEquipamento.entries()).map(([equipamentoId, producaoTotal]) => {
           const eq = equipamentosMap.get(equipamentoId);
@@ -1639,7 +1648,21 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) return { totalViagens: 0, totalProducao: 0, motoristas: [] };
         
-        // Buscar itens com data, motorista e serviço
+        // Buscar IDs dos equipamentos do grupo CAMINHÕES INTERNOS
+        const gruposCaminhoes = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(like(gruposDeEquipamentos.nome, '%CAMINH%INTERNO%'));
+        let equipIdsPermitidos: number[] = [];
+        if (gruposCaminhoes.length > 0) {
+          const equips = await db
+            .select({ id: equipamentos.id })
+            .from(equipamentos)
+            .where(inArray(equipamentos.grupoId, gruposCaminhoes.map(g => g.id)));
+          equipIdsPermitidos = equips.map(e => e.id);
+        }
+        
+        // Buscar itens com data, motorista e serviço - filtrado por CAMINHÕES INTERNOS
         const itens = await db
           .select({
             quantidade: parteDiariaItens.quantidade,
@@ -1650,7 +1673,8 @@ export const appRouter = router({
             data: parteDiaria.data,
           })
           .from(parteDiariaItens)
-          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id));
+          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id))
+          .where(equipIdsPermitidos.length > 0 ? inArray(parteDiaria.equipamentoId, equipIdsPermitidos) : sql`1=0`);
         
         // Filtrar por data
         let itensFiltrados = itens;

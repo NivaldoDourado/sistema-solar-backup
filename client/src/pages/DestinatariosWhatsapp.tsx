@@ -32,8 +32,17 @@ import { Plus, Pencil, Trash2, Phone, MessageSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const CARDS_DISPONIVEIS = [
+  { id: "equipamentos_ativos", label: "Equipamentos Ativos" },
+  { id: "combustivel", label: "Combustível (L)" },
+  { id: "custos_totais", label: "Custos Totais" },
+  { id: "custo_combustivel", label: "Custo Combustível" },
+  { id: "estoque_minimo", label: "Estoque Mínimo de Peças" },
+  { id: "vendas", label: "Vendas" },
+  { id: "amortizacoes", label: "Amortizações" },
+  { id: "doacoes", label: "Doações" },
   { id: "producao_caminhoes", label: "Produção Método Caminhões" },
   { id: "medicao_pilhas", label: "Medição das Pilhas" },
+  { id: "producao_balancas", label: "Produção Balanças Integradoras" },
   { id: "producao_ultimo_dia", label: "Produção Último Dia Caminhões" },
   { id: "producao_perfuracao", label: "Produção de Perfuração" },
   { id: "revisoes_preventivas", label: "Revisões Preventivas" },

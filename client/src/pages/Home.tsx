@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // Helper para formatar data para exibição
 function formatDateBR(dateStr: string) {
@@ -579,7 +580,22 @@ export default function Home() {
             <CardTitle className="text-sm font-medium">
               Equipamentos Ativos
             </CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Equipamentos Ativos"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="equipamentos-ativos"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'nome', width: 30 },
+                    { header: 'Tag', key: 'tag', width: 15 },
+                    { header: 'Status', key: 'ativo', width: 10 },
+                  ],
+                  data: (equipamentos || []).map(e => ({ nome: e.nomeDoEquipamento, tag: e.codigoTag, ativo: e.ativo === 'sim' ? 'Ativo' : 'Inativo' })),
+                }}
+              />
+              <Truck className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{equipamentosAtivos}</div>
@@ -594,7 +610,24 @@ export default function Home() {
             <CardTitle className="text-sm font-medium">
               Custos Totais
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Custos Totais"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="custos-totais"
+                exportOptions={{
+                  columns: [
+                    { header: 'Indicador', key: 'indicador', width: 25 },
+                    { header: 'Valor', key: 'valor', width: 20 },
+                  ],
+                  data: [
+                    { indicador: 'Total de Custos', valor: `R$ ${totalCustos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
+                    { indicador: 'Lançamentos', valor: String(totalRegistrosCustos) },
+                  ],
+                }}
+              />
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">R$ {totalCustos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
@@ -609,7 +642,24 @@ export default function Home() {
             <CardTitle className="text-sm font-medium">
               Combustível (L)
             </CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Combustível"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="combustivel"
+                exportOptions={{
+                  columns: [
+                    { header: 'Indicador', key: 'indicador', width: 25 },
+                    { header: 'Valor', key: 'valor', width: 20 },
+                  ],
+                  data: [
+                    { indicador: 'Total Abastecido (L)', valor: totalAbastecimentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    { indicador: 'Abastecimentos', valor: String(totalRegistrosAbastecimentos) },
+                  ],
+                }}
+              />
+              <Fuel className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalAbastecimentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
@@ -626,9 +676,25 @@ export default function Home() {
             <Card className={abaixoMinimo.length > 0 ? "border-orange-400 dark:border-orange-600 border-2" : ""}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Estoque Mínimo de Peças</CardTitle>
-                {abaixoMinimo.length > 0
-                  ? <PackageX className="h-4 w-4 text-orange-500" />
-                  : <Package className="h-4 w-4 text-muted-foreground" />}
+                <div className="flex items-center gap-1">
+                  <DashboardExportMenu
+                    title="Estoque Mínimo de Peças"
+                    filename="estoque-minimo-pecas"
+                    exportOptions={{
+                      columns: [
+                        { header: 'Peça', key: 'nome', width: 30 },
+                        { header: 'Estoque Atual', key: 'estoqueAtual', width: 15 },
+                        { header: 'Estoque Mínimo', key: 'estoqueMinimo', width: 15 },
+                        { header: 'Unidade', key: 'unidade', width: 10 },
+                        { header: 'Status', key: 'status', width: 15 },
+                      ],
+                      data: (estoqueMinimoPecas || []).map(p => ({ nome: p.nome, estoqueAtual: p.estoqueAtual, estoqueMinimo: p.estoqueMinimo, unidade: p.unidade, status: p.abaixoMinimo ? 'Abaixo do Mínimo' : 'OK' })),
+                    }}
+                  />
+                  {abaixoMinimo.length > 0
+                    ? <PackageX className="h-4 w-4 text-orange-500" />
+                    : <Package className="h-4 w-4 text-muted-foreground" />}
+                </div>
               </CardHeader>
               <CardContent className="pt-0">
                 {abaixoMinimo.length > 0 && (
@@ -678,7 +744,25 @@ export default function Home() {
               <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">
                 Vendas
               </CardTitle>
-              <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-1">
+                <DashboardExportMenu
+                  title="Vendas"
+                  subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                  filename="vendas"
+                  exportOptions={{
+                    columns: [
+                      { header: 'Indicador', key: 'indicador', width: 25 },
+                      { header: 'Valor', key: 'valor', width: 20 },
+                    ],
+                    data: [
+                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.venda.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
+                      { indicador: 'Toneladas', valor: vendasPorTipo.venda.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    ],
+                  }}
+                />
+                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -710,7 +794,25 @@ export default function Home() {
               <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">
                 Amortizações
               </CardTitle>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 dark:text-amber-400"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              <div className="flex items-center gap-1">
+                <DashboardExportMenu
+                  title="Amortizações"
+                  subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                  filename="amortizacoes"
+                  exportOptions={{
+                    columns: [
+                      { header: 'Indicador', key: 'indicador', width: 25 },
+                      { header: 'Valor', key: 'valor', width: 20 },
+                    ],
+                    data: [
+                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.amortizacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.amortizacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
+                      { indicador: 'Toneladas', valor: vendasPorTipo.amortizacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    ],
+                  }}
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 dark:text-amber-400"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -742,7 +844,25 @@ export default function Home() {
               <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
                 Doações
               </CardTitle>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 dark:text-green-400"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              <div className="flex items-center gap-1">
+                <DashboardExportMenu
+                  title="Doações"
+                  subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                  filename="doacoes"
+                  exportOptions={{
+                    columns: [
+                      { header: 'Indicador', key: 'indicador', width: 25 },
+                      { header: 'Valor', key: 'valor', width: 20 },
+                    ],
+                    data: [
+                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.doacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.doacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
+                      { indicador: 'Toneladas', valor: vendasPorTipo.doacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    ],
+                  }}
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 dark:text-green-400"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -777,7 +897,36 @@ export default function Home() {
             <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
               Produção Método Caminhões
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Produção Método Caminhões"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-metodo-caminhoes"
+                exportOptions={{
+                  columns: [
+                    { header: 'Caminhão', key: 'placa', width: 20 },
+                    { header: 'Britagem', key: 'britagem', width: 15 },
+                    { header: 'Viagens', key: 'viagens', width: 10 },
+                    { header: 'Peso (t)', key: 'peso', width: 12 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: '%', key: 'percentual', width: 8 },
+                  ],
+                  data: [
+                    ...((producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Fixa', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` }))),
+                    ...((producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Móvel', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` }))),
+                  ],
+                }}
+                whatsappMessage={(() => {
+                  if (!producaoMetodoCaminhoes) return undefined;
+                  let msg = `🚚 *Produção Método Caminhões*\nPeríodo: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}\nTotal: ${totalProducaoCaminhoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+                  (producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Fixa): ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
+                  (producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Móvel): ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+              <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-700 dark:text-green-300">
@@ -1038,7 +1187,30 @@ export default function Home() {
             <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300">
               Medição das Pilhas
             </CardTitle>
-            <Mountain className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Medição das Pilhas"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="medicao-pilhas"
+                exportOptions={{
+                  columns: [
+                    { header: 'Produto', key: 'produto', width: 30 },
+                    { header: 'Total (ton)', key: 'total', width: 15 },
+                    { header: '%', key: 'percentual', width: 10 },
+                  ],
+                  data: ((medicaoPilhasData as any)?.produtos || []).map((p: any) => ({ produto: p.produtoNome, total: p.totalProduzido, percentual: `${p.percentual.toFixed(1)}%` })),
+                }}
+                whatsappMessage={(() => {
+                  const total = (medicaoPilhasData as any)?.total || 0;
+                  if (!total) return undefined;
+                  let msg = `⛰️ *Medição das Pilhas*\nTotal: ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+                  ((medicaoPilhasData as any)?.produtos || []).forEach((p: any) => { msg += `  ${p.produtoNome}: ${p.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${p.percentual.toFixed(1)}%)\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+              <Mountain className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-violet-700 dark:text-violet-300">
@@ -1086,7 +1258,31 @@ export default function Home() {
                 )}
               </CardDescription>
             </div>
-            <Scale className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Produção Balanças Integradoras"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-balancas"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 25 },
+                    { header: 'Leit. Inicial', key: 'leitInicial', width: 15 },
+                    { header: 'Leit. Final', key: 'leitFinal', width: 15 },
+                    { header: 'Produção', key: 'producao', width: 15 },
+                    { header: 'Divergência', key: 'divergencia', width: 12 },
+                  ],
+                  data: producaoBalancasData.equipamentos.map(e => ({ equipamento: e.nome, leitInicial: e.leituraInicial, leitFinal: e.leituraFinal, producao: e.producaoBalanca, divergencia: e.divergencia ? 'SIM' : 'Não' })),
+                }}
+                whatsappMessage={(() => {
+                  const total = producaoBalancasData.equipamentos.reduce((acc, e) => acc + e.producaoBalanca, 0);
+                  let msg = `⚖️ *Produção Balanças Integradoras*\nTotal: ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+                  producaoBalancasData.equipamentos.forEach(e => { msg += `  ${e.nome}: ${e.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton${e.divergencia ? ' ⚠️' : ''}\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+              <Scale className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -1142,7 +1338,31 @@ export default function Home() {
               </CardDescription>
             )}
           </div>
-          <Truck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+          <div className="flex items-center gap-1">
+            <DashboardExportMenu
+              title="Produção Último Dia Caminhões"
+              subtitle={producaoUltimoDia?.dataReferencia ? `Data: ${formatDateBR(producaoUltimoDia.dataReferencia)}` : undefined}
+              filename="producao-ultimo-dia"
+              exportOptions={{
+                columns: [
+                  { header: 'Caminhão', key: 'placa', width: 20 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: '%', key: 'percentual', width: 8 },
+                ],
+                data: (producaoUltimoDia?.caminhoes || []).map(c => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
+              }}
+              whatsappMessage={(() => {
+                if (!producaoUltimoDia?.total) return undefined;
+                let msg = `📅 *Produção Último Dia Caminhões*\n`;
+                if (producaoUltimoDia.dataReferencia) msg += `Data: ${formatDateBR(producaoUltimoDia.dataReferencia)}\n`;
+                msg += `Total: ${producaoUltimoDia.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+                producaoUltimoDia.caminhoes.forEach(c => { msg += `  ${c.placa}: ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
+                return msg;
+              })()}
+              whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+            />
+            <Truck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
@@ -1287,7 +1507,27 @@ export default function Home() {
             <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">
               Produção de Perfuração
             </CardTitle>
-            <Settings2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Produção de Perfuração"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-perfuracao"
+                exportOptions={{
+                  columns: [
+                    { header: 'Indicador', key: 'indicador', width: 25 },
+                    { header: 'Valor', key: 'valor', width: 20 },
+                  ],
+                  data: [
+                    { indicador: 'Total (m)', valor: totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    { indicador: 'Furos', valor: totalFuros.toLocaleString('pt-BR') },
+                    { indicador: 'Metros Perfurados', valor: totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                  ],
+                }}
+                whatsappMessage={totalPerfuracao > 0 ? `⛏️ *Produção de Perfuração*\nTotal: ${totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m\nFuros: ${totalFuros.toLocaleString('pt-BR')} | Metros: ${totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m` : undefined}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+              <Settings2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">
@@ -1310,7 +1550,32 @@ export default function Home() {
             <CardTitle className="text-sm font-medium">
               Revisões Preventivas
             </CardTitle>
-            <ShieldCheck className="h-4 w-4 text-slate-500" />
+            <div className="flex items-center gap-1">
+              <DashboardExportMenu
+                title="Revisões Preventivas"
+                filename="revisoes-preventivas"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 20 },
+                    { header: 'Data Últ. Revisão', key: 'dataRevisao', width: 18 },
+                    { header: 'Hor/Km Revisão', key: 'horKmRevisao', width: 15 },
+                    { header: 'Próx. Revisão', key: 'proximaRevisao', width: 15 },
+                    { header: 'Faltam', key: 'faltam', width: 10 },
+                    { header: 'Status', key: 'status', width: 12 },
+                  ],
+                  data: (revisoesPreventivas || []).map(r => ({ equipamento: r.equipamentoTag, dataRevisao: new Date(r.dataUltimaRevisao).toLocaleDateString('pt-BR'), horKmRevisao: r.horKmRevisao, proximaRevisao: r.horKmProximaRevisao, faltam: r.faltam, status: r.faltam <= 0 ? 'VENCIDA' : r.faltam < 50 ? 'Próximo' : 'OK' })),
+                }}
+                whatsappMessage={(() => {
+                  const vencidas = (revisoesPreventivas || []).filter(r => r.faltam <= 0);
+                  if (!vencidas.length) return undefined;
+                  let msg = `⚠️ *Revisões Preventivas Vencidas (${vencidas.length})*\n`;
+                  vencidas.forEach(r => { msg += `  ${r.equipamentoTag}: Faltam ${r.faltam.toFixed(1)}\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+              <ShieldCheck className="h-4 w-4 text-slate-500" />
+            </div>
           </CardHeader>
           <CardContent>
             {revisoesPreventivas && revisoesPreventivas.length > 0 ? (
@@ -1409,7 +1674,35 @@ export default function Home() {
           <CardTitle className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
             Produção dos Motoristas
           </CardTitle>
-          <Truck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+          <div className="flex items-center gap-1">
+            <DashboardExportMenu
+              title="Produção dos Motoristas (Caminhões Internos)"
+              subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+              filename="producao-motoristas"
+              exportOptions={{
+                columns: [
+                  { header: 'Motorista', key: 'motorista', width: 25 },
+                  { header: 'Serviço', key: 'servico', width: 25 },
+                  { header: 'Viagens', key: 'viagens', width: 10 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: '%', key: 'percentual', width: 8 },
+                ],
+                data: (producaoMotoristasData?.motoristas || []).flatMap(m =>
+                  m.servicos.length > 0
+                    ? m.servicos.map(s => ({ motorista: m.motoristaNome, servico: s.servicoNome, viagens: s.viagens, producao: s.producao, percentual: `${((s.producao / (producaoMotoristasData?.totalProducao || 1)) * 100).toFixed(1)}%` }))
+                    : [{ motorista: m.motoristaNome, servico: '-', viagens: m.totalViagens, producao: m.totalProducao, percentual: `${m.percentual.toFixed(1)}%` }]
+                ),
+              }}
+              whatsappMessage={(() => {
+                if (!producaoMotoristasData?.motoristas?.length) return undefined;
+                let msg = `🚚 *Produção dos Motoristas*\nTotal: ${(producaoMotoristasData.totalProducao || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton | ${producaoMotoristasData.totalViagens || 0} viagens\n`;
+                producaoMotoristasData.motoristas.forEach(m => { msg += `  ${m.motoristaNome}: ${m.totalProducao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${m.percentual.toFixed(1)}%)\n`; });
+                return msg;
+              })()}
+              whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+            />
+            <Truck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-baseline gap-4">
@@ -1473,9 +1766,30 @@ export default function Home() {
         {/* Produção por Setor */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Factory className="h-5 w-5 text-blue-500" />
-              <CardTitle className="text-lg">Produção por Setor</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Factory className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-lg">Produção por Setor</CardTitle>
+              </div>
+              <DashboardExportMenu
+                title="Produção por Setor"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-por-setor"
+                exportOptions={{
+                  columns: [
+                    { header: 'Setor', key: 'setor', width: 30 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorSetor || []).map(s => ({ setor: s.setorNome, producao: s.producaoTotal })),
+                }}
+                whatsappMessage={(() => {
+                  if (!producaoPorSetor?.length) return undefined;
+                  let msg = `🏭 *Produção por Setor*\n`;
+                  producaoPorSetor.forEach(s => { msg += `  ${s.setorNome}: ${s.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} ton\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
             </div>
             <CardDescription>Toneladas produzidas por setor</CardDescription>
           </CardHeader>
@@ -1524,9 +1838,30 @@ export default function Home() {
         {/* Produção por Serviço */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-purple-500" />
-              <CardTitle className="text-lg">Produção por Serviço</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings2 className="h-5 w-5 text-purple-500" />
+                <CardTitle className="text-lg">Produção por Serviço</CardTitle>
+              </div>
+              <DashboardExportMenu
+                title="Produção por Serviço"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-por-servico"
+                exportOptions={{
+                  columns: [
+                    { header: 'Serviço', key: 'servico', width: 30 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorServico || []).map(s => ({ servico: s.servicoNome, producao: s.producaoTotal })),
+                }}
+                whatsappMessage={(() => {
+                  if (!producaoPorServico?.length) return undefined;
+                  let msg = `⚙️ *Produção por Serviço*\n`;
+                  producaoPorServico.forEach(s => { msg += `  ${s.servicoNome}: ${s.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} ton\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
             </div>
             <CardDescription>Toneladas produzidas por serviço</CardDescription>
           </CardHeader>
@@ -1575,9 +1910,30 @@ export default function Home() {
         {/* Produção por Equipamento */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-green-500" />
-              <CardTitle className="text-lg">Produção por Equipamento</CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-green-500" />
+                <CardTitle className="text-lg">Produção por Equipamento</CardTitle>
+              </div>
+              <DashboardExportMenu
+                title="Produção por Equipamento (Caminhões Internos)"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="producao-por-equipamento"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 25 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  ],
+                  data: (producaoPorEquipamento || []).map(e => ({ equipamento: e.equipamentoTag || e.equipamentoNome, producao: e.producaoTotal })),
+                }}
+                whatsappMessage={(() => {
+                  if (!producaoPorEquipamento?.length) return undefined;
+                  let msg = `🚚 *Produção por Equipamento*\n`;
+                  producaoPorEquipamento.forEach(e => { msg += `  ${e.equipamentoTag || e.equipamentoNome}: ${e.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} ton\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
             </div>
             <CardDescription>Toneladas produzidas por equipamento</CardDescription>
           </CardHeader>

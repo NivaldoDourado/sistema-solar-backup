@@ -170,3 +170,12 @@
 ## Dashboard Mobile - Sincronização de Cards
 - [x] Auditar cards do dashboard web vs mobile
 - [x] Adicionar cards faltantes no MobileDashboard.tsx
+
+## Dashboard - Modificações Solicitadas (Abril 2026)
+- [x] Desabilitar card "Produção (m³)" no mobile (KPI verde)
+- [x] Desabilitar card "Manutenções" no mobile (KPI roxo)
+- [x] Filtrar "Produção dos Motoristas" pelo grupo CAMINHÕES INTERNOS (backend + web + mobile)
+- [x] Filtrar "Produção por Equipamento" pelo grupo CAMINHÕES INTERNOS (backend + web + mobile)
+- [x] Implementar exportação Excel/PDF/WhatsApp para todos os cards do dashboard web
+- [x] Implementar exportação Excel/PDF/WhatsApp para todos os cards do dashboard mobile
+- [x] Atualizar CARDS_DISPONIVEIS em Destinatários WhatsApp com todos os novos cards
