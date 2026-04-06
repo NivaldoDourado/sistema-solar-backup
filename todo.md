@@ -179,3 +179,8 @@
 - [x] Implementar exportação Excel/PDF/WhatsApp para todos os cards do dashboard web
 - [x] Implementar exportação Excel/PDF/WhatsApp para todos os cards do dashboard mobile
 - [x] Atualizar CARDS_DISPONIVEIS em Destinatários WhatsApp com todos os novos cards
+
+## Dashboard Web - Botão de Envio Consolidado WhatsApp
+- [x] Criar modal de envio com seleção de destinatários cadastrados e cards a enviar
+- [x] Adicionar botão "Relatório WhatsApp" no topo do dashboard web
+- [x] Montar mensagem consolidada com dados de todos os cards selecionados por destinatário

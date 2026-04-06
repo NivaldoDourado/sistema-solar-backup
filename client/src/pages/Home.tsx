@@ -34,6 +34,7 @@ import {
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { WhatsAppReportModal, type CardDisponivel } from "@/components/WhatsAppReportModal";
 
 // Helper para formatar data para exibição
 function formatDateBR(dateStr: string) {
@@ -129,6 +130,7 @@ export default function Home() {
   const { data: producaoBalancasData } = trpc.parteDiaria.producaoBalancasIntegradoras.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const [enviandoWhatsapp, setEnviandoWhatsapp] = useState(false);
+  const [wppModalOpen, setWppModalOpen] = useState(false);
 
   // Meta Produção Método Caminhões
   const { data: metaCaminhoesConfig } = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
@@ -261,6 +263,194 @@ export default function Home() {
     if (field === "inicio") setDataInicio(value);
     else setDataFim(value);
   };
+
+  // Montar lista de cards para o modal com mensagens pré-formatadas
+  const cardsParaModal = useMemo((): CardDisponivel[] => {
+    const fmt = (n: number, d = 2) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const fmtInt = (n: number) => n.toLocaleString('pt-BR');
+
+    return [
+      {
+        id: 'equipamentos_ativos',
+        label: 'Equipamentos Ativos',
+        temDados: (equipamentos?.length || 0) > 0,
+        mensagem: equipamentos ? `🚛 *Equipamentos Ativos*\n${equipamentosAtivos} de ${equipamentos.length} cadastrados\n` : undefined,
+      },
+      {
+        id: 'combustivel',
+        label: 'Combustível (L)',
+        temDados: totalAbastecimentos > 0,
+        mensagem: `⛽ *Combustível*\nTotal: ${fmt(totalAbastecimentos)} L\n${fmtInt(totalRegistrosAbastecimentos)} abastecimentos\n`,
+      },
+      {
+        id: 'custos_totais',
+        label: 'Custos Totais',
+        temDados: totalCustos > 0,
+        mensagem: `💰 *Custos Totais*\nR$ ${fmt(totalCustos)}\n${fmtInt(totalRegistrosCustos)} lançamentos\n`,
+      },
+      {
+        id: 'custo_combustivel',
+        label: 'Custo Combustível',
+        temDados: (abastecimentoTotais?.totalValor || 0) > 0,
+        mensagem: `💵 *Custo Combustível*\nR$ ${fmt(Number(abastecimentoTotais?.totalValor || 0))}\n`,
+      },
+      {
+        id: 'estoque_minimo',
+        label: 'Estoque Mínimo de Peças',
+        temDados: (estoqueMinimoPecas?.length || 0) > 0,
+        mensagem: estoqueMinimoPecas && estoqueMinimoPecas.length > 0
+          ? `📦 *Estoque Mínimo de Peças*\n${estoqueMinimoPecas.filter((p: any) => p.estoqueAtual <= p.estoqueMinimo).length} peça(s) abaixo do mínimo\n`
+          : undefined,
+      },
+      {
+        id: 'vendas',
+        label: 'Vendas',
+        temDados: vendasPorTipo.venda.totalM3 > 0,
+        mensagem: vendasPorTipo.venda.totalM3 > 0
+          ? `🛍️ *Vendas*\n${fmt(vendasPorTipo.venda.totalM3)} m³ | R$ ${fmt(vendasPorTipo.venda.valor)}\n`
+          : undefined,
+      },
+      {
+        id: 'amortizacoes',
+        label: 'Amortizações',
+        temDados: vendasPorTipo.amortizacao.totalM3 > 0,
+        mensagem: vendasPorTipo.amortizacao.totalM3 > 0
+          ? `🔄 *Amortizações*\n${fmt(vendasPorTipo.amortizacao.totalM3)} m³ | R$ ${fmt(vendasPorTipo.amortizacao.valor)}\n`
+          : undefined,
+      },
+      {
+        id: 'doacoes',
+        label: 'Doações',
+        temDados: vendasPorTipo.doacao.totalM3 > 0,
+        mensagem: vendasPorTipo.doacao.totalM3 > 0
+          ? `🎁 *Doações*\n${fmt(vendasPorTipo.doacao.totalM3)} m³ | R$ ${fmt(vendasPorTipo.doacao.valor)}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_caminhoes',
+        label: 'Produção Método Caminhões',
+        temDados: totalProducaoCaminhoes > 0,
+        mensagem: (() => {
+          if (!producaoMetodoCaminhoes || totalProducaoCaminhoes === 0) return undefined;
+          let m = `🚛 *Produção Método Caminhões*\nTotal: ${fmt(totalProducaoCaminhoes)} ton\n`;
+          const metaCamVal = parseFloat(metaCaminhoesLocal || '0');
+          if (metaCamVal > 0) {
+            const perc = (totalProducaoCaminhoes / metaCamVal) * 100;
+            m += `Meta: ${fmt(metaCamVal)} ton | Produzido: ${perc.toFixed(1)}%\n`;
+            if (totalProducaoCaminhoes >= metaCamVal) m += `✅ Meta atingida!\n`;
+            else m += `A produzir: ${fmt(metaCamVal - totalProducaoCaminhoes)} ton\n`;
+          }
+          if (producaoMetodoCaminhoes.britagemFixa?.caminhoes?.length > 0) {
+            m += `\n🏭 Britagem Fixa: ${fmt(producaoMetodoCaminhoes.britagemFixa.total)} ton\n`;
+            producaoMetodoCaminhoes.britagemFixa.caminhoes.forEach((c: any) => {
+              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${c.percentual.toFixed(1)}%)\n`;
+            });
+          }
+          if (producaoMetodoCaminhoes.britagemMovel?.caminhoes?.length > 0) {
+            m += `\n🚚 Britagem Móvel: ${fmt(producaoMetodoCaminhoes.britagemMovel.total)} ton\n`;
+            producaoMetodoCaminhoes.britagemMovel.caminhoes.forEach((c: any) => {
+              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${c.percentual.toFixed(1)}%)\n`;
+            });
+          }
+          return m;
+        })(),
+      },
+      {
+        id: 'medicao_pilhas',
+        label: 'Medição das Pilhas',
+        temDados: (medicaoPilhasData as any)?.total > 0,
+        mensagem: (medicaoPilhasData as any)?.total > 0
+          ? `⛰️ *Medição das Pilhas*\nTotal: ${fmt((medicaoPilhasData as any).total)} ton\n${((medicaoPilhasData as any).produtos || []).map((p: any) => `  ${p.produtoNome}: ${fmt(p.totalProduzido)} ton (${p.percentual.toFixed(1)}%)`).join('\n')}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_balancas',
+        label: 'Produção Balanças Integradoras',
+        temDados: (producaoBalancasData?.equipamentos?.length || 0) > 0,
+        mensagem: producaoBalancasData && producaoBalancasData.equipamentos.length > 0
+          ? `⚖️ *Produção Balanças Integradoras*\n${producaoBalancasData.equipamentos.map((e: any) => `  ${e.nome}: ${fmt(e.producaoBalanca)} ton${e.divergencia ? ' ⚠️' : ''}`).join('\n')}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_ultimo_dia',
+        label: 'Produção Último Dia Caminhões',
+        temDados: (producaoUltimoDia?.total || 0) > 0,
+        mensagem: producaoUltimoDia && producaoUltimoDia.total > 0
+          ? (() => {
+              let m = `📊 *Produção Último Dia* (${producaoUltimoDia.dataReferencia ? formatDateBR(producaoUltimoDia.dataReferencia) : '-'})\nTotal: ${fmt(producaoUltimoDia.total)} ton\n`;
+              const metaVal = parseFloat(metaDiariaLocal || '0');
+              if (metaVal > 0) {
+                const perc = (producaoUltimoDia.total / metaVal) * 100;
+                m += `Meta diária: ${fmt(metaVal)} ton | ${perc.toFixed(1)}%\n`;
+              }
+              return m;
+            })()
+          : undefined,
+      },
+      {
+        id: 'producao_perfuracao',
+        label: 'Produção de Perfuração',
+        temDados: totalPerfuracao > 0,
+        mensagem: totalPerfuracao > 0
+          ? `⛏️ *Produção de Perfuração*\nTotal: ${fmt(totalPerfuracao)} m\nFuros: ${fmtInt(totalFuros)} | Metros: ${fmt(totalMetrosPerfurados)} m\n`
+          : undefined,
+      },
+      {
+        id: 'revisoes_preventivas',
+        label: 'Revisões Preventivas',
+        temDados: (revisoesPreventivas?.length || 0) > 0,
+        mensagem: (() => {
+          if (!revisoesPreventivas || revisoesPreventivas.length === 0) return undefined;
+          const vencidas = revisoesPreventivas.filter(r => r.faltam <= 0);
+          const proximas = revisoesPreventivas.filter(r => r.faltam > 0 && r.faltam <= 25);
+          if (vencidas.length === 0 && proximas.length === 0) return undefined;
+          let m = `🔧 *Revisões Preventivas*\n`;
+          if (vencidas.length > 0) m += `⚠️ Vencidas (${vencidas.length}): ${vencidas.map(r => r.equipamentoTag).join(', ')}\n`;
+          if (proximas.length > 0) m += `⏰ Próximas (${proximas.length}): ${proximas.map(r => r.equipamentoTag).join(', ')}\n`;
+          return m;
+        })(),
+      },
+      {
+        id: 'producao_motoristas',
+        label: 'Produção dos Motoristas',
+        temDados: (producaoMotoristasData?.motoristas?.length || 0) > 0,
+        mensagem: producaoMotoristasData && producaoMotoristasData.motoristas.length > 0
+          ? `🚛 *Produção dos Motoristas*\nTotal: ${fmt(producaoMotoristasData.totalProducao)} ton | ${fmtInt(producaoMotoristasData.totalViagens)} viagens\n${producaoMotoristasData.motoristas.slice(0, 5).map((m: any) => `  ${m.motoristaNome}: ${fmt(m.totalProducao)} ton (${m.percentual.toFixed(1)}%)`).join('\n')}${producaoMotoristasData.motoristas.length > 5 ? `\n  ...e mais ${producaoMotoristasData.motoristas.length - 5}` : ''}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_setor',
+        label: 'Produção por Setor',
+        temDados: (producaoPorSetor?.length || 0) > 0,
+        mensagem: producaoPorSetor && producaoPorSetor.length > 0
+          ? `🏭 *Produção por Setor*\n${producaoPorSetor.slice(0, 5).map((s: any) => `  ${s.setorNome}: ${fmt(s.producaoTotal)}`).join('\n')}${producaoPorSetor.length > 5 ? `\n  ...e mais ${producaoPorSetor.length - 5}` : ''}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_servico',
+        label: 'Produção por Serviço',
+        temDados: (producaoPorServico?.length || 0) > 0,
+        mensagem: producaoPorServico && producaoPorServico.length > 0
+          ? `⚙️ *Produção por Serviço*\n${producaoPorServico.slice(0, 5).map((s: any) => `  ${s.servicoNome}: ${fmt(s.producaoTotal)}`).join('\n')}${producaoPorServico.length > 5 ? `\n  ...e mais ${producaoPorServico.length - 5}` : ''}\n`
+          : undefined,
+      },
+      {
+        id: 'producao_equipamento',
+        label: 'Produção por Equipamento',
+        temDados: (producaoPorEquipamento?.length || 0) > 0,
+        mensagem: producaoPorEquipamento && producaoPorEquipamento.length > 0
+          ? `🚜 *Produção por Equipamento (Caminhões Internos)*\n${producaoPorEquipamento.slice(0, 5).map((e: any) => `  ${e.equipamentoTag || e.equipamentoNome}: ${fmt(e.producaoTotal)}`).join('\n')}${producaoPorEquipamento.length > 5 ? `\n  ...e mais ${producaoPorEquipamento.length - 5}` : ''}\n`
+          : undefined,
+      },
+    ];
+  }, [
+    equipamentos, equipamentosAtivos, totalAbastecimentos, totalRegistrosAbastecimentos,
+    totalCustos, totalRegistrosCustos, abastecimentoTotais, estoqueMinimoPecas,
+    vendasPorTipo, totalProducaoCaminhoes, producaoMetodoCaminhoes, metaCaminhoesLocal,
+    medicaoPilhasData, producaoBalancasData, producaoUltimoDia, metaDiariaLocal,
+    totalPerfuracao, totalFuros, totalMetrosPerfurados, revisoesPreventivas,
+    producaoMotoristasData, producaoPorSetor, producaoPorServico, producaoPorEquipamento,
+  ]);
 
   const enviarWhatsapp = () => {
     if (!destinatariosWpp) return;
@@ -482,12 +672,11 @@ export default function Home() {
         </div>
         {destinatariosWpp && destinatariosWpp.filter(d => d.ativo === "sim").length > 0 && (
           <Button
-            onClick={() => enviarWhatsapp()}
-            disabled={enviandoWhatsapp}
+            onClick={() => setWppModalOpen(true)}
             className="bg-green-600 hover:bg-green-700 text-white gap-2"
           >
-            <Send className="h-4 w-4" />
-            Enviar via WhatsApp
+            <MessageSquare className="h-4 w-4" />
+            Relatório WhatsApp
           </Button>
         )}
       </div>
@@ -2034,6 +2223,23 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Relatório WhatsApp */}
+      {destinatariosWpp && (
+        <WhatsAppReportModal
+          open={wppModalOpen}
+          onClose={() => setWppModalOpen(false)}
+          destinatarios={destinatariosWpp as any}
+          cards={cardsParaModal}
+          periodoLabel={
+            periodoAtivo === 'mesAtual'
+              ? `Mês atual (${formatDateBR(dataInicio)} - ${formatDateBR(dataFim)})`
+              : dataInicio && dataFim
+              ? `${formatDateBR(dataInicio)} a ${formatDateBR(dataFim)}`
+              : 'Período selecionado'
+          }
+        />
+      )}
     </div>
   );
 }
