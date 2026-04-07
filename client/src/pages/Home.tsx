@@ -30,6 +30,10 @@ import {
   Package,
   PackageX,
   Scale,
+  ClipboardList,
+  CheckCircle2,
+  Clock,
+  Circle,
 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -131,6 +135,14 @@ export default function Home() {
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const [enviandoWhatsapp, setEnviandoWhatsapp] = useState(false);
   const [wppModalOpen, setWppModalOpen] = useState(false);
+
+  // Rotinas Diárias
+  const { data: rotinasStatus, refetch: refetchRotinas } = trpc.rotinas.statusHoje.useQuery();
+  const atualizarStatusMutation = trpc.rotinas.marcarStatus.useMutation({
+    onSuccess: () => { refetchRotinas(); },
+    onError: () => toast.error("Erro ao atualizar status da rotina."),
+  });
+  const { userRole } = usePermissions();
 
   // Meta Produção Método Caminhões
   const { data: metaCaminhoesConfig } = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
@@ -774,33 +786,84 @@ export default function Home() {
 
       {/* Cards de Resumo */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        {/* Card Status dos Lançamentos - substitui Equipamentos Ativos */}
+        <Card className="md:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Equipamentos Ativos
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              Status dos Lançamentos
             </CardTitle>
-            <div className="flex items-center gap-1">
-              <DashboardExportMenu
-                title="Equipamentos Ativos"
-                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
-                filename="equipamentos-ativos"
-                exportOptions={{
-                  columns: [
-                    { header: 'Equipamento', key: 'nome', width: 30 },
-                    { header: 'Tag', key: 'tag', width: 15 },
-                    { header: 'Status', key: 'ativo', width: 10 },
-                  ],
-                  data: (equipamentos || []).map(e => ({ nome: e.nomeDoEquipamento, tag: e.codigoTag, ativo: e.ativo === 'sim' ? 'Ativo' : 'Inativo' })),
-                }}
-              />
-              <Truck className="h-4 w-4 text-muted-foreground" />
-            </div>
+            <span className="text-xs text-muted-foreground">
+              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+            </span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{equipamentosAtivos}</div>
-            <p className="text-xs text-muted-foreground">
-              Total de {equipamentos?.length || 0} cadastrados
-            </p>
+            {(!rotinasStatus || rotinasStatus.length === 0) ? (
+              <p className="text-sm text-muted-foreground italic">Nenhuma rotina cadastrada. Acesse "Rotinas Diárias" para configurar.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {rotinasStatus.map((rotina) => {
+                  const isUsuario = userRole === 'usuario';
+                  const status = rotina.status;
+                  return (
+                    <div
+                      key={rotina.id}
+                      className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
+                        status === 'concluido'
+                          ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950'
+                          : status === 'pendente'
+                          ? 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950'
+                          : 'border-border bg-background'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        {status === 'concluido' ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                        ) : status === 'pendente' ? (
+                          <Clock className="h-4 w-4 text-amber-600 shrink-0" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{rotina.nome}</p>
+                          {rotina.descricao && (
+                            <p className="text-xs text-muted-foreground truncate">{rotina.descricao}</p>
+                          )}
+                        </div>
+                      </div>
+                      {isUsuario && (
+                        <div className="flex gap-1 shrink-0 ml-2">
+                          <button
+                            onClick={() => atualizarStatusMutation.mutate({ rotinaId: rotina.id, status: 'concluido' })}
+                            disabled={atualizarStatusMutation.isPending}
+                            title="Concluído"
+                            className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                              status === 'concluido'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700'
+                            }`}
+                          >
+                            ✓ Concluído
+                          </button>
+                          <button
+                            onClick={() => atualizarStatusMutation.mutate({ rotinaId: rotina.id, status: 'pendente' })}
+                            disabled={atualizarStatusMutation.isPending}
+                            title="Pendente"
+                            className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                              status === 'pendente'
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-muted text-muted-foreground hover:bg-amber-100 hover:text-amber-700'
+                            }`}
+                          >
+                            ⏳ Pendente
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -194,3 +194,12 @@
 
 ## Card Produção Método Caminhões - Nome dos Caminhões Mobile
 - [x] Mostrar nome completo dos caminhões no mobile (sem truncar)
+
+## Sistema de Checklist de Rotinas Diárias
+- [x] Schema DB: tabelas rotinas e statusRotinaDiario
+- [x] Procedures tRPC: CRUD rotinas + marcar/consultar status diário
+- [x] Tela de administração de rotinas (consultoria/admin)
+- [x] Card "Status dos Lançamentos" no dashboard web (substituindo Equipamentos Ativos)
+- [x] Card "Status dos Lançamentos" no dashboard mobile (substituindo Equipamentos Ativos)
+- [x] Controle de permissão: somente perfil Usuário edita status
+- [x] Adicionar rota /rotinas no App.tsx

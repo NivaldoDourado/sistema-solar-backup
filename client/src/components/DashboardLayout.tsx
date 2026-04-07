@@ -42,6 +42,7 @@ import {
   Shield,
   Bell,
   Smartphone,
+  ClipboardList,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -88,6 +89,7 @@ export default function DashboardLayout({
     { icon: Settings, label: "Cadastros", path: "/cadastros", module: null },
     { icon: Users, label: "Usuários", path: "/usuarios", module: "usuarios" as const },
     { icon: Shield, label: "Permissões", path: "/permissoes", module: null },
+    { icon: ClipboardList, label: "Rotinas Diárias", path: "/rotinas", module: null },
     { icon: Bell, label: "Metas e Alertas", path: "/metas-alertas", module: null },
     { icon: Smartphone, label: "App Mobile", path: "/mobile", module: null },
   ];
@@ -99,6 +101,10 @@ export default function DashboardLayout({
   const menuItems = allMenuItems.filter(item => {
     // Permissões: visível apenas para Consultoria e Admin
     if (item.path === "/permissoes") {
+      return userRole === "consultoria" || userRole === "admin";
+    }
+    // Rotinas Diárias: visível apenas para Consultoria e Admin
+    if (item.path === "/rotinas") {
       return userRole === "consultoria" || userRole === "admin";
     }
     // Usuários: visível apenas para Admin, Consultoria e Diretor

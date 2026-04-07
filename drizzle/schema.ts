@@ -748,3 +748,33 @@ export const parteDiariaParadas = mysqlTable("parte_diaria_paradas", {
 });
 export type ParteDiariaParada = typeof parteDiariaParadas.$inferSelect;
 export type InsertParteDiariaParada = typeof parteDiariaParadas.$inferInsert;
+
+// ============================================================================
+// MÓDULO CHECKLIST DE ROTINAS DIÁRIAS
+// ============================================================================
+
+// Cadastro de rotinas (gerenciado por consultoria/admin)
+export const rotinas = mysqlTable("rotinas", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  ordem: int("ordem").default(0).notNull(),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Rotina = typeof rotinas.$inferSelect;
+export type InsertRotina = typeof rotinas.$inferInsert;
+
+// Status diário de cada rotina (um registro por rotina por dia)
+export const statusRotinaDiario = mysqlTable("status_rotina_diario", {
+  id: int("id").autoincrement().primaryKey(),
+  rotinaId: int("rotinaId").notNull(),
+  data: date("data").notNull(), // data do dia (YYYY-MM-DD)
+  status: mysqlEnum("status", ["concluido", "pendente", "nao_marcado"]).default("nao_marcado").notNull(),
+  userId: int("userId").notNull(), // quem marcou
+  observacao: text("observacao"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type StatusRotinaDiario = typeof statusRotinaDiario.$inferSelect;
+export type InsertStatusRotinaDiario = typeof statusRotinaDiario.$inferInsert;

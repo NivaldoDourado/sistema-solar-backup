@@ -33,6 +33,9 @@ import {
   Factory,
   ShoppingCart,
   Layers,
+  ClipboardList,
+  Clock,
+  Circle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -270,6 +273,12 @@ export default function MobileDashboard() {
   const metasList = trpc.metas.list.useQuery();
   const verificarAlerta = trpc.metas.verificarAlertas.useMutation();
   const destinatariosWpp = trpc.destinatariosWhatsapp.list.useQuery();
+  const rotinasStatus = trpc.rotinas.statusHoje.useQuery();
+  const atualizarStatusMutation = trpc.rotinas.marcarStatus.useMutation({
+    onSuccess: () => { rotinasStatus.refetch(); },
+    onError: () => toast.error("Erro ao atualizar status da rotina."),
+  });
+  const userRole = user?.role;
 
   const isLoading =
     abastecimentoTotais.isLoading ||
@@ -548,15 +557,86 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* KPIs Grid - Cards Básicos */}
       {/* ============================================================ */}
+      {/* Card Status dos Lançamentos - substitui Equipamentos Ativos */}
+      {rotinasStatus.data && rotinasStatus.data.length > 0 && (
+        <div className="px-4 mt-4">
+          <div className="rounded-2xl bg-slate-800 border border-slate-700 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-slate-700 flex items-center justify-center">
+                  <ClipboardList className="w-4 h-4 text-slate-300" />
+                </div>
+                <span className="text-sm font-semibold text-white">Status dos Lançamentos</span>
+              </div>
+              <span className="text-xs text-slate-400">
+                {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {rotinasStatus.data.map((rotina) => {
+                const isUsuario = userRole === 'usuario';
+                const status = rotina.status;
+                return (
+                  <div
+                    key={rotina.id}
+                    className={`flex items-center justify-between rounded-xl p-3 ${
+                      status === 'concluido'
+                        ? 'bg-green-900/40 border border-green-700/50'
+                        : status === 'pendente'
+                        ? 'bg-amber-900/40 border border-amber-700/50'
+                        : 'bg-slate-700/50 border border-slate-600/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {status === 'concluido' ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                      ) : status === 'pendente' ? (
+                        <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-slate-400 shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{rotina.nome}</p>
+                        {rotina.descricao && (
+                          <p className="text-xs text-slate-400 truncate">{rotina.descricao}</p>
+                        )}
+                      </div>
+                    </div>
+                    {isUsuario && (
+                      <div className="flex gap-1 shrink-0 ml-2">
+                        <button
+                          onClick={() => atualizarStatusMutation.mutate({ rotinaId: rotina.id, status: 'concluido' })}
+                          disabled={atualizarStatusMutation.isPending}
+                          className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
+                            status === 'concluido'
+                              ? 'bg-green-600 text-white'
+                              : 'bg-slate-600 text-slate-300 active:bg-green-700 active:text-white'
+                          }`}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => atualizarStatusMutation.mutate({ rotinaId: rotina.id, status: 'pendente' })}
+                          disabled={atualizarStatusMutation.isPending}
+                          className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
+                            status === 'pendente'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-slate-600 text-slate-300 active:bg-amber-600 active:text-white'
+                          }`}
+                        >
+                          ⏳
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="px-4 mt-4 grid grid-cols-2 gap-3">
-        <KpiCard
-          icon={<Truck className="w-5 h-5 text-white" />}
-          label="Equipamentos Ativos"
-          value={formatNumber(equipamentosAtivos)}
-          sub={`de ${equipamentosLista.data?.length ?? 0} cadastrados`}
-          color="text-white"
-          bgColor="bg-gradient-to-br from-blue-600 to-blue-800"
-        />
         <KpiCard
           icon={<Fuel className="w-5 h-5 text-white" />}
           label="Combustível (L)"

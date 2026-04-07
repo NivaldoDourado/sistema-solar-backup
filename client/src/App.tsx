@@ -37,6 +37,7 @@ import TrocarSenha from "./pages/TrocarSenha";
 import MobileDashboard from "./pages/MobileDashboard";
 import MetasAlertas from "./pages/MetasAlertas";
 import OutrasParadas from "./pages/OutrasParadas";
+import Rotinas from "./pages/Rotinas";
 
 function Router() {
   return (
@@ -224,6 +225,13 @@ function Router() {
       <Route path={"/permissoes"}>
         <DashboardLayout>
           <Permissoes />
+        </DashboardLayout>
+      </Route>
+
+      {/* Rotinas Diárias - acesso restrito a Consultoria/Admin */}
+      <Route path={"/rotinas"}>
+        <DashboardLayout>
+          <Rotinas />
         </DashboardLayout>
       </Route>
 

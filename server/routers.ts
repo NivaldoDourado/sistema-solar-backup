@@ -41,6 +41,8 @@ import {
   pushSubscriptions,
   outrasParadas,
   parteDiariaParadas,
+  rotinas,
+  statusRotinaDiario,
 } from "../drizzle/schema";
 import { eq, desc, asc, sql, and, or, gte, lte, count, like, inArray } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
@@ -3738,6 +3740,169 @@ export const appRouter = router({
           data: { url: "/mobile" },
         });
         return result;
+      }),
+  }),
+
+  // ============================================================================
+  // MÓDULO CHECKLIST DE ROTINAS DIÁRIAS
+  // ============================================================================
+  rotinas: router({
+    // Listar todas as rotinas ativas (todos os perfis)
+    listar: protectedProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      return db.select().from(rotinas)
+        .where(eq(rotinas.ativo, "sim"))
+        .orderBy(asc(rotinas.ordem), asc(rotinas.id));
+    }),
+
+    // Listar TODAS as rotinas incluindo inativas (consultoria/admin)
+    listarTodas: protectedProcedure.query(async ({ ctx }) => {
+      const role = ctx.user!.role;
+      if (role !== "consultoria" && role !== "admin") {
+        throw new Error("Acesso negado");
+      }
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      return db.select().from(rotinas).orderBy(asc(rotinas.ordem), asc(rotinas.id));
+    }),
+
+    // Criar rotina (consultoria/admin)
+    criar: protectedProcedure
+      .input(z.object({
+        nome: z.string().min(1),
+        descricao: z.string().optional(),
+        ordem: z.number().default(0),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const role = ctx.user!.role;
+        if (role !== "consultoria" && role !== "admin") {
+          throw new Error("Acesso negado");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.insert(rotinas).values({
+          nome: input.nome,
+          descricao: input.descricao || null,
+          ordem: input.ordem,
+          ativo: "sim",
+        });
+        return { success: true };
+      }),
+
+    // Editar rotina (consultoria/admin)
+    editar: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        nome: z.string().min(1),
+        descricao: z.string().optional(),
+        ordem: z.number().default(0),
+        ativo: z.enum(["sim", "nao"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const role = ctx.user!.role;
+        if (role !== "consultoria" && role !== "admin") {
+          throw new Error("Acesso negado");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        await db.update(rotinas).set({
+          nome: input.nome,
+          descricao: input.descricao || null,
+          ordem: input.ordem,
+          ativo: input.ativo,
+        }).where(eq(rotinas.id, input.id));
+        return { success: true };
+      }),
+
+    // Excluir rotina (consultoria/admin)
+    excluir: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const role = ctx.user!.role;
+        if (role !== "consultoria" && role !== "admin") {
+          throw new Error("Acesso negado");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        // Remove status diários associados
+        await db.delete(statusRotinaDiario).where(eq(statusRotinaDiario.rotinaId, input.id));
+        await db.delete(rotinas).where(eq(rotinas.id, input.id));
+        return { success: true };
+      }),
+
+    // Buscar status do dia atual para todas as rotinas ativas
+    statusHoje: protectedProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const hojeStr = new Date().toISOString().split('T')[0];
+      const hojeDate = new Date(hojeStr + 'T00:00:00.000Z');
+
+      const todasRotinas = await db.select().from(rotinas)
+        .where(eq(rotinas.ativo, "sim"))
+        .orderBy(asc(rotinas.ordem), asc(rotinas.id));
+
+      const statusHoje = await db.select().from(statusRotinaDiario)
+        .where(sql`DATE(${statusRotinaDiario.data}) = ${hojeStr}`);
+
+      // Mescla rotinas com seus status do dia
+      return todasRotinas.map(r => {
+        const s = statusHoje.find(s => s.rotinaId === r.id);
+        return {
+          id: r.id,
+          nome: r.nome,
+          descricao: r.descricao,
+          ordem: r.ordem,
+          status: s?.status ?? "nao_marcado" as "concluido" | "pendente" | "nao_marcado",
+          observacao: s?.observacao ?? null,
+          atualizadoPor: s?.userId ?? null,
+        };
+      });
+    }),
+
+    // Marcar status de uma rotina (somente perfil usuario)
+    marcarStatus: protectedProcedure
+      .input(z.object({
+        rotinaId: z.number(),
+        status: z.enum(["concluido", "pendente", "nao_marcado"]),
+        observacao: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const role = ctx.user!.role;
+        if (role !== "usuario" && role !== "admin" && role !== "consultoria") {
+          throw new Error("Somente o perfil Usuário pode marcar o status das rotinas.");
+        }
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        const hoje = new Date().toISOString().split('T')[0];
+        const userId = ctx.user!.id;
+
+        // Upsert: atualiza se já existe, insere se não existe
+        const hojeDate = new Date(hoje + 'T00:00:00.000Z');
+        const existing = await db.select({ id: statusRotinaDiario.id })
+          .from(statusRotinaDiario)
+          .where(and(
+            eq(statusRotinaDiario.rotinaId, input.rotinaId),
+            sql`DATE(${statusRotinaDiario.data}) = ${hoje}`
+          ))
+          .limit(1);
+
+        if (existing.length > 0) {
+          await db.update(statusRotinaDiario).set({
+            status: input.status,
+            observacao: input.observacao || null,
+            userId,
+          }).where(eq(statusRotinaDiario.id, existing[0].id));
+        } else {
+          await db.insert(statusRotinaDiario).values({
+            rotinaId: input.rotinaId,
+            data: hojeDate,
+            status: input.status,
+            observacao: input.observacao || null,
+            userId,
+          });
+        }
+        return { success: true };
       }),
   }),
 });
