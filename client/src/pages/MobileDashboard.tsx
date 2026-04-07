@@ -758,69 +758,69 @@ export default function MobileDashboard() {
           })()}
           {/* Britagem Fixa */}
           {producaoMetodoCaminhoes.data?.britagemFixa?.caminhoes && producaoMetodoCaminhoes.data.britagemFixa.caminhoes.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-green-700 space-y-1">
+            <div className="mt-3 pt-3 border-t border-green-700 space-y-2">
               <div className="flex justify-between text-xs font-bold text-green-300 mb-2">
                 <span>🏭 Britagem Fixa</span>
                 <span>{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)} ton</span>
               </div>
               {/* Cabeçalho da tabela */}
-              <div className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-[10px] text-green-500 font-medium border-b border-green-700 pb-1 mb-1">
-                <span>Caminhão</span>
-                <span className="text-right">Viag.</span>
-                <span className="text-right">Peso(t)</span>
-                <span className="text-right">Prod.(t)</span>
-                <span className="text-right">%</span>
+              <div className="grid grid-cols-[44px_56px_68px_36px] text-[10px] text-green-500 font-medium border-b border-green-700 pb-1 mb-1 justify-items-end">
+                <span>Viag.</span>
+                <span>Peso(t)</span>
+                <span>Prod.(t)</span>
+                <span>%</span>
               </div>
               {producaoMetodoCaminhoes.data.britagemFixa.caminhoes.map((c: any, idx: number) => (
-                <div key={idx} className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-xs text-green-400/80 items-center py-0.5">
-                  <span className="truncate pr-1" title={c.placa}>{c.placa}</span>
-                  <span className="text-right tabular-nums">{(c.totalViagens || 0).toLocaleString('pt-BR')}</span>
-                  <span className="text-right tabular-nums">{(c.capacidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-right tabular-nums font-semibold text-green-300">{formatNumber(c.totalProduzido || 0, 2)}</span>
-                  <span className="text-right tabular-nums text-green-400">{(c.percentual || 0).toFixed(1)}%</span>
+                <div key={idx} className="border-b border-green-800/50 pb-1.5 last:border-0">
+                  {/* Nome do caminhão - linha completa */}
+                  <p className="text-xs text-green-300 font-medium leading-tight mb-0.5">{c.placa}</p>
+                  {/* Dados numéricos */}
+                  <div className="grid grid-cols-[44px_56px_68px_36px] text-xs text-green-400/80 justify-items-end">
+                    <span className="tabular-nums">{(c.totalViagens || 0).toLocaleString('pt-BR')}</span>
+                    <span className="tabular-nums">{(c.capacidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="tabular-nums font-semibold text-green-300">{formatNumber(c.totalProduzido || 0, 2)}</span>
+                    <span className="tabular-nums text-green-400">{(c.percentual || 0).toFixed(1)}%</span>
+                  </div>
                 </div>
               ))}
               {/* Subtotal */}
-              <div className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-xs text-green-300 font-semibold border-t border-green-700 pt-1 mt-1 items-center">
-                <span>Subtotal</span>
-                <span className="text-right tabular-nums">{(producaoMetodoCaminhoes.data.britagemFixa.totalViagens || 0).toLocaleString('pt-BR')}</span>
-                <span className="text-right">—</span>
-                <span className="text-right tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)}</span>
-                <span className="text-right tabular-nums">{producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemFixa.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%</span>
+              <div className="flex items-center justify-between text-xs text-green-300 font-semibold border-t border-green-600 pt-1.5 mt-1">
+                <span>Subtotal — {(producaoMetodoCaminhoes.data.britagemFixa.totalViagens || 0).toLocaleString('pt-BR')} viag.</span>
+                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemFixa.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%)</span>
               </div>
             </div>
           )}
           {/* Britagem Móvel */}
           {producaoMetodoCaminhoes.data?.britagemMovel?.caminhoes && producaoMetodoCaminhoes.data.britagemMovel.caminhoes.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-green-700 space-y-1">
+            <div className="mt-3 pt-3 border-t border-green-700 space-y-2">
               <div className="flex justify-between text-xs font-bold text-green-300 mb-2">
                 <span>🚛 Britagem Móvel</span>
                 <span>{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)} ton</span>
               </div>
               {/* Cabeçalho da tabela */}
-              <div className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-[10px] text-green-500 font-medium border-b border-green-700 pb-1 mb-1">
-                <span>Caminhão</span>
-                <span className="text-right">Viag.</span>
-                <span className="text-right">Peso(t)</span>
-                <span className="text-right">Prod.(t)</span>
-                <span className="text-right">%</span>
+              <div className="grid grid-cols-[44px_56px_68px_36px] text-[10px] text-green-500 font-medium border-b border-green-700 pb-1 mb-1 justify-items-end">
+                <span>Viag.</span>
+                <span>Peso(t)</span>
+                <span>Prod.(t)</span>
+                <span>%</span>
               </div>
               {producaoMetodoCaminhoes.data.britagemMovel.caminhoes.map((c: any, idx: number) => (
-                <div key={idx} className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-xs text-green-400/80 items-center py-0.5">
-                  <span className="truncate pr-1" title={c.placa}>{c.placa}</span>
-                  <span className="text-right tabular-nums">{(c.totalViagens || 0).toLocaleString('pt-BR')}</span>
-                  <span className="text-right tabular-nums">{(c.capacidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-right tabular-nums font-semibold text-green-300">{formatNumber(c.totalProduzido || 0, 2)}</span>
-                  <span className="text-right tabular-nums text-green-400">{(c.percentual || 0).toFixed(1)}%</span>
+                <div key={idx} className="border-b border-green-800/50 pb-1.5 last:border-0">
+                  {/* Nome do caminhão - linha completa */}
+                  <p className="text-xs text-green-300 font-medium leading-tight mb-0.5">{c.placa}</p>
+                  {/* Dados numéricos */}
+                  <div className="grid grid-cols-[44px_56px_68px_36px] text-xs text-green-400/80 justify-items-end">
+                    <span className="tabular-nums">{(c.totalViagens || 0).toLocaleString('pt-BR')}</span>
+                    <span className="tabular-nums">{(c.capacidade || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="tabular-nums font-semibold text-green-300">{formatNumber(c.totalProduzido || 0, 2)}</span>
+                    <span className="tabular-nums text-green-400">{(c.percentual || 0).toFixed(1)}%</span>
+                  </div>
                 </div>
               ))}
               {/* Subtotal */}
-              <div className="grid grid-cols-[minmax(0,1fr)_44px_52px_64px_36px] text-xs text-green-300 font-semibold border-t border-green-700 pt-1 mt-1 items-center">
-                <span>Subtotal</span>
-                <span className="text-right tabular-nums">{(producaoMetodoCaminhoes.data.britagemMovel.totalViagens || 0).toLocaleString('pt-BR')}</span>
-                <span className="text-right">—</span>
-                <span className="text-right tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)}</span>
-                <span className="text-right tabular-nums">{producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemMovel.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%</span>
+              <div className="flex items-center justify-between text-xs text-green-300 font-semibold border-t border-green-600 pt-1.5 mt-1">
+                <span>Subtotal — {(producaoMetodoCaminhoes.data.britagemMovel.totalViagens || 0).toLocaleString('pt-BR')} viag.</span>
+                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemMovel.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%)</span>
               </div>
             </div>
           )}

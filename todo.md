@@ -191,3 +191,6 @@
 
 ## Card Produção Método Caminhões - Alinhamento
 - [x] Corrigir alinhamento vertical das colunas Viagens, Peso (t), Produção (t) e % no web e mobile
+
+## Card Produção Método Caminhões - Nome dos Caminhões Mobile
+- [x] Mostrar nome completo dos caminhões no mobile (sem truncar)
