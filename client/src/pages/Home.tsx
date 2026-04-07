@@ -1263,7 +1263,7 @@ export default function Home() {
                     {producaoMetodoCaminhoes.britagemFixa.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
                   </span>
                 </div>
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-[10px] text-green-500 dark:text-green-400 font-medium border-b border-green-200 dark:border-green-800 pb-1 mb-1">
+                <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-[10px] text-green-500 dark:text-green-400 font-medium border-b border-green-200 dark:border-green-800 pb-1 mb-1">
                   <span>Caminhão</span>
                   <span className="text-right">Viagens</span>
                   <span className="text-right">Peso (t)</span>
@@ -1271,35 +1271,35 @@ export default function Home() {
                   <span className="text-right">%</span>
                 </div>
                 {producaoMetodoCaminhoes.britagemFixa.caminhoes.map((c: any, idx: number) => (
-                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
-                    <span className="text-green-600 dark:text-green-400 break-words leading-tight" title={`${c.placa} | Pes: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t | ${c.dataInicio}${c.dataFim !== c.dataInicio ? ` a ${c.dataFim}` : ''}`}>
+                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-xs items-center py-0.5">
+                    <span className="text-green-600 dark:text-green-400 truncate leading-tight pr-1" title={`${c.placa} | Peso: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t`}>
                       {c.placa}
                     </span>
-                    <span className="text-right text-green-600 dark:text-green-400 whitespace-nowrap">
+                    <span className="text-right text-green-600 dark:text-green-400 tabular-nums">
                       {c.totalViagens?.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) || '0'}
                     </span>
-                    <span className="text-right text-green-600 dark:text-green-400 whitespace-nowrap">
+                    <span className="text-right text-green-600 dark:text-green-400 tabular-nums">
                       {c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                     </span>
-                    <span className="text-right font-semibold text-green-700 dark:text-green-300 whitespace-nowrap">
+                    <span className="text-right font-semibold text-green-700 dark:text-green-300 tabular-nums">
                       {c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium whitespace-nowrap">
+                    <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                       {c.percentual.toFixed(1)}%
                     </span>
                   </div>
                 ))}
                 {/* Totalizador Britagem Fixa */}
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center border-t border-green-200 dark:border-green-800 pt-1 mt-1 font-semibold">
+                <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-xs items-center border-t border-green-200 dark:border-green-800 pt-1 mt-1 font-semibold">
                   <span className="text-green-700 dark:text-green-300">Subtotal</span>
-                  <span className="text-right text-green-700 dark:text-green-300 whitespace-nowrap">
+                  <span className="text-right text-green-700 dark:text-green-300 tabular-nums">
                     {producaoMetodoCaminhoes.britagemFixa.totalViagens?.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) || '0'}
                   </span>
-                  <span className="text-right text-green-600 dark:text-green-400">-</span>
-                  <span className="text-right text-green-700 dark:text-green-300 whitespace-nowrap">
+                  <span className="text-right text-green-600 dark:text-green-400">—</span>
+                  <span className="text-right text-green-700 dark:text-green-300 tabular-nums">
                     {producaoMetodoCaminhoes.britagemFixa.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium">
+                  <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                     {producaoMetodoCaminhoes.total > 0 ? ((producaoMetodoCaminhoes.britagemFixa.total / producaoMetodoCaminhoes.total) * 100).toFixed(1) : '0.0'}%
                   </span>
                 </div>
@@ -1315,7 +1315,7 @@ export default function Home() {
                     {producaoMetodoCaminhoes.britagemMovel.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
                   </span>
                 </div>
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-[10px] text-emerald-500 dark:text-emerald-400 font-medium border-b border-emerald-200 dark:border-emerald-800 pb-1 mb-1">
+                <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-[10px] text-emerald-500 dark:text-emerald-400 font-medium border-b border-emerald-200 dark:border-emerald-800 pb-1 mb-1">
                   <span>Caminhão</span>
                   <span className="text-right">Viagens</span>
                   <span className="text-right">Peso (t)</span>
@@ -1323,35 +1323,35 @@ export default function Home() {
                   <span className="text-right">%</span>
                 </div>
                 {producaoMetodoCaminhoes.britagemMovel.caminhoes.map((c: any, idx: number) => (
-                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center">
-                    <span className="text-emerald-600 dark:text-emerald-400 break-words leading-tight" title={`${c.placa} | Pes: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t | ${c.dataInicio}${c.dataFim !== c.dataInicio ? ` a ${c.dataFim}` : ''}`}>
+                  <div key={`${c.equipamentoId}-${c.capacidade}-${idx}`} className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-xs items-center py-0.5">
+                    <span className="text-emerald-600 dark:text-emerald-400 truncate leading-tight pr-1" title={`${c.placa} | Peso: ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} t`}>
                       {c.placa}
                     </span>
-                    <span className="text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    <span className="text-right text-emerald-600 dark:text-emerald-400 tabular-nums">
                       {c.totalViagens?.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) || '0'}
                     </span>
-                    <span className="text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    <span className="text-right text-emerald-600 dark:text-emerald-400 tabular-nums">
                       {c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                     </span>
-                    <span className="text-right font-semibold text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                    <span className="text-right font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">
                       {c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium whitespace-nowrap">
+                    <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                       {c.percentual.toFixed(1)}%
                     </span>
                   </div>
                 ))}
                 {/* Totalizador Britagem Móvel */}
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 text-xs items-center border-t border-emerald-200 dark:border-emerald-800 pt-1 mt-1 font-semibold">
+                <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-xs items-center border-t border-emerald-200 dark:border-emerald-800 pt-1 mt-1 font-semibold">
                   <span className="text-emerald-700 dark:text-emerald-300">Subtotal</span>
-                  <span className="text-right text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                  <span className="text-right text-emerald-700 dark:text-emerald-300 tabular-nums">
                     {producaoMetodoCaminhoes.britagemMovel.totalViagens?.toLocaleString('pt-BR', { minimumFractionDigits: 0 }) || '0'}
                   </span>
-                  <span className="text-right text-emerald-600 dark:text-emerald-400">-</span>
-                  <span className="text-right text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                  <span className="text-right text-emerald-600 dark:text-emerald-400">—</span>
+                  <span className="text-right text-emerald-700 dark:text-emerald-300 tabular-nums">
                     {producaoMetodoCaminhoes.britagemMovel.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium">
+                  <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                     {producaoMetodoCaminhoes.total > 0 ? ((producaoMetodoCaminhoes.britagemMovel.total / producaoMetodoCaminhoes.total) * 100).toFixed(1) : '0.0'}%
                   </span>
                 </div>

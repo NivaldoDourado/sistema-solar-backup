@@ -188,3 +188,6 @@
 ## WhatsAppReportModal - Correções
 - [x] Corrigir erro "button cannot contain nested button" nos checkboxes/botão Nenhum
 - [x] Enriquecer mensagem WhatsApp com detalhes completos de todos os cards (viagens, serviços, etc.)
+
+## Card Produção Método Caminhões - Alinhamento
+- [x] Corrigir alinhamento vertical das colunas Viagens, Peso (t), Produção (t) e % no web e mobile
