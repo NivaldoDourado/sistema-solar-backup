@@ -203,3 +203,11 @@
 - [x] Card "Status dos Lançamentos" no dashboard mobile (substituindo Equipamentos Ativos)
 - [x] Controle de permissão: somente perfil Usuário edita status
 - [x] Adicionar rota /rotinas no App.tsx
+
+## Módulo Manutenção - Data Fim e Reorganização de Layout
+- [x] Backend: atualizar procedures create/update para aceitar dataFim como data independente de dataInicio
+- [x] Frontend: renomear campo "Data" para "Data Início" e adicionar campo "Data Fim" no formulário
+- [x] Frontend: reorganizar layout do formulário (Data Início + Hora Início na mesma linha, Data Fim + Hora Fim na mesma linha)
+- [x] Frontend: calcular horas paradas automaticamente a partir de Data Início + Hora Início e Data Fim + Hora Fim (suportando múltiplos dias)
+- [x] Frontend: atualizar tabela de listagem com colunas Data Início, Hora Início, Data Fim, Hora Fim
+- [x] Frontend: atualizar handleEdit para popular dataFim separada de dataInicio

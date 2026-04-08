@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Wrench, Search, AlertTriangle, Pencil, Trash2, Filter, X } from "lucide-react";
+import { Plus, Wrench, Search, Pencil, Trash2, Filter, X, Clock, CalendarRange } from "lucide-react";
 import { ExportButtons } from "@/components/ExportButtons";
 import { formatters } from "@/lib/export-utils";
 import { toast } from "sonner";
@@ -33,25 +33,27 @@ type Manutencao = {
   status: string;
 };
 
-// Calcula a diferença entre Hora Fim e Hora Início em horas decimais
-// Suporta virada de meia-noite (ex: 23:00 -> 01:00 = 2.00h)
-const calcularHorasParadas = (inicio: string, fim: string): string => {
-  if (!inicio || !fim) return "";
-  const [hI, mI] = inicio.split(":").map(Number);
-  const [hF, mF] = fim.split(":").map(Number);
-  let totalMinutos = (hF * 60 + mF) - (hI * 60 + mI);
-  if (totalMinutos < 0) totalMinutos += 24 * 60; // virada de meia-noite
-  if (totalMinutos === 0) return "";
-  return (totalMinutos / 60).toFixed(2);
+// Calcula horas paradas entre dois timestamps (data + hora), suportando múltiplos dias
+const calcularHorasParadas = (
+  dataInicio: string, horaInicio: string,
+  dataFim: string, horaFim: string
+): string => {
+  if (!dataInicio || !dataFim) return "";
+  const inicio = new Date(`${dataInicio}T${horaInicio || "00:00"}`);
+  const fim = new Date(`${dataFim}T${horaFim || "00:00"}`);
+  const diffMs = fim.getTime() - inicio.getTime();
+  if (diffMs <= 0) return "";
+  return (diffMs / (1000 * 60 * 60)).toFixed(2);
 };
 
 const emptyFormData = {
-  data: new Date().toISOString().split('T')[0],
-  equipamentoId: "",
-  tipo: "preventiva",
-  descricao: "",
+  dataInicio: new Date().toISOString().split('T')[0],
   horaInicio: "",
+  dataFim: "",
   horaFim: "",
+  equipamentoId: "",
+  tipo: "corretiva",
+  descricao: "",
   horasParadas: "",
   custo: "",
   observacoes: "",
@@ -146,14 +148,14 @@ export default function Manutencao() {
       toast.error("Equipamento e descrição são obrigatórios");
       return;
     }
-    
     createMutation.mutate({
-      data: formData.data,
+      dataInicio: formData.dataInicio,
+      horaInicio: formData.horaInicio || undefined,
+      dataFim: formData.dataFim || undefined,
+      horaFim: formData.horaFim || undefined,
       equipamentoId: Number(formData.equipamentoId),
       tipo: formData.tipo as "preventiva" | "corretiva" | "preditiva",
       descricao: formData.descricao,
-      horaInicio: formData.horaInicio || undefined,
-      horaFim: formData.horaFim || undefined,
       horasParadas: formData.horasParadas || undefined,
       custo: formData.custo || undefined,
       observacoes: formData.observacoes || undefined,
@@ -168,15 +170,15 @@ export default function Manutencao() {
       toast.error("Equipamento e descrição são obrigatórios");
       return;
     }
-    
     updateMutation.mutate({
       id: editingId,
-      data: formData.data,
+      dataInicio: formData.dataInicio,
+      horaInicio: formData.horaInicio || undefined,
+      dataFim: formData.dataFim || undefined,
+      horaFim: formData.horaFim || undefined,
       equipamentoId: Number(formData.equipamentoId),
       tipo: formData.tipo as "preventiva" | "corretiva" | "preditiva",
       descricao: formData.descricao,
-      horaInicio: formData.horaInicio || undefined,
-      horaFim: formData.horaFim || undefined,
       horasParadas: formData.horasParadas || undefined,
       custo: formData.custo || undefined,
       observacoes: formData.observacoes || undefined,
@@ -187,20 +189,36 @@ export default function Manutencao() {
 
   const handleEdit = (item: Manutencao) => {
     setEditingId(item.id);
-    const dataInicio = new Date(item.dataInicio);
-    const dataFim = item.dataFim ? new Date(item.dataFim) : null;
-    
-    const horaInicioStr = dataInicio.toTimeString().slice(0, 5);
-    const horaFimStr = dataFim ? dataFim.toTimeString().slice(0, 5) : "";
-    // Recalcula horas paradas a partir dos horários; usa valor salvo como fallback
-    const horasParadasCalc = calcularHorasParadas(horaInicioStr, horaFimStr) || item.tempoParada || "";
+    const dtInicio = new Date(item.dataInicio);
+    const dtFim = item.dataFim ? new Date(item.dataFim) : null;
+
+    const toLocalDate = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    const toLocalTime = (d: Date) => {
+      const h = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${h}:${min}`;
+    };
+
+    const dataInicioStr = toLocalDate(dtInicio);
+    const horaInicioStr = toLocalTime(dtInicio);
+    const dataFimStr = dtFim ? toLocalDate(dtFim) : "";
+    const horaFimStr = dtFim ? toLocalTime(dtFim) : "";
+
+    const horasParadasCalc = calcularHorasParadas(dataInicioStr, horaInicioStr, dataFimStr, horaFimStr) || item.tempoParada || "";
+
     setFormData({
-      data: dataInicio.toISOString().split('T')[0],
+      dataInicio: dataInicioStr,
+      horaInicio: horaInicioStr,
+      dataFim: dataFimStr,
+      horaFim: horaFimStr,
       equipamentoId: String(item.equipamentoId),
       tipo: item.motivoParada,
       descricao: item.descricao || "",
-      horaInicio: horaInicioStr,
-      horaFim: horaFimStr,
       horasParadas: horasParadasCalc,
       custo: item.custoEstimado || "",
       observacoes: "",
@@ -216,9 +234,7 @@ export default function Manutencao() {
   };
 
   const confirmDelete = () => {
-    if (deletingItem) {
-      deleteMutation.mutate({ id: deletingItem.id });
-    }
+    if (deletingItem) deleteMutation.mutate({ id: deletingItem.id });
   };
 
   const getEquipamentoNome = (id: number) => {
@@ -228,14 +244,10 @@ export default function Manutencao() {
 
   const getTipoBadgeVariant = (tipo: string) => {
     switch (tipo) {
-      case "preventiva":
-        return "default";
-      case "corretiva":
-        return "destructive";
-      case "preditiva":
-        return "secondary";
-      default:
-        return "outline";
+      case "preventiva": return "default";
+      case "corretiva": return "destructive";
+      case "preditiva": return "secondary";
+      default: return "outline";
     }
   };
 
@@ -268,34 +280,23 @@ export default function Manutencao() {
 
   const filtrosAtivos = [filtroDataInicio, filtroDataFim, filtroEquipamentoId, filtroGrupoId, filtroTipo, filtroStatus].filter(Boolean).length;
 
-  const formFieldsJSX = (
-    <div className="grid gap-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="data">Data *</Label>
-          <Input
-            id="data"
-            type="date"
-            value={formData.data}
-            onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tipo">Tipo *</Label>
-          <Select value={formData.tipo} onValueChange={(value) => setFormData({ ...formData, tipo: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="preventiva">Preventiva</SelectItem>
-              <SelectItem value="corretiva">Corretiva</SelectItem>
-              <SelectItem value="preditiva">Preditiva</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+  // Recalcula horas paradas ao mudar qualquer campo de data/hora
+  const updateHorasParadas = (data: typeof formData) => {
+    const hp = calcularHorasParadas(data.dataInicio, data.horaInicio, data.dataFim, data.horaFim);
+    return { ...data, horasParadas: hp };
+  };
 
+  // Formata data/hora para exibição na tabela
+  const formatDateTime = (dt: Date | null, onlyTime = false) => {
+    if (!dt) return "-";
+    const d = new Date(dt);
+    if (onlyTime) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('pt-BR');
+  };
+
+  const formFieldsJSX = (
+    <div className="space-y-5 py-2">
+      {/* Linha 1: Equipamento (full width) */}
       <div className="space-y-2">
         <Label htmlFor="equipamentoId">Equipamento *</Label>
         <SearchableSelect
@@ -308,58 +309,114 @@ export default function Manutencao() {
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="descricao">Descrição *</Label>
-        <Input
-          id="descricao"
-          value={formData.descricao}
-          onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-          placeholder="Descrição da manutenção"
-          required
-        />
+      {/* Linha 2: Tipo + Descrição */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="tipo">Tipo *</Label>
+          <Select value={formData.tipo} onValueChange={(value) => setFormData({ ...formData, tipo: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="corretiva">Corretiva</SelectItem>
+              <SelectItem value="preventiva">Preventiva</SelectItem>
+              <SelectItem value="preditiva">Preditiva</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="descricao">Descrição *</Label>
+          <Input
+            id="descricao"
+            value={formData.descricao}
+            onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+            placeholder="Descrição da manutenção"
+            required
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="horaInicio">Hora Início</Label>
-          <Input
-            id="horaInicio"
-            type="time"
-            value={formData.horaInicio}
-            onChange={(e) => {
-              const novoInicio = e.target.value;
-              const horasParadas = calcularHorasParadas(novoInicio, formData.horaFim);
-              setFormData({ ...formData, horaInicio: novoInicio, horasParadas });
-            }}
-          />
+      {/* Separador visual */}
+      <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+          <CalendarRange className="h-4 w-4" />
+          Período da Manutenção
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="horaFim">Hora Fim</Label>
-          <Input
-            id="horaFim"
-            type="time"
-            value={formData.horaFim}
-            onChange={(e) => {
-              const novoFim = e.target.value;
-              const horasParadas = calcularHorasParadas(formData.horaInicio, novoFim);
-              setFormData({ ...formData, horaFim: novoFim, horasParadas });
-            }}
-          />
+
+        {/* Linha 3: Data Início + Hora Início */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="dataInicio">Data Início *</Label>
+            <Input
+              id="dataInicio"
+              type="date"
+              value={formData.dataInicio}
+              onChange={(e) => {
+                const updated = updateHorasParadas({ ...formData, dataInicio: e.target.value });
+                setFormData(updated);
+              }}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="horaInicio">Hora Início</Label>
+            <Input
+              id="horaInicio"
+              type="time"
+              value={formData.horaInicio}
+              onChange={(e) => {
+                const updated = updateHorasParadas({ ...formData, horaInicio: e.target.value });
+                setFormData(updated);
+              }}
+            />
+          </div>
         </div>
+
+        {/* Linha 4: Data Fim + Hora Fim */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="dataFim">Data Fim</Label>
+            <Input
+              id="dataFim"
+              type="date"
+              value={formData.dataFim}
+              min={formData.dataInicio}
+              onChange={(e) => {
+                const updated = updateHorasParadas({ ...formData, dataFim: e.target.value });
+                setFormData(updated);
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="horaFim">Hora Fim</Label>
+            <Input
+              id="horaFim"
+              type="time"
+              value={formData.horaFim}
+              onChange={(e) => {
+                const updated = updateHorasParadas({ ...formData, horaFim: e.target.value });
+                setFormData(updated);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Horas Paradas calculadas */}
         <div className="space-y-2">
-          <Label htmlFor="horasParadas">Horas Paradas</Label>
+          <Label className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            Horas Paradas (calculado automaticamente)
+          </Label>
           <Input
-            id="horasParadas"
-            type="number"
-            step="0.01"
-            value={formData.horasParadas}
+            value={formData.horasParadas ? `${formData.horasParadas} h` : ""}
             readOnly
-            className="bg-muted cursor-not-allowed"
-            placeholder="Calculado automaticamente"
+            className="bg-background font-mono text-sm"
+            placeholder="Preencha Data Início e Data Fim para calcular"
           />
         </div>
       </div>
 
+      {/* Linha 5: Custo */}
       <div className="space-y-2">
         <Label htmlFor="custo">Custo (R$)</Label>
         <Input
@@ -372,49 +429,54 @@ export default function Manutencao() {
         />
       </div>
 
+      {/* Campos exclusivos de Preventiva */}
       {formData.tipo === "preventiva" && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="horKmRevisao">Hor/Km desta Revisão</Label>
-            <Input
-              id="horKmRevisao"
-              type="number"
-              step="0.01"
-              value={formData.horKmRevisao}
-              onChange={(e) => setFormData({ ...formData, horKmRevisao: e.target.value })}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="intervaloRevisao">Intervalo</Label>
-            <Input
-              id="intervaloRevisao"
-              type="number"
-              step="0.01"
-              value={formData.intervaloRevisao}
-              onChange={(e) => setFormData({ ...formData, intervaloRevisao: e.target.value })}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="horKmProximaRevisao">Hor/Km Próxima Revisão</Label>
-            <Input
-              id="horKmProximaRevisao"
-              type="number"
-              step="0.01"
-              value={(() => {
-                const rev = parseFloat(formData.horKmRevisao) || 0;
-                const inter = parseFloat(formData.intervaloRevisao) || 0;
-                return rev || inter ? (rev + inter).toFixed(2) : "";
-              })()}
-              readOnly
-              className="bg-muted cursor-not-allowed"
-              placeholder="Calculado automaticamente"
-            />
+        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+          <p className="text-sm font-semibold text-muted-foreground">Dados da Revisão Preventiva</p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="horKmRevisao">Hor/Km desta Revisão</Label>
+              <Input
+                id="horKmRevisao"
+                type="number"
+                step="0.01"
+                value={formData.horKmRevisao}
+                onChange={(e) => setFormData({ ...formData, horKmRevisao: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="intervaloRevisao">Intervalo</Label>
+              <Input
+                id="intervaloRevisao"
+                type="number"
+                step="0.01"
+                value={formData.intervaloRevisao}
+                onChange={(e) => setFormData({ ...formData, intervaloRevisao: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="horKmProximaRevisao">Hor/Km Próxima Revisão</Label>
+              <Input
+                id="horKmProximaRevisao"
+                type="number"
+                step="0.01"
+                value={(() => {
+                  const rev = parseFloat(formData.horKmRevisao) || 0;
+                  const inter = parseFloat(formData.intervaloRevisao) || 0;
+                  return rev || inter ? (rev + inter).toFixed(2) : "";
+                })()}
+                readOnly
+                className="bg-background font-mono text-sm"
+                placeholder="Calculado automaticamente"
+              />
+            </div>
           </div>
         </div>
       )}
 
+      {/* Observações */}
       <div className="space-y-2">
         <Label htmlFor="observacoes">Observações</Label>
         <Textarea
@@ -457,7 +519,7 @@ export default function Manutencao() {
                   </DialogDescription>
                 </DialogHeader>
                 {formFieldsJSX}
-                <DialogFooter>
+                <DialogFooter className="mt-4">
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     Cancelar
                   </Button>
@@ -482,7 +544,7 @@ export default function Manutencao() {
               </DialogDescription>
             </DialogHeader>
             {formFieldsJSX}
-            <DialogFooter>
+            <DialogFooter className="mt-4">
               <Button type="button" variant="outline" onClick={() => {
                 setEditOpen(false);
                 setFormData(emptyFormData);
@@ -541,29 +603,35 @@ export default function Manutencao() {
                 {filtrosAtivos > 0 && <span className="ml-1 bg-white text-primary rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold">{filtrosAtivos}</span>}
               </Button>
               <ExportButtons
-              options={{
-                title: "Relatório de Manutenções",
-                subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
-                filename: `manutencoes-${new Date().toISOString().split("T")[0]}`,
-                columns: [
-                  { header: "Equipamento", key: "equipamentoNome", width: 25 },
-                  { header: "Data Início", key: "dataInicio", width: 12, format: formatters.date },
-                  { header: "Data Fim", key: "dataFim", width: 12, format: (v) => v ? formatters.date(v) : "Em andamento" },
-                  { header: "Motivo da Parada", key: "motivoParada", width: 25 },
-                  { header: "Descrição", key: "descricao", width: 30 },
-                  { header: "Tempo Parada (h)", key: "tempoParada", width: 14 },
-                  { header: "Custo Estimado", key: "custoEstimado", width: 14, format: formatters.currency },
-                  { header: "Status", key: "status", width: 12 },
-                ],
-                data: (filteredManutencoes || []).map((m: typeof manutencoes[0]) => {
-                  const equip = equipamentos?.find((e) => e.id === m.equipamentoId);
-                  return {
-                    ...m,
-                    equipamentoNome: equip?.codigoTag || equip?.nomeDoEquipamento || "",
-                  };
-                }),
-              }}
-            />
+                options={{
+                  title: "Relatório de Manutenções",
+                  subtitle: `Total: ${paginacao.total} registros (página ${page} de ${paginacao.totalPages})`,
+                  filename: `manutencoes-${new Date().toISOString().split("T")[0]}`,
+                  columns: [
+                    { header: "Equipamento", key: "equipamentoNome", width: 25 },
+                    { header: "Data Início", key: "dataInicio", width: 12, format: formatters.date },
+                    { header: "Hora Início", key: "horaInicio", width: 10 },
+                    { header: "Data Fim", key: "dataFim", width: 12, format: (v) => v ? formatters.date(v) : "Em andamento" },
+                    { header: "Hora Fim", key: "horaFim", width: 10 },
+                    { header: "Tipo", key: "motivoParada", width: 12 },
+                    { header: "Descrição", key: "descricao", width: 30 },
+                    { header: "Horas Paradas", key: "tempoParada", width: 13 },
+                    { header: "Custo (R$)", key: "custoEstimado", width: 12, format: formatters.currency },
+                    { header: "Status", key: "status", width: 12 },
+                  ],
+                  data: (filteredManutencoes || []).map((m: typeof manutencoes[0]) => {
+                    const equip = equipamentos?.find((e) => e.id === m.equipamentoId);
+                    const dtInicio = new Date(m.dataInicio);
+                    const dtFim = m.dataFim ? new Date(m.dataFim) : null;
+                    return {
+                      ...m,
+                      equipamentoNome: equip?.codigoTag || equip?.nomeDoEquipamento || "",
+                      horaInicio: dtInicio.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                      horaFim: dtFim ? dtFim.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "",
+                    };
+                  }),
+                }}
+              />
             </div>
           </div>
           <div className="relative mt-4">
@@ -597,15 +665,22 @@ export default function Manutencao() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Equipamento</Label>
-                <SearchableSelect options={filtroGrupoId ? equipamentoOptions.filter(opt => { const equip = equipamentos?.find(e => String(e.id) === opt.value); return equip?.grupoId === Number(filtroGrupoId); }) : equipamentoOptions} value={filtroEquipamentoId} onValueChange={setFiltroEquipamentoId} placeholder="Todos os equipamentos" searchPlaceholder="Buscar equipamento..." emptyMessage="Nenhum equipamento encontrado." />
+                <SearchableSelect
+                  options={filtroGrupoId ? equipamentoOptions.filter(opt => { const equip = equipamentos?.find(e => String(e.id) === opt.value); return equip?.grupoId === Number(filtroGrupoId); }) : equipamentoOptions}
+                  value={filtroEquipamentoId}
+                  onValueChange={setFiltroEquipamentoId}
+                  placeholder="Todos os equipamentos"
+                  searchPlaceholder="Buscar equipamento..."
+                  emptyMessage="Nenhum equipamento encontrado."
+                />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Tipo</Label>
                 <Select value={filtroTipo} onValueChange={setFiltroTipo}>
                   <SelectTrigger><SelectValue placeholder="Todos os tipos" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="preventiva">Preventiva</SelectItem>
                     <SelectItem value="corretiva">Corretiva</SelectItem>
+                    <SelectItem value="preventiva">Preventiva</SelectItem>
                     <SelectItem value="preditiva">Preditiva</SelectItem>
                   </SelectContent>
                 </Select>
@@ -627,75 +702,91 @@ export default function Manutencao() {
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
           ) : filteredManutencoes.length > 0 ? (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Data</TableHead>
                     <TableHead>Equipamento</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Descrição</TableHead>
+                    <TableHead>Data Início</TableHead>
+                    <TableHead>Hora Início</TableHead>
+                    <TableHead>Data Fim</TableHead>
+                    <TableHead>Hora Fim</TableHead>
                     <TableHead>Horas Paradas</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Custo</TableHead>
-                    <TableHead>Hor/Km Revisão</TableHead>
-                    <TableHead>Intervalo</TableHead>
-                    <TableHead>Hor/Km Próx. Rev.</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredManutencoes.map((man) => (
-                    <TableRow key={man.id}>
-                      <TableCell className="font-medium">
-                        {new Date(man.dataInicio).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                      </TableCell>
-                      <TableCell>{getEquipamentoNome(man.equipamentoId)}</TableCell>
-                      <TableCell>
-                        <Badge variant={getTipoBadgeVariant(man.motivoParada)}>
-                          {man.motivoParada.charAt(0).toUpperCase() + man.motivoParada.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{man.descricao || "-"}</TableCell>
-                      <TableCell>{man.tempoParada || "-"}</TableCell>
-                      <TableCell>
-                        {man.custoEstimado ? `R$ ${parseFloat(man.custoEstimado).toFixed(2)}` : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {man.motivoParada === "preventiva" && man.horKmRevisao ? parseFloat(man.horKmRevisao).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {man.motivoParada === "preventiva" && man.intervaloRevisao ? parseFloat(man.intervaloRevisao).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {man.motivoParada === "preventiva" && man.horKmProximaRevisao ? parseFloat(man.horKmProximaRevisao).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {canEdit("manutencao") && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(man)}
-                              title="Editar"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
+                  {filteredManutencoes.map((man) => {
+                    const dtInicio = new Date(man.dataInicio);
+                    const dtFim = man.dataFim ? new Date(man.dataFim) : null;
+                    const isMultiDia = dtFim && dtFim.toDateString() !== dtInicio.toDateString();
+                    return (
+                      <TableRow key={man.id}>
+                        <TableCell className="font-medium">{getEquipamentoNome(man.equipamentoId)}</TableCell>
+                        <TableCell>
+                          <Badge variant={getTipoBadgeVariant(man.motivoParada)}>
+                            {man.motivoParada.charAt(0).toUpperCase() + man.motivoParada.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate" title={man.descricao || ""}>{man.descricao || "-"}</TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {formatDateTime(dtInicio)}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-sm">
+                          {formatDateTime(dtInicio, true)}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {dtFim ? (
+                            <span className={isMultiDia ? "text-amber-600 font-medium" : ""}>
+                              {formatDateTime(dtFim)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">Em andamento</span>
                           )}
-                          {canDelete("manutencao") && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(man)}
-                              className="text-destructive hover:text-destructive"
-                              title="Excluir"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-sm">
+                          {dtFim ? formatDateTime(dtFim, true) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {man.tempoParada ? (
+                            <span className="font-mono text-sm">{parseFloat(man.tempoParada).toFixed(2)} h</span>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={man.status === "em_andamento" ? "secondary" : "outline"}>
+                            {man.status === "em_andamento" ? "Em andamento" : "Concluída"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {man.custoEstimado ? `R$ ${parseFloat(man.custoEstimado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : "-"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {canEdit("manutencao") && (
+                              <Button variant="outline" size="sm" onClick={() => handleEdit(man)} title="Editar">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDelete("manutencao") && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(man)}
+                                className="text-destructive hover:text-destructive"
+                                title="Excluir"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

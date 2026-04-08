@@ -2331,12 +2331,13 @@ export const appRouter = router({
     
       .use(requirePermission("manutencao", "create"))
       .input(z.object({
-        data: z.string(), // YYYY-MM-DD string to avoid timezone issues
+        dataInicio: z.string(), // YYYY-MM-DD string
+        horaInicio: z.string().optional(),
+        dataFim: z.string().optional(), // YYYY-MM-DD string (pode ser diferente de dataInicio)
+        horaFim: z.string().optional(),
         equipamentoId: z.number(),
         tipo: z.enum(["preventiva", "corretiva", "preditiva"]),
         descricao: z.string(),
-        horaInicio: z.string().optional(),
-        horaFim: z.string().optional(),
         horasParadas: z.string().optional(),
         custo: z.string().optional(),
         observacoes: z.string().optional(),
@@ -2347,15 +2348,24 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        // Calcular timestamps para dataInicio e dataFim
-              const dataStr = toDateStr(input.data);
+        // Calcular timestamps para dataInicio e dataFim (datas independentes)
+        const dataInicioStr = toDateStr(input.dataInicio);
+        const dataFimStr = input.dataFim ? toDateStr(input.dataFim) : dataInicioStr;
+        
         const dataInicio = input.horaInicio 
-          ? new Date(`${dataStr}T${input.horaInicio}`)
-          : new Date(`${dataStr}T00:00:00`);
+          ? new Date(`${dataInicioStr}T${input.horaInicio}`)
+          : new Date(`${dataInicioStr}T00:00:00`);
         
         const dataFim = input.horaFim
-          ? new Date(`${dataStr}T${input.horaFim}`)
-          : undefined;
+          ? new Date(`${dataFimStr}T${input.horaFim}`)
+          : (input.dataFim ? new Date(`${dataFimStr}T00:00:00`) : undefined);
+        
+        // Calcular horas paradas automaticamente se não fornecido
+        let horasParadas = input.horasParadas;
+        if (!horasParadas && dataFim) {
+          const diffMs = dataFim.getTime() - dataInicio.getTime();
+          if (diffMs > 0) horasParadas = (diffMs / (1000 * 60 * 60)).toFixed(2);
+        }
         
         // Calcular Hor/Km Próxima Revisão = Hor/Km desta Revisão + Intervalo
         const horKmRevisaoVal = input.tipo === "preventiva" && input.horKmRevisao ? parseFloat(input.horKmRevisao) : 0;
@@ -2368,12 +2378,12 @@ export const appRouter = router({
           dataFim,
           motivoParada: input.tipo,
           descricao: input.descricao,
-          tempoParada: input.horasParadas,
+          tempoParada: horasParadas,
           custoEstimado: input.custo,
           horKmRevisao: input.tipo === "preventiva" ? input.horKmRevisao : undefined,
           intervaloRevisao: input.tipo === "preventiva" ? input.intervaloRevisao : undefined,
           horKmProximaRevisao: input.tipo === "preventiva" && (horKmRevisaoVal || intervaloVal) ? String(horKmProximaRevisaoCalc.toFixed(2)) : undefined,
-          status: input.horaFim ? "concluida" : "em_andamento",
+          status: dataFim ? "concluida" : "em_andamento",
           userId: ctx.user.id,
         });
         return { id: Number(result[0].insertId), ...input };
@@ -2383,12 +2393,13 @@ export const appRouter = router({
       .use(requirePermission("manutencao", "edit"))
       .input(z.object({
         id: z.number(),
-        data: z.string(), // YYYY-MM-DD string to avoid timezone issues
+        dataInicio: z.string(), // YYYY-MM-DD string
+        horaInicio: z.string().optional(),
+        dataFim: z.string().optional(), // YYYY-MM-DD string (pode ser diferente de dataInicio)
+        horaFim: z.string().optional(),
         equipamentoId: z.number(),
         tipo: z.enum(["preventiva", "corretiva", "preditiva"]),
         descricao: z.string(),
-        horaInicio: z.string().optional(),
-        horaFim: z.string().optional(),
         horasParadas: z.string().optional(),
         custo: z.string().optional(),
         observacoes: z.string().optional(),
@@ -2399,14 +2410,23 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        const dataStr = toDateStr(input.data);
+        const dataInicioStr = toDateStr(input.dataInicio);
+        const dataFimStr = input.dataFim ? toDateStr(input.dataFim) : dataInicioStr;
+        
         const dataInicio = input.horaInicio 
-          ? new Date(`${dataStr}T${input.horaInicio}`)
-          : new Date(`${dataStr}T00:00:00`);
+          ? new Date(`${dataInicioStr}T${input.horaInicio}`)
+          : new Date(`${dataInicioStr}T00:00:00`);
         
         const dataFim = input.horaFim
-          ? new Date(`${dataStr}T${input.horaFim}`)
-          : undefined;
+          ? new Date(`${dataFimStr}T${input.horaFim}`)
+          : (input.dataFim ? new Date(`${dataFimStr}T00:00:00`) : null);
+        
+        // Calcular horas paradas automaticamente se não fornecido
+        let horasParadas = input.horasParadas;
+        if (!horasParadas && dataFim) {
+          const diffMs = dataFim.getTime() - dataInicio.getTime();
+          if (diffMs > 0) horasParadas = (diffMs / (1000 * 60 * 60)).toFixed(2);
+        }
         
         // Calcular Hor/Km Próxima Revisão = Hor/Km desta Revisão + Intervalo
         const horKmRevisaoVal = input.tipo === "preventiva" && input.horKmRevisao ? parseFloat(input.horKmRevisao) : 0;
@@ -2416,15 +2436,15 @@ export const appRouter = router({
         await db.update(paradasMecanicas).set({
           equipamentoId: input.equipamentoId,
           dataInicio,
-          dataFim,
+          dataFim: dataFim ?? undefined,
           motivoParada: input.tipo,
           descricao: input.descricao,
-          tempoParada: input.horasParadas,
+          tempoParada: horasParadas,
           custoEstimado: input.custo,
           horKmRevisao: input.tipo === "preventiva" ? input.horKmRevisao : null,
           intervaloRevisao: input.tipo === "preventiva" ? input.intervaloRevisao : null,
           horKmProximaRevisao: input.tipo === "preventiva" && (horKmRevisaoVal || intervaloVal) ? String(horKmProximaRevisaoCalc.toFixed(2)) : null,
-          status: input.horaFim ? "concluida" : "em_andamento",
+          status: dataFim ? "concluida" : "em_andamento",
         }).where(eq(paradasMecanicas.id, input.id));
         return { success: true };
       }),
