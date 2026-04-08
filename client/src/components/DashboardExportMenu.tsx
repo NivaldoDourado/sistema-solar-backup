@@ -43,8 +43,8 @@ export function DashboardExportMenu({
     exportToExcel({ title, subtitle, filename, ...exportOptions });
   };
 
-  const handlePDF = () => {
-    exportToPDF({ title, subtitle, filename, ...exportOptions });
+  const handlePDF = async () => {
+    await exportToPDF({ title, subtitle, filename, ...exportOptions });
   };
 
   const handleWhatsApp = () => {

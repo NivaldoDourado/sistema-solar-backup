@@ -18,6 +18,12 @@ export interface ExportOptions {
   filename: string;
 }
 
+const LOGO_CDN_URL =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/LogoDouradoGestao_005e6bc5.png";
+
+const SYSTEM_NAME_LINE1 = "GEM - Gestão Estratégica em Mineração";
+const SYSTEM_NAME_LINE2 = "SOLAR PEDREIRA";
+
 function formatValue(value: any, col: ExportColumn): string {
   if (value === null || value === undefined) return "";
   if (col.format) return col.format(value);
@@ -51,6 +57,8 @@ export function exportToExcel(options: ExportOptions) {
 
   // Build worksheet data
   const wsData: any[][] = [];
+  wsData.push([SYSTEM_NAME_LINE1]);
+  wsData.push([SYSTEM_NAME_LINE2]);
   wsData.push([title]);
   if (subtitle) wsData.push([subtitle]);
   wsData.push([]); // empty row
@@ -62,14 +70,16 @@ export function exportToExcel(options: ExportOptions) {
   // Set column widths
   ws["!cols"] = columns.map((col) => ({ wch: col.width || 18 }));
 
-  // Merge title row across all columns
+  // Merge header rows across all columns
   ws["!merges"] = [
     { s: { r: 0, c: 0 }, e: { r: 0, c: columns.length - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: columns.length - 1 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: columns.length - 1 } },
   ];
   if (subtitle) {
     ws["!merges"].push({
-      s: { r: 1, c: 0 },
-      e: { r: 1, c: columns.length - 1 },
+      s: { r: 3, c: 0 },
+      e: { r: 3, c: columns.length - 1 },
     });
   }
 
@@ -83,37 +93,88 @@ export function exportToExcel(options: ExportOptions) {
   saveAs(blob, `${filename}.xlsx`);
 }
 
-export function exportToPDF(options: ExportOptions) {
+/**
+ * Load an image from URL as base64 for use in jsPDF.
+ * Returns null if loading fails.
+ */
+async function loadImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function exportToPDF(options: ExportOptions) {
   const { title, subtitle, columns, data, filename } = options;
 
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-  // Title
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.text(title, 14, 15);
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Subtitle
-  let startY = 22;
+  // Load logo
+  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
+
+  // ── Logo (top-right) ─────────────────────────────────────────────────────
+  // Original logo is roughly square (428×470 px). We render at ~28mm wide.
+  const logoW = 28;
+  const logoH = 30; // keep aspect ratio close to original
+  const logoX = pageWidth - logoW - 10;
+  const logoY = 6;
+  if (logoBase64) {
+    doc.addImage(logoBase64, "PNG", logoX, logoY, logoW, logoH);
+  }
+
+  // ── System name (top-left, green area) ───────────────────────────────────
+  let curY = 12;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(30, 80, 160); // blue
+  doc.text(SYSTEM_NAME_LINE1, 14, curY);
+  curY += 6;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(60, 60, 60);
+  doc.text(SYSTEM_NAME_LINE2, 14, curY);
+  curY += 7;
+
+  // ── Report title ─────────────────────────────────────────────────────────
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text(title, 14, curY);
+  curY += 6;
+
+  // ── Subtitle ─────────────────────────────────────────────────────────────
   if (subtitle) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text(subtitle, 14, startY);
-    startY += 6;
+    doc.text(subtitle, 14, curY);
+    curY += 6;
   }
 
-  // Date of generation
+  // ── Generation timestamp ─────────────────────────────────────────────────
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
+  doc.setTextColor(100, 100, 100);
   const now = new Date();
   doc.text(
     `Gerado em: ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR")}`,
     14,
-    startY
+    curY
   );
-  startY += 6;
+  curY += 6;
 
-  // Table
+  // ── Table ─────────────────────────────────────────────────────────────────
   const headers = columns.map((col) => col.header);
   const body = data.map((row) =>
     columns.map((col) => formatValue(row[col.key], col))
@@ -122,7 +183,7 @@ export function exportToPDF(options: ExportOptions) {
   autoTable(doc, {
     head: [headers],
     body: body,
-    startY: startY,
+    startY: curY,
     styles: {
       fontSize: 8,
       cellPadding: 2,
@@ -142,6 +203,7 @@ export function exportToPDF(options: ExportOptions) {
       const pageCount = doc.getNumberOfPages();
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
       doc.text(
         `Página ${data.pageNumber} de ${pageCount}`,
         doc.internal.pageSize.getWidth() - 30,
