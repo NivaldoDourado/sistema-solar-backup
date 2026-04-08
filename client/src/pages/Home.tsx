@@ -39,6 +39,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { WhatsAppReportModal, type CardDisponivel } from "@/components/WhatsAppReportModal";
+import { formatters } from "@/lib/export-utils";
 
 // Helper para formatar data para exibição
 function formatDateBR(dateStr: string) {
@@ -1169,8 +1170,8 @@ export default function Home() {
                     { header: 'Caminhão', key: 'placa', width: 20 },
                     { header: 'Britagem', key: 'britagem', width: 15 },
                     { header: 'Viagens', key: 'viagens', width: 10 },
-                    { header: 'Peso (t)', key: 'peso', width: 12 },
-                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: 'Peso (t)', key: 'peso', width: 12, format: formatters.decimal },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                     { header: '%', key: 'percentual', width: 8 },
                   ],
                   data: [
@@ -1608,7 +1609,7 @@ export default function Home() {
               exportOptions={{
                 columns: [
                   { header: 'Caminhão', key: 'placa', width: 20 },
-                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   { header: '%', key: 'percentual', width: 8 },
                 ],
                 data: (producaoUltimoDia?.caminhoes || []).map(c => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
@@ -1946,7 +1947,7 @@ export default function Home() {
                   { header: 'Motorista', key: 'motorista', width: 25 },
                   { header: 'Serviço', key: 'servico', width: 25 },
                   { header: 'Viagens', key: 'viagens', width: 10 },
-                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   { header: '%', key: 'percentual', width: 8 },
                 ],
                 data: (producaoMotoristasData?.motoristas || []).flatMap(m =>
@@ -2040,7 +2041,7 @@ export default function Home() {
                 exportOptions={{
                   columns: [
                     { header: 'Setor', key: 'setor', width: 30 },
-                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorSetor || []).map(s => ({ setor: s.setorNome, producao: s.producaoTotal })),
                 }}
@@ -2112,7 +2113,7 @@ export default function Home() {
                 exportOptions={{
                   columns: [
                     { header: 'Serviço', key: 'servico', width: 30 },
-                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorServico || []).map(s => ({ servico: s.servicoNome, producao: s.producaoTotal })),
                 }}
@@ -2184,7 +2185,7 @@ export default function Home() {
                 exportOptions={{
                   columns: [
                     { header: 'Equipamento', key: 'equipamento', width: 25 },
-                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorEquipamento || []).map(e => ({ equipamento: e.equipamentoTag || e.equipamentoNome, producao: e.producaoTotal })),
                 }}

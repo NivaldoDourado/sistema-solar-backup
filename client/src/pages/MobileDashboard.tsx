@@ -7,6 +7,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { formatters } from "@/lib/export-utils";
 import {
   Fuel,
   DollarSign,
@@ -796,7 +797,7 @@ export default function MobileDashboard() {
                 columns: [
                   { header: 'Caminhão', key: 'placa', width: 20 },
                   { header: 'Britagem', key: 'britagem', width: 15 },
-                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                 ],
                 data: [
                   ...(producaoMetodoCaminhoes.data?.britagemFixa?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Fixa', producao: c.totalProducao || 0 })),
@@ -968,7 +969,7 @@ export default function MobileDashboard() {
               exportOptions={{
                 columns: [
                   { header: 'Caminhão', key: 'placa', width: 20 },
-                  { header: 'Produção (ton)', key: 'producao', width: 15 },
+                  { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   { header: '%', key: 'percentual', width: 8 },
                 ],
                 data: (producaoUltimoDia.data?.caminhoes || []).map((c: any) => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
@@ -1135,7 +1136,7 @@ export default function MobileDashboard() {
                   columns: [
                     { header: 'Motorista', key: 'motorista', width: 25 },
                     { header: 'Viagens', key: 'viagens', width: 10 },
-                    { header: 'Produção (ton)', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                     { header: '%', key: 'percentual', width: 8 },
                   ],
                   data: (producaoMotoristasData.data?.motoristas || []).map((m: any) => ({ motorista: m.motoristaNome, viagens: m.totalViagens, producao: m.totalProducao, percentual: `${m.percentual.toFixed(1)}%` })),
@@ -1268,7 +1269,7 @@ export default function MobileDashboard() {
                 exportOptions={{
                   columns: [
                     { header: 'Setor', key: 'setor', width: 25 },
-                    { header: 'Produção', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorSetor.data || []).map((item: any) => ({ setor: item.setorNome, producao: item.producaoTotal })),
                 }}
@@ -1317,7 +1318,7 @@ export default function MobileDashboard() {
                 exportOptions={{
                   columns: [
                     { header: 'Serviço', key: 'servico', width: 25 },
-                    { header: 'Produção', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorServico.data || []).map((item: any) => ({ servico: item.servicoNome, producao: item.producaoTotal })),
                 }}
@@ -1366,7 +1367,7 @@ export default function MobileDashboard() {
                 exportOptions={{
                   columns: [
                     { header: 'Equipamento', key: 'equipamento', width: 25 },
-                    { header: 'Produção', key: 'producao', width: 15 },
+                    { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   ],
                   data: (producaoPorEquipamento.data || []).map((item: any) => ({ equipamento: item.equipamentoTag || item.equipamentoNome, producao: item.producaoTotal })),
                 }}
