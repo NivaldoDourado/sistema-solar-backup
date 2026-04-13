@@ -41,6 +41,19 @@ import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { WhatsAppReportModal, type CardDisponivel } from "@/components/WhatsAppReportModal";
 import { formatters } from "@/lib/export-utils";
 
+// Helper defensivo para formatar números — protege contra undefined/null/NaN
+function fmtNum(value: number | undefined | null, decimals = 2): string {
+  const n = Number(value);
+  if (isNaN(n) || value === undefined || value === null) return '0,' + '0'.repeat(decimals);
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function fmtPct(value: number | undefined | null): string {
+  const n = Number(value);
+  if (isNaN(n) || value === undefined || value === null) return '0,0';
+  return n.toFixed(1);
+}
+
 // Helper para formatar data para exibição
 function formatDateBR(dateStr: string) {
   const [y, m, d] = dateStr.split("-");
@@ -356,13 +369,13 @@ export default function Home() {
           if (producaoMetodoCaminhoes.britagemFixa?.caminhoes?.length > 0) {
             m += `\n🏭 Britagem Fixa: ${fmt(producaoMetodoCaminhoes.britagemFixa.total)} ton\n`;
             producaoMetodoCaminhoes.britagemFixa.caminhoes.forEach((c: any) => {
-              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${c.percentual.toFixed(1)}%)\n`;
+              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`;
             });
           }
           if (producaoMetodoCaminhoes.britagemMovel?.caminhoes?.length > 0) {
             m += `\n🚚 Britagem Móvel: ${fmt(producaoMetodoCaminhoes.britagemMovel.total)} ton\n`;
             producaoMetodoCaminhoes.britagemMovel.caminhoes.forEach((c: any) => {
-              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${c.percentual.toFixed(1)}%)\n`;
+              m += `  ${c.placa}: ${fmt(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`;
             });
           }
           return m;
@@ -491,35 +504,35 @@ export default function Home() {
     // Produ\u00e7\u00e3o M\u00e9todo Caminh\u00f5es
     if (producaoMetodoCaminhoes) {
       msg += `\ud83d\ude9a *Produ\u00e7\u00e3o M\u00e9todo Caminh\u00f5es*\n`;
-      msg += `Total: ${totalProducaoCaminhoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+      msg += `Total: ${fmtNum(totalProducaoCaminhoes)} ton\n`;
       const metaCamVal = parseFloat(metaCaminhoesLocal || "0");
       if (metaCamVal > 0) {
         const aProduzir = metaCamVal - totalProducaoCaminhoes;
         const percProduzido = (totalProducaoCaminhoes / metaCamVal) * 100;
-        msg += `Meta: ${metaCamVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-        msg += `Produzido: ${percProduzido.toFixed(1)}% da meta\n`;
+        msg += `Meta: ${fmtNum(metaCamVal)} ton\n`;
+        msg += `Produzido: ${fmtPct(percProduzido)}% da meta\n`;
         if (aProduzir <= 0) {
           msg += `\u2705 Meta atingida!\n`;
         } else {
-          msg += `A Produzir: ${aProduzir.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${((aProduzir / metaCamVal) * 100).toFixed(1)}%)\n`;
+          msg += `A Produzir: ${fmtNum(aProduzir)} ton (${((aProduzir / metaCamVal) * 100).toFixed(1)}%)\n`;
         }
       }
       // Britagem Fixa
       if (producaoMetodoCaminhoes.britagemFixa?.caminhoes?.length > 0) {
-        msg += `\n🏭 *Britagem Fixa*: ${producaoMetodoCaminhoes.britagemFixa.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+        msg += `\n🏭 *Britagem Fixa*: ${fmtNum(producaoMetodoCaminhoes.britagemFixa.total)} ton\n`;
         msg += `Viagens: ${producaoMetodoCaminhoes.britagemFixa.totalViagens?.toLocaleString('pt-BR') || '0'}\n`;
         msg += `Caminhão | Viag. | Peso(t) | Prod.(ton) | %\n`;
         producaoMetodoCaminhoes.britagemFixa.caminhoes.forEach((c: any) => {
-          msg += `  ${c.placa}: ${c.totalViagens?.toLocaleString('pt-BR') || '0'} viag. | ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}t | ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`;
+          msg += `  ${c.placa}: ${c.totalViagens?.toLocaleString('pt-BR') || '0'} viag. | ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}t | ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`;
         });
       }
       // Britagem Móvel
       if (producaoMetodoCaminhoes.britagemMovel?.caminhoes?.length > 0) {
-        msg += `\n🚚 *Britagem Móvel*: ${producaoMetodoCaminhoes.britagemMovel.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+        msg += `\n🚚 *Britagem Móvel*: ${fmtNum(producaoMetodoCaminhoes.britagemMovel.total)} ton\n`;
         msg += `Viagens: ${producaoMetodoCaminhoes.britagemMovel.totalViagens?.toLocaleString('pt-BR') || '0'}\n`;
         msg += `Caminhão | Viag. | Peso(t) | Prod.(ton) | %\n`;
         producaoMetodoCaminhoes.britagemMovel.caminhoes.forEach((c: any) => {
-          msg += `  ${c.placa}: ${c.totalViagens?.toLocaleString('pt-BR') || '0'} viag. | ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}t | ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`;
+          msg += `  ${c.placa}: ${c.totalViagens?.toLocaleString('pt-BR') || '0'} viag. | ${c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}t | ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`;
         });
       }
       msg += `\nViagens total: ${producaoMetodoCaminhoes.totalViagens?.toLocaleString('pt-BR') || '0'}\n`;
@@ -529,23 +542,23 @@ export default function Home() {
     // Produção Último Dia
     if (producaoUltimoDia && producaoUltimoDia.total > 0) {
       msg += `\ud83d\udcca *Produ\u00e7\u00e3o \u00daltimo Dia Caminh\u00f5es* (${producaoUltimoDia.dataReferencia ? formatDateBR(producaoUltimoDia.dataReferencia) : '-'})\n`;
-      msg += `Total: ${producaoUltimoDia.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+      msg += `Total: ${fmtNum(producaoUltimoDia.total)} ton\n`;
       const metaVal = parseFloat(metaDiariaLocal || "0");
       if (metaVal > 0) {
         const percProduzido = (producaoUltimoDia.total / metaVal) * 100;
         const aProduzir = metaVal - producaoUltimoDia.total;
         const percAProduzir = (aProduzir / metaVal) * 100;
-        msg += `Meta Di\u00e1ria: ${metaVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-        msg += `Produzido: ${percProduzido.toFixed(1)}% da meta\n`;
+        msg += `Meta Di\u00e1ria: ${fmtNum(metaVal)} ton\n`;
+        msg += `Produzido: ${fmtPct(percProduzido)}% da meta\n`;
         if (aProduzir <= 0) {
           msg += `\u2705 Meta di\u00e1ria atingida!\n`;
         } else {
-          msg += `A Produzir: ${aProduzir.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${percAProduzir.toFixed(1)}%)\n`;
+          msg += `A Produzir: ${fmtNum(aProduzir)} ton (${fmtPct(percAProduzir)}%)\n`;
         }
       }
       if (producaoUltimoDia.caminhoes) {
         producaoUltimoDia.caminhoes.forEach(c => {
-          msg += `  ${c.placa}: ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`;
+          msg += `  ${c.placa}: ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`;
         });
       }
       msg += "\n";
@@ -553,10 +566,10 @@ export default function Home() {
     // Medi\u00e7\u00e3o das Pilhas
     if (medicaoPilhasData && (medicaoPilhasData as any).total > 0) {
       msg += `⛰️ *Medição das Pilhas*\n`;
-      msg += `Total: ${(medicaoPilhasData as any).total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
+      msg += `Total: ${fmtNum((medicaoPilhasData as any).total)} ton\n`;
       if ((medicaoPilhasData as any).produtos) {
         (medicaoPilhasData as any).produtos.forEach((p: any) => {
-          msg += `  ${p.produtoNome}: ${p.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${p.percentual.toFixed(1)}%)\n`;
+          msg += `  ${p.produtoNome}: ${fmtNum(p.totalProduzido)} ton (${p.percentual.toFixed(1)}%)\n`;
         });
       }
       msg += "\n";
@@ -565,18 +578,18 @@ export default function Home() {
     // Perfura\u00e7\u00e3o
     if (totalPerfuracao > 0) {
       msg += `\u26cf\ufe0f *Produ\u00e7\u00e3o de Perfura\u00e7\u00e3o*\n`;
-      msg += `Total: ${totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m\n`;
-      msg += `Furos: ${totalFuros.toLocaleString('pt-BR')} | Metros: ${totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m\n\n`;
+      msg += `Total: ${fmtNum(totalPerfuracao)} m\n`;
+      msg += `Furos: ${fmtNum(totalFuros, 0)} | Metros: ${fmtNum(totalMetrosPerfurados)} m\n\n`;
     }
 
        // Vendas de Material
     if (vendasFiltradas.length > 0) {
       msg += `🛍️ *Vendas de Material*\n`;
-      msg += `Total Faturado: R$ ${totalVendasValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+      msg += `Total Faturado: R$ ${fmtNum(totalVendasValor)}\n`;
       msg += `Notas Fiscais: ${totalVendasQtd}\n`;
-      msg += `Quantidade: ${totalVendasPeso.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}\n`;
+      msg += `Quantidade: ${fmtNum(totalVendasPeso)}\n`;
       if (totalVendasQtd > 0) {
-        msg += `Ticket Médio: R$ ${(totalVendasValor / totalVendasQtd).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+        msg += `Ticket Médio: R$ ${fmtNum(totalVendasQtd > 0 ? totalVendasValor / totalVendasQtd : 0)}\n`;
       }
       msg += "\n";
     }
@@ -884,7 +897,7 @@ export default function Home() {
                     { header: 'Valor', key: 'valor', width: 20 },
                   ],
                   data: [
-                    { indicador: 'Total de Custos', valor: `R$ ${totalCustos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
+                    { indicador: 'Total de Custos', valor: `R$ ${fmtNum(totalCustos)}` },
                     { indicador: 'Lançamentos', valor: String(totalRegistrosCustos) },
                   ],
                 }}
@@ -893,7 +906,7 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ {totalCustos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div className="text-2xl font-bold">R$ {fmtNum(totalCustos)}</div>
             <p className="text-xs text-muted-foreground">
               {totalRegistrosCustos} lançamentos
             </p>
@@ -916,7 +929,7 @@ export default function Home() {
                     { header: 'Valor', key: 'valor', width: 20 },
                   ],
                   data: [
-                    { indicador: 'Total Abastecido (L)', valor: totalAbastecimentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    { indicador: 'Total Abastecido (L)', valor: fmtNum(totalAbastecimentos) },
                     { indicador: 'Abastecimentos', valor: String(totalRegistrosAbastecimentos) },
                   ],
                 }}
@@ -925,7 +938,7 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalAbastecimentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div className="text-2xl font-bold">{fmtNum(totalAbastecimentos)}</div>
             <p className="text-xs text-muted-foreground">
               {totalRegistrosAbastecimentos} abastecimentos
             </p>
@@ -1018,9 +1031,9 @@ export default function Home() {
                       { header: 'Valor', key: 'valor', width: 20 },
                     ],
                     data: [
-                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.venda.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
-                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
-                      { indicador: 'Toneladas', valor: vendasPorTipo.venda.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Quantidade (m³)', valor: fmtNum(vendasPorTipo.venda.totalM3) },
+                      { indicador: 'Valor Total', valor: `R$ ${fmtNum(vendasPorTipo.venda.valor)}` },
+                      { indicador: 'Toneladas', valor: fmtNum(vendasPorTipo.venda.totalTon) },
                     ],
                   }}
                 />
@@ -1032,19 +1045,19 @@ export default function Home() {
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-xs text-blue-600 dark:text-blue-400">Qtd Total (m³)</p>
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{vendasPorTipo.venda.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{fmtNum(vendasPorTipo.venda.totalM3)}</div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-blue-600 dark:text-blue-400">Valor Total</p>
                     <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                      R$ {vendasPorTipo.venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {fmtNum(vendasPorTipo.venda.valor)}
                     </div>
                   </div>
                 </div>
                 <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
                   <p className="text-xs text-blue-600 dark:text-blue-400">Conversão para Toneladas</p>
                   <div className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                    {vendasPorTipo.venda.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m³ = {vendasPorTipo.venda.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(vendasPorTipo.venda.totalM3)} m³ = {fmtNum(vendasPorTipo.venda.totalTon)} ton
                   </div>
                 </div>
               </div>
@@ -1068,9 +1081,9 @@ export default function Home() {
                       { header: 'Valor', key: 'valor', width: 20 },
                     ],
                     data: [
-                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.amortizacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
-                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.amortizacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
-                      { indicador: 'Toneladas', valor: vendasPorTipo.amortizacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Quantidade (m³)', valor: fmtNum(vendasPorTipo.amortizacao.totalM3) },
+                      { indicador: 'Valor Total', valor: `R$ ${fmtNum(vendasPorTipo.amortizacao.valor)}` },
+                      { indicador: 'Toneladas', valor: fmtNum(vendasPorTipo.amortizacao.totalTon) },
                     ],
                   }}
                 />
@@ -1082,19 +1095,19 @@ export default function Home() {
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-xs text-amber-600 dark:text-amber-400">Qtd Total (m³)</p>
-                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{vendasPorTipo.amortizacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{fmtNum(vendasPorTipo.amortizacao.totalM3)}</div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-amber-600 dark:text-amber-400">Valor Total</p>
                     <div className="text-lg font-bold text-amber-700 dark:text-amber-300">
-                      R$ {vendasPorTipo.amortizacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {fmtNum(vendasPorTipo.amortizacao.valor)}
                     </div>
                   </div>
                 </div>
                 <div className="border-t border-amber-200 dark:border-amber-800 pt-2">
                   <p className="text-xs text-amber-600 dark:text-amber-400">Conversão para Toneladas</p>
                   <div className="text-sm font-semibold text-amber-700 dark:text-amber-300">
-                    {vendasPorTipo.amortizacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m³ = {vendasPorTipo.amortizacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(vendasPorTipo.amortizacao.totalM3)} m³ = {fmtNum(vendasPorTipo.amortizacao.totalTon)} ton
                   </div>
                 </div>
               </div>
@@ -1118,9 +1131,9 @@ export default function Home() {
                       { header: 'Valor', key: 'valor', width: 20 },
                     ],
                     data: [
-                      { indicador: 'Quantidade (m³)', valor: vendasPorTipo.doacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
-                      { indicador: 'Valor Total', valor: `R$ ${vendasPorTipo.doacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
-                      { indicador: 'Toneladas', valor: vendasPorTipo.doacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                      { indicador: 'Quantidade (m³)', valor: fmtNum(vendasPorTipo.doacao.totalM3) },
+                      { indicador: 'Valor Total', valor: `R$ ${fmtNum(vendasPorTipo.doacao.valor)}` },
+                      { indicador: 'Toneladas', valor: fmtNum(vendasPorTipo.doacao.totalTon) },
                     ],
                   }}
                 />
@@ -1132,19 +1145,19 @@ export default function Home() {
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-xs text-green-600 dark:text-green-400">Qtd Total (m³)</p>
-                    <div className="text-2xl font-bold text-green-700 dark:text-green-300">{vendasPorTipo.doacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div className="text-2xl font-bold text-green-700 dark:text-green-300">{fmtNum(vendasPorTipo.doacao.totalM3)}</div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-green-600 dark:text-green-400">Valor Total</p>
                     <div className="text-lg font-bold text-green-700 dark:text-green-300">
-                      R$ {vendasPorTipo.doacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {fmtNum(vendasPorTipo.doacao.valor)}
                     </div>
                   </div>
                 </div>
                 <div className="border-t border-green-200 dark:border-green-800 pt-2">
                   <p className="text-xs text-green-600 dark:text-green-400">Conversão para Toneladas</p>
                   <div className="text-sm font-semibold text-green-700 dark:text-green-300">
-                    {vendasPorTipo.doacao.totalM3.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m³ = {vendasPorTipo.doacao.totalTon.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(vendasPorTipo.doacao.totalM3)} m³ = {fmtNum(vendasPorTipo.doacao.totalTon)} ton
                   </div>
                 </div>
               </div>
@@ -1175,15 +1188,15 @@ export default function Home() {
                     { header: '%', key: 'percentual', width: 8 },
                   ],
                   data: [
-                    ...((producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Fixa', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` }))),
-                    ...((producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Móvel', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` }))),
+                    ...((producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Fixa', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${fmtPct(c.percentual)}%` }))),
+                    ...((producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).map((c: any) => ({ placa: c.placa, britagem: 'Móvel', viagens: c.totalViagens || 0, peso: c.capacidade || 0, producao: c.totalProduzido, percentual: `${fmtPct(c.percentual)}%` }))),
                   ],
                 }}
                 whatsappMessage={(() => {
                   if (!producaoMetodoCaminhoes) return undefined;
-                  let msg = `🚚 *Produção Método Caminhões*\nPeríodo: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}\nTotal: ${totalProducaoCaminhoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-                  (producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Fixa): ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
-                  (producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Móvel): ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
+                  let msg = `🚚 *Produção Método Caminhões*\nPeríodo: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}\nTotal: ${fmtNum(totalProducaoCaminhoes)} ton\n`;
+                  (producaoMetodoCaminhoes?.britagemFixa?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Fixa): ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`; });
+                  (producaoMetodoCaminhoes?.britagemMovel?.caminhoes || []).forEach((c: any) => { msg += `  ${c.placa} (Móvel): ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -1193,7 +1206,7 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-              {totalProducaoCaminhoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+              {fmtNum(totalProducaoCaminhoes)} ton
             </div>
 
             {/* Meta, A Produzir e Percentuais */}
@@ -1246,7 +1259,7 @@ export default function Home() {
                     ) : (
                       <div className="flex items-center gap-1">
                         <span className="font-bold text-green-800 dark:text-green-200">
-                          {metaVal > 0 ? metaVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "Não definida"}
+                          {metaVal > 0 ? fmtNum(metaVal) : "Não definida"}
                         </span>
                         <Button
                           size="sm"
@@ -1267,14 +1280,14 @@ export default function Home() {
                         <span className="text-green-600 dark:text-green-400">Produzido:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-green-700 dark:text-green-300">
-                            {totalProducaoCaminhoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                            {fmtNum(totalProducaoCaminhoes)} ton
                           </span>
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                             percProduzido >= 100
                               ? "bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200"
                               : "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
                           }`}>
-                            {percProduzido.toFixed(1)}%
+                            {fmtPct(percProduzido)}%
                           </span>
                         </div>
                       </div>
@@ -1288,11 +1301,11 @@ export default function Home() {
                               ? "text-green-700 dark:text-green-300"
                               : "text-orange-600 dark:text-orange-400"
                           }`}>
-                            {aProduzir <= 0 ? "Meta atingida!" : `${aProduzir.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton`}
+                            {aProduzir <= 0 ? "Meta atingida!" : `${fmtNum(aProduzir)} ton`}
                           </span>
                           {aProduzir > 0 && (
                             <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                              {percAProduzir.toFixed(1)}%
+                              {fmtPct(percAProduzir)}%
                             </span>
                           )}
                         </div>
@@ -1324,7 +1337,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold text-green-700 dark:text-green-300">🏭 Produção Britagem Fixa</p>
                   <span className="text-xs font-bold text-green-700 dark:text-green-300">
-                    {producaoMetodoCaminhoes.britagemFixa.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(producaoMetodoCaminhoes.britagemFixa.total)} ton
                   </span>
                 </div>
                 <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-[10px] text-green-500 dark:text-green-400 font-medium border-b border-green-200 dark:border-green-800 pb-1 mb-1">
@@ -1346,10 +1359,10 @@ export default function Home() {
                       {c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                     </span>
                     <span className="text-right font-semibold text-green-700 dark:text-green-300 tabular-nums">
-                      {c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(c.totalProduzido)}
                     </span>
                     <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
-                      {c.percentual.toFixed(1)}%
+                      {fmtPct(c.percentual)}%
                     </span>
                   </div>
                 ))}
@@ -1361,7 +1374,7 @@ export default function Home() {
                   </span>
                   <span className="text-right text-green-600 dark:text-green-400">—</span>
                   <span className="text-right text-green-700 dark:text-green-300 tabular-nums">
-                    {producaoMetodoCaminhoes.britagemFixa.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {fmtNum(producaoMetodoCaminhoes.britagemFixa.total)}
                   </span>
                   <span className="text-right text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                     {producaoMetodoCaminhoes.total > 0 ? ((producaoMetodoCaminhoes.britagemFixa.total / producaoMetodoCaminhoes.total) * 100).toFixed(1) : '0.0'}%
@@ -1376,7 +1389,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">🚚 Produção Britagem Móvel</p>
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                    {producaoMetodoCaminhoes.britagemMovel.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(producaoMetodoCaminhoes.britagemMovel.total)} ton
                   </span>
                 </div>
                 <div className="grid grid-cols-[minmax(0,1fr)_52px_56px_72px_40px] text-[10px] text-emerald-500 dark:text-emerald-400 font-medium border-b border-emerald-200 dark:border-emerald-800 pb-1 mb-1">
@@ -1398,10 +1411,10 @@ export default function Home() {
                       {c.capacidade?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                     </span>
                     <span className="text-right font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">
-                      {c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(c.totalProduzido)}
                     </span>
                     <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
-                      {c.percentual.toFixed(1)}%
+                      {fmtPct(c.percentual)}%
                     </span>
                   </div>
                 ))}
@@ -1413,7 +1426,7 @@ export default function Home() {
                   </span>
                   <span className="text-right text-emerald-600 dark:text-emerald-400">—</span>
                   <span className="text-right text-emerald-700 dark:text-emerald-300 tabular-nums">
-                    {producaoMetodoCaminhoes.britagemMovel.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {fmtNum(producaoMetodoCaminhoes.britagemMovel.total)}
                   </span>
                   <span className="text-right text-emerald-500 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded text-[10px] font-medium tabular-nums">
                     {producaoMetodoCaminhoes.total > 0 ? ((producaoMetodoCaminhoes.britagemMovel.total / producaoMetodoCaminhoes.total) * 100).toFixed(1) : '0.0'}%
@@ -1428,7 +1441,7 @@ export default function Home() {
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="text-green-800 dark:text-green-200">📊 Total Geral (Fixa + Móvel)</span>
                   <span className="text-green-800 dark:text-green-200">
-                    {producaoMetodoCaminhoes?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(producaoMetodoCaminhoes?.total)} ton
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-green-600 dark:text-green-400 mt-0.5">
@@ -1466,8 +1479,8 @@ export default function Home() {
                 whatsappMessage={(() => {
                   const total = (medicaoPilhasData as any)?.total || 0;
                   if (!total) return undefined;
-                  let msg = `⛰️ *Medição das Pilhas*\nTotal: ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-                  ((medicaoPilhasData as any)?.produtos || []).forEach((p: any) => { msg += `  ${p.produtoNome}: ${p.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${p.percentual.toFixed(1)}%)\n`; });
+                  let msg = `⛰️ *Medição das Pilhas*\nTotal: ${fmtNum(total)} ton\n`;
+                  ((medicaoPilhasData as any)?.produtos || []).forEach((p: any) => { msg += `  ${p.produtoNome}: ${fmtNum(p.totalProduzido)} ton (${p.percentual.toFixed(1)}%)\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -1477,7 +1490,7 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-violet-700 dark:text-violet-300">
-              {((medicaoPilhasData as any)?.total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+              {fmtNum((medicaoPilhasData as any)?.total)} ton
             </div>
             {medicaoPilhasData && 'produtos' in medicaoPilhasData && (medicaoPilhasData as any).produtos?.length > 0 ? (
               <div className="mt-3 space-y-2">
@@ -1488,7 +1501,7 @@ export default function Home() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-violet-700 dark:text-violet-300">
-                        {p.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtNum(p.totalProduzido)}
                       </span>
                       <span className="text-violet-500 dark:text-violet-400 bg-violet-100 dark:bg-violet-900 px-1.5 py-0.5 rounded text-[10px] font-medium">
                         {p.percentual.toFixed(1)}%
@@ -1538,8 +1551,8 @@ export default function Home() {
                 }}
                 whatsappMessage={(() => {
                   const total = producaoBalancasData.equipamentos.reduce((acc, e) => acc + e.producaoBalanca, 0);
-                  let msg = `⚖️ *Produção Balanças Integradoras*\nTotal: ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-                  producaoBalancasData.equipamentos.forEach(e => { msg += `  ${e.nome}: ${e.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton${e.divergencia ? ' ⚠️' : ''}\n`; });
+                  let msg = `⚖️ *Produção Balanças Integradoras*\nTotal: ${fmtNum(total)} ton\n`;
+                  producaoBalancasData.equipamentos.forEach(e => { msg += `  ${e.nome}: ${fmtNum(e.producaoBalanca)} ton${e.divergencia ? ' ⚠️' : ''}\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -1566,18 +1579,18 @@ export default function Home() {
                       <span className="truncate" title={eq.nome}>{eq.nome}</span>
                     </div>
                     <span className="text-right font-mono text-[11px]">
-                      {eq.leituraInicial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(eq.leituraInicial)}
                     </span>
                     <span className="text-right font-mono text-[11px]">
-                      {eq.leituraFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(eq.leituraFinal)}
                     </span>
                     <span className="text-right font-semibold">
-                      {eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(eq.producaoBalanca)}
                     </span>
                   </div>
                   {eq.divergencia && (
                     <div className="mt-1 ml-4 text-[10px] text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded px-2 py-1">
-                      ⚠ Divergência: soma das subtrações ({eq.producaoBalanca.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}) ≠ leit. final − leit. inicial ({eq.producaoConferencia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}). Revise os lançamentos.
+                      ⚠ Divergência: soma das subtrações ({fmtNum(eq.producaoBalanca)}) ≠ leit. final − leit. inicial ({fmtNum(eq.producaoConferencia)}). Revise os lançamentos.
                     </div>
                   )}
                 </div>
@@ -1612,14 +1625,14 @@ export default function Home() {
                   { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   { header: '%', key: 'percentual', width: 8 },
                 ],
-                data: (producaoUltimoDia?.caminhoes || []).map(c => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
+                data: (producaoUltimoDia?.caminhoes || []).map(c => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${fmtPct(c.percentual)}%` })),
               }}
               whatsappMessage={(() => {
                 if (!producaoUltimoDia?.total) return undefined;
                 let msg = `📅 *Produção Último Dia Caminhões*\n`;
                 if (producaoUltimoDia.dataReferencia) msg += `Data: ${formatDateBR(producaoUltimoDia.dataReferencia)}\n`;
-                msg += `Total: ${producaoUltimoDia.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton\n`;
-                producaoUltimoDia.caminhoes.forEach(c => { msg += `  ${c.placa}: ${c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${c.percentual.toFixed(1)}%)\n`; });
+                msg += `Total: ${fmtNum(producaoUltimoDia.total)} ton\n`;
+                producaoUltimoDia.caminhoes.forEach(c => { msg += `  ${c.placa}: ${fmtNum(c.totalProduzido)} ton (${fmtPct(c.percentual)}%)\n`; });
                 return msg;
               })()}
               whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -1629,7 +1642,7 @@ export default function Home() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
-            {(producaoUltimoDia?.total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+            {fmtNum(producaoUltimoDia?.total)} ton
           </div>
 
           {/* Meta Diária e Diferença */}
@@ -1676,7 +1689,7 @@ export default function Home() {
               ) : (
                 <div className="flex items-center gap-2 flex-1">
                   <span className="text-sm font-bold text-cyan-800 dark:text-cyan-200">
-                    {parseFloat(metaDiariaLocal || "0").toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                    {fmtNum(parseFloat(metaDiariaLocal || '0'))} ton
                   </span>
                   <Button
                     size="sm"
@@ -1702,11 +1715,11 @@ export default function Home() {
                     <span className="text-xs text-cyan-600 dark:text-cyan-400">Produzido:</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-cyan-800 dark:text-cyan-200">
-                        {totalUltimoDia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                        {fmtNum(totalUltimoDia)} ton
                       </span>
                       {metaVal > 0 && (
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${metaAtingida ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' : 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300'}`}>
-                          {percProduzido.toFixed(1)}%
+                          {fmtPct(percProduzido)}%
                         </span>
                       )}
                     </div>
@@ -1715,11 +1728,11 @@ export default function Home() {
                     <span className="text-xs text-cyan-600 dark:text-cyan-400">A Produzir:</span>
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-bold ${metaAtingida ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {metaAtingida ? 'Meta atingida!' : `${aProduzir.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton`}
+                        {metaAtingida ? 'Meta atingida!' : `${fmtNum(aProduzir)} ton`}
                       </span>
                       {metaVal > 0 && !metaAtingida && (
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                          {percAProduzir.toFixed(1)}%
+                          {fmtPct(percAProduzir)}%
                         </span>
                       )}
                     </div>
@@ -1747,10 +1760,10 @@ export default function Home() {
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-cyan-700 dark:text-cyan-300">
-                      {c.totalProduzido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtNum(c.totalProduzido)}
                     </span>
                     <span className="text-cyan-500 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-900 px-1.5 py-0.5 rounded text-[10px] font-medium">
-                      {c.percentual.toFixed(1)}%
+                      {fmtPct(c.percentual)}%
                     </span>
                   </div>
                 </div>
@@ -1781,12 +1794,12 @@ export default function Home() {
                     { header: 'Valor', key: 'valor', width: 20 },
                   ],
                   data: [
-                    { indicador: 'Total (m)', valor: totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
-                    { indicador: 'Furos', valor: totalFuros.toLocaleString('pt-BR') },
-                    { indicador: 'Metros Perfurados', valor: totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) },
+                    { indicador: 'Total (m)', valor: fmtNum(totalPerfuracao) },
+                    { indicador: 'Furos', valor: fmtNum(totalFuros, 0) },
+                    { indicador: 'Metros Perfurados', valor: fmtNum(totalMetrosPerfurados) },
                   ],
                 }}
-                whatsappMessage={totalPerfuracao > 0 ? `⛏️ *Produção de Perfuração*\nTotal: ${totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m\nFuros: ${totalFuros.toLocaleString('pt-BR')} | Metros: ${totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m` : undefined}
+                whatsappMessage={totalPerfuracao > 0 ? `⛏️ *Produção de Perfuração*\nTotal: ${fmtNum(totalPerfuracao)} m\nFuros: ${fmtNum(totalFuros, 0)} | Metros: ${fmtNum(totalMetrosPerfurados)} m` : undefined}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
               />
               <Settings2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -1794,14 +1807,14 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">
-              {totalPerfuracao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m
+              {fmtNum(totalPerfuracao)} m
             </div>
             <div className="flex gap-4 mt-1">
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                {totalFuros.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} furos
+                {fmtNum(totalFuros, 0)} furos
               </p>
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                {totalMetrosPerfurados.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} m perfurados
+                {fmtNum(totalMetrosPerfurados)} m perfurados
               </p>
             </div>
           </CardContent>
@@ -1902,10 +1915,10 @@ export default function Home() {
                           {new Date(rev.dataUltimaRevisao).toLocaleDateString('pt-BR')}
                         </span>
                         <span className="text-right text-[10px]">
-                          {rev.horKmRevisao.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                          {fmtNum(Number(rev.horKmRevisao), 0)}
                         </span>
                         <span className="text-right text-[10px]">
-                          {rev.horKmProximaRevisao.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                          {fmtNum(Number(rev.horKmProximaRevisao), 0)}
                         </span>
                         <span 
                           className="text-right text-[11px] px-1 py-0.5 rounded"
@@ -1915,7 +1928,7 @@ export default function Home() {
                             fontWeight: fontWeight as any 
                           }}
                         >
-                          {faltam.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                          {fmtNum(faltam, 0)}
                         </span>
                       </div>
                     );
@@ -1953,13 +1966,13 @@ export default function Home() {
                 data: (producaoMotoristasData?.motoristas || []).flatMap(m =>
                   m.servicos.length > 0
                     ? m.servicos.map(s => ({ motorista: m.motoristaNome, servico: s.servicoNome, viagens: s.viagens, producao: s.producao, percentual: `${((s.producao / (producaoMotoristasData?.totalProducao || 1)) * 100).toFixed(1)}%` }))
-                    : [{ motorista: m.motoristaNome, servico: '-', viagens: m.totalViagens, producao: m.totalProducao, percentual: `${m.percentual.toFixed(1)}%` }]
+                    : [{ motorista: m.motoristaNome, servico: '-', viagens: m.totalViagens, producao: m.totalProducao, percentual: `${fmtPct(m.percentual)}%` }]
                 ),
               }}
               whatsappMessage={(() => {
                 if (!producaoMotoristasData?.motoristas?.length) return undefined;
-                let msg = `🚚 *Produção dos Motoristas*\nTotal: ${(producaoMotoristasData.totalProducao || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton | ${producaoMotoristasData.totalViagens || 0} viagens\n`;
-                producaoMotoristasData.motoristas.forEach(m => { msg += `  ${m.motoristaNome}: ${m.totalProducao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton (${m.percentual.toFixed(1)}%)\n`; });
+                let msg = `🚚 *Produção dos Motoristas*\nTotal: ${fmtNum(producaoMotoristasData.totalProducao)} ton | ${producaoMotoristasData.totalViagens || 0} viagens\n`;
+                producaoMotoristasData.motoristas.forEach(m => { msg += `  ${m.motoristaNome}: ${fmtNum(m.totalProducao)} ton (${fmtPct(m.percentual)}%)\n`; });
                 return msg;
               })()}
               whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -1971,10 +1984,10 @@ export default function Home() {
           <div className="flex items-baseline gap-4">
             <div>
               <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
-                {(producaoMotoristasData?.totalProducao || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ton
+                {fmtNum(producaoMotoristasData?.totalProducao)} ton
               </div>
               <p className="text-xs text-cyan-600 dark:text-cyan-400">
-                {(producaoMotoristasData?.totalViagens || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })} viagens no total
+                {fmtNum(producaoMotoristasData?.totalViagens, 0)} viagens no total
               </p>
             </div>
           </div>
@@ -1988,13 +2001,13 @@ export default function Home() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-cyan-600 dark:text-cyan-400">
-                        {m.totalViagens.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} viag.
+                        {fmtNum(m.totalViagens, 0)} viag.
                       </span>
                       <span className="font-bold text-sm text-cyan-700 dark:text-cyan-300">
-                        {m.totalProducao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtNum(m.totalProducao)}
                       </span>
                       <span className="text-cyan-500 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-900 px-1.5 py-0.5 rounded text-[10px] font-medium">
-                        {m.percentual.toFixed(1)}%
+                        {fmtPct(m.percentual)}%
                       </span>
                     </div>
                   </div>
@@ -2006,10 +2019,10 @@ export default function Home() {
                         </span>
                         <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
                           <span className="text-cyan-500 dark:text-cyan-400">
-                            {s.viagens.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} viag.
+                            {fmtNum(s.viagens, 0)} viag.
                           </span>
                           <span className="font-medium text-cyan-700 dark:text-cyan-300">
-                            {s.producao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            {fmtNum(s.producao)}
                           </span>
                         </div>
                       </div>
@@ -2048,7 +2061,7 @@ export default function Home() {
                 whatsappMessage={(() => {
                   if (!producaoPorSetor?.length) return undefined;
                   let msg = `🏭 *Produção por Setor*\n`;
-                  producaoPorSetor.forEach(s => { msg += `  ${s.setorNome}: ${s.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} ton\n`; });
+                  producaoPorSetor.forEach(s => { msg += `  ${s.setorNome}: ${fmtNum(s.producaoTotal, 0)} ton\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -2066,7 +2079,7 @@ export default function Home() {
                         {item.setorNome}
                       </span>
                       <span className="font-semibold text-blue-600 dark:text-blue-400 shrink-0 whitespace-nowrap">
-                        {item.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                        {fmtNum(item.producaoTotal, 0)}
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -2120,7 +2133,7 @@ export default function Home() {
                 whatsappMessage={(() => {
                   if (!producaoPorServico?.length) return undefined;
                   let msg = `⚙️ *Produção por Serviço*\n`;
-                  producaoPorServico.forEach(s => { msg += `  ${s.servicoNome}: ${s.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} ton\n`; });
+                  producaoPorServico.forEach(s => { msg += `  ${s.servicoNome}: ${fmtNum(s.producaoTotal, 0)} ton\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -2138,7 +2151,7 @@ export default function Home() {
                         {item.servicoNome}
                       </span>
                       <span className="font-semibold text-purple-600 dark:text-purple-400 shrink-0 whitespace-nowrap">
-                        {item.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                        {fmtNum(item.producaoTotal, 0)}
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -2210,7 +2223,7 @@ export default function Home() {
                         {item.equipamentoTag || item.equipamentoNome}
                       </span>
                       <span className="font-semibold text-green-600 dark:text-green-400 shrink-0 whitespace-nowrap">
-                        {item.producaoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                        {fmtNum(item.producaoTotal, 0)}
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">

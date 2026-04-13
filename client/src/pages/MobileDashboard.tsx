@@ -88,12 +88,22 @@ function getPeriodoDates(periodo: Periodo, customInicio?: string, customFim?: st
   }
 }
 
-function formatNumber(n: number, decimals = 0): string {
-  return n.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+function formatNumber(n: number | undefined | null, decimals = 0): string {
+  const v = Number(n);
+  if (isNaN(v) || n === undefined || n === null) return '0,' + '0'.repeat(decimals);
+  return v.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
-function formatCurrency(n: number): string {
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+function formatCurrency(n: number | undefined | null): string {
+  const v = Number(n);
+  if (isNaN(v) || n === undefined || n === null) return 'R$\u00a00,00';
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function fmtPct(value: number | undefined | null): string {
+  const n = Number(value);
+  if (isNaN(n) || value === undefined || value === null) return '0,0';
+  return n.toFixed(1);
 }
 
 function formatDateBR(dateStr: string) {
@@ -822,7 +832,7 @@ export default function MobileDashboard() {
                   <span className="text-green-400/70">Produzido:</span>
                   <div className="flex items-center gap-2">
                     <span className="text-white font-semibold">{formatNumber(totalProducaoCaminhoes, 2)} ton</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${perc >= 100 ? "bg-green-700 text-green-200" : "bg-yellow-800 text-yellow-200"}`}>{perc.toFixed(1)}%</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${perc >= 100 ? "bg-green-700 text-green-200" : "bg-yellow-800 text-yellow-200"}`}>{fmtPct(perc)}%</span>
                   </div>
                 </div>
                 <div className="flex justify-between text-xs">
@@ -867,7 +877,7 @@ export default function MobileDashboard() {
               {/* Subtotal */}
               <div className="flex items-center justify-between text-xs text-green-300 font-semibold border-t border-green-600 pt-1.5 mt-1">
                 <span>Subtotal — {(producaoMetodoCaminhoes.data.britagemFixa.totalViagens || 0).toLocaleString('pt-BR')} viag.</span>
-                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemFixa.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%)</span>
+                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemFixa.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemFixa.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0,0'}%)</span>
               </div>
             </div>
           )}
@@ -901,7 +911,7 @@ export default function MobileDashboard() {
               {/* Subtotal */}
               <div className="flex items-center justify-between text-xs text-green-300 font-semibold border-t border-green-600 pt-1.5 mt-1">
                 <span>Subtotal — {(producaoMetodoCaminhoes.data.britagemMovel.totalViagens || 0).toLocaleString('pt-BR')} viag.</span>
-                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemMovel.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0.0'}%)</span>
+                <span className="tabular-nums">{formatNumber(producaoMetodoCaminhoes.data.britagemMovel.total, 2)} ton ({producaoMetodoCaminhoes.data.total > 0 ? ((producaoMetodoCaminhoes.data.britagemMovel.total / producaoMetodoCaminhoes.data.total) * 100).toFixed(1) : '0,0'}%)</span>
               </div>
             </div>
           )}
@@ -972,7 +982,7 @@ export default function MobileDashboard() {
                   { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                   { header: '%', key: 'percentual', width: 8 },
                 ],
-                data: (producaoUltimoDia.data?.caminhoes || []).map((c: any) => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${c.percentual.toFixed(1)}%` })),
+                data: (producaoUltimoDia.data?.caminhoes || []).map((c: any) => ({ placa: c.placa, producao: c.totalProduzido, percentual: `${fmtPct(c.percentual)}%` })),
               }}
               whatsappMessage={producaoUltimoDia.data?.total ? `📅 *Produção Último Dia*\nTotal: ${formatNumber(producaoUltimoDia.data.total, 2)} ton` : undefined}
               whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
@@ -1012,7 +1022,7 @@ export default function MobileDashboard() {
                   <span className="text-cyan-300/80 truncate max-w-[60%]">{c.placa}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-white font-semibold">{formatNumber(c.totalProduzido, 2)}</span>
-                    <span className="text-cyan-400/60 bg-cyan-800/60 px-1.5 py-0.5 rounded text-[10px]">{c.percentual.toFixed(1)}%</span>
+                    <span className="text-cyan-400/60 bg-cyan-800/60 px-1.5 py-0.5 rounded text-[10px]">{fmtPct(c.percentual)}%</span>
                   </div>
                 </div>
               ))}
@@ -1139,7 +1149,7 @@ export default function MobileDashboard() {
                     { header: 'Produção (ton)', key: 'producao', width: 15, format: formatters.decimal },
                     { header: '%', key: 'percentual', width: 8 },
                   ],
-                  data: (producaoMotoristasData.data?.motoristas || []).map((m: any) => ({ motorista: m.motoristaNome, viagens: m.totalViagens, producao: m.totalProducao, percentual: `${m.percentual.toFixed(1)}%` })),
+                  data: (producaoMotoristasData.data?.motoristas || []).map((m: any) => ({ motorista: m.motoristaNome, viagens: m.totalViagens, producao: m.totalProducao, percentual: `${fmtPct(m.percentual)}%` })),
                 }}
                 whatsappMessage={`🚛 *Produção dos Motoristas*\nTotal: ${formatNumber(producaoMotoristasData.data?.totalProducao || 0, 2)} ton\n${formatNumber(producaoMotoristasData.data?.totalViagens || 0)} viagens`}
                 whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
@@ -1155,7 +1165,7 @@ export default function MobileDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="text-cyan-400/70 text-xs">{formatNumber(m.totalViagens)} viag.</span>
                       <span className="text-white text-xs font-bold">{formatNumber(m.totalProducao, 2)}</span>
-                      <span className="text-cyan-400/60 bg-cyan-800 px-1.5 py-0.5 rounded text-[10px]">{m.percentual.toFixed(1)}%</span>
+                      <span className="text-cyan-400/60 bg-cyan-800 px-1.5 py-0.5 rounded text-[10px]">{fmtPct(m.percentual)}%</span>
                     </div>
                   </div>
                   <div className="space-y-0.5 pl-2 border-l border-cyan-700">
@@ -1231,16 +1241,16 @@ export default function MobileDashboard() {
                       <span className={`text-xs truncate max-w-[160px] ${eq.divergencia ? "text-orange-300" : "text-teal-300"}`} title={eq.nome}>{eq.nome}</span>
                     </div>
                     <span className={`text-sm font-bold ${eq.divergencia ? "text-orange-300" : "text-white"}`}>
-                      {eq.producaoBalanca.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      {formatNumber(eq.producaoBalanca, 2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[10px] text-teal-500 pl-4">
-                    <span>Ini: {eq.leituraInicial.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
-                    <span>Fin: {eq.leituraFinal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    <span>Ini: {formatNumber(eq.leituraInicial, 2)}</span>
+                    <span>Fin: {formatNumber(eq.leituraFinal, 2)}</span>
                   </div>
                   {eq.divergencia && (
                     <div className="ml-4 text-[10px] text-orange-400 bg-orange-900/40 rounded px-2 py-1">
-                      ⚠ Conferência: {eq.producaoConferencia.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} ≠ Soma: {eq.producaoBalanca.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      ⚠ Conferência: {formatNumber(eq.producaoConferencia, 2)} ≠ Soma: {formatNumber(eq.producaoBalanca, 2)}
                     </div>
                   )}
                 </div>
