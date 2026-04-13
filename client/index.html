@@ -81,6 +81,13 @@
                 window.location.reload();
               }
             }
+            // Sessão expirada detectada pelo SW: redireciona para login
+            if (event.data && event.data.type === 'SESSION_EXPIRED') {
+              if (window.location.pathname !== '/login') {
+                console.log('[SW] Sessão expirada detectada, redirecionando para login...');
+                window.location.href = '/login';
+              }
+            }
           });
         });
       }

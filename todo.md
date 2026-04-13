@@ -211,3 +211,11 @@
 - [x] Frontend: calcular horas paradas automaticamente a partir de Data Início + Hora Início e Data Fim + Hora Fim (suportando múltiplos dias)
 - [x] Frontend: atualizar tabela de listagem com colunas Data Início, Hora Início, Data Fim, Hora Fim
 - [x] Frontend: atualizar handleEdit para popular dataFim separada de dataInicio
+
+## Correção PWA - Erro de Sessão Expirada (Android/iOS)
+- [x] Investigar service worker e estratégia de cache atual
+- [x] Atualizar service worker para network-first nas chamadas de API (não servir cache stale)
+- [x] Implementar interceptor global de erro 401/sessão expirada com redirect automático para login
+- [x] Adicionar listener de visibilitychange para verificar sessão ao reabrir o app
+- [x] ErrorBoundary inteligente: detectar sessão expirada e redirecionar automaticamente (sem mostrar stack trace)
+- [x] Service worker v5: interceptar respostas 401 da API e notificar o app via postMessage SESSION_EXPIRED

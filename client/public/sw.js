@@ -5,7 +5,7 @@
 // Isso garante que qualquer atualização do sistema apareça
 // imediatamente no celular, sem precisar reinstalar o app.
 
-const CACHE_VERSION = 'solar-v4';
+const CACHE_VERSION = 'solar-v5';
 const CACHE_NAME = `${CACHE_VERSION}-shell`;
 
 // ============================================================
@@ -95,7 +95,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Para POST/PUT/DELETE (API calls): sempre vai para a rede, sem cache
+  // Para requisições de API (/api/trpc): sempre rede, sem cache,
+  // e notifica o app se a resposta for 401 (sessão expirada)
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(event.request.clone()).then((response) => {
+        // Se a API retornar 401, notifica todas as abas para redirecionar ao login
+        if (response.status === 401) {
+          self.clients.matchAll({ type: 'window' }).then((clients) => {
+            clients.forEach((client) => {
+              client.postMessage({ type: 'SESSION_EXPIRED' });
+            });
+          });
+        }
+        return response;
+      }).catch(() => {
+        // Falha de rede: deixa o browser tratar
+        return fetch(event.request);
+      })
+    );
+    return;
+  }
+
+  // Para POST/PUT/DELETE não-API: sempre vai para a rede, sem cache
   // Não interceptamos — deixamos o browser tratar normalmente
 });
 
