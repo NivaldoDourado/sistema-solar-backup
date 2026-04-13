@@ -39,6 +39,7 @@ import {
   Circle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CardSkeletonMobile } from "@/components/CardSkeleton";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/dgsolar-icon-192-v1774802666_01352d9a.png";
 const LOGO_SOLAR_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/logo-solar-horizontal_c2527f96.png";
@@ -792,6 +793,11 @@ export default function MobileDashboard() {
       {/* Produção Método Caminhões */}
       {/* ============================================================ */}
       <div className="px-4 mt-4">
+        {producaoMetodoCaminhoes.isLoading ? (
+          <div className="bg-green-900/70 rounded-2xl border border-green-700 overflow-hidden">
+            <CardSkeletonMobile rows={4} />
+          </div>
+        ) : (
         <div className="bg-green-900/70 rounded-2xl p-4 border border-green-700">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -916,6 +922,7 @@ export default function MobileDashboard() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* ============================================================ */}
@@ -965,6 +972,9 @@ export default function MobileDashboard() {
       {/* Produção Último Dia Caminhões */}
       {/* ============================================================ */}
       <div className="px-4 mt-4">
+        {producaoUltimoDia.isLoading ? (
+          <div className="bg-cyan-900/70 rounded-2xl border border-cyan-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div>
+        ) : (
         <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
@@ -1029,12 +1039,16 @@ export default function MobileDashboard() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* ============================================================ */}
       {/* Produção de Perfuração */}
       {/* ============================================================ */}
       <div className="px-4 mt-4">
+        {producaoPerfuracao.isLoading ? (
+          <div className="bg-amber-900/70 rounded-2xl border border-amber-700 overflow-hidden"><CardSkeletonMobile rows={2} /></div>
+        ) : (
         <div className="bg-amber-900/70 rounded-2xl p-4 border border-amber-700">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -1067,6 +1081,7 @@ export default function MobileDashboard() {
             <p className="text-amber-400/70 text-xs">{formatNumber(totalMetrosPerfurados, 2)} m perfurados</p>
           </div>
         </div>
+        )}
       </div>
 
       {/* ============================================================ */}
@@ -1129,7 +1144,9 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção dos Motoristas */}
       {/* ============================================================ */}
-      {producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0 && (
+      {producaoMotoristasData.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-cyan-900/70 rounded-2xl border border-cyan-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div></div>
+      ) : producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0 ? (
         <div className="px-4 mt-4">
           <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
             <div className="flex items-center justify-between mb-2">
@@ -1184,7 +1201,7 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ============================================================ */}
       {/* Balanças Integradoras */}
@@ -1263,7 +1280,9 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção por Setor */}
       {/* ============================================================ */}
-      {producaoPorSetor.data && producaoPorSetor.data.length > 0 && (
+      {producaoPorSetor.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
+      ) : producaoPorSetor.data && producaoPorSetor.data.length > 0 ? (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
@@ -1307,12 +1326,14 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ============================================================ */}
       {/* Produção por Serviço */}
       {/* ============================================================ */}
-      {producaoPorServico.data && producaoPorServico.data.length > 0 && (
+      {producaoPorServico.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
+      ) : producaoPorServico.data && producaoPorServico.data.length > 0 ? (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
@@ -1356,12 +1377,14 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ============================================================ */}
       {/* Produção por Equipamento */}
       {/* ============================================================ */}
-      {producaoPorEquipamento.data && producaoPorEquipamento.data.length > 0 && (
+      {producaoPorEquipamento.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
+      ) : producaoPorEquipamento.data && producaoPorEquipamento.data.length > 0 ? (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
@@ -1405,7 +1428,7 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ============================================================ */}
       {/* Metas configuradas */}

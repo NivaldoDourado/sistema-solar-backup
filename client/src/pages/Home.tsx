@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { WhatsAppReportModal, type CardDisponivel } from "@/components/WhatsAppReportModal";
 import { formatters } from "@/lib/export-utils";
+import { CardSkeletonSimple, CardSkeletonTable, CardSkeletonBars, CardSkeletonKpi } from "@/components/CardSkeleton";
 
 // Helper defensivo para formatar números — protege contra undefined/null/NaN
 function fmtNum(value: number | undefined | null, decimals = 2): string {
@@ -119,21 +120,21 @@ export default function Home() {
   const { data: parteDiaria } = trpc.parteDiaria.list.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
   const dashboardFiltro = useMemo(() => ({ dataInicio: dataInicio || undefined, dataFim: dataFim || undefined }), [dataInicio, dataFim]);
   // Usar queries de agregação dedicadas para o Dashboard (sem paginação)
-  const { data: abastecimentoTotais } = trpc.abastecimento.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("abastecimento") });
-  const { data: custoTotais } = trpc.custos.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("custos") });
+  const { data: abastecimentoTotais, isLoading: loadingAbastecimento } = trpc.abastecimento.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("abastecimento") });
+  const { data: custoTotais, isLoading: loadingCustos } = trpc.custos.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("custos") });
   const { data: manutencaoTotais } = trpc.manutencao.totais.useQuery(dashboardFiltro, { enabled: hasModuleAccess("manutencao") });
   
   // Dados de produção agregados com filtro de período
-  const { data: producaoPorSetor } = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: producaoPorServico } = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: producaoPorEquipamento } = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: producaoMetodoCaminhoes } = trpc.parteDiaria.producaoMetodoCaminhoes.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: producaoPerfuracao } = trpc.parteDiaria.producaoPerfuracao.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
-  const { data: medicaoPilhasData } = trpc.medicaoPilhas.producaoPorProduto.useQuery(filtroParams, { enabled: hasModuleAccess("medicaoPilhas") });
-  const { data: producaoMotoristasData } = trpc.parteDiaria.producaoMotoristas.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: producaoPorSetor, isLoading: loadingSetor } = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: producaoPorServico, isLoading: loadingServico } = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: producaoPorEquipamento, isLoading: loadingEquipamento } = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: producaoMetodoCaminhoes, isLoading: loadingCaminhoes } = trpc.parteDiaria.producaoMetodoCaminhoes.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: producaoPerfuracao, isLoading: loadingPerfuracao } = trpc.parteDiaria.producaoPerfuracao.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: medicaoPilhasData, isLoading: loadingPilhas } = trpc.medicaoPilhas.producaoPorProduto.useQuery(filtroParams, { enabled: hasModuleAccess("medicaoPilhas") });
+  const { data: producaoMotoristasData, isLoading: loadingMotoristas } = trpc.parteDiaria.producaoMotoristas.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: revisoesPreventivas } = trpc.manutencao.revisoesPreventivas.useQuery(undefined, { enabled: hasModuleAccess("manutencao") });
-  const { data: vendasData } = trpc.vendas.vendasList.useQuery(undefined, { enabled: hasModuleAccess("vendas") });
-  const { data: producaoUltimoDia } = trpc.parteDiaria.producaoUltimoDia.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: vendasData, isLoading: loadingVendas } = trpc.vendas.vendasList.useQuery(undefined, { enabled: hasModuleAccess("vendas") });
+  const { data: producaoUltimoDia, isLoading: loadingUltimoDia } = trpc.parteDiaria.producaoUltimoDia.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
   const { data: metaDiariaConfig } = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const utils = trpc.useUtils();
   const setConfigMutation = trpc.configuracoes.set.useMutation({
@@ -882,6 +883,7 @@ export default function Home() {
         </Card>
 
         <Card>
+          {loadingCustos ? <CardSkeletonSimple /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Custos Totais
@@ -911,9 +913,11 @@ export default function Home() {
               {totalRegistrosCustos} lançamentos
             </p>
           </CardContent>
+          </>)}
         </Card>
 
         <Card>
+          {loadingAbastecimento ? <CardSkeletonSimple /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Combustível (L)
@@ -943,6 +947,7 @@ export default function Home() {
               {totalRegistrosAbastecimentos} abastecimentos
             </p>
           </CardContent>
+          </>)}
         </Card>
 
         {/* Card Estoque Mínimo de Peças */}
@@ -1016,6 +1021,7 @@ export default function Home() {
         <div className="grid gap-4 md:grid-cols-3">
           {/* Card Vendas */}
           <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 border-l-4 border-l-blue-500">
+            {loadingVendas ? <CardSkeletonSimple /> : (<>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">
                 Vendas
@@ -1062,10 +1068,12 @@ export default function Home() {
                 </div>
               </div>
             </CardContent>
+            </>)}
           </Card>
 
           {/* Card Amortizações */}
           <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 border-l-4 border-l-amber-500">
+            {loadingVendas ? <CardSkeletonSimple /> : (<>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">
                 Amortizações
@@ -1112,10 +1120,12 @@ export default function Home() {
                 </div>
               </div>
             </CardContent>
+            </>)}
           </Card>
 
           {/* Card Doações */}
           <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 border-l-4 border-l-green-500">
+            {loadingVendas ? <CardSkeletonSimple /> : (<>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
                 Doações
@@ -1162,6 +1172,7 @@ export default function Home() {
                 </div>
               </div>
             </CardContent>
+            </>)}
           </Card>
         </div>
       )}
@@ -1169,6 +1180,7 @@ export default function Home() {
       {/* Card Medição das Pilhas - ao lado do Produção Método Caminhões */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+          {loadingCaminhoes ? <CardSkeletonTable rows={5} /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
               Produção Método Caminhões
@@ -1456,9 +1468,11 @@ export default function Home() {
               </p>
             )}
           </CardContent>
+          </>)}
         </Card>
 
         <Card className="bg-violet-50 dark:bg-violet-950 border-violet-200 dark:border-violet-800">
+          {loadingPilhas ? <CardSkeletonBars rows={4} /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300">
               Medição das Pilhas
@@ -1514,6 +1528,7 @@ export default function Home() {
               <p className="text-xs text-violet-500 dark:text-violet-400 mt-1">Nenhuma medição registrada</p>
             )}
           </CardContent>
+          </>)}
         </Card>
       </div>
 
@@ -1603,6 +1618,7 @@ export default function Home() {
 
       {/* Card Produção Último Dia Caminhões */}
       <Card className="bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+        {loadingUltimoDia ? <CardSkeletonKpi /> : (<>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
             <CardTitle className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
@@ -1773,12 +1789,14 @@ export default function Home() {
             <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-1">Nenhuma produção registrada</p>
           )}
         </CardContent>
+        </>)}
       </Card>
 
       {/* Cards Perfuração e Revisões Preventivas lado a lado */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Card de Produção de Perfuração (diminuido) */}
         <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+          {loadingPerfuracao ? <CardSkeletonBars rows={3} /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-300">
               Produção de Perfuração
@@ -1818,6 +1836,7 @@ export default function Home() {
               </p>
             </div>
           </CardContent>
+          </>)}
         </Card>
 
         {/* Card Revisões Preventivas */}
@@ -1946,6 +1965,7 @@ export default function Home() {
 
       {/* Card Produção dos Motoristas */}
       <Card className="bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+        {loadingMotoristas ? <CardSkeletonTable rows={5} /> : (<>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
             Produção dos Motoristas
@@ -2035,12 +2055,14 @@ export default function Home() {
             <p className="text-xs text-cyan-500 dark:text-cyan-400 mt-2">Nenhum registro de produção de motoristas</p>
           )}
         </CardContent>
+        </>)}
       </Card>
 
       {/* Gráficos de Produção */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Produção por Setor */}
         <Card>
+          {loadingSetor ? <CardSkeletonBars rows={5} /> : (<>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -2109,10 +2131,12 @@ export default function Home() {
               </div>
             )}
           </CardContent>
+          </>)}
         </Card>
 
         {/* Produção por Serviço */}
         <Card>
+          {loadingServico ? <CardSkeletonBars rows={5} /> : (<>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -2181,10 +2205,12 @@ export default function Home() {
               </div>
             )}
           </CardContent>
+          </>)}
         </Card>
 
         {/* Produção por Equipamento */}
         <Card>
+          {loadingEquipamento ? <CardSkeletonBars rows={5} /> : (<>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -2253,6 +2279,7 @@ export default function Home() {
               </div>
             )}
           </CardContent>
+          </>)}
         </Card>
       </div>
 

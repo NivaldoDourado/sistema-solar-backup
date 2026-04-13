@@ -219,3 +219,8 @@
 - [x] Adicionar listener de visibilitychange para verificar sessão ao reabrir o app
 - [x] ErrorBoundary inteligente: detectar sessão expirada e redirecionar automaticamente (sem mostrar stack trace)
 - [x] Service worker v5: interceptar respostas 401 da API e notificar o app via postMessage SESSION_EXPIRED
+
+## Skeleton Loading nos Cards do Dashboard
+- [ ] Criar componente CardSkeleton reutilizável com variantes (simples, tabela, gráfico)
+- [ ] Aplicar skeleton nos cards do dashboard desktop (Home.tsx): Custos, Combustível, Produção Caminhões, Produção Último Dia, Motoristas, Setor, Serviço, Equipamento, Vendas, Perfuração, Balanças
+- [ ] Aplicar skeleton nos cards do dashboard mobile (MobileDashboard.tsx)
