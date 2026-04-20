@@ -67,14 +67,14 @@ export default function Manutencao() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtroDataInicio, setFiltroDataInicio] = useState(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; });
-  const [filtroDataFim, setFiltroDataFim] = useState(() => new Date().toISOString().split('T')[0]);
+  const [filtroDataInicio, setFiltroDataInicio] = useState("");
+  const [filtroDataFim, setFiltroDataFim] = useState("");
   const [filtroEquipamentoId, setFiltroEquipamentoId] = useState("");
   const [filtroGrupoId, setFiltroGrupoId] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(30);
   const [formData, setFormData] = useState(emptyFormData);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState<Manutencao | null>(null);

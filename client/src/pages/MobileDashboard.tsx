@@ -1125,13 +1125,16 @@ export default function MobileDashboard() {
                 const isVencida = faltam <= 0;
                 const isProxima = faltam > 0 && faltam <= 25;
                 return (
-                  <div key={idx} className={`flex justify-between items-center rounded-xl px-3 py-2 text-xs ${isVencida ? "bg-red-900/60 border border-red-700" : isProxima ? "bg-orange-900/60 border border-orange-700" : "bg-slate-700/60"}`}>
-                    <span className={`truncate max-w-[55%] font-medium ${isVencida ? "text-red-300" : isProxima ? "text-orange-300" : "text-white"}`}>{rev.equipamentoTag}</span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-white/50">{rev.proximaRevisao}</span>
+                  <div key={idx} className={`rounded-xl px-3 py-2 text-xs ${isVencida ? "bg-red-900/60 border border-red-700" : isProxima ? "bg-orange-900/60 border border-orange-700" : "bg-slate-700/60"}`}>
+                    <div className="flex justify-between items-center">
+                      <span className={`truncate max-w-[55%] font-medium ${isVencida ? "text-red-300" : isProxima ? "text-orange-300" : "text-white"}`}>{rev.equipamentoTag}</span>
                       <span className={`font-bold ${isVencida ? "text-red-400" : isProxima ? "text-orange-400" : "text-green-400"}`}>
                         {faltam > 0 ? `+${formatNumber(faltam, 1)}` : formatNumber(faltam, 1)}
                       </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-white/40 text-[10px]">Próx. Rev.: <span className="text-white/60">{rev.horKmProximaRevisao ? formatNumber(rev.horKmProximaRevisao, 0) : '-'}</span></span>
+                      <span className="text-blue-400 text-[10px]">Atual: <span className="font-semibold">{rev.horaKmFinalAtual > 0 ? formatNumber(rev.horaKmFinalAtual, 0) : '-'}</span></span>
                     </div>
                   </div>
                 );

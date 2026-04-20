@@ -224,3 +224,9 @@
 - [ ] Criar componente CardSkeleton reutilizável com variantes (simples, tabela, gráfico)
 - [ ] Aplicar skeleton nos cards do dashboard desktop (Home.tsx): Custos, Combustível, Produção Caminhões, Produção Último Dia, Motoristas, Setor, Serviço, Equipamento, Vendas, Perfuração, Balanças
 - [ ] Aplicar skeleton nos cards do dashboard mobile (MobileDashboard.tsx)
+
+## Melhorias Sprint Atual
+- [ ] Manutenção: remover filtro pré-definido de mês (manter campos de filtro, apenas sem valor inicial)
+- [ ] Manutenção: limitar listagem a 30 registros mais recentes por padrão
+- [ ] Revisões Preventivas: adicionar coluna "Hor/Km Atual" com valor do campo Hora/Km Final da última parte diária de cada equipamento
+- [ ] Backend: criar query para buscar último Hora/Km Final por equipamento na procedure de revisões preventivas

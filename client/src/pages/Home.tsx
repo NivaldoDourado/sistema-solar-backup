@@ -1876,11 +1876,12 @@ export default function Home() {
             {revisoesPreventivas && revisoesPreventivas.length > 0 ? (
               <div className="space-y-0">
                 {/* Cabeçalho da tabela */}
-                <div className="grid grid-cols-[1fr_70px_70px_70px_70px] gap-1 text-[10px] font-semibold text-muted-foreground border-b pb-1 mb-1">
+                <div className="grid grid-cols-[1fr_70px_70px_70px_70px_70px] gap-1 text-[10px] font-semibold text-muted-foreground border-b pb-1 mb-1">
                   <span>Equip.</span>
                   <span className="text-right">Data Rev.</span>
                   <span className="text-right">Hor/Km Rev.</span>
                   <span className="text-right">Próx. Rev.</span>
+                  <span className="text-right">Hor/Km Atual</span>
                   <span className="text-right">Faltam</span>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto space-y-0.5">
@@ -1926,7 +1927,7 @@ export default function Home() {
                     }
                     
                     return (
-                      <div key={`rev-${idx}`} className="grid grid-cols-[1fr_70px_70px_70px_70px] gap-1 text-xs py-1 border-b border-slate-100 dark:border-slate-800 items-center">
+                      <div key={`rev-${idx}`} className="grid grid-cols-[1fr_70px_70px_70px_70px_70px] gap-1 text-xs py-1 border-b border-slate-100 dark:border-slate-800 items-center">
                         <span className="truncate font-medium" title={rev.equipamentoTag}>
                           {rev.equipamentoTag}
                         </span>
@@ -1938,6 +1939,9 @@ export default function Home() {
                         </span>
                         <span className="text-right text-[10px]">
                           {fmtNum(Number(rev.horKmProximaRevisao), 0)}
+                        </span>
+                        <span className="text-right text-[10px] font-medium text-blue-600 dark:text-blue-400">
+                          {rev.horaKmFinalAtual > 0 ? fmtNum(rev.horaKmFinalAtual, 0) : '-'}
                         </span>
                         <span 
                           className="text-right text-[11px] px-1 py-0.5 rounded"
