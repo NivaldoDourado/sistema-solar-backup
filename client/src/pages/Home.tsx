@@ -1855,10 +1855,11 @@ export default function Home() {
                     { header: 'Data Últ. Revisão', key: 'dataRevisao', width: 18 },
                     { header: 'Hor/Km Revisão', key: 'horKmRevisao', width: 15 },
                     { header: 'Próx. Revisão', key: 'proximaRevisao', width: 15 },
+                    { header: 'Hor/Km Atual', key: 'horKmAtual', width: 15 },
                     { header: 'Faltam', key: 'faltam', width: 10 },
                     { header: 'Status', key: 'status', width: 12 },
                   ],
-                  data: (revisoesPreventivas || []).map(r => ({ equipamento: r.equipamentoTag, dataRevisao: new Date(r.dataUltimaRevisao).toLocaleDateString('pt-BR'), horKmRevisao: r.horKmRevisao, proximaRevisao: r.horKmProximaRevisao, faltam: r.faltam, status: r.faltam <= 0 ? 'VENCIDA' : r.faltam < 50 ? 'Próximo' : 'OK' })),
+                  data: (revisoesPreventivas || []).map(r => ({ equipamento: r.equipamentoTag, dataRevisao: new Date(r.dataUltimaRevisao).toLocaleDateString('pt-BR'), horKmRevisao: r.horKmRevisao, proximaRevisao: r.horKmProximaRevisao, horKmAtual: r.horaKmFinalAtual > 0 ? r.horaKmFinalAtual : '-', faltam: r.faltam, status: r.faltam <= 0 ? 'VENCIDA' : r.faltam < 50 ? 'Próximo' : 'OK' })),
                 }}
                 whatsappMessage={(() => {
                   const vencidas = (revisoesPreventivas || []).filter(r => r.faltam <= 0);

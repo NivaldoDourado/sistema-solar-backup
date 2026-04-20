@@ -1102,11 +1102,12 @@ export default function MobileDashboard() {
                 exportOptions={{
                   columns: [
                     { header: 'Equipamento', key: 'equipamento', width: 20 },
-                    { header: 'Próxima Revisão', key: 'proxima', width: 15 },
+                    { header: 'Próx. Revisão', key: 'proxima', width: 15 },
+                    { header: 'Hor/Km Atual', key: 'horKmAtual', width: 15 },
                     { header: 'Faltam (h)', key: 'faltam', width: 12 },
                     { header: 'Status', key: 'status', width: 12 },
                   ],
-                  data: (revisoesPreventivas.data || []).map((rev: any) => ({ equipamento: rev.equipamentoTag, proxima: rev.proximaRevisao, faltam: rev.faltam, status: rev.faltam <= 0 ? 'Vencida' : rev.faltam <= 25 ? 'Próxima' : 'OK' })),
+                  data: (revisoesPreventivas.data || []).map((rev: any) => ({ equipamento: rev.equipamentoTag, proxima: rev.horKmProximaRevisao, horKmAtual: rev.horaKmFinalAtual > 0 ? rev.horaKmFinalAtual : '-', faltam: rev.faltam, status: rev.faltam <= 0 ? 'Vencida' : rev.faltam <= 25 ? 'Próxima' : 'OK' })),
                 }}
                 whatsappMessage={(() => {
                   const vencidas = (revisoesPreventivas.data || []).filter((r: any) => r.faltam <= 0);
