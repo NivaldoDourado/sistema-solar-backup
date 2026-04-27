@@ -255,6 +255,7 @@ export default function MobileDashboard() {
   const [expandServico, setExpandServico] = useState(false);
   const [expandEquipamento, setExpandEquipamento] = useState(false);
   const [expandHorasTrabalhadasMobile, setExpandHorasTrabalhadasMobile] = useState(false);
+  const [expandKmRodadoMobile, setExpandKmRodadoMobile] = useState(false);
 
   const { dataInicio, dataFim, label: periodoLabel } = useMemo(
     () => getPeriodoDates(periodo, appliedInicio, appliedFim),
@@ -282,6 +283,7 @@ export default function MobileDashboard() {
   const producaoPorServico = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams);
   const producaoPorEquipamento = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams);
   const horasTrabalhadasMobile = trpc.parteDiaria.horasTrabalhadas.useQuery(filtroParams);
+  const kmRodadoMobile = trpc.parteDiaria.kmRodado.useQuery(filtroParams);
   const metaCaminhoesConfig = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
   const metaDiariaConfig = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const metasList = trpc.metas.list.useQuery();
@@ -370,6 +372,7 @@ export default function MobileDashboard() {
     producaoPorServico.refetch();
     producaoPorEquipamento.refetch();
     horasTrabalhadasMobile.refetch();
+    kmRodadoMobile.refetch();
   };
 
   useEffect(() => {
@@ -1486,6 +1489,61 @@ export default function MobileDashboard() {
               {horasTrabalhadasMobile.data.equipamentos.length > 8 && (
                 <button onClick={() => setExpandHorasTrabalhadasMobile(!expandHorasTrabalhadasMobile)} className="flex items-center justify-center gap-1 w-full text-xs text-amber-400 pt-1">
                   {expandHorasTrabalhadasMobile ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {horasTrabalhadasMobile.data.equipamentos.length - 8} equipamentos</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ============================================================ */}
+      {/* Km Rodado */}
+      {/* ============================================================ */}
+      {kmRodadoMobile.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl p-4 animate-pulse"><div className="h-4 bg-slate-700 rounded w-1/3 mb-3" /><div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-8 bg-slate-700 rounded-xl" />)}</div></div></div>
+      ) : (kmRodadoMobile.data?.equipamentos && kmRodadoMobile.data.equipamentos.length > 0) ? (
+        <div className="px-4 mt-4">
+          <div className="bg-blue-900/40 rounded-2xl p-4 border border-blue-700/40">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-blue-400" />
+                <p className="text-blue-300 text-sm font-semibold">Km Rodado</p>
+              </div>
+              <DashboardExportMenu
+                title="Km Rodado por Equipamento"
+                subtitle={`Período: ${dataInicio || 'início'} a ${dataFim || 'hoje'}`}
+                filename="km-rodado"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 30 },
+                    { header: 'Km Rodado', key: 'km', width: 20, format: formatters.decimal },
+                  ],
+                  data: (kmRodadoMobile.data?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoNome, km: e.totalKm })),
+                }}
+                whatsappMessage={`🚚 *Km Rodado*\nTotal: ${formatNumber(kmRodadoMobile.data?.totalKm || 0, 2)} km\n${(kmRodadoMobile.data?.equipamentos || []).map((e: any) => `  ${e.equipamentoNome}: ${formatNumber(e.totalKm, 2)}`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
+            </div>
+            <p className="text-white text-xl font-bold">{formatNumber(kmRodadoMobile.data.totalKm || 0, 2)} <span className="text-blue-400/70 text-sm font-normal">km</span></p>
+            <p className="text-blue-400/70 text-xs mb-3">{kmRodadoMobile.data.equipamentos.length} equipamento(s) no período</p>
+            <div className="space-y-2">
+              {(kmRodadoMobile.data.equipamentos.length <= 8 ? kmRodadoMobile.data.equipamentos : expandKmRodadoMobile ? kmRodadoMobile.data.equipamentos : kmRodadoMobile.data.equipamentos.slice(0, 8)).map((item: any) => (
+                <div key={item.equipamentoId} className="bg-blue-800/40 rounded-xl p-3 border border-blue-700/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white text-xs font-semibold truncate max-w-[65%]">{item.equipamentoNome}</span>
+                    <span className="text-blue-300 text-xs font-bold">{formatNumber(item.totalKm, 2)} km</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 bg-blue-900/60 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500 rounded-full"
+                      style={{ width: `${(item.totalKm / Math.max(...(kmRodadoMobile.data?.equipamentos?.map((e: any) => e.totalKm) || [1]))) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {kmRodadoMobile.data.equipamentos.length > 8 && (
+                <button onClick={() => setExpandKmRodadoMobile(!expandKmRodadoMobile)} className="flex items-center justify-center gap-1 w-full text-xs text-blue-400 pt-1">
+                  {expandKmRodadoMobile ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {kmRodadoMobile.data.equipamentos.length - 8} equipamentos</>}
                 </button>
               )}
             </div>

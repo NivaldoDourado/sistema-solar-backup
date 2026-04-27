@@ -236,3 +236,9 @@
 - [x] Desktop: card Horas Trabalhadas após Produção por Equipamento em Home.tsx
 - [x] Mobile: card Horas Trabalhadas após Produção por Equipamento em MobileDashboard.tsx
 - [x] Export PDF/Excel com colunas Equipamento e Horas/Km Trabalhados
+
+## Card Km Rodado
+- [ ] Backend: procedure kmRodado filtrando apenas grupo CAMINHÕES DA ENTREGA DE MATERIAL
+- [ ] Desktop: card Km Rodado após Horas Trabalhadas em Home.tsx
+- [ ] Mobile: card Km Rodado após Horas Trabalhadas em MobileDashboard.tsx
+- [ ] Export PDF/Excel com colunas Equipamento e Km Rodado

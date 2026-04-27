@@ -129,6 +129,7 @@ export default function Home() {
   const { data: producaoPorServico, isLoading: loadingServico } = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoPorEquipamento, isLoading: loadingEquipamento } = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: horasTrabalhadasData, isLoading: loadingHorasTrabalhadas } = trpc.parteDiaria.horasTrabalhadas.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: kmRodadoData, isLoading: loadingKmRodado } = trpc.parteDiaria.kmRodado.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoMetodoCaminhoes, isLoading: loadingCaminhoes } = trpc.parteDiaria.producaoMetodoCaminhoes.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoPerfuracao, isLoading: loadingPerfuracao } = trpc.parteDiaria.producaoPerfuracao.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: medicaoPilhasData, isLoading: loadingPilhas } = trpc.medicaoPilhas.producaoPorProduto.useQuery(filtroParams, { enabled: hasModuleAccess("medicaoPilhas") });
@@ -174,6 +175,7 @@ export default function Home() {
   const [expandServico, setExpandServico] = useState(false);
   const [expandEquipamento, setExpandEquipamento] = useState(false);
   const [expandHorasTrabalhadas, setExpandHorasTrabalhadas] = useState(false);
+  const [expandKmRodado, setExpandKmRodado] = useState(false);
 
   useEffect(() => {
     if (metaDiariaConfig?.valor) {
@@ -261,6 +263,7 @@ export default function Home() {
   const maxProducaoServico = Math.max(...(producaoPorServico?.map(s => s.producaoTotal) || [1]));
   const maxProducaoEquipamento = Math.max(...(producaoPorEquipamento?.map(e => e.producaoTotal) || [1]));
   const maxHorasTrabalhadas = Math.max(...(horasTrabalhadasData?.equipamentos?.map((e: any) => e.totalHoras) || [1]));
+  const maxKmRodado = Math.max(...(kmRodadoData?.equipamentos?.map((e: any) => e.totalKm) || [1]));
 
   const handleQuickPeriod = (period: string) => {
     if (periodoAtivo === period) {
@@ -2360,6 +2363,82 @@ export default function Home() {
             ) : (
               <div className="text-center py-8 text-muted-foreground text-sm">
                 Nenhum dado de horas trabalhadas disponível
+              </div>
+            )}
+          </CardContent>
+          </>)}
+        </Card>
+
+        {/* Km Rodado */}
+        <Card>
+          {loadingKmRodado ? <CardSkeletonBars rows={4} /> : (<>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-lg">Km Rodado</CardTitle>
+              </div>
+              <DashboardExportMenu
+                title="Km Rodado por Equipamento"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="km-rodado"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 30 },
+                    { header: 'Km Rodado', key: 'km', width: 20, format: formatters.decimal },
+                  ],
+                  data: (kmRodadoData?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoNome, km: e.totalKm })),
+                }}
+                whatsappMessage={(() => {
+                  if (!kmRodadoData?.equipamentos?.length) return undefined;
+                  let msg = `🚚 *Km Rodado*\nTotal: ${fmtNum(kmRodadoData.totalKm, 2)} km\n`;
+                  kmRodadoData.equipamentos.forEach((e: any) => { msg += `  ${e.equipamentoNome}: ${fmtNum(e.totalKm, 2)}\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+            </div>
+            <CardDescription>
+              Total: <span className="font-semibold text-blue-600 dark:text-blue-400">{fmtNum(kmRodadoData?.totalKm || 0, 2)} km</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {kmRodadoData?.equipamentos && kmRodadoData.equipamentos.length > 0 ? (
+              <div className="space-y-3">
+                {(kmRodadoData.equipamentos.length <= 10 ? kmRodadoData.equipamentos : expandKmRodado ? kmRodadoData.equipamentos : kmRodadoData.equipamentos.slice(0, 10)).map((item: any) => (
+                  <div key={item.equipamentoId} className="space-y-1">
+                    <div className="flex items-start justify-between text-sm gap-2">
+                      <span className="break-words leading-tight" title={item.equipamentoNome}>
+                        {item.equipamentoNome}
+                      </span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400 shrink-0 whitespace-nowrap">
+                        {fmtNum(item.totalKm, 2)} km
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                        style={{ width: `${(item.totalKm / maxKmRodado) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {kmRodadoData.equipamentos.length > 10 && (
+                  <button
+                    onClick={() => setExpandKmRodado(!expandKmRodado)}
+                    className="flex items-center justify-center gap-1 w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 pt-2 transition-colors"
+                  >
+                    {expandKmRodado ? (
+                      <><ChevronUp className="h-3 w-3" /> Recolher</>
+                    ) : (
+                      <><ChevronDown className="h-3 w-3" /> Ver mais {kmRodadoData.equipamentos.length - 10} equipamentos</>
+                    )}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Nenhum dado de km rodado disponível
               </div>
             )}
           </CardContent>

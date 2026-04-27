@@ -1493,6 +1493,83 @@ export const appRouter = router({
         return { totalHoras, equipamentos: equipamentosResult };
       }),
 
+    // Km Rodado — apenas CAMINHÕES DA ENTREGA DE MATERIAL
+    kmRodado: protectedProcedure
+      .use(requirePermission("parteDiaria", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalKm: 0, equipamentos: [] };
+
+        // Buscar o grupo CAMINHÕES DA ENTREGA DE MATERIAL
+        const gruposAlvo = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(like(gruposDeEquipamentos.nome, '%ENTREGA DE MATERIAL%'));
+        const idsGruposAlvo = gruposAlvo.map(g => g.id);
+        if (idsGruposAlvo.length === 0) return { totalKm: 0, equipamentos: [] };
+
+        // Buscar equipamentos do grupo alvo
+        const equipsAlvo = await db
+          .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag })
+          .from(equipamentos)
+          .where(inArray(equipamentos.grupoId, idsGruposAlvo));
+        if (equipsAlvo.length === 0) return { totalKm: 0, equipamentos: [] };
+        const equipIdsAlvo = equipsAlvo.map(e => e.id);
+        const equipMap = new Map(equipsAlvo.map(e => [e.id, { nome: e.nome, tag: e.tag }]));
+
+        // Buscar partes diárias desses equipamentos com horaKmTrabalhados preenchido
+        const registros = await db
+          .select({
+            equipamentoId: parteDiaria.equipamentoId,
+            horaKmTrabalhados: parteDiaria.horaKmTrabalhados,
+            data: parteDiaria.data,
+          })
+          .from(parteDiaria)
+          .where(and(
+            isNotNull(parteDiaria.horaKmTrabalhados),
+            inArray(parteDiaria.equipamentoId, equipIdsAlvo),
+          ));
+
+        // Filtrar por data
+        let registrosFiltrados = registros;
+        if (input?.dataInicio || input?.dataFim) {
+          registrosFiltrados = registros.filter(r => {
+            const dateStr = extractDateStr(r.data);
+            if (input?.dataInicio && dateStr < input.dataInicio) return false;
+            if (input?.dataFim && dateStr > input.dataFim) return false;
+            return true;
+          });
+        }
+
+        // Agrupar por equipamento
+        const porEquipamento = new Map<number, number>();
+        registrosFiltrados.forEach(r => {
+          if (!r.equipamentoId) return;
+          const atual = porEquipamento.get(r.equipamentoId) || 0;
+          porEquipamento.set(r.equipamentoId, atual + parseFloat(r.horaKmTrabalhados || '0'));
+        });
+
+        const equipamentosResult = Array.from(porEquipamento.entries())
+          .map(([equipamentoId, totalKm]) => {
+            const eq = equipMap.get(equipamentoId);
+            return {
+              equipamentoId,
+              equipamentoNome: eq?.nome || 'Desconhecido',
+              equipamentoTag: eq?.tag || '',
+              totalKm,
+            };
+          })
+          .filter(e => e.totalKm > 0)
+          .sort((a, b) => a.equipamentoNome.localeCompare(b.equipamentoNome, 'pt-BR'));
+
+        const totalKm = equipamentosResult.reduce((sum, e) => sum + e.totalKm, 0);
+        return { totalKm, equipamentos: equipamentosResult };
+      }),
+
     // Produção total geral
     producaoTotal: protectedProcedure
       .use(requirePermission("parteDiaria", "view"))
