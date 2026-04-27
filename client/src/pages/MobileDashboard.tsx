@@ -254,6 +254,7 @@ export default function MobileDashboard() {
   const [expandSetor, setExpandSetor] = useState(false);
   const [expandServico, setExpandServico] = useState(false);
   const [expandEquipamento, setExpandEquipamento] = useState(false);
+  const [expandHorasTrabalhadasMobile, setExpandHorasTrabalhadasMobile] = useState(false);
 
   const { dataInicio, dataFim, label: periodoLabel } = useMemo(
     () => getPeriodoDates(periodo, appliedInicio, appliedFim),
@@ -280,6 +281,7 @@ export default function MobileDashboard() {
   const producaoPorSetor = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams);
   const producaoPorServico = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams);
   const producaoPorEquipamento = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams);
+  const horasTrabalhadasMobile = trpc.parteDiaria.horasTrabalhadas.useQuery(filtroParams);
   const metaCaminhoesConfig = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
   const metaDiariaConfig = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const metasList = trpc.metas.list.useQuery();
@@ -367,6 +369,7 @@ export default function MobileDashboard() {
     producaoPorSetor.refetch();
     producaoPorServico.refetch();
     producaoPorEquipamento.refetch();
+    horasTrabalhadasMobile.refetch();
   };
 
   useEffect(() => {
@@ -1150,7 +1153,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {producaoMotoristasData.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-cyan-900/70 rounded-2xl border border-cyan-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div></div>
-      ) : producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0 ? (
+      ) : (producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0) ? (
         <div className="px-4 mt-4">
           <div className="bg-cyan-900/70 rounded-2xl p-4 border border-cyan-700">
             <div className="flex items-center justify-between mb-2">
@@ -1427,6 +1430,62 @@ export default function MobileDashboard() {
               {producaoPorEquipamento.data.length > 8 && (
                 <button onClick={() => setExpandEquipamento(!expandEquipamento)} className="flex items-center justify-center gap-1 w-full text-xs text-green-400 pt-1">
                   {expandEquipamento ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {producaoPorEquipamento.data.length - 8} equipamentos</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ============================================================ */}
+      {/* Horas Trabalhadas */}
+      {/* ============================================================ */}
+      {horasTrabalhadasMobile.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-amber-900/70 rounded-2xl border border-amber-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div></div>
+      ) : (horasTrabalhadasMobile.data?.equipamentos && horasTrabalhadasMobile.data.equipamentos.length > 0) ? (
+        <div className="px-4 mt-4">
+          <div className="bg-amber-900/70 rounded-2xl p-4 border border-amber-700">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <p className="text-amber-300 text-sm font-semibold">Horas Trabalhadas</p>
+              </div>
+              <DashboardExportMenu
+                variant="mobile"
+                title="Horas Trabalhadas por Equipamento"
+                subtitle={`Período: ${dataInicio} a ${dataFim}`}
+                filename="horas-trabalhadas-mobile"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 30 },
+                    { header: 'Hor/Km Trabalhados', key: 'horas', width: 20, format: formatters.decimal },
+                  ],
+                  data: (horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoTag || e.equipamentoNome, horas: e.totalHoras })),
+                }}
+                whatsappMessage={`⏱️ *Horas Trabalhadas*\nTotal: ${formatNumber(horasTrabalhadasMobile.data?.totalHoras || 0, 2)} h/km\n${(horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => `  ${e.equipamentoTag || e.equipamentoNome}: ${formatNumber(e.totalHoras, 2)}`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
+            </div>
+            <p className="text-white text-xl font-bold">{formatNumber(horasTrabalhadasMobile.data.totalHoras || 0, 2)} <span className="text-amber-400/70 text-sm font-normal">h/km</span></p>
+            <p className="text-amber-400/70 text-xs mb-3">{horasTrabalhadasMobile.data.equipamentos.length} equipamento(s) no período</p>
+            <div className="space-y-2">
+              {(horasTrabalhadasMobile.data.equipamentos.length <= 8 ? horasTrabalhadasMobile.data.equipamentos : expandHorasTrabalhadasMobile ? horasTrabalhadasMobile.data.equipamentos : horasTrabalhadasMobile.data.equipamentos.slice(0, 8)).map((item: any) => (
+                <div key={item.equipamentoId} className="bg-amber-800/40 rounded-xl p-3 border border-amber-700/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white text-xs font-semibold truncate max-w-[65%]">{item.equipamentoTag || item.equipamentoNome}</span>
+                    <span className="text-amber-300 text-xs font-bold">{formatNumber(item.totalHoras, 2)} h/km</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 bg-amber-900/60 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500 rounded-full"
+                      style={{ width: `${(item.totalHoras / Math.max(...(horasTrabalhadasMobile.data?.equipamentos?.map((e: any) => e.totalHoras) || [1]))) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {horasTrabalhadasMobile.data.equipamentos.length > 8 && (
+                <button onClick={() => setExpandHorasTrabalhadasMobile(!expandHorasTrabalhadasMobile)} className="flex items-center justify-center gap-1 w-full text-xs text-amber-400 pt-1">
+                  {expandHorasTrabalhadasMobile ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {horasTrabalhadasMobile.data.equipamentos.length - 8} equipamentos</>}
                 </button>
               )}
             </div>

@@ -128,6 +128,7 @@ export default function Home() {
   const { data: producaoPorSetor, isLoading: loadingSetor } = trpc.parteDiaria.producaoPorSetor.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoPorServico, isLoading: loadingServico } = trpc.parteDiaria.producaoPorServico.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoPorEquipamento, isLoading: loadingEquipamento } = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
+  const { data: horasTrabalhadasData, isLoading: loadingHorasTrabalhadas } = trpc.parteDiaria.horasTrabalhadas.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoMetodoCaminhoes, isLoading: loadingCaminhoes } = trpc.parteDiaria.producaoMetodoCaminhoes.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: producaoPerfuracao, isLoading: loadingPerfuracao } = trpc.parteDiaria.producaoPerfuracao.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: medicaoPilhasData, isLoading: loadingPilhas } = trpc.medicaoPilhas.producaoPorProduto.useQuery(filtroParams, { enabled: hasModuleAccess("medicaoPilhas") });
@@ -172,6 +173,7 @@ export default function Home() {
   const [expandSetor, setExpandSetor] = useState(false);
   const [expandServico, setExpandServico] = useState(false);
   const [expandEquipamento, setExpandEquipamento] = useState(false);
+  const [expandHorasTrabalhadas, setExpandHorasTrabalhadas] = useState(false);
 
   useEffect(() => {
     if (metaDiariaConfig?.valor) {
@@ -258,6 +260,7 @@ export default function Home() {
   const maxProducaoSetor = Math.max(...(producaoPorSetor?.map(s => s.producaoTotal) || [1]));
   const maxProducaoServico = Math.max(...(producaoPorServico?.map(s => s.producaoTotal) || [1]));
   const maxProducaoEquipamento = Math.max(...(producaoPorEquipamento?.map(e => e.producaoTotal) || [1]));
+  const maxHorasTrabalhadas = Math.max(...(horasTrabalhadasData?.equipamentos?.map((e: any) => e.totalHoras) || [1]));
 
   const handleQuickPeriod = (period: string) => {
     if (periodoAtivo === period) {
@@ -2281,6 +2284,82 @@ export default function Home() {
             ) : (
               <div className="text-center py-8 text-muted-foreground text-sm">
                 Nenhum dado de produção disponível
+              </div>
+            )}
+          </CardContent>
+          </>)}
+        </Card>
+
+        {/* Horas Trabalhadas */}
+        <Card>
+          {loadingHorasTrabalhadas ? <CardSkeletonBars rows={5} /> : (<>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-500" />
+                <CardTitle className="text-lg">Horas Trabalhadas</CardTitle>
+              </div>
+              <DashboardExportMenu
+                title="Horas Trabalhadas por Equipamento"
+                subtitle={`Período: ${dataInicio ? formatDateBR(dataInicio) : 'início'} a ${dataFim ? formatDateBR(dataFim) : 'hoje'}`}
+                filename="horas-trabalhadas"
+                exportOptions={{
+                  columns: [
+                    { header: 'Equipamento', key: 'equipamento', width: 30 },
+                    { header: 'Hor/Km Trabalhados', key: 'horas', width: 20, format: formatters.decimal },
+                  ],
+                  data: (horasTrabalhadasData?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoTag || e.equipamentoNome, horas: e.totalHoras })),
+                }}
+                whatsappMessage={(() => {
+                  if (!horasTrabalhadasData?.equipamentos?.length) return undefined;
+                  let msg = `⏱️ *Horas Trabalhadas*\nTotal: ${fmtNum(horasTrabalhadasData.totalHoras, 2)} h/km\n`;
+                  horasTrabalhadasData.equipamentos.forEach((e: any) => { msg += `  ${e.equipamentoTag || e.equipamentoNome}: ${fmtNum(e.totalHoras, 2)}\n`; });
+                  return msg;
+                })()}
+                whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
+              />
+            </div>
+            <CardDescription>
+              Total: <span className="font-semibold text-amber-600 dark:text-amber-400">{fmtNum(horasTrabalhadasData?.totalHoras || 0, 2)} h/km</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {horasTrabalhadasData?.equipamentos && horasTrabalhadasData.equipamentos.length > 0 ? (
+              <div className="space-y-3">
+                {(horasTrabalhadasData.equipamentos.length <= 10 ? horasTrabalhadasData.equipamentos : expandHorasTrabalhadas ? horasTrabalhadasData.equipamentos : horasTrabalhadasData.equipamentos.slice(0, 10)).map((item: any) => (
+                  <div key={item.equipamentoId} className="space-y-1">
+                    <div className="flex items-start justify-between text-sm gap-2">
+                      <span className="break-words leading-tight" title={item.equipamentoTag || item.equipamentoNome}>
+                        {item.equipamentoTag || item.equipamentoNome}
+                      </span>
+                      <span className="font-semibold text-amber-600 dark:text-amber-400 shrink-0 whitespace-nowrap">
+                        {fmtNum(item.totalHoras, 2)}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                        style={{ width: `${(item.totalHoras / maxHorasTrabalhadas) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {horasTrabalhadasData.equipamentos.length > 10 && (
+                  <button
+                    onClick={() => setExpandHorasTrabalhadas(!expandHorasTrabalhadas)}
+                    className="flex items-center justify-center gap-1 w-full text-xs text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 pt-2 transition-colors"
+                  >
+                    {expandHorasTrabalhadas ? (
+                      <><ChevronUp className="h-3 w-3" /> Recolher</>
+                    ) : (
+                      <><ChevronDown className="h-3 w-3" /> Ver mais {horasTrabalhadasData.equipamentos.length - 10} equipamentos</>
+                    )}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Nenhum dado de horas trabalhadas disponível
               </div>
             )}
           </CardContent>

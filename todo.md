@@ -230,3 +230,9 @@
 - [ ] Manutenção: limitar listagem a 30 registros mais recentes por padrão
 - [ ] Revisões Preventivas: adicionar coluna "Hor/Km Atual" com valor do campo Hora/Km Final da última parte diária de cada equipamento
 - [ ] Backend: criar query para buscar último Hora/Km Final por equipamento na procedure de revisões preventivas
+
+## Card Horas Trabalhadas
+- [x] Backend: procedure horasTrabalhadas agregando Hora/Km Trabalhados por equipamento no período
+- [x] Desktop: card Horas Trabalhadas após Produção por Equipamento em Home.tsx
+- [x] Mobile: card Horas Trabalhadas após Produção por Equipamento em MobileDashboard.tsx
+- [x] Export PDF/Excel com colunas Equipamento e Horas/Km Trabalhados

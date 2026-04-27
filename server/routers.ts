@@ -44,7 +44,7 @@ import {
   rotinas,
   statusRotinaDiario,
 } from "../drizzle/schema";
-import { eq, desc, asc, sql, and, or, gte, lte, count, like, inArray } from "drizzle-orm";
+import { eq, desc, asc, sql, and, or, gte, lte, count, like, inArray, isNotNull } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
 
 /** Converte Date (vindo do superjson) para string YYYY-MM-DD compatível com MySQL DATE */
@@ -1407,6 +1407,75 @@ export const appRouter = router({
         }).sort((a, b) => b.producaoTotal - a.producaoTotal);
       }),
     
+    // Horas/Km Trabalhados por equipamento no período
+    horasTrabalhadas: protectedProcedure
+      .use(requirePermission("parteDiaria", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalHoras: 0, equipamentos: [] };
+
+        // Buscar todas as partes diárias com horaKmTrabalhados preenchido
+        const registros = await db
+          .select({
+            equipamentoId: parteDiaria.equipamentoId,
+            horaKmTrabalhados: parteDiaria.horaKmTrabalhados,
+            data: parteDiaria.data,
+          })
+          .from(parteDiaria)
+          .where(isNotNull(parteDiaria.horaKmTrabalhados));
+
+        // Filtrar por data se especificado
+        let registrosFiltrados = registros;
+        if (input?.dataInicio || input?.dataFim) {
+          registrosFiltrados = registros.filter(r => {
+            const dateStr = extractDateStr(r.data);
+            if (input?.dataInicio && dateStr < input.dataInicio) return false;
+            if (input?.dataFim && dateStr > input.dataFim) return false;
+            return true;
+          });
+        }
+
+        // Buscar nomes dos equipamentos
+        const equipIdsSet = new Set(registrosFiltrados.map(r => r.equipamentoId).filter(Boolean) as number[]);
+        const equipIds = Array.from(equipIdsSet);
+        const equipsList = equipIds.length > 0
+          ? await db
+              .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag })
+              .from(equipamentos)
+              .where(inArray(equipamentos.id, equipIds))
+          : [];
+        const equipMap = new Map(equipsList.map(e => [e.id, { nome: e.nome, tag: e.tag }]));
+
+        // Agrupar por equipamento
+        const porEquipamento = new Map<number, number>();
+        registrosFiltrados.forEach(r => {
+          if (!r.equipamentoId) return;
+          const atual = porEquipamento.get(r.equipamentoId) || 0;
+          porEquipamento.set(r.equipamentoId, atual + parseFloat(r.horaKmTrabalhados || '0'));
+        });
+
+        const equipamentosResult = Array.from(porEquipamento.entries())
+          .map(([equipamentoId, totalHoras]) => {
+            const eq = equipMap.get(equipamentoId);
+            return {
+              equipamentoId,
+              equipamentoNome: eq?.nome || 'Desconhecido',
+              equipamentoTag: eq?.tag || '',
+              totalHoras,
+            };
+          })
+          .filter(e => e.totalHoras > 0)
+          .sort((a, b) => b.totalHoras - a.totalHoras);
+
+        const totalHoras = equipamentosResult.reduce((sum, e) => sum + e.totalHoras, 0);
+
+        return { totalHoras, equipamentos: equipamentosResult };
+      }),
+
     // Produção total geral
     producaoTotal: protectedProcedure
       .use(requirePermission("parteDiaria", "view"))
