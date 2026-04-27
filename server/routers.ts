@@ -1439,21 +1439,38 @@ export const appRouter = router({
           });
         }
 
-        // Buscar nomes dos equipamentos
+        // Buscar grupos excluídos: CAMINHÕES DA ENTREGA DE MATERIAL e BALANÇAS INTEGRADORAS
+        const gruposExcluidos = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(or(
+            like(gruposDeEquipamentos.nome, '%ENTREGA DE MATERIAL%'),
+            like(gruposDeEquipamentos.nome, '%BALANÇA%'),
+            like(gruposDeEquipamentos.nome, '%BALANCA%'),
+          ));
+        const idsGruposExcluidos = gruposExcluidos.map(g => g.id);
+
+        // Buscar nomes dos equipamentos (excluindo grupos indesejados)
         const equipIdsSet = new Set(registrosFiltrados.map(r => r.equipamentoId).filter(Boolean) as number[]);
         const equipIds = Array.from(equipIdsSet);
         const equipsList = equipIds.length > 0
           ? await db
-              .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag })
+              .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag, grupoId: equipamentos.grupoId })
               .from(equipamentos)
               .where(inArray(equipamentos.id, equipIds))
           : [];
-        const equipMap = new Map(equipsList.map(e => [e.id, { nome: e.nome, tag: e.tag }]));
+        // Filtrar equipamentos dos grupos excluídos
+        const equipsPermitidos = idsGruposExcluidos.length > 0
+          ? equipsList.filter(e => !e.grupoId || !idsGruposExcluidos.includes(e.grupoId))
+          : equipsList;
+        const equipIdsPermitidosSet = new Set(equipsPermitidos.map(e => e.id));
+        const equipMap = new Map(equipsPermitidos.map(e => [e.id, { nome: e.nome, tag: e.tag }]));
 
-        // Agrupar por equipamento
+        // Agrupar por equipamento (apenas os permitidos)
         const porEquipamento = new Map<number, number>();
         registrosFiltrados.forEach(r => {
           if (!r.equipamentoId) return;
+          if (!equipIdsPermitidosSet.has(r.equipamentoId)) return;
           const atual = porEquipamento.get(r.equipamentoId) || 0;
           porEquipamento.set(r.equipamentoId, atual + parseFloat(r.horaKmTrabalhados || '0'));
         });
@@ -1469,7 +1486,7 @@ export const appRouter = router({
             };
           })
           .filter(e => e.totalHoras > 0)
-          .sort((a, b) => b.totalHoras - a.totalHoras);
+          .sort((a, b) => a.equipamentoNome.localeCompare(b.equipamentoNome, 'pt-BR'));
 
         const totalHoras = equipamentosResult.reduce((sum, e) => sum + e.totalHoras, 0);
 

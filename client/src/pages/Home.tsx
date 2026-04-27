@@ -2253,8 +2253,8 @@ export default function Home() {
                 {(producaoPorEquipamento.length <= 10 ? producaoPorEquipamento : expandEquipamento ? producaoPorEquipamento : producaoPorEquipamento.slice(0, 10)).map((item) => (
                   <div key={item.equipamentoId} className="space-y-1">
                     <div className="flex items-start justify-between text-sm gap-2">
-                      <span className="break-words leading-tight" title={item.equipamentoTag || item.equipamentoNome}>
-                        {item.equipamentoTag || item.equipamentoNome}
+                      <span className="break-words leading-tight" title={item.equipamentoNome}>
+                        {item.equipamentoNome}
                       </span>
                       <span className="font-semibold text-green-600 dark:text-green-400 shrink-0 whitespace-nowrap">
                         {fmtNum(item.producaoTotal, 0)}
@@ -2308,12 +2308,12 @@ export default function Home() {
                     { header: 'Equipamento', key: 'equipamento', width: 30 },
                     { header: 'Hor/Km Trabalhados', key: 'horas', width: 20, format: formatters.decimal },
                   ],
-                  data: (horasTrabalhadasData?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoTag || e.equipamentoNome, horas: e.totalHoras })),
+                  data: (horasTrabalhadasData?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoNome, horas: e.totalHoras })),
                 }}
                 whatsappMessage={(() => {
                   if (!horasTrabalhadasData?.equipamentos?.length) return undefined;
                   let msg = `⏱️ *Horas Trabalhadas*\nTotal: ${fmtNum(horasTrabalhadasData.totalHoras, 2)} h/km\n`;
-                  horasTrabalhadasData.equipamentos.forEach((e: any) => { msg += `  ${e.equipamentoTag || e.equipamentoNome}: ${fmtNum(e.totalHoras, 2)}\n`; });
+                  horasTrabalhadasData.equipamentos.forEach((e: any) => { msg += `  ${e.equipamentoNome}: ${fmtNum(e.totalHoras, 2)}\n`; });
                   return msg;
                 })()}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
@@ -2329,8 +2329,8 @@ export default function Home() {
                 {(horasTrabalhadasData.equipamentos.length <= 10 ? horasTrabalhadasData.equipamentos : expandHorasTrabalhadas ? horasTrabalhadasData.equipamentos : horasTrabalhadasData.equipamentos.slice(0, 10)).map((item: any) => (
                   <div key={item.equipamentoId} className="space-y-1">
                     <div className="flex items-start justify-between text-sm gap-2">
-                      <span className="break-words leading-tight" title={item.equipamentoTag || item.equipamentoNome}>
-                        {item.equipamentoTag || item.equipamentoNome}
+                      <span className="break-words leading-tight" title={item.equipamentoNome}>
+                        {item.equipamentoNome}
                       </span>
                       <span className="font-semibold text-amber-600 dark:text-amber-400 shrink-0 whitespace-nowrap">
                         {fmtNum(item.totalHoras, 2)}

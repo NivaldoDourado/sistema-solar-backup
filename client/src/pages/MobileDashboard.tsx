@@ -1460,9 +1460,9 @@ export default function MobileDashboard() {
                     { header: 'Equipamento', key: 'equipamento', width: 30 },
                     { header: 'Hor/Km Trabalhados', key: 'horas', width: 20, format: formatters.decimal },
                   ],
-                  data: (horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoTag || e.equipamentoNome, horas: e.totalHoras })),
+                  data: (horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => ({ equipamento: e.equipamentoNome, horas: e.totalHoras })),
                 }}
-                whatsappMessage={`⏱️ *Horas Trabalhadas*\nTotal: ${formatNumber(horasTrabalhadasMobile.data?.totalHoras || 0, 2)} h/km\n${(horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => `  ${e.equipamentoTag || e.equipamentoNome}: ${formatNumber(e.totalHoras, 2)}`).join('\n')}`}
+                whatsappMessage={`⏱️ *Horas Trabalhadas*\nTotal: ${formatNumber(horasTrabalhadasMobile.data?.totalHoras || 0, 2)} h/km\n${(horasTrabalhadasMobile.data?.equipamentos || []).map((e: any) => `  ${e.equipamentoNome}: ${formatNumber(e.totalHoras, 2)}`).join('\n')}`}
                 whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
               />
             </div>
@@ -1472,7 +1472,7 @@ export default function MobileDashboard() {
               {(horasTrabalhadasMobile.data.equipamentos.length <= 8 ? horasTrabalhadasMobile.data.equipamentos : expandHorasTrabalhadasMobile ? horasTrabalhadasMobile.data.equipamentos : horasTrabalhadasMobile.data.equipamentos.slice(0, 8)).map((item: any) => (
                 <div key={item.equipamentoId} className="bg-amber-800/40 rounded-xl p-3 border border-amber-700/50">
                   <div className="flex justify-between items-center">
-                    <span className="text-white text-xs font-semibold truncate max-w-[65%]">{item.equipamentoTag || item.equipamentoNome}</span>
+                    <span className="text-white text-xs font-semibold truncate max-w-[65%]">{item.equipamentoNome}</span>
                     <span className="text-amber-300 text-xs font-bold">{formatNumber(item.totalHoras, 2)} h/km</span>
                   </div>
                   <div className="mt-1.5 h-1.5 bg-amber-900/60 rounded-full overflow-hidden">
