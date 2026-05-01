@@ -345,8 +345,8 @@ export const vendasRouter = router({
     .use(requirePermission("vendas", "view"))
     .input(
       z.object({
-        dataInicio: z.date(),
-        dataFim: z.date(),
+        dataInicio: z.union([z.date(), z.string()]),
+        dataFim: z.union([z.date(), z.string()]),
       })
     )
     .query(async ({ input }) => {
@@ -378,8 +378,8 @@ export const vendasRouter = router({
     .use(requirePermission("vendas", "view"))
     .input(
       z.object({
-        dataInicio: z.date(),
-        dataFim: z.date(),
+        dataInicio: z.union([z.date(), z.string()]),
+        dataFim: z.union([z.date(), z.string()]),
       })
     )
     .query(async ({ input }) => {
@@ -417,5 +417,58 @@ export const vendasRouter = router({
       }
 
       return resumo;
+    }),
+
+  // Resumo de vendas por produto (granulometria) — usado pelo módulo de Custos
+  vendasResumoPorProduto: protectedProcedure
+    .use(requirePermission("vendas", "view"))
+    .input(
+      z.object({
+        dataInicio: z.union([z.date(), z.string()]),
+        dataFim: z.union([z.date(), z.string()]),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const result = await db
+        .select({
+          produtoId: vendaItens.produtoId,
+          produtoNome: produtos.nome,
+          quantidadeTotal: sql<string>`COALESCE(SUM(${vendaItens.quantidade}), 0)`,
+          valorTotal: sql<string>`COALESCE(SUM(${vendaItens.valorTotal}), 0)`,
+        })
+        .from(vendaItens)
+        .innerJoin(vendas, eq(vendaItens.vendaId, vendas.id))
+        .innerJoin(produtos, eq(vendaItens.produtoId, produtos.id))
+        .where(
+          and(
+            eq(vendas.tipo, "venda"),
+            sql`${vendas.data} >= ${toDateStr(input.dataInicio)}`,
+            sql`${vendas.data} <= ${toDateStr(input.dataFim)}`
+          )
+        )
+        .groupBy(vendaItens.produtoId, produtos.nome)
+        .orderBy(produtos.nome);
+
+      const itens = result.map((row) => {
+        const quantidade = parseFloat(String(row.quantidadeTotal || "0"));
+        const valorTotalNum = parseFloat(String(row.valorTotal || "0"));
+        const precoMedio = quantidade > 0 ? valorTotalNum / quantidade : 0;
+        return {
+          produtoId: row.produtoId,
+          produtoNome: row.produtoNome,
+          quantidade,
+          valorTotal: valorTotalNum,
+          precoMedio,
+        };
+      });
+
+      const totalQuantidade = itens.reduce((s, i) => s + i.quantidade, 0);
+      const totalValor = itens.reduce((s, i) => s + i.valorTotal, 0);
+      const precoMedioGeral = totalQuantidade > 0 ? totalValor / totalQuantidade : 0;
+
+      return { itens, totalQuantidade, totalValor, precoMedioGeral };
     }),
 });

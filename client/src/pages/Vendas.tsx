@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Search, FileText, Eye, X, DollarSign, Package, ShoppingCart, Truck, Gift, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileText, Eye, X, DollarSign, Package, ShoppingCart, Truck, Gift, RefreshCw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -58,6 +58,11 @@ export default function Vendas() {
   const [viewingVenda, setViewingVenda] = useState<any>(null);
   const [filterClienteId, setFilterClienteId] = useState<string>("all");
   const [filterTipo, setFilterTipo] = useState<string>("all");
+  const [filterDataInicio, setFilterDataInicio] = useState(() => {
+    const hoje = new Date();
+    return new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split("T")[0];
+  });
+  const [filterDataFim, setFilterDataFim] = useState(() => new Date().toISOString().split("T")[0]);
 
   const { canCreate, canEdit, canDelete } = usePermissions();
   const canCreateItem = canCreate("vendas");
@@ -66,6 +71,9 @@ export default function Vendas() {
 
   const { data: vendasData, refetch } = trpc.vendas.vendasList.useQuery(
     filterClienteId !== "all" ? { clienteId: Number(filterClienteId) } : undefined
+  );
+  const { data: resumoPorProduto, isLoading: loadingPorProduto } = trpc.vendas.vendasResumoPorProduto.useQuery(
+    { dataInicio: filterDataInicio, dataFim: filterDataFim }
   );
   const { data: clientesData } = trpc.vendas.clientesList.useQuery();
   const { data: produtosData } = trpc.produtos.list.useQuery();
@@ -230,6 +238,9 @@ export default function Vendas() {
   });
 
   const set = (field: string, value: any) => setFormData(prev => ({ ...prev, [field]: value }));
+
+  const formatNumber = (n: number, decimals = 2) =>
+    n.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
   // Resumo por tipo
   const resumoPorTipo = useMemo(() => {
@@ -528,6 +539,77 @@ export default function Vendas() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Card de Vendas por Produto (Granulometria) */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Vendas por Produto (Granulometria)
+              </CardTitle>
+              <CardDescription>Quantidade total vendida por produto no período selecionado</CardDescription>
+            </div>
+            <div className="flex gap-3 items-end flex-wrap">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Data Início</label>
+                <Input
+                  type="date"
+                  value={filterDataInicio}
+                  onChange={(e) => setFilterDataInicio(e.target.value)}
+                  className="h-9 w-40"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Data Fim</label>
+                <Input
+                  type="date"
+                  value={filterDataFim}
+                  onChange={(e) => setFilterDataFim(e.target.value)}
+                  className="h-9 w-40"
+                />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingPorProduto ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">Carregando...</div>
+          ) : !resumoPorProduto || resumoPorProduto.itens.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">Nenhuma venda registrada no período selecionado</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Produto (Granulometria)</TableHead>
+                    <TableHead className="text-right">Quantidade Total</TableHead>
+                    <TableHead className="text-right">Valor Total</TableHead>
+                    <TableHead className="text-right">Preço Médio</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {resumoPorProduto.itens.map((item) => (
+                    <TableRow key={item.produtoId}>
+                      <TableCell className="font-medium">{item.produtoNome}</TableCell>
+                      <TableCell className="text-right">{formatNumber(item.quantidade)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.valorTotal)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.precoMedio)}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-bold">
+                    <TableCell>Total</TableCell>
+                    <TableCell className="text-right">{formatNumber(resumoPorProduto.totalQuantidade)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(resumoPorProduto.totalValor)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(resumoPorProduto.precoMedioGeral)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Lista de Vendas */}
       <Card>

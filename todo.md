@@ -242,3 +242,10 @@
 - [ ] Desktop: card Km Rodado após Horas Trabalhadas em Home.tsx
 - [ ] Mobile: card Km Rodado após Horas Trabalhadas em MobileDashboard.tsx
 - [ ] Export PDF/Excel com colunas Equipamento e Km Rodado
+
+## Resumo de Vendas por Produto (Granulometria)
+- [x] Backend: procedure vendasResumoPorProduto (quantidade, valor total, preço médio por produto no período)
+- [x] Frontend: card "Vendas por Produto (Granulometria)" no módulo de Vendas (Vendas.tsx) com filtro de período
+- [ ] Frontend: card "Vendas por Produto" no dashboard desktop (Home.tsx)
+- [ ] Frontend: card "Vendas por Produto" no dashboard mobile (MobileDashboard.tsx)
+- [ ] Export PDF/Excel do card Vendas por Produto
