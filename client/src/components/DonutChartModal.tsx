@@ -253,24 +253,26 @@ export function DonutChartModal({
                         }`}
                         style={isActive ? { borderColor: d.fill, backgroundColor: `${d.fill}15` } : {}}
                       >
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-start gap-2 mb-0.5">
                           <div
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
                             style={{ backgroundColor: d.fill }}
                           />
-                          <span className="text-sm font-medium text-foreground leading-tight">{d.name}</span>
-                        </div>
-                        <div className="flex items-center justify-between pl-4 mb-1">
-                          <span className="text-xs text-muted-foreground">{fmtVal(d.value)}</span>
-                          {d.subtitle && (
-                            <span className="text-xs text-muted-foreground font-medium">{d.subtitle}</span>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-foreground leading-tight block">{d.name}</span>
+                            {d.subtitle && (
+                              <span className="text-xs text-muted-foreground block mt-0.5">{d.subtitle}</span>
+                            )}
+                          </div>
                           <span
-                            className="text-xs font-bold"
+                            className="text-xs font-bold flex-shrink-0"
                             style={{ color: d.fill }}
                           >
                             {fmtPct(d.pct)}
                           </span>
+                        </div>
+                        <div className="pl-4 mb-1">
+                          <span className="text-xs text-muted-foreground">{fmtVal(d.value)}</span>
                         </div>
 
                         {/* Barra de progresso */}
