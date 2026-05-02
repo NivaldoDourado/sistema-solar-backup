@@ -258,6 +258,7 @@
 - [x] Frontend: tela ImportacaoCusto (/importacao-custo) — importação direta da planilha CUSTOSOLAR (.xlsx)
 - [x] Backend: rota REST /api/importacao-custo com leitura da aba MEMGERAL e mapeamento automático de contas
 - [x] Menu lateral e página de Cadastros atualizados com novos itens de Custos
-- [ ] Testar importação com planilha real de março/26 e validar mapeamento de contas
-- [ ] Cadastrar as contas do Plano de Contas com nomes iguais aos da planilha CUSTOSOLAR
+- [x] Testar importação com planilha real de março/26 e validar mapeamento de contas (16/16 mapeados com 100%)
+- [x] Criar contas novas no banco: 'Frota/Man.Pat./Seg./Out.' e 'Comissão de Vendas'
+- [x] Implementar tabela de aliases no importador para mapear nomes diferentes entre planilha e sistema
 - [ ] Importar planilhas de janeiro/26 e fevereiro/26 após validar modelo com março/26

@@ -6,6 +6,7 @@
 import { Router } from "express";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import { distance } from "fastest-levenshtein";
 import { getDb } from "./db";
 import { contaCusto, periodoCusto, lancamentoCusto } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
@@ -176,33 +177,105 @@ export function registerImportacaoCustoRoute(app: any) {
       // Buscar todas as contas de custo cadastradas no sistema
       const contasCadastradas = await db.select().from(contaCusto).where(eq(contaCusto.ativo, "sim"));
 
-      // Criar mapeamento por nome (normalizado)
+      // Normalização para comparação: minúsculas, sem acentos, sem pontuação/espaços extras
       const normalizeName = (name: string): string => {
-        return name.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
-      }
-      const contaMap = new Map<string, typeof contasCadastradas[0]>();
-      for (const c of contasCadastradas) {
-        contaMap.set(normalizeName(c.nome), c);
-      }
+        return name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // remover acentos
+          .replace(/[^a-z0-9]/g, " ")      // substituir pontuação por espaço
+          .replace(/\s+/g, " ")            // colapsar espaços múltiplos
+          .trim();
+      };
+
+      // Função de similaridade: retorna score 0-1 (1 = idêntico)
+      const similarity = (a: string, b: string): number => {
+        const na = normalizeName(a);
+        const nb = normalizeName(b);
+        if (na === nb) return 1;
+        const maxLen = Math.max(na.length, nb.length);
+        if (maxLen === 0) return 1;
+        const dist = distance(na, nb);
+        return 1 - dist / maxLen;
+      };
+
+      // Limiar mínimo de similaridade para aceitar o mapeamento (70%)
+      const SIMILARITY_THRESHOLD = 0.70;
+
+      // Tabela de aliases: nomes conhecidos da planilha CUSTOSOLAR → nomes no sistema
+      // Chave: nome da planilha normalizado (sem acentos, só letras/números/espaços)
+      // Valor: nome do sistema normalizado (para comparar com o banco)
+      const ALIASES: Record<string, string> = {
+        // Salários administrativos
+        "sal adm diretoria pro labore encargos": "rh adm salarios nao operacionais",
+        // Salários operacionais
+        "sal do oper": "rh salarios da operacao",
+        "sal oper": "rh salarios da operacao",
+        // Peças de reposição
+        "pecas de reposicao": "pecas de reposicao itens de consumo",
+        // Outras despesas
+        "outras despesas": "outras despesas dos equipamentos",
+        // Impostos
+        "imp trib taxas e cefem": "impostos cefem e outras taxas",
+        // Despesas administrativas
+        "desp admin telef e inform": "despesas administrativas",
+        // Outras despesas de setores
+        "outras desp setor proc": "outras despesas de setores",
+        // Equipamentos de apoio
+        "equip apoio comb lub pecas serv": "equipamentos de apoio",
+        // Jurídico / Consultorias
+        "juridico cons esp serv ter": "consultorias especializadas",
+        // Comissão de vendas (com erro de grafia na planilha)
+        "comisao de vendas": "comissao de vendas",
+      };
+
+      // Função de normalização para aliases (apenas letras/números, sem espaços extras)
+      const normalizeAlias = (name: string): string => {
+        return name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      };
 
       // Tentar mapear cada lançamento da planilha para uma conta do sistema
-      const mapeados: Array<{ contaId: number; nomePlanilha: string; nomeSistema: string; classificacao: string; divisor: string; valor: number }> = [];
+      const mapeados: Array<{ contaId: number; nomePlanilha: string; nomeSistema: string; classificacao: string; divisor: string; valor: number; score: number }> = [];
       const naoMapeados: string[] = [];
 
       for (const l of lancamentosImport) {
-        const normNome = normalizeName(l.nomePlanilha);
-        const conta = contaMap.get(normNome);
+        let melhorConta: typeof contasCadastradas[0] | null = null;
+        let melhorScore = 0;
 
-        if (conta) {
-          // Conta encontrada — usar classificação e divisor da conta
-          // O valor a lançar é o TOTAL (CF+CV+DF+DV)
+        // Verificar se há um alias para o nome da planilha
+        const normAlias = normalizeAlias(l.nomePlanilha);
+        const aliasTarget = ALIASES[normAlias];
+
+        for (const c of contasCadastradas) {
+          let score = similarity(l.nomePlanilha, c.nome);
+
+          // Se há alias, comparar também com o nome normalizado do alias
+          if (aliasTarget) {
+            const scoreAlias = similarity(aliasTarget, normalizeAlias(c.nome));
+            if (scoreAlias > score) score = scoreAlias;
+          }
+
+          if (score > melhorScore) {
+            melhorScore = score;
+            melhorConta = c;
+          }
+        }
+
+        if (melhorConta && melhorScore >= SIMILARITY_THRESHOLD) {
           mapeados.push({
-            contaId: conta.id,
+            contaId: melhorConta.id,
             nomePlanilha: l.nomePlanilha,
-            nomeSistema: conta.nome,
-            classificacao: conta.classificacao ?? "custo_variavel",
-            divisor: conta.divisor ?? "producao",
+            nomeSistema: melhorConta.nome,
+            classificacao: melhorConta.classificacao ?? "custo_variavel",
+            divisor: melhorConta.divisor ?? "producao",
             valor: l.total,
+            score: melhorScore,
           });
         } else {
           naoMapeados.push(l.nomePlanilha);
