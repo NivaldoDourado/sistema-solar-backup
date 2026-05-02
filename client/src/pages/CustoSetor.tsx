@@ -436,7 +436,7 @@ export default function CustoSetor() {
             <Card className="relative">
               {/* Botão de expansão */}
               <DonutChartModal
-                title={`Distribuição de Custos por Grupo — ${periodoLabel}`}
+                title={`Distribuição por Setor — ${periodoLabel}`}
                 data={dadosGrafico}
                 centerLabel="Total Geral"
                 centerValue={fmtBRL(totalGeral)}
@@ -446,7 +446,7 @@ export default function CustoSetor() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <PieChart className="h-4 w-4 text-primary" />
-                  Distribuição de Custos por Grupo
+                  Distribuição por Setor
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">
