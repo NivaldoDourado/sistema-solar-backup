@@ -97,6 +97,12 @@ const CustomTooltip = ({
           <span>Valor</span>
           <span className="font-medium text-foreground">{formatValue ? formatValue(d.value) : d.value}</span>
         </div>
+        {d.subtitle && (
+          <div className="flex justify-between gap-4">
+            <span>Custo/t</span>
+            <span className="font-medium text-foreground">{d.subtitle}</span>
+          </div>
+        )}
         <div className="flex justify-between gap-4">
           <span>Participação</span>
           <span className="font-medium text-foreground">{formatPct ? formatPct(d.pct) : `${d.pct.toFixed(1)}%`}</span>
