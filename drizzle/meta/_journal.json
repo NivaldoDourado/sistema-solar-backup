@@ -43,6 +43,13 @@
       "when": 1777723285438,
       "tag": "0005_smiling_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1777725065499,
+      "tag": "0006_closed_riptide",
+      "breakpoints": true
     }
   ]
 }

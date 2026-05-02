@@ -249,3 +249,15 @@
 - [ ] Frontend: card "Vendas por Produto" no dashboard desktop (Home.tsx)
 - [ ] Frontend: card "Vendas por Produto" no dashboard mobile (MobileDashboard.tsx)
 - [ ] Export PDF/Excel do card Vendas por Produto
+
+## Módulo de Custos — Fase 2 (Lançamentos e Relatórios)
+- [x] Backend: tabela lancamento_custo no schema e migração aplicada
+- [x] Backend: router lancamentoCusto (CRUD de lançamentos por período)
+- [x] Frontend: tela LancamentoCusto (/lancamento-custo) — planilha de contas e valores por período
+- [x] Frontend: tela ApuracaoCusto (/apuracao-custo) — relatório de custo por tonelada por classificação
+- [x] Frontend: tela ImportacaoCusto (/importacao-custo) — importação direta da planilha CUSTOSOLAR (.xlsx)
+- [x] Backend: rota REST /api/importacao-custo com leitura da aba MEMGERAL e mapeamento automático de contas
+- [x] Menu lateral e página de Cadastros atualizados com novos itens de Custos
+- [ ] Testar importação com planilha real de março/26 e validar mapeamento de contas
+- [ ] Cadastrar as contas do Plano de Contas com nomes iguais aos da planilha CUSTOSOLAR
+- [ ] Importar planilhas de janeiro/26 e fevereiro/26 após validar modelo com março/26

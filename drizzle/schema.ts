@@ -200,6 +200,20 @@ export const periodoCusto = mysqlTable("periodo_custo", {
 export type PeriodoCusto = typeof periodoCusto.$inferSelect;
 export type InsertPeriodoCusto = typeof periodoCusto.$inferInsert;
 
+// Lançamento de Custo por Conta (detalhe do período de custo)
+export const lancamentoCusto = mysqlTable("lancamento_custo", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(), // FK para periodo_custo
+  contaCustoId: int("contaCustoId").notNull(),     // FK para conta_custo
+  valor: decimal("valor", { precision: 12, scale: 2 }).notNull().default("0"),
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LancamentoCusto = typeof lancamentoCusto.$inferSelect;
+export type InsertLancamentoCusto = typeof lancamentoCusto.$inferInsert;
+
 // ============================================================================
 // MÓDULOS OPERACIONAIS
 // ============================================================================

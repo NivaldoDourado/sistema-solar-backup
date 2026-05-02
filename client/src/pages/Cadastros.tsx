@@ -13,7 +13,8 @@ import {
   MessageSquare,
   Wallet,
   PauseCircle,
-  CalendarRange
+  CalendarRange,
+  FileUp
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -102,6 +103,20 @@ export default function Cadastros() {
       icone: CalendarRange,
       cor: "text-violet-500",
       link: "/periodo-custo",
+    },
+    {
+      titulo: "Lançamento de Custos",
+      descricao: "Lance valores por conta de custo em cada período mensal",
+      icone: DollarSign,
+      cor: "text-teal-600",
+      link: "/lancamento-custo",
+    },
+    {
+      titulo: "Importação de Planilha",
+      descricao: "Importe a planilha CUSTOSOLAR (.xlsx) para registrar lançamentos de custo automaticamente",
+      icone: FileUp,
+      cor: "text-blue-600",
+      link: "/importacao-custo",
     },
     {
       titulo: "Operadores / Motoristas",
