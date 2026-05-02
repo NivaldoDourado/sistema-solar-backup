@@ -435,18 +435,18 @@ export default function CustoSetor() {
                   Distribuição de Custos por Grupo
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  {/* Gráfico */}
-                  <div className="w-full md:w-[380px] h-[320px] flex-shrink-0">
+              <CardContent className="pt-2">
+                <div className="flex flex-col lg:flex-row items-start gap-4">
+                  {/* Gráfico — tamanho fixo e compacto */}
+                  <div className="w-full lg:w-[260px] h-[240px] flex-shrink-0 mx-auto lg:mx-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
                           data={dadosGrafico}
                           cx="50%"
                           cy="50%"
-                          innerRadius={80}
-                          outerRadius={140}
+                          innerRadius={60}
+                          outerRadius={105}
                           paddingAngle={2}
                           dataKey="value"
                           labelLine={false}
@@ -457,55 +457,21 @@ export default function CustoSetor() {
                           ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
-                        {/* Texto central */}
-                        <text
-                          x="50%"
-                          y="47%"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          className="fill-muted-foreground"
-                          fontSize={11}
-                          fill="#6b7280"
-                        >
-                          Total Geral
-                        </text>
-                        <text
-                          x="50%"
-                          y="55%"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fontSize={13}
-                          fontWeight={700}
-                          fill="#1e293b"
-                        >
-                          {fmtBRL(totalGeral)}
-                        </text>
+                        <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" fontSize={10} fill="#6b7280">Total</text>
+                        <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fontSize={11} fontWeight={700} fill="#1e293b">{fmtBRL(totalGeral)}</text>
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Legenda detalhada */}
-                  <div className="flex-1 w-full space-y-2">
+                  {/* Legenda detalhada — grade de 2 colunas em telas médias */}
+                  <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                     {dadosGrafico.map((d) => (
-                      <div key={d.name} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                        {/* Cor */}
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: d.fill }}
-                        />
-                        {/* Nome */}
-                        <span className="flex-1 text-sm font-medium text-foreground truncate">{d.name}</span>
-                        {/* Barra de progresso */}
-                        <div className="hidden sm:flex flex-1 max-w-[120px] h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${d.pct}%`, backgroundColor: d.fill }}
-                          />
-                        </div>
-                        {/* Valores */}
-                        <div className="text-right flex-shrink-0 space-y-0.5">
-                          <p className="text-sm font-bold text-foreground">{fmtPct(d.pct)}</p>
-                          <p className="text-xs text-muted-foreground">{fmtBRL(d.value)}</p>
+                      <div key={d.name} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.fill }} />
+                        <span className="flex-1 text-xs font-medium text-foreground min-w-0 truncate">{d.name}</span>
+                        <div className="text-right flex-shrink-0">
+                          <span className="text-xs font-bold text-foreground">{fmtPct(d.pct)}</span>
+                          <span className="text-xs text-muted-foreground ml-1.5">{fmtBRL(d.value)}</span>
                         </div>
                       </div>
                     ))}
@@ -537,82 +503,61 @@ export default function CustoSetor() {
                     </div>
                   </div>
 
-                  {/* Tabela de subsetores */}
+                  {/* Tabela de subsetores — colunas simplificadas para caber sem scroll */}
                   <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-muted/50 bg-white/60">
-                            <th className="text-left px-4 py-2 font-medium text-muted-foreground">Setor/Processo</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Custo Fixo</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Custo Variável</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Custo</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Desp. Fixa</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Desp. Variável</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Desp.</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Geral</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">C.S. (R$/t)</th>
-                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">%</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {grupo.subsetores.map((s, idx) => {
-                            const pct = totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0;
-                            return (
-                              <tr
-                                key={s.id}
-                                className={`border-b border-muted/30 hover:bg-white/80 transition-colors ${
-                                  idx % 2 === 0 ? "bg-white/40" : "bg-white/20"
-                                }`}
-                              >
-                                <td className="px-4 py-2 font-medium">{s.subsetorNome}</td>
-                                <td className="px-4 py-2 text-right text-muted-foreground">
-                                  {fmtBRL(parseFloat(s.custoFixo ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right text-muted-foreground">
-                                  {fmtBRL(parseFloat(s.custoVariavel ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right font-medium">
-                                  {fmtBRL(parseFloat(s.totalCusto ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right text-muted-foreground">
-                                  {fmtBRL(parseFloat(s.despesaFixa ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right text-muted-foreground">
-                                  {fmtBRL(parseFloat(s.despesaVariavel ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right font-medium">
-                                  {fmtBRL(parseFloat(s.totalDespesa ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right font-bold text-foreground">
-                                  {fmtBRL(parseFloat(s.totalGeral ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right font-medium text-primary">
-                                  {fmtTon(parseFloat(s.custoTon ?? "0"))}
-                                </td>
-                                <td className="px-4 py-2 text-right text-muted-foreground">
-                                  {fmtPct(pct)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                        <tfoot>
-                          <tr className={`font-semibold ${headerCor}`}>
-                            <td className="px-4 py-2">Subtotal {grupo.grupoNome}</td>
-                            <td className="px-4 py-2 text-right">—</td>
-                            <td className="px-4 py-2 text-right">—</td>
-                            <td className="px-4 py-2 text-right">{fmtBRL(grupo.subtotalCusto)}</td>
-                            <td className="px-4 py-2 text-right">—</td>
-                            <td className="px-4 py-2 text-right">—</td>
-                            <td className="px-4 py-2 text-right">{fmtBRL(grupo.subtotalDespesa)}</td>
-                            <td className="px-4 py-2 text-right">{fmtBRL(grupo.subtotalGeral)}</td>
-                            <td className="px-4 py-2 text-right">{fmtTon(grupo.subtotalCustoTon)}</td>
-                            <td className="px-4 py-2 text-right">{fmtPct(pctGrupo)}</td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-muted/50 bg-white/60">
+                          <th className="text-left px-4 py-2 font-medium text-muted-foreground">Setor/Processo</th>
+                          <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Custo</th>
+                          <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Desp.</th>
+                          <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Geral</th>
+                          <th className="text-right px-4 py-2 font-medium text-muted-foreground">R$/t</th>
+                          <th className="text-right px-4 py-2 font-medium text-muted-foreground">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grupo.subsetores.map((s, idx) => {
+                          const pct = totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0;
+                          const tDesp = parseFloat(s.totalDespesa ?? "0");
+                          return (
+                            <tr
+                              key={s.id}
+                              className={`border-b border-muted/30 hover:bg-white/80 transition-colors ${
+                                idx % 2 === 0 ? "bg-white/40" : "bg-white/20"
+                              }`}
+                            >
+                              <td className="px-4 py-2 font-medium">{s.subsetorNome}</td>
+                              <td className="px-4 py-2 text-right text-muted-foreground">
+                                {fmtBRL(parseFloat(s.totalCusto ?? "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-right text-muted-foreground">
+                                {tDesp > 0 ? fmtBRL(tDesp) : <span className="text-muted-foreground/40">—</span>}
+                              </td>
+                              <td className="px-4 py-2 text-right font-bold text-foreground">
+                                {fmtBRL(parseFloat(s.totalGeral ?? "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-right font-medium text-primary">
+                                {fmtTon(parseFloat(s.custoTon ?? "0"))}
+                              </td>
+                              <td className="px-4 py-2 text-right text-muted-foreground">
+                                {fmtPct(pct)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className={`font-semibold ${headerCor}`}>
+                          <td className="px-4 py-2">Subtotal {grupo.grupoNome}</td>
+                          <td className="px-4 py-2 text-right">{fmtBRL(grupo.subtotalCusto)}</td>
+                          <td className="px-4 py-2 text-right">{grupo.subtotalDespesa > 0 ? fmtBRL(grupo.subtotalDespesa) : <span className="opacity-40">—</span>}</td>
+                          <td className="px-4 py-2 text-right">{fmtBRL(grupo.subtotalGeral)}</td>
+                          <td className="px-4 py-2 text-right">{fmtTon(grupo.subtotalCustoTon)}</td>
+                          <td className="px-4 py-2 text-right">{fmtPct(pctGrupo)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </CardContent>
                 </Card>
               );
