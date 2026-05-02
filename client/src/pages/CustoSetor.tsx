@@ -421,7 +421,7 @@ export default function CustoSetor() {
               </Card>
               <Card className="bg-green-50 border-green-200">
                 <CardContent className="pt-4 pb-4">
-                  <p className="text-xs text-green-600 font-medium uppercase tracking-wide">Custo/t Total</p>
+                  <p className="text-xs text-green-600 font-medium uppercase tracking-wide">Custo Médio</p>
                   <p className="text-2xl font-bold text-green-700 mt-1">R$ {fmtTon(totalCustoTon)}</p>
                 </CardContent>
               </Card>
