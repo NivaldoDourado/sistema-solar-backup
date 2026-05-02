@@ -9,12 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { DonutChartModal } from "@/components/DonutChartModal";
 import {
   PieChart as RechartsPieChart,
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -266,6 +266,11 @@ export default function CustoSetor() {
     pct: totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0,
     custoTon: g.subtotalCustoTon,
     fill: GRUPO_PALETA[g.grupoNome] ?? "#94a3b8",
+    // Detalhes exibidos no modal ao clicar na fatia
+    details: g.subsetores.map((s: any) => ({
+      label: s.subsetorNome,
+      value: `${fmtBRL(parseFloat(s.totalGeral ?? "0"))} | R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}/t`,
+    })),
   }));
 
   return (
@@ -428,7 +433,16 @@ export default function CustoSetor() {
             </div>
 
             {/* Gráfico de Rosca + Legenda lateral */}
-            <Card>
+            <Card className="relative">
+              {/* Botão de expansão */}
+              <DonutChartModal
+                title={`Distribuição de Custos por Grupo — ${periodoLabel}`}
+                data={dadosGrafico}
+                centerLabel="Total Geral"
+                centerValue={fmtBRL(totalGeral)}
+                formatValue={fmtBRL}
+                formatPct={fmtPct}
+              />
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <PieChart className="h-4 w-4 text-primary" />

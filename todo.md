@@ -305,3 +305,9 @@
 - [x] Adicionar exportação PDF/Excel/WhatsApp na página Apuração de Custo
 - [x] Adicionar exportação PDF/Excel/WhatsApp na página Custo por Setor
 - [x] Corrigir warning de React key prop no DashboardLayout.tsx (React.Fragment com key)
+
+## Gráficos de Rosca — Modal Expandido (Mai/2026)
+
+- [x] Criar componente DonutChartModal reutilizável com: modal tela cheia, clique em fatia para destacar (renderActiveShape + opacidade dos demais), painel de detalhes lateral, botão X para fechar
+- [x] Integrar modal expandido no gráfico de Custo por Setor (CustoSetor.tsx) — botão Maximize2 no canto superior direito do card
+- [x] Integrar modal expandido nos 3 gráficos da Apuração de Custo (ApuracaoCusto.tsx)

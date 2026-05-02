@@ -7,13 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { DonutChartModal } from "@/components/DonutChartModal";
 import {
   PieChart as RechartsPieChart,
   Pie,
   Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 
 const MESES = [
@@ -195,24 +195,34 @@ export default function ApuracaoCusto() {
       ...relatorio.despesaVariavel,
       ...relatorio.despesasIndiretas,
     ];
-    return todasContas.map(c => ({
+    return todasContas.map((c, idx) => ({
       name: c.nome,
       value: c.valor,
       pct: relatorio.totalGeral > 0 ? (c.valor / relatorio.totalGeral) * 100 : 0,
       custoPorTon: c.custoPorTon,
+      fill: COLORS_CONTAS[idx % COLORS_CONTAS.length],
+      details: [
+        { label: "Valor Total", value: `R$ ${fmt(c.valor)}` },
+        { label: "Custo/t", value: `R$ ${fmt(c.custoPorTon)}` },
+      ],
     }));
   }, [relatorio]);
 
   // Gráfico 2: Custo Médio — composição Custo Variável vs Despesa Variável
   const dadosCustoMedio = useMemo(() => {
     if (!relatorio) return [];
-    const items = [];
+    const items: any[] = [];
     if (relatorio.totalCustoVariavel > 0) {
       items.push({
         name: "Custo Variável (÷ Produção)",
         value: relatorio.custoPorTonProducao,
         pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
+        fill: COLORS_CUSTO_MEDIO[0],
+        details: [
+          { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}` },
+        ],
       });
     }
     if (relatorio.totalDespesaVariavel > 0) {
@@ -221,6 +231,11 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonVendas,
         pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
+        fill: COLORS_CUSTO_MEDIO[1],
+        details: [
+          { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}` },
+        ],
       });
     }
     return items;
@@ -229,13 +244,18 @@ export default function ApuracaoCusto() {
   // Gráfico 3: Custo Médio com Despesas Indiretas — composição dos três grupos
   const dadosCustoMedioComDI = useMemo(() => {
     if (!relatorio) return [];
-    const items = [];
+    const items: any[] = [];
     if (relatorio.totalCustoVariavel > 0) {
       items.push({
         name: "Custo Variável (÷ Produção)",
         value: relatorio.custoPorTonProducao,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
+        fill: COLORS_CUSTO_MEDIO[0],
+        details: [
+          { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}` },
+        ],
       });
     }
     if (relatorio.totalDespesaVariavel > 0) {
@@ -244,6 +264,11 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonVendas,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
+        fill: COLORS_CUSTO_MEDIO[1],
+        details: [
+          { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}` },
+        ],
       });
     }
     if (relatorio.totalDespesasIndiretas > 0) {
@@ -252,6 +277,11 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonDespesasIndiretas,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonDespesasIndiretas / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonDespesasIndiretas,
+        fill: COLORS_CUSTO_MEDIO[2],
+        details: [
+          { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesasIndiretas)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonDespesasIndiretas)}` },
+        ],
       });
     }
     return items;
@@ -530,7 +560,15 @@ export default function ApuracaoCusto() {
 
             {/* Gráfico 1: Distribuição por Plano de Contas */}
             {dadosPlanoContas.length > 0 && (
-              <Card>
+              <Card className="relative">
+                <DonutChartModal
+                  title={`Distribuição por Plano de Contas — ${periodoLabel}`}
+                  data={dadosPlanoContas}
+                  centerLabel="Total"
+                  centerValue={`R$ ${fmt(relatorio.totalGeral)}`}
+                  formatValue={(v) => `R$ ${fmt(v)}`}
+                  formatPct={fmtPct}
+                />
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Distribuição por Plano de Contas
@@ -593,7 +631,15 @@ export default function ApuracaoCusto() {
 
             {/* Gráfico 2: Custo Médio */}
             {dadosCustoMedio.length > 0 && (
-              <Card>
+              <Card className="relative">
+                <DonutChartModal
+                  title={`Custo Médio (R$/t) — ${periodoLabel}`}
+                  data={dadosCustoMedio}
+                  centerLabel="Custo Médio"
+                  centerValue={`R$ ${fmt(relatorio.custoMedio)}/t`}
+                  formatValue={(v) => `R$ ${fmt(v)}/t`}
+                  formatPct={fmtPct}
+                />
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-violet-700">
                     Custo Médio (R$/t)
@@ -664,7 +710,15 @@ export default function ApuracaoCusto() {
 
             {/* Gráfico 3: Custo Médio com Despesas Indiretas */}
             {dadosCustoMedioComDI.length > 0 && (
-              <Card>
+              <Card className="relative">
+                <DonutChartModal
+                  title={`C.M. c/ Despesas Indiretas (R$/t) — ${periodoLabel}`}
+                  data={dadosCustoMedioComDI}
+                  centerLabel="C.M. c/ D.I."
+                  centerValue={`R$ ${fmt(relatorio.custoMedioComDI)}/t`}
+                  formatValue={(v) => `R$ ${fmt(v)}/t`}
+                  formatPct={fmtPct}
+                />
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-orange-700">
                     C.M. c/ Despesas Indiretas (R$/t)
