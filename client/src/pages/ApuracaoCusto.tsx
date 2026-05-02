@@ -420,62 +420,6 @@ export default function ApuracaoCusto() {
               </Card>
             )}
 
-            {/* Grupo 3: Despesas Indiretas (÷ Produção) */}
-            {relatorio.despesasIndiretas.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2 rounded-t-lg bg-orange-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-orange-700" />
-                      <CardTitle className="text-base text-orange-700">Despesas Indiretas</CardTitle>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-orange-700">
-                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesasIndiretas / relatorio.totalGeral) * 100 : 0)} do total
-                      </span>
-                      <span className="font-bold text-base font-mono text-orange-700">
-                        R$ {fmt(relatorio.totalDespesasIndiretas)}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Conta de Custo</TableHead>
-                        <TableHead className="text-right w-36">Valor (R$)</TableHead>
-                        <TableHead className="text-right w-36">Custo/t Prod. (R$)</TableHead>
-                        <TableHead className="text-right w-24">% do Grupo</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {relatorio.despesasIndiretas.map((conta) => (
-                        <TableRow key={conta.id}>
-                          <TableCell>{conta.nome}</TableCell>
-                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
-                          <TableCell className="text-right font-mono">
-                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">
-                            {fmtPct(conta.percentualGrupo)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      <TableRow className="font-semibold bg-orange-50">
-                        <TableCell>Subtotal Despesas Indiretas</TableCell>
-                        <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesasIndiretas)}</TableCell>
-                        <TableCell className="text-right font-mono text-orange-700">
-                          {relatorio.producao > 0 ? fmt(relatorio.custoPorTonDespesasIndiretas) : "—"}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">100,0%</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Grupo 2: Despesa Variável (÷ Vendas) */}
             {relatorio.despesaVariavel.length > 0 && (
               <Card>
@@ -524,6 +468,62 @@ export default function ApuracaoCusto() {
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesaVariavel)}</TableCell>
                         <TableCell className="text-right font-mono text-purple-700">
                           {relatorio.vendas > 0 ? fmt(relatorio.custoPorTonVendas) : "—"}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">100,0%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Grupo 3: Despesas Indiretas (÷ Produção) */}
+            {relatorio.despesasIndiretas.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2 rounded-t-lg bg-orange-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-orange-700" />
+                      <CardTitle className="text-base text-orange-700">Despesas Indiretas</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-orange-700">
+                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesasIndiretas / relatorio.totalGeral) * 100 : 0)} do total
+                      </span>
+                      <span className="font-bold text-base font-mono text-orange-700">
+                        R$ {fmt(relatorio.totalDespesasIndiretas)}
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Conta de Custo</TableHead>
+                        <TableHead className="text-right w-36">Valor (R$)</TableHead>
+                        <TableHead className="text-right w-36">Custo/t Prod. (R$)</TableHead>
+                        <TableHead className="text-right w-24">% do Grupo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {relatorio.despesasIndiretas.map((conta) => (
+                        <TableRow key={conta.id}>
+                          <TableCell>{conta.nome}</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
+                          <TableCell className="text-right font-mono">
+                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            {fmtPct(conta.percentualGrupo)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-orange-50">
+                        <TableCell>Subtotal Despesas Indiretas</TableCell>
+                        <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesasIndiretas)}</TableCell>
+                        <TableCell className="text-right font-mono text-orange-700">
+                          {relatorio.producao > 0 ? fmt(relatorio.custoPorTonDespesasIndiretas) : "—"}
                         </TableCell>
                         <TableCell className="text-right font-mono">100,0%</TableCell>
                       </TableRow>
