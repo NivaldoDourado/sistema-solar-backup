@@ -21,6 +21,8 @@ export interface DonutSlice {
   pct: number;
   /** Cor hex da fatia */
   fill: string;
+  /** Texto secundário exibido entre o nome e a participação (ex: "R$ 30,74/t") */
+  subtitle?: string;
   /** Linhas extras de detalhe exibidas no painel lateral ao clicar */
   details?: Array<{ label: string; value: string }>;
 }
@@ -251,15 +253,18 @@ export function DonutChartModal({
                         }`}
                         style={isActive ? { borderColor: d.fill, backgroundColor: `${d.fill}15` } : {}}
                       >
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-0.5">
                           <div
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: d.fill }}
                           />
                           <span className="text-sm font-medium text-foreground leading-tight">{d.name}</span>
                         </div>
-                        <div className="flex items-center justify-between pl-4">
+                        <div className="flex items-center justify-between pl-4 mb-1">
                           <span className="text-xs text-muted-foreground">{fmtVal(d.value)}</span>
+                          {d.subtitle && (
+                            <span className="text-xs text-muted-foreground font-medium">{d.subtitle}</span>
+                          )}
                           <span
                             className="text-xs font-bold"
                             style={{ color: d.fill }}

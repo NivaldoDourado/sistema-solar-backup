@@ -265,6 +265,7 @@ export default function CustoSetor() {
     value: g.subtotalGeral,
     pct: totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0,
     custoTon: g.subtotalCustoTon,
+    subtitle: `R$ ${fmtTon(g.subtotalCustoTon)}/t`,
     fill: GRUPO_PALETA[g.grupoNome] ?? "#94a3b8",
     // Detalhes exibidos no modal ao clicar na fatia
     details: g.subsetores.map((s: any) => ({
@@ -480,12 +481,15 @@ export default function CustoSetor() {
                   {/* Legenda detalhada — grade de 2 colunas em telas médias */}
                   <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                     {dadosGrafico.map((d) => (
-                      <div key={d.name} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.fill }} />
-                        <span className="flex-1 text-xs font-medium text-foreground min-w-0 truncate">{d.name}</span>
+                      <div key={d.name} className="flex items-start gap-2 py-1.5 px-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5" style={{ backgroundColor: d.fill }} />
+                        <div className="flex-1 min-w-0">
+                          <span className="block text-xs font-medium text-foreground truncate">{d.name}</span>
+                          <span className="block text-xs text-muted-foreground">R$ {fmtTon(d.custoTon)}/t</span>
+                        </div>
                         <div className="text-right flex-shrink-0">
-                          <span className="text-xs font-bold text-foreground">{fmtPct(d.pct)}</span>
-                          <span className="text-xs text-muted-foreground ml-1.5">{fmtBRL(d.value)}</span>
+                          <span className="block text-xs font-bold text-foreground">{fmtPct(d.pct)}</span>
+                          <span className="block text-xs text-muted-foreground">{fmtBRL(d.value)}</span>
                         </div>
                       </div>
                     ))}
