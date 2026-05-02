@@ -1,12 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { BarChart3, TrendingDown, Download, Lock, Info } from "lucide-react";
+import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator } from "lucide-react";
 import { ExportButtons } from "@/components/ExportButtons";
 import type { ExportOptions } from "@/lib/export-utils";
 
@@ -14,29 +13,6 @@ const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
-
-const CLASSIFICACAO_LABELS: Record<string, string> = {
-  custo_fixo: "Custo Fixo",
-  custo_variavel: "Custo Variável",
-  despesa_fixa: "Despesa Fixa",
-  despesa_variavel: "Despesa Variável",
-};
-
-const CLASSIFICACAO_ORDER = ["custo_fixo", "custo_variavel", "despesa_fixa", "despesa_variavel"];
-
-const CLASSIFICACAO_COLORS: Record<string, string> = {
-  custo_fixo: "text-blue-700",
-  custo_variavel: "text-green-700",
-  despesa_fixa: "text-orange-700",
-  despesa_variavel: "text-purple-700",
-};
-
-const CLASSIFICACAO_BG: Record<string, string> = {
-  custo_fixo: "bg-blue-50",
-  custo_variavel: "bg-green-50",
-  despesa_fixa: "bg-orange-50",
-  despesa_variavel: "bg-purple-50",
-};
 
 function fmt(val: number) {
   return val.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -64,6 +40,12 @@ export default function ApuracaoCusto() {
     [periodos, selectedPeriodoId]
   );
 
+  // Buscar produção do módulo Produção para o período selecionado
+  const { data: producaoModulo } = trpc.periodoCusto.getProducaoDoModulo.useQuery(
+    { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
+    { enabled: !!periodoAtual }
+  );
+
   // Inicializar com o período mais recente
   useEffect(() => {
     if (periodos && periodos.length > 0 && !selectedPeriodoId) {
@@ -75,129 +57,148 @@ export default function ApuracaoCusto() {
   const relatorio = useMemo(() => {
     if (!lancamentos || !periodoAtual) return null;
 
-    const producao = parseFloat(periodoAtual.producaoTotal ?? "0") || 0;
+    // Produção: soma do módulo Produção (campo producaoTotal do período como fallback)
+    const producao = producaoModulo?.total ?? parseFloat(periodoAtual.producaoTotal ?? "0") ?? 0;
     const vendas = parseFloat(periodoAtual.quantidadeVendida ?? "0") || 0;
     const despesasIndiretas = parseFloat(periodoAtual.despesasIndiretas ?? "0") || 0;
 
-    // Agrupar lançamentos por classificação
-    const grupos: Record<string, {
-      classificacao: string;
-      contas: Array<{
-        id: number;
-        nome: string;
-        divisor: string;
-        valor: number;
-        custoPorTon: number;
-        percentual: number;
-      }>;
-      total: number;
-    }> = {};
+    // Grupo 1: Custo Variável — todas as contas com divisor=producao
+    // Grupo 2: Despesa Variável — contas com divisor=vendas (Impostos e Comissão de Vendas)
+    type ContaItem = {
+      id: number;
+      nome: string;
+      valor: number;
+      custoPorTon: number;
+      percentualGrupo: number;
+      percentualTotal: number;
+    };
 
-    for (const classif of CLASSIFICACAO_ORDER) {
-      grupos[classif] = { classificacao: classif, contas: [], total: 0 };
-    }
-
+    const custoVariavel: ContaItem[] = [];
+    const despesaVariavel: ContaItem[] = [];
+    let totalCustoVariavel = 0;
+    let totalDespesaVariavel = 0;
     let totalGeral = 0;
 
     for (const l of lancamentos) {
       const valor = parseFloat(String(l.valor || "0"));
       if (valor === 0) continue;
-      const classif = l.contaClassificacao ?? "custo_variavel";
       const divisor = l.contaDivisor ?? "producao";
-      const base = divisor === "vendas" ? vendas : producao;
-      const custoPorTon = base > 0 ? valor / base : 0;
-
-      if (!grupos[classif]) {
-        grupos[classif] = { classificacao: classif, contas: [], total: 0 };
-      }
-      grupos[classif].contas.push({
+      const item: ContaItem = {
         id: l.contaCustoId,
         nome: l.contaNome ?? "—",
-        divisor,
         valor,
-        custoPorTon,
-        percentual: 0, // será calculado depois
-      });
-      grupos[classif].total += valor;
+        custoPorTon: 0,
+        percentualGrupo: 0,
+        percentualTotal: 0,
+      };
+      if (divisor === "vendas") {
+        despesaVariavel.push(item);
+        totalDespesaVariavel += valor;
+      } else {
+        custoVariavel.push(item);
+        totalCustoVariavel += valor;
+      }
       totalGeral += valor;
     }
 
-    // Calcular percentuais
-    for (const grupo of Object.values(grupos)) {
-      for (const conta of grupo.contas) {
-        conta.percentual = totalGeral > 0 ? (conta.valor / totalGeral) * 100 : 0;
-      }
+    // Calcular custo/t e percentuais para Custo Variável (base = produção)
+    for (const c of custoVariavel) {
+      c.custoPorTon = producao > 0 ? c.valor / producao : 0;
+      c.percentualGrupo = totalCustoVariavel > 0 ? (c.valor / totalCustoVariavel) * 100 : 0;
+      c.percentualTotal = totalGeral > 0 ? (c.valor / totalGeral) * 100 : 0;
+    }
+    // Calcular custo/t e percentuais para Despesa Variável (base = vendas)
+    for (const c of despesaVariavel) {
+      c.custoPorTon = vendas > 0 ? c.valor / vendas : 0;
+      c.percentualGrupo = totalDespesaVariavel > 0 ? (c.valor / totalDespesaVariavel) * 100 : 0;
+      c.percentualTotal = totalGeral > 0 ? (c.valor / totalGeral) * 100 : 0;
     }
 
-    // Totais por divisor
-    let totalProducao = 0;
-    let totalVendas = 0;
-    for (const l of lancamentos) {
-      const valor = parseFloat(String(l.valor || "0"));
-      if (l.contaDivisor === "vendas") totalVendas += valor;
-      else totalProducao += valor;
-    }
-
-    const custoPorTonProducao = producao > 0 ? totalGeral / producao : 0;
-    const custoPorTonVendas = vendas > 0 ? totalGeral / vendas : 0;
+    // Custo/t dos grupos
+    const custoPorTonProducao = producao > 0 ? totalCustoVariavel / producao : 0;
+    const custoPorTonVendas = vendas > 0 ? totalDespesaVariavel / vendas : 0;
+    // Custo Médio = soma dos dois custo/t
+    const custoMedio = custoPorTonProducao + custoPorTonVendas;
 
     return {
-      grupos,
+      custoVariavel,
+      despesaVariavel,
+      totalCustoVariavel,
+      totalDespesaVariavel,
       totalGeral,
-      totalProducao,
-      totalVendas,
       producao,
       vendas,
       despesasIndiretas,
       custoPorTonProducao,
       custoPorTonVendas,
+      custoMedio,
     };
-  }, [lancamentos, periodoAtual]);
+  }, [lancamentos, periodoAtual, producaoModulo]);
 
   // Dados para exportação
   const exportOptions = useMemo((): ExportOptions | null => {
     if (!relatorio || !periodoAtual) return null;
     const rows: Record<string, any>[] = [];
-    for (const classif of CLASSIFICACAO_ORDER) {
-      const grupo = relatorio.grupos[classif];
-      if (!grupo || grupo.contas.length === 0) continue;
-      for (const conta of grupo.contas) {
-        rows.push({
-          classificacao: CLASSIFICACAO_LABELS[classif] ?? classif,
-          conta: conta.nome,
-          divisor: conta.divisor === "vendas" ? "Vendas" : "Produção",
-          valor: fmt(conta.valor),
-          custoPorTon: conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "",
-          percentual: fmtPct(conta.percentual),
-        });
-      }
+
+    // Grupo Custo Variável
+    for (const c of relatorio.custoVariavel) {
       rows.push({
-        classificacao: `TOTAL ${CLASSIFICACAO_LABELS[classif]}`,
-        conta: "",
-        divisor: "",
-        valor: fmt(grupo.total),
-        custoPorTon: "",
-        percentual: fmtPct(relatorio.totalGeral > 0 ? (grupo.total / relatorio.totalGeral) * 100 : 0),
+        grupo: "Custo Variável",
+        conta: c.nome,
+        divisor: "Produção",
+        valor: fmt(c.valor),
+        custoPorTon: c.custoPorTon > 0 ? fmt(c.custoPorTon) : "",
+        percentual: fmtPct(c.percentualGrupo),
       });
     }
     rows.push({
-      classificacao: "TOTAL GERAL",
+      grupo: "SUBTOTAL Custo Variável",
+      conta: "",
+      divisor: "",
+      valor: fmt(relatorio.totalCustoVariavel),
+      custoPorTon: relatorio.producao > 0 ? fmt(relatorio.custoPorTonProducao) : "",
+      percentual: fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalCustoVariavel / relatorio.totalGeral) * 100 : 0),
+    });
+
+    // Grupo Despesa Variável
+    for (const c of relatorio.despesaVariavel) {
+      rows.push({
+        grupo: "Despesa Variável",
+        conta: c.nome,
+        divisor: "Vendas",
+        valor: fmt(c.valor),
+        custoPorTon: c.custoPorTon > 0 ? fmt(c.custoPorTon) : "",
+        percentual: fmtPct(c.percentualGrupo),
+      });
+    }
+    rows.push({
+      grupo: "SUBTOTAL Despesa Variável",
+      conta: "",
+      divisor: "",
+      valor: fmt(relatorio.totalDespesaVariavel),
+      custoPorTon: relatorio.vendas > 0 ? fmt(relatorio.custoPorTonVendas) : "",
+      percentual: fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesaVariavel / relatorio.totalGeral) * 100 : 0),
+    });
+
+    rows.push({
+      grupo: "CUSTO MÉDIO",
       conta: "",
       divisor: "",
       valor: fmt(relatorio.totalGeral),
-      custoPorTon: fmt(relatorio.custoPorTonProducao),
+      custoPorTon: fmt(relatorio.custoMedio),
       percentual: "100,0%",
     });
+
     return {
       title: `Apuração de Custo — ${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}`,
       filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
       columns: [
-        { key: "classificacao", header: "Classificação", width: 25 },
-        { key: "conta", header: "Conta de Custo", width: 30 },
+        { key: "grupo", header: "Grupo", width: 25 },
+        { key: "conta", header: "Conta de Custo", width: 35 },
         { key: "divisor", header: "Divisor", width: 12 },
         { key: "valor", header: "Valor (R$)", width: 18 },
         { key: "custoPorTon", header: "Custo/t (R$)", width: 18 },
-        { key: "percentual", header: "% do Total", width: 14 },
+        { key: "percentual", header: "% do Grupo", width: 14 },
       ],
       data: rows,
     };
@@ -252,16 +253,9 @@ export default function ApuracaoCusto() {
                 <Badge variant={periodoAtual.fechado === "sim" ? "secondary" : "default"}>
                   {periodoAtual.fechado === "sim" ? <><Lock className="h-3 w-3 mr-1" />Fechado</> : "Aberto"}
                 </Badge>
-                {periodoAtual.producaoTotal && (
-                  <span className="text-sm text-muted-foreground">
-                    Produção: <strong>{fmt(parseFloat(periodoAtual.producaoTotal))} t</strong>
-                  </span>
-                )}
-                {periodoAtual.quantidadeVendida && (
-                  <span className="text-sm text-muted-foreground">
-                    Vendas: <strong>{fmt(parseFloat(periodoAtual.quantidadeVendida))} t</strong>
-                  </span>
-                )}
+                <span className="text-sm text-muted-foreground">
+                  Vendas: <strong>{periodoAtual.quantidadeVendida ? fmt(parseFloat(periodoAtual.quantidadeVendida)) : "—"} t</strong>
+                </span>
               </div>
             )}
           </div>
@@ -272,6 +266,7 @@ export default function ApuracaoCusto() {
       {relatorio && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Custo Total */}
             <Card className="border-primary/30 bg-primary/5">
               <CardContent className="pt-4">
                 <p className="text-xs text-muted-foreground">Custo Total</p>
@@ -280,167 +275,234 @@ export default function ApuracaoCusto() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Custo/t (Produção) — apenas contas divisor=producao */}
             <Card className="border-blue-200 bg-blue-50">
               <CardContent className="pt-4">
-                <p className="text-xs text-muted-foreground">Custo/t (Produção)</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <Factory className="h-3 w-3 text-blue-600" />
+                  <p className="text-xs text-muted-foreground">Custo/t (Produção)</p>
+                </div>
                 <p className="text-2xl font-bold text-blue-700 font-mono">
                   {relatorio.producao > 0 ? `R$ ${fmt(relatorio.custoPorTonProducao)}` : "—"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Base: {fmt(relatorio.producao)} t
+                  Base: {relatorio.producao > 0 ? `${fmt(relatorio.producao)} t` : "sem produção"}
                 </p>
               </CardContent>
             </Card>
+
+            {/* Custo/t (Vendas) — apenas contas divisor=vendas */}
             <Card className="border-green-200 bg-green-50">
               <CardContent className="pt-4">
-                <p className="text-xs text-muted-foreground">Custo/t (Vendas)</p>
+                <div className="flex items-center gap-1 mb-1">
+                  <TrendingUp className="h-3 w-3 text-green-600" />
+                  <p className="text-xs text-muted-foreground">Custo/t (Vendas)</p>
+                </div>
                 <p className="text-2xl font-bold text-green-700 font-mono">
                   {relatorio.vendas > 0 ? `R$ ${fmt(relatorio.custoPorTonVendas)}` : "—"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Base: {fmt(relatorio.vendas)} t
+                  Base: {relatorio.vendas > 0 ? `${fmt(relatorio.vendas)} t` : "sem vendas"}
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-orange-200 bg-orange-50">
+
+            {/* Custo Médio = Custo/t Produção + Custo/t Vendas */}
+            <Card className="border-violet-200 bg-violet-50">
               <CardContent className="pt-4">
-                <p className="text-xs text-muted-foreground">Despesas Indiretas</p>
-                <p className="text-2xl font-bold text-orange-700 font-mono">
-                  R$ {fmt(relatorio.despesasIndiretas)}
+                <div className="flex items-center gap-1 mb-1">
+                  <Calculator className="h-3 w-3 text-violet-600" />
+                  <p className="text-xs text-muted-foreground">Custo Médio</p>
+                </div>
+                <p className="text-2xl font-bold text-violet-700 font-mono">
+                  {(relatorio.producao > 0 || relatorio.vendas > 0) ? `R$ ${fmt(relatorio.custoMedio)}` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Custo/t Prod. + Custo/t Vendas
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Tabela de Apuração por Classificação */}
+          {/* Tabelas de Apuração */}
           <div className="space-y-4">
-            {CLASSIFICACAO_ORDER.map((classif) => {
-              const grupo = relatorio.grupos[classif];
-              if (!grupo || grupo.contas.length === 0) return null;
 
-              return (
-                <Card key={classif}>
-                  <CardHeader className={`pb-2 rounded-t-lg ${CLASSIFICACAO_BG[classif]}`}>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className={`text-base ${CLASSIFICACAO_COLORS[classif]}`}>
-                        {CLASSIFICACAO_LABELS[classif]}
-                      </CardTitle>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-sm font-medium ${CLASSIFICACAO_COLORS[classif]}`}>
-                          {fmtPct(relatorio.totalGeral > 0 ? (grupo.total / relatorio.totalGeral) * 100 : 0)} do total
-                        </span>
-                        <span className={`font-bold text-base font-mono ${CLASSIFICACAO_COLORS[classif]}`}>
-                          R$ {fmt(grupo.total)}
-                        </span>
-                      </div>
+            {/* Grupo 1: Custo Variável (÷ Produção) */}
+            {relatorio.custoVariavel.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2 rounded-t-lg bg-green-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Factory className="h-4 w-4 text-green-700" />
+                      <CardTitle className="text-base text-green-700">Custo Variável</CardTitle>
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Conta de Custo</TableHead>
-                          <TableHead className="w-28">Divisor</TableHead>
-                          <TableHead className="text-right w-36">Valor (R$)</TableHead>
-                          <TableHead className="text-right w-36">Custo/t (R$)</TableHead>
-                          <TableHead className="text-right w-24">% Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {grupo.contas.map((conta) => (
-                          <TableRow key={conta.id}>
-                            <TableCell>{conta.nome}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {conta.divisor === "vendas" ? "Vendas" : "Produção"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                              {fmt(conta.valor)}
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                              {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-muted-foreground">
-                              {fmtPct(conta.percentual)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {/* Subtotal */}
-                        <TableRow className={`font-semibold ${CLASSIFICACAO_BG[classif]}`}>
-                          <TableCell colSpan={2}>
-                            Subtotal {CLASSIFICACAO_LABELS[classif]}
-                          </TableCell>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-green-700">
+                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalCustoVariavel / relatorio.totalGeral) * 100 : 0)} do total
+                      </span>
+                      <span className="font-bold text-base font-mono text-green-700">
+                        R$ {fmt(relatorio.totalCustoVariavel)}
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Conta de Custo</TableHead>
+                        <TableHead className="text-right w-36">Valor (R$)</TableHead>
+                        <TableHead className="text-right w-36">Custo/t Prod. (R$)</TableHead>
+                        <TableHead className="text-right w-24">% do Grupo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {relatorio.custoVariavel.map((conta) => (
+                        <TableRow key={conta.id}>
+                          <TableCell>{conta.nome}</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
                           <TableCell className="text-right font-mono">
-                            {fmt(grupo.total)}
+                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
                           </TableCell>
-                          <TableCell className="text-right font-mono">
-                            —
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {fmtPct(relatorio.totalGeral > 0 ? (grupo.total / relatorio.totalGeral) * 100 : 0)}
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            {fmtPct(conta.percentualGrupo)}
                           </TableCell>
                         </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      ))}
+                      {/* Subtotal Custo Variável */}
+                      <TableRow className="font-semibold bg-green-50">
+                        <TableCell>Subtotal Custo Variável</TableCell>
+                        <TableCell className="text-right font-mono">{fmt(relatorio.totalCustoVariavel)}</TableCell>
+                        <TableCell className="text-right font-mono text-green-700">
+                          {relatorio.producao > 0 ? fmt(relatorio.custoPorTonProducao) : "—"}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">100,0%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Resumo Final */}
-            <Card className="border-2 border-primary/40 bg-primary/5">
+            {/* Grupo 2: Despesa Variável (÷ Vendas) */}
+            {relatorio.despesaVariavel.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2 rounded-t-lg bg-purple-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-purple-700" />
+                      <CardTitle className="text-base text-purple-700">Despesa Variável</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-purple-700">
+                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesaVariavel / relatorio.totalGeral) * 100 : 0)} do total
+                      </span>
+                      <span className="font-bold text-base font-mono text-purple-700">
+                        R$ {fmt(relatorio.totalDespesaVariavel)}
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Conta de Custo</TableHead>
+                        <TableHead className="text-right w-36">Valor (R$)</TableHead>
+                        <TableHead className="text-right w-36">Custo/t Vendas (R$)</TableHead>
+                        <TableHead className="text-right w-24">% do Grupo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {relatorio.despesaVariavel.map((conta) => (
+                        <TableRow key={conta.id}>
+                          <TableCell>{conta.nome}</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
+                          <TableCell className="text-right font-mono">
+                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            {fmtPct(conta.percentualGrupo)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {/* Subtotal Despesa Variável */}
+                      <TableRow className="font-semibold bg-purple-50">
+                        <TableCell>Subtotal Despesa Variável</TableCell>
+                        <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesaVariavel)}</TableCell>
+                        <TableCell className="text-right font-mono text-purple-700">
+                          {relatorio.vendas > 0 ? fmt(relatorio.custoPorTonVendas) : "—"}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">100,0%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Resumo Final — Custo Médio */}
+            <Card className="border-2 border-violet-300 bg-violet-50">
               <CardContent className="pt-4">
-                <div className="space-y-2">
-                  {CLASSIFICACAO_ORDER.map((classif) => {
-                    const grupo = relatorio.grupos[classif];
-                    if (!grupo || grupo.total === 0) return null;
-                    return (
-                      <div key={classif} className="flex justify-between text-sm">
-                        <span className={`font-medium ${CLASSIFICACAO_COLORS[classif]}`}>
-                          {CLASSIFICACAO_LABELS[classif]}
-                        </span>
-                        <div className="flex gap-6">
-                          <span className="font-mono text-muted-foreground w-28 text-right">
-                            {fmtPct(relatorio.totalGeral > 0 ? (grupo.total / relatorio.totalGeral) * 100 : 0)}
-                          </span>
-                          <span className="font-mono font-medium w-32 text-right">
-                            R$ {fmt(grupo.total)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-green-700">Custo Variável (÷ Produção)</span>
+                    <div className="flex gap-6">
+                      <span className="font-mono text-muted-foreground w-28 text-right">
+                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalCustoVariavel / relatorio.totalGeral) * 100 : 0)}
+                      </span>
+                      <span className="font-mono font-medium w-32 text-right">
+                        R$ {fmt(relatorio.totalCustoVariavel)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-purple-700">Despesa Variável (÷ Vendas)</span>
+                    <div className="flex gap-6">
+                      <span className="font-mono text-muted-foreground w-28 text-right">
+                        {fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesaVariavel / relatorio.totalGeral) * 100 : 0)}
+                      </span>
+                      <span className="font-mono font-medium w-32 text-right">
+                        R$ {fmt(relatorio.totalDespesaVariavel)}
+                      </span>
+                    </div>
+                  </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total Geral</span>
                     <span className="font-mono text-primary">R$ {fmt(relatorio.totalGeral)}</span>
                   </div>
 
-                  {/* Custo por tonelada */}
-                  <div className="mt-4 pt-3 border-t grid grid-cols-2 gap-4">
-                    {relatorio.producao > 0 && (
-                      <div className="text-center p-3 bg-blue-50 rounded-md border border-blue-200">
-                        <p className="text-xs text-muted-foreground">Custo Total / t Produzida</p>
-                        <p className="font-bold text-blue-700 font-mono text-xl">
-                          R$ {fmt(relatorio.custoPorTonProducao)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {fmt(relatorio.producao)} t produzidas
-                        </p>
-                      </div>
-                    )}
-                    {relatorio.vendas > 0 && (
-                      <div className="text-center p-3 bg-green-50 rounded-md border border-green-200">
-                        <p className="text-xs text-muted-foreground">Custo Total / t Vendida</p>
-                        <p className="font-bold text-green-700 font-mono text-xl">
-                          R$ {fmt(relatorio.custoPorTonVendas)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {fmt(relatorio.vendas)} t vendidas
-                        </p>
-                      </div>
-                    )}
+                  {/* Custo Médio */}
+                  <div className="mt-4 pt-3 border-t grid grid-cols-3 gap-3">
+                    <div className="text-center p-3 bg-blue-50 rounded-md border border-blue-200">
+                      <p className="text-xs text-muted-foreground">Custo/t (Produção)</p>
+                      <p className="font-bold text-blue-700 font-mono text-xl">
+                        {relatorio.producao > 0 ? `R$ ${fmt(relatorio.custoPorTonProducao)}` : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Base: {relatorio.producao > 0 ? `${fmt(relatorio.producao)} t` : "—"}
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-md border border-green-200">
+                      <p className="text-xs text-muted-foreground">Custo/t (Vendas)</p>
+                      <p className="font-bold text-green-700 font-mono text-xl">
+                        {relatorio.vendas > 0 ? `R$ ${fmt(relatorio.custoPorTonVendas)}` : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Base: {relatorio.vendas > 0 ? `${fmt(relatorio.vendas)} t` : "—"}
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-violet-100 rounded-md border-2 border-violet-300">
+                      <p className="text-xs font-semibold text-violet-700">Custo Médio</p>
+                      <p className="font-bold text-violet-700 font-mono text-2xl">
+                        {(relatorio.producao > 0 || relatorio.vendas > 0) ? `R$ ${fmt(relatorio.custoMedio)}` : "—"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prod. + Vendas
+                      </p>
+                    </div>
                   </div>
                 </div>
               </CardContent>

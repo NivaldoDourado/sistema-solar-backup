@@ -262,3 +262,13 @@
 - [x] Criar contas novas no banco: 'Frota/Man.Pat./Seg./Out.' e 'Comissão de Vendas'
 - [x] Implementar tabela de aliases no importador para mapear nomes diferentes entre planilha e sistema
 - [ ] Importar planilhas de janeiro/26 e fevereiro/26 após validar modelo com março/26
+
+## Apuração de Custo — Reestruturação (Mai/2026)
+
+- [x] Backend: buscar produção do módulo Produção (soma das quantidades do período) para usar como base do Custo/t (Produção)
+- [x] Backend: separar contas em dois grupos — Custo Variável (divisor=produção, ÷ produção) e Despesa Variável (divisor=vendas, ÷ vendas)
+- [x] Backend: calcular Custo Médio = Custo/t (Produção) + Custo/t (Vendas)
+- [x] Frontend: exibir card "Custo Médio" na Apuração de Custo
+- [x] Frontend: exibir subtotais corretos por grupo (total R$, total ÷ base, % de cada conta)
+- [ ] LEMBRETE: Para Abril/26 em diante, produção virá do card "Produção Método Caminhões" (link a fazer)
+- [ ] Despesas Indiretas: cadastro, divisões e soma ao Custo Médio → "Custo Médio Com Despesas Indiretas" (fase futura)

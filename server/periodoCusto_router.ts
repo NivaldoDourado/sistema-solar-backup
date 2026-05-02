@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
-import { periodoCusto } from "../drizzle/schema";
+import { periodoCusto, producao } from "../drizzle/schema";
 
 // Helper para calcular primeiro e último dia do mês
 function getMesDates(mes: number, ano: number) {
@@ -106,6 +106,23 @@ export const periodoCustoRouter = router({
       const novoStatus = row.fechado === "sim" ? "nao" : "sim";
       await db.update(periodoCusto).set({ fechado: novoStatus }).where(eq(periodoCusto.id, input.id));
       return { fechado: novoStatus };
+    }),
+
+  // Buscar produção total do módulo Produção para um período (mês/ano)
+  getProducaoDoModulo: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .input(z.object({ mes: z.number().min(1).max(12), ano: z.number().min(2020) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { total: 0 };
+      const { dataInicio, dataFim } = getMesDates(input.mes, input.ano);
+      const dtInicio = new Date(dataInicio + "T00:00:00");
+      const dtFim = new Date(dataFim + "T23:59:59");
+      const [result] = await db
+        .select({ total: sql<string>`COALESCE(SUM(${producao.quantidade}), 0)` })
+        .from(producao)
+        .where(and(gte(producao.data, dtInicio), lte(producao.data, dtFim)));
+      return { total: parseFloat(String(result?.total ?? "0")) };
     }),
 
   // Excluir período
