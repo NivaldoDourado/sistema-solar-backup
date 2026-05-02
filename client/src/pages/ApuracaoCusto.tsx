@@ -200,6 +200,7 @@ export default function ApuracaoCusto() {
       value: c.valor,
       pct: relatorio.totalGeral > 0 ? (c.valor / relatorio.totalGeral) * 100 : 0,
       custoPorTon: c.custoPorTon,
+      subtitle: `R$ ${fmt(c.custoPorTon)}/t`,
       fill: COLORS_CONTAS[idx % COLORS_CONTAS.length],
       details: [
         { label: "Valor Total", value: `R$ ${fmt(c.valor)}` },
@@ -218,6 +219,7 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonProducao,
         pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
+        subtitle: `R$ ${fmt(relatorio.custoPorTonProducao)}/t`,
         fill: COLORS_CUSTO_MEDIO[0],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
@@ -231,6 +233,7 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonVendas,
         pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
+        subtitle: `R$ ${fmt(relatorio.custoPorTonVendas)}/t`,
         fill: COLORS_CUSTO_MEDIO[1],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
@@ -251,6 +254,7 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonProducao,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
+        subtitle: `R$ ${fmt(relatorio.custoPorTonProducao)}/t`,
         fill: COLORS_CUSTO_MEDIO[0],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
@@ -264,6 +268,7 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonVendas,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
+        subtitle: `R$ ${fmt(relatorio.custoPorTonVendas)}/t`,
         fill: COLORS_CUSTO_MEDIO[1],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
@@ -277,6 +282,7 @@ export default function ApuracaoCusto() {
         value: relatorio.custoPorTonDespesasIndiretas,
         pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonDespesasIndiretas / relatorio.custoMedioComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonDespesasIndiretas,
+        subtitle: `R$ ${fmt(relatorio.custoPorTonDespesasIndiretas)}/t`,
         fill: COLORS_CUSTO_MEDIO[2],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesasIndiretas)}` },

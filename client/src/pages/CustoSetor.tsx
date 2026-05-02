@@ -22,7 +22,7 @@ import {
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
 const fmtTon = (v: number) =>
-  v.toLocaleString("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
 
