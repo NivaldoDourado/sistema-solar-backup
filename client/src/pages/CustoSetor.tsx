@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart } from "lucide-react";
 import { toast } from "sonner";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -156,9 +157,107 @@ export default function CustoSetor() {
     disabled: uploading,
   });
 
+  // Destinatários WhatsApp
+  const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
+  const destinatariosAtivos = useMemo(
+    () => (destinatariosWpp || []).filter((d: any) => d.ativo === "sim").map((d: any) => d.telefone),
+    [destinatariosWpp]
+  );
+
+  // Período atual
+  const periodoAtual = useMemo(
+    () => periodos?.find((p: any) => p.id === periodoSelecionado) ?? null,
+    [periodos, periodoSelecionado]
+  );
+  const periodoLabel = periodoAtual
+    ? `${String(periodoAtual.mes).padStart(2, "0")}/${periodoAtual.ano}`
+    : "";
+
   // Totais gerais
   const totalGeral = relatorio?.totalGeral ?? 0;
   const totalCustoTon = relatorio?.totalCustoTon ?? 0;
+
+  // Dados de exportação
+  const exportOptions = useMemo(() => {
+    if (!relatorio || !relatorio.grupos.length) return null;
+    const rows: Record<string, any>[] = [];
+    for (const grupo of relatorio.grupos) {
+      for (const sub of grupo.subsetores) {
+        const sCustoFixo = parseFloat(String(sub.custoFixo ?? 0));
+        const sCustoVar = parseFloat(String(sub.custoVariavel ?? 0));
+        const sTotalCusto = parseFloat(String(sub.totalCusto ?? 0));
+        const sDespFixa = parseFloat(String(sub.despesaFixa ?? 0));
+        const sDespVar = parseFloat(String(sub.despesaVariavel ?? 0));
+        const sTotalDesp = parseFloat(String(sub.totalDespesa ?? 0));
+        const sTotalGeral = parseFloat(String(sub.totalGeral ?? 0));
+        const sCustoTon = parseFloat(String(sub.custoTon ?? 0));
+        const pctGrupo = grupo.subtotalGeral > 0 ? (sTotalGeral / grupo.subtotalGeral) * 100 : 0;
+        rows.push({
+          grupo: grupo.grupoNome,
+          subsetor: sub.subsetorNome,
+          custoFixo: sCustoFixo > 0 ? fmtBRL(sCustoFixo) : "",
+          custoVariavel: sCustoVar > 0 ? fmtBRL(sCustoVar) : "",
+          totalCusto: fmtBRL(sTotalCusto),
+          despesaFixa: sDespFixa > 0 ? fmtBRL(sDespFixa) : "",
+          despesaVariavel: sDespVar > 0 ? fmtBRL(sDespVar) : "",
+          totalDespesa: sTotalDesp > 0 ? fmtBRL(sTotalDesp) : "",
+          totalGeral: fmtBRL(sTotalGeral),
+          custoTon: `R$ ${fmtTon(sCustoTon)}`,
+          percentual: fmtPct(pctGrupo),
+        });
+      }
+      rows.push({
+        grupo: `SUBTOTAL ${grupo.grupoNome}`,
+        subsetor: "",
+        custoFixo: "",
+        custoVariavel: "",
+        totalCusto: "",
+        despesaFixa: "",
+        despesaVariavel: "",
+        totalDespesa: "",
+        totalGeral: fmtBRL(grupo.subtotalGeral),
+        custoTon: `R$ ${fmtTon(grupo.subtotalCustoTon)}`,
+        percentual: fmtPct(totalGeral > 0 ? (grupo.subtotalGeral / totalGeral) * 100 : 0),
+      });
+    }
+    rows.push({
+      grupo: "TOTAL GERAL",
+      subsetor: "",
+      custoFixo: "",
+      custoVariavel: "",
+      totalCusto: "",
+      despesaFixa: "",
+      despesaVariavel: "",
+      totalDespesa: "",
+      totalGeral: fmtBRL(totalGeral),
+      custoTon: `R$ ${fmtTon(totalCustoTon)}`,
+      percentual: "100,0%",
+    });
+    return {
+      columns: [
+        { key: "grupo", header: "Grupo", width: 22 },
+        { key: "subsetor", header: "Subsetor", width: 26 },
+        { key: "totalCusto", header: "Total Custo", width: 18 },
+        { key: "totalDespesa", header: "Total Despesa", width: 18 },
+        { key: "totalGeral", header: "Total Geral", width: 18 },
+        { key: "custoTon", header: "Custo/t", width: 16 },
+        { key: "percentual", header: "% do Grupo", width: 14 },
+      ],
+      data: rows,
+    };
+  }, [relatorio, totalGeral, totalCustoTon]);
+
+  // Mensagem WhatsApp
+  const whatsappMessage = useMemo(() => {
+    if (!relatorio || !relatorio.grupos.length) return undefined;
+    let msg = `🏭 *Custo Sintético por Setor — ${periodoLabel}*\n`;
+    msg += `Total Geral: ${fmtBRL(totalGeral)} | Custo/t: R$ ${fmtTon(totalCustoTon)}\n\n`;
+    for (const g of relatorio.grupos) {
+      const pct = totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0;
+      msg += `*${g.grupoNome}:* ${fmtBRL(g.subtotalGeral)} (${fmtPct(pct)}) | R$ ${fmtTon(g.subtotalCustoTon)}/t\n`;
+    }
+    return msg;
+  }, [relatorio, totalGeral, totalCustoTon, periodoLabel]);
 
   // Dados para o gráfico de rosca
   const dadosGrafico = (relatorio?.grupos ?? []).map((g) => ({
@@ -183,7 +282,7 @@ export default function CustoSetor() {
               Relatório de custos distribuídos por setor produtivo
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             {periodos && periodos.length > 0 && (
               <Select
                 value={periodoSelecionado?.toString() ?? ""}
@@ -205,6 +304,16 @@ export default function CustoSetor() {
               <RefreshCw className={`h-4 w-4 mr-1 ${loadingRelatorio ? "animate-spin" : ""}`} />
               Atualizar
             </Button>
+            {exportOptions && (
+              <DashboardExportMenu
+                title={`Custo Sintético por Setor — ${periodoLabel}`}
+                subtitle={`Total Geral: ${fmtBRL(totalGeral)} | Custo/t: R$ ${fmtTon(totalCustoTon)}`}
+                filename={`custo-setor-${periodoLabel.replace("/", "-")}`}
+                exportOptions={exportOptions}
+                whatsappMessage={whatsappMessage}
+                whatsappDestinatarios={destinatariosAtivos}
+              />
+            )}
           </div>
         </div>
 

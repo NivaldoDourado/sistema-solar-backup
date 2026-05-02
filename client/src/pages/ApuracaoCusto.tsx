@@ -5,9 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2 } from "lucide-react";
-import { ExportButtons } from "@/components/ExportButtons";
-import type { ExportOptions } from "@/lib/export-utils";
+import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart } from "lucide-react";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import {
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -22,48 +29,79 @@ function fmtPct(val: number) {
   return val.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
 }
 
+// Paleta de cores para os gráficos
+const COLORS_CONTAS = [
+  "#2563eb", "#16a34a", "#9333ea", "#ea580c", "#0891b2", "#dc2626",
+  "#ca8a04", "#db2777", "#059669", "#7c3aed", "#0284c7", "#65a30d",
+  "#c2410c", "#a21caf", "#0d9488", "#b45309",
+];
+
+const COLORS_CUSTO_MEDIO = ["#2563eb", "#9333ea", "#ea580c"];
+
+// Tooltip customizado para gráficos de rosca
+function CustomTooltip({ active, payload, label: _label }: any) {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    return (
+      <div className="bg-white border border-border rounded-lg shadow-lg p-3 text-xs">
+        <p className="font-semibold text-foreground mb-1">{d.name}</p>
+        <p className="text-muted-foreground">Valor: <span className="font-mono font-medium text-foreground">R$ {fmt(d.value)}</span></p>
+        <p className="text-muted-foreground">Participação: <span className="font-medium text-foreground">{fmtPct(d.pct)}</span></p>
+        {d.custoPorTon !== undefined && (
+          <p className="text-muted-foreground">Custo/t: <span className="font-mono font-medium text-foreground">R$ {fmt(d.custoPorTon)}</span></p>
+        )}
+      </div>
+    );
+  }
+  return null;
+}
+
+// Label nas fatias
+function renderCustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, pct }: any) {
+  if (pct < 5) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="600">
+      {fmtPct(pct)}
+    </text>
+  );
+}
+
 export default function ApuracaoCusto() {
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<number | null>(null);
 
-  // Buscar períodos disponíveis
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
-
-  // Buscar lançamentos do período selecionado
   const { data: lancamentos } = trpc.lancamentoCusto.listByPeriodo.useQuery(
     { periodoCustoId: selectedPeriodoId! },
     { enabled: !!selectedPeriodoId }
   );
+  const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
 
-  // Período selecionado
   const periodoAtual = useMemo(
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
     [periodos, selectedPeriodoId]
   );
 
-  // Buscar produção do módulo Produção para o período selecionado
   const { data: producaoModulo } = trpc.periodoCusto.getProducaoDoModulo.useQuery(
     { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
     { enabled: !!periodoAtual }
   );
 
-  // Inicializar com o período mais recente
   useEffect(() => {
     if (periodos && periodos.length > 0 && !selectedPeriodoId) {
       setSelectedPeriodoId(periodos[0].id);
     }
   }, [periodos, selectedPeriodoId]);
 
-  // Calcular dados do relatório
   const relatorio = useMemo(() => {
     if (!lancamentos || !periodoAtual) return null;
 
-    // Produção: soma do módulo Produção (campo producaoTotal do período como fallback)
     const producao = producaoModulo?.total ?? parseFloat(periodoAtual.producaoTotal ?? "0") ?? 0;
     const vendas = parseFloat(periodoAtual.quantidadeVendida ?? "0") || 0;
 
-    // Grupo 1: Custo Variável — todas as contas com divisor=producao
-    // Grupo 2: Despesa Variável — contas com divisor=vendas (Impostos e Comissão de Vendas)
-    // Grupo 3: Despesas Indiretas — classificacao=despesa_variavel com divisor=producao
     type ContaItem = {
       id: number;
       nome: string;
@@ -94,7 +132,6 @@ export default function ApuracaoCusto() {
         percentualGrupo: 0,
         percentualTotal: 0,
       };
-      // Despesas Indiretas: classificacao=despesa_variavel com divisor=producao
       if (classificacao === "despesa_variavel" && divisor === "producao") {
         despesasIndiretas.push(item);
         totalDespesasIndiretas += valor;
@@ -108,32 +145,26 @@ export default function ApuracaoCusto() {
       totalGeral += valor;
     }
 
-    // Calcular custo/t e percentuais para Custo Variável (base = produção)
     for (const c of custoVariavel) {
       c.custoPorTon = producao > 0 ? c.valor / producao : 0;
       c.percentualGrupo = totalCustoVariavel > 0 ? (c.valor / totalCustoVariavel) * 100 : 0;
       c.percentualTotal = totalGeral > 0 ? (c.valor / totalGeral) * 100 : 0;
     }
-    // Calcular custo/t e percentuais para Despesa Variável (base = vendas)
     for (const c of despesaVariavel) {
       c.custoPorTon = vendas > 0 ? c.valor / vendas : 0;
       c.percentualGrupo = totalDespesaVariavel > 0 ? (c.valor / totalDespesaVariavel) * 100 : 0;
       c.percentualTotal = totalGeral > 0 ? (c.valor / totalGeral) * 100 : 0;
     }
-    // Calcular custo/t e percentuais para Despesas Indiretas (base = produção)
     for (const c of despesasIndiretas) {
       c.custoPorTon = producao > 0 ? c.valor / producao : 0;
       c.percentualGrupo = totalDespesasIndiretas > 0 ? (c.valor / totalDespesasIndiretas) * 100 : 0;
       c.percentualTotal = totalGeral > 0 ? (c.valor / totalGeral) * 100 : 0;
     }
 
-    // Custo/t dos grupos
     const custoPorTonProducao = producao > 0 ? totalCustoVariavel / producao : 0;
     const custoPorTonVendas = vendas > 0 ? totalDespesaVariavel / vendas : 0;
     const custoPorTonDespesasIndiretas = producao > 0 ? totalDespesasIndiretas / producao : 0;
-    // Custo Médio = Custo/t Produção + Custo/t Vendas
     const custoMedio = custoPorTonProducao + custoPorTonVendas;
-    // Custo Médio com Despesas Indiretas
     const custoMedioComDI = custoMedio + custoPorTonDespesasIndiretas;
 
     return {
@@ -154,12 +185,87 @@ export default function ApuracaoCusto() {
     };
   }, [lancamentos, periodoAtual, producaoModulo]);
 
-  // Dados para exportação
-  const exportOptions = useMemo((): ExportOptions | null => {
+  // ── Dados para gráficos ──────────────────────────────────────────────────────
+
+  // Gráfico 1: Distribuição por Plano de Contas (todas as contas juntas)
+  const dadosPlanoContas = useMemo(() => {
+    if (!relatorio) return [];
+    const todasContas = [
+      ...relatorio.custoVariavel,
+      ...relatorio.despesaVariavel,
+      ...relatorio.despesasIndiretas,
+    ];
+    return todasContas.map(c => ({
+      name: c.nome,
+      value: c.valor,
+      pct: relatorio.totalGeral > 0 ? (c.valor / relatorio.totalGeral) * 100 : 0,
+      custoPorTon: c.custoPorTon,
+    }));
+  }, [relatorio]);
+
+  // Gráfico 2: Custo Médio — composição Custo Variável vs Despesa Variável
+  const dadosCustoMedio = useMemo(() => {
+    if (!relatorio) return [];
+    const items = [];
+    if (relatorio.totalCustoVariavel > 0) {
+      items.push({
+        name: "Custo Variável (÷ Produção)",
+        value: relatorio.custoPorTonProducao,
+        pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedio) * 100 : 0,
+        custoPorTon: relatorio.custoPorTonProducao,
+      });
+    }
+    if (relatorio.totalDespesaVariavel > 0) {
+      items.push({
+        name: "Despesa Variável (÷ Vendas)",
+        value: relatorio.custoPorTonVendas,
+        pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedio) * 100 : 0,
+        custoPorTon: relatorio.custoPorTonVendas,
+      });
+    }
+    return items;
+  }, [relatorio]);
+
+  // Gráfico 3: Custo Médio com Despesas Indiretas — composição dos três grupos
+  const dadosCustoMedioComDI = useMemo(() => {
+    if (!relatorio) return [];
+    const items = [];
+    if (relatorio.totalCustoVariavel > 0) {
+      items.push({
+        name: "Custo Variável (÷ Produção)",
+        value: relatorio.custoPorTonProducao,
+        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedioComDI) * 100 : 0,
+        custoPorTon: relatorio.custoPorTonProducao,
+      });
+    }
+    if (relatorio.totalDespesaVariavel > 0) {
+      items.push({
+        name: "Despesa Variável (÷ Vendas)",
+        value: relatorio.custoPorTonVendas,
+        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedioComDI) * 100 : 0,
+        custoPorTon: relatorio.custoPorTonVendas,
+      });
+    }
+    if (relatorio.totalDespesasIndiretas > 0) {
+      items.push({
+        name: "Despesas Indiretas (÷ Produção)",
+        value: relatorio.custoPorTonDespesasIndiretas,
+        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonDespesasIndiretas / relatorio.custoMedioComDI) * 100 : 0,
+        custoPorTon: relatorio.custoPorTonDespesasIndiretas,
+      });
+    }
+    return items;
+  }, [relatorio]);
+
+  // ── Dados para exportação ────────────────────────────────────────────────────
+  const periodoLabel = periodoAtual
+    ? `${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}`
+    : "";
+
+  const exportOptions = useMemo(() => {
     if (!relatorio || !periodoAtual) return null;
     const rows: Record<string, any>[] = [];
 
-    // Grupo Custo Variável
     for (const c of relatorio.custoVariavel) {
       rows.push({
         grupo: "Custo Variável",
@@ -179,7 +285,6 @@ export default function ApuracaoCusto() {
       percentual: fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalCustoVariavel / relatorio.totalGeral) * 100 : 0),
     });
 
-    // Grupo Despesa Variável
     for (const c of relatorio.despesaVariavel) {
       rows.push({
         grupo: "Despesa Variável",
@@ -199,20 +304,55 @@ export default function ApuracaoCusto() {
       percentual: fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesaVariavel / relatorio.totalGeral) * 100 : 0),
     });
 
+    if (relatorio.despesasIndiretas.length > 0) {
+      for (const c of relatorio.despesasIndiretas) {
+        rows.push({
+          grupo: "Despesas Indiretas",
+          conta: c.nome,
+          divisor: "Produção",
+          valor: fmt(c.valor),
+          custoPorTon: c.custoPorTon > 0 ? fmt(c.custoPorTon) : "",
+          percentual: fmtPct(c.percentualGrupo),
+        });
+      }
+      rows.push({
+        grupo: "SUBTOTAL Despesas Indiretas",
+        conta: "",
+        divisor: "",
+        valor: fmt(relatorio.totalDespesasIndiretas),
+        custoPorTon: relatorio.producao > 0 ? fmt(relatorio.custoPorTonDespesasIndiretas) : "",
+        percentual: fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesasIndiretas / relatorio.totalGeral) * 100 : 0),
+      });
+    }
+
+    rows.push({
+      grupo: "TOTAL GERAL",
+      conta: "",
+      divisor: "",
+      valor: fmt(relatorio.totalGeral),
+      custoPorTon: "",
+      percentual: "100,0%",
+    });
     rows.push({
       grupo: "CUSTO MÉDIO",
       conta: "",
       divisor: "",
-      valor: fmt(relatorio.totalGeral),
+      valor: "",
       custoPorTon: fmt(relatorio.custoMedio),
-      percentual: "100,0%",
+      percentual: "",
+    });
+    rows.push({
+      grupo: "C.M. c/ Despesas Indiretas",
+      conta: "",
+      divisor: "",
+      valor: "",
+      custoPorTon: fmt(relatorio.custoMedioComDI),
+      percentual: "",
     });
 
     return {
-      title: `Apuração de Custo — ${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}`,
-      filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
       columns: [
-        { key: "grupo", header: "Grupo", width: 25 },
+        { key: "grupo", header: "Grupo", width: 28 },
         { key: "conta", header: "Conta de Custo", width: 35 },
         { key: "divisor", header: "Divisor", width: 12 },
         { key: "valor", header: "Valor (R$)", width: 18 },
@@ -223,21 +363,51 @@ export default function ApuracaoCusto() {
     };
   }, [relatorio, periodoAtual]);
 
+  // Mensagem WhatsApp
+  const whatsappMessage = useMemo(() => {
+    if (!relatorio || !periodoAtual) return undefined;
+    let msg = `📊 *Apuração de Custo — ${periodoLabel}*\n`;
+    msg += `Produção: ${relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "—"} | Vendas: ${relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—"}\n\n`;
+    msg += `💰 *Custo Total:* R$ ${fmt(relatorio.totalGeral)}\n`;
+    msg += `  • Custo Variável: R$ ${fmt(relatorio.totalCustoVariavel)} (${fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalCustoVariavel / relatorio.totalGeral) * 100 : 0)})\n`;
+    msg += `  • Despesa Variável: R$ ${fmt(relatorio.totalDespesaVariavel)} (${fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesaVariavel / relatorio.totalGeral) * 100 : 0)})\n`;
+    if (relatorio.totalDespesasIndiretas > 0) {
+      msg += `  • Despesas Indiretas: R$ ${fmt(relatorio.totalDespesasIndiretas)} (${fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesasIndiretas / relatorio.totalGeral) * 100 : 0)})\n`;
+    }
+    msg += `\n📈 *Custo Médio:* R$ ${fmt(relatorio.custoMedio)}/t`;
+    if (relatorio.totalDespesasIndiretas > 0) {
+      msg += `\n📈 *C.M. c/ Desp. Indiretas:* R$ ${fmt(relatorio.custoMedioComDI)}/t`;
+    }
+    return msg;
+  }, [relatorio, periodoAtual, periodoLabel]);
+
+  const destinatariosAtivos = useMemo(
+    () => (destinatariosWpp || []).filter(d => d.ativo === "sim").map(d => d.telefone),
+    [destinatariosWpp]
+  );
+
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-8 w-8 text-primary" />
+            <PieChart className="h-8 w-8 text-primary" />
             Apuração de Custo
           </h1>
           <p className="text-muted-foreground mt-1">
             Relatório de custo por tonelada por classificação e período
           </p>
         </div>
-        {exportOptions && (
-          <ExportButtons options={exportOptions} />
+        {exportOptions && periodoAtual && (
+          <DashboardExportMenu
+            title={`Apuração de Custo — ${periodoLabel}`}
+            subtitle={`Produção: ${relatorio?.producao ? fmt(relatorio.producao) + " t" : "—"} | Vendas: ${relatorio?.vendas ? fmt(relatorio.vendas) + " t" : "—"}`}
+            filename={`apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`}
+            exportOptions={exportOptions}
+            whatsappMessage={whatsappMessage}
+            whatsappDestinatarios={destinatariosAtivos}
+          />
         )}
       </div>
 
@@ -285,7 +455,6 @@ export default function ApuracaoCusto() {
       {relatorio && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {/* Custo Total */}
             <Card className="border-primary/30 bg-primary/5">
               <CardContent className="pt-4">
                 <p className="text-xs text-muted-foreground">Custo Total</p>
@@ -295,7 +464,6 @@ export default function ApuracaoCusto() {
               </CardContent>
             </Card>
 
-            {/* Custo/t (Produção) — apenas contas divisor=producao */}
             <Card className="border-blue-200 bg-blue-50">
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1 mb-1">
@@ -311,7 +479,6 @@ export default function ApuracaoCusto() {
               </CardContent>
             </Card>
 
-            {/* Custo/t (Vendas) — apenas contas divisor=vendas */}
             <Card className="border-green-200 bg-green-50">
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1 mb-1">
@@ -327,7 +494,6 @@ export default function ApuracaoCusto() {
               </CardContent>
             </Card>
 
-            {/* Custo Médio = Custo/t Produção + Custo/t Vendas */}
             <Card className="border-violet-200 bg-violet-50">
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1 mb-1">
@@ -343,7 +509,6 @@ export default function ApuracaoCusto() {
               </CardContent>
             </Card>
 
-            {/* Custo Médio com Despesas Indiretas */}
             <Card className="border-orange-200 bg-orange-50">
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1 mb-1">
@@ -360,7 +525,216 @@ export default function ApuracaoCusto() {
             </Card>
           </div>
 
-          {/* Tabelas de Apuração */}
+          {/* ── Gráficos de Rosca ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            {/* Gráfico 1: Distribuição por Plano de Contas */}
+            {dadosPlanoContas.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    Distribuição por Plano de Contas
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Participação de cada conta no custo total</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="relative h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={dadosPlanoContas}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                        >
+                          {dadosPlanoContas.map((_, idx) => (
+                            <Cell key={idx} fill={COLORS_CONTAS[idx % COLORS_CONTAS.length]} />
+                          ))}
+                        </Pie>
+                        <text
+                          x="50%" y="46%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={10}
+                        >
+                          Total
+                        </text>
+                        <text
+                          x="50%" y="58%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-foreground" fontSize={12} fontWeight="700"
+                        >
+                          R$ {fmt(relatorio.totalGeral)}
+                        </text>
+                        <Tooltip content={<CustomTooltip />} />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legenda */}
+                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto pr-1">
+                    {dadosPlanoContas.map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ background: COLORS_CONTAS[idx % COLORS_CONTAS.length] }}
+                          />
+                          <span className="truncate text-muted-foreground">{d.name}</span>
+                        </div>
+                        <span className="font-mono font-medium shrink-0">{fmtPct(d.pct)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gráfico 2: Custo Médio */}
+            {dadosCustoMedio.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-violet-700">
+                    Custo Médio (R$/t)
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Composição do custo médio por tonelada</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="relative h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={dadosCustoMedio}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                        >
+                          {dadosCustoMedio.map((_, idx) => (
+                            <Cell key={idx} fill={COLORS_CUSTO_MEDIO[idx % COLORS_CUSTO_MEDIO.length]} />
+                          ))}
+                        </Pie>
+                        <text
+                          x="50%" y="43%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={10}
+                        >
+                          Custo Médio
+                        </text>
+                        <text
+                          x="50%" y="54%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-violet-700" fontSize={13} fontWeight="700"
+                        >
+                          R$ {fmt(relatorio.custoMedio)}
+                        </text>
+                        <text
+                          x="50%" y="65%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={9}
+                        >
+                          por tonelada
+                        </text>
+                        <Tooltip content={<CustomTooltip />} />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {dadosCustoMedio.map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ background: COLORS_CUSTO_MEDIO[idx % COLORS_CUSTO_MEDIO.length] }}
+                          />
+                          <span className="truncate text-muted-foreground">{d.name}</span>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <span className="font-mono text-muted-foreground">{fmtPct(d.pct)}</span>
+                          <span className="font-mono font-medium">R$ {fmt(d.value)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gráfico 3: Custo Médio com Despesas Indiretas */}
+            {dadosCustoMedioComDI.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-orange-700">
+                    C.M. c/ Despesas Indiretas (R$/t)
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Composição incluindo despesas indiretas</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="relative h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={dadosCustoMedioComDI}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                        >
+                          {dadosCustoMedioComDI.map((_, idx) => (
+                            <Cell key={idx} fill={COLORS_CUSTO_MEDIO[idx % COLORS_CUSTO_MEDIO.length]} />
+                          ))}
+                        </Pie>
+                        <text
+                          x="50%" y="40%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={9}
+                        >
+                          C.M. c/ D.I.
+                        </text>
+                        <text
+                          x="50%" y="52%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-orange-700" fontSize={13} fontWeight="700"
+                        >
+                          R$ {fmt(relatorio.custoMedioComDI)}
+                        </text>
+                        <text
+                          x="50%" y="63%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={9}
+                        >
+                          por tonelada
+                        </text>
+                        <Tooltip content={<CustomTooltip />} />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {dadosCustoMedioComDI.map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ background: COLORS_CUSTO_MEDIO[idx % COLORS_CUSTO_MEDIO.length] }}
+                          />
+                          <span className="truncate text-muted-foreground">{d.name}</span>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <span className="font-mono text-muted-foreground">{fmtPct(d.pct)}</span>
+                          <span className="font-mono font-medium">R$ {fmt(d.value)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* ── Tabelas de Apuração ───────────────────────────────────────────── */}
           <div className="space-y-4">
 
             {/* Grupo 1: Custo Variável (÷ Produção) */}
@@ -405,7 +779,6 @@ export default function ApuracaoCusto() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {/* Subtotal Custo Variável */}
                       <TableRow className="font-semibold bg-green-50">
                         <TableCell>Subtotal Custo Variável</TableCell>
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalCustoVariavel)}</TableCell>
@@ -462,7 +835,6 @@ export default function ApuracaoCusto() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {/* Subtotal Despesa Variável */}
                       <TableRow className="font-semibold bg-purple-50">
                         <TableCell>Subtotal Despesa Variável</TableCell>
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesaVariavel)}</TableCell>
@@ -578,7 +950,6 @@ export default function ApuracaoCusto() {
                     <span className="font-mono text-primary">R$ {fmt(relatorio.totalGeral)}</span>
                   </div>
 
-                  {/* Custo Médio e Custo Médio com DI */}
                   <div className="mt-4 pt-3 border-t grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="text-center p-3 bg-blue-50 rounded-md border border-blue-200">
                       <p className="text-xs text-muted-foreground">Custo/t (Produção)</p>
@@ -603,18 +974,14 @@ export default function ApuracaoCusto() {
                       <p className="font-bold text-violet-700 font-mono text-2xl">
                         {(relatorio.producao > 0 || relatorio.vendas > 0) ? `R$ ${fmt(relatorio.custoMedio)}` : "—"}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Prod. + Vendas
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Prod. + Vendas</p>
                     </div>
                     <div className="text-center p-3 bg-orange-100 rounded-md border-2 border-orange-300">
                       <p className="text-xs font-semibold text-orange-700">C.M. c/ Desp. Indiretas</p>
                       <p className="font-bold text-orange-700 font-mono text-2xl">
                         {(relatorio.producao > 0 || relatorio.vendas > 0) ? `R$ ${fmt(relatorio.custoMedioComDI)}` : "—"}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Custo Médio + DI
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Custo Médio + DI</p>
                     </div>
                   </div>
                 </div>

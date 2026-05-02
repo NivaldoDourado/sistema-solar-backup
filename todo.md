@@ -297,3 +297,11 @@
 
 - [x] Instalar/verificar Recharts no projeto (já disponível: recharts ^2.15.2)
 - [x] Adicionar gráfico de rosca (donut chart) na página CustoSetor.tsx mostrando distribuição percentual por grupo, com legenda lateral detalhada, tooltip customizado e percentual nas fatias
+
+## Módulo Apropriação de Custo — Reorganização e Gráficos (Mai/2026)
+
+- [x] Reorganizar menu lateral: criar grupo colápsável "Apropriação de Custo" com 4 subitens (Lançamento de Custos, Apuração de Custo, Custo por Setor, Importação de Planilha)
+- [x] Adicionar 3 gráficos de rosca na Apuração de Custo: Distribuição por Plano de Contas, Custo Médio (R$/t) e C.M. c/ Despesas Indiretas (R$/t)
+- [x] Adicionar exportação PDF/Excel/WhatsApp na página Apuração de Custo
+- [x] Adicionar exportação PDF/Excel/WhatsApp na página Custo por Setor
+- [x] Corrigir warning de React key prop no DashboardLayout.tsx (React.Fragment com key)

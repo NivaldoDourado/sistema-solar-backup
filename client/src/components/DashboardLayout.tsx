@@ -10,11 +10,17 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
@@ -44,8 +50,11 @@ import {
   Bell,
   Smartphone,
   ClipboardList,
+  ChevronDown,
+  ChevronRight,
+  PieChart,
 } from "lucide-react";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
@@ -75,16 +84,20 @@ export default function DashboardLayout({
   }, [sidebarWidth]);
 
   // Definir itens do menu com controle de acesso
+  // Itens de custo agrupados sob "Apropriação de Custo"
+  const custoSubItems = [
+    { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
+    { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
+    { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
+    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
+  ];
+
   const allMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/", module: null },
     { icon: FileText, label: "Parte Diária", path: "/parte-diaria", module: "parteDiaria" as const },
     { icon: Fuel, label: "Abastecimento", path: "/abastecimento", module: "abastecimento" as const },
     { icon: BarChart3, label: "Produção", path: "/producao", module: "producao" as const },
     { icon: DollarSign, label: "Custos", path: "/custos", module: "custos" as const },
-    { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
-    { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
-    { icon: BarChart3, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
-    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
     { icon: Wrench, label: "Manutenção", path: "/manutencao", module: "manutencao" as const },
     { icon: BarChart3, label: "Medição Pilhas", path: "/medicao-pilhas", module: "medicaoPilhas" as const },
     { icon: Package, label: "Peças de Desgaste", path: "/pecas-desgaste", module: null },
@@ -101,6 +114,9 @@ export default function DashboardLayout({
 
   // Perfis com acesso administrativo
   const isAdminRole = userRole === "admin" || userRole === "consultoria" || userRole === "diretor";
+
+  // Filtrar subitens de Apropriação de Custo
+  const filteredCustoSubItems = custoSubItems.filter(() => hasModuleAccess("custos"));
 
   // Filtrar itens do menu baseado nas permissões
   const menuItems = allMenuItems.filter(item => {
@@ -142,6 +158,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <DashboardLayoutContent
         menuItems={menuItems}
+        custoSubItems={filteredCustoSubItems}
         sidebarWidth={sidebarWidth}
         setSidebarWidth={setSidebarWidth}
         user={user}
@@ -156,6 +173,7 @@ export default function DashboardLayout({
 function DashboardLayoutContent({
   children,
   menuItems,
+  custoSubItems,
   sidebarWidth,
   setSidebarWidth,
   user,
@@ -163,6 +181,7 @@ function DashboardLayoutContent({
 }: {
   children: React.ReactNode;
   menuItems: any[];
+  custoSubItems: any[];
   sidebarWidth: number;
   setSidebarWidth: (width: number) => void;
   user: any;
@@ -173,7 +192,19 @@ function DashboardLayoutContent({
   const [isResizing, setIsResizing] = useState(false);
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  // Detectar se algum subitem de custo está ativo
+  const custoSubPaths = custoSubItems.map(i => i.path);
+  const isCustoActive = custoSubPaths.includes(location);
+  const [custoOpen, setCustoOpen] = useState(() => isCustoActive);
+
+  // Abrir o grupo de custo automaticamente quando navegar para uma rota de custo
+  useEffect(() => {
+    if (isCustoActive) setCustoOpen(true);
+  }, [isCustoActive]);
+
+  // activeMenuItem considera tanto os itens principais quanto os subitens de custo
+  const activeMenuItem = menuItems.find(item => item.path === location)
+    ?? custoSubItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -244,6 +275,61 @@ function DashboardLayoutContent({
           <SidebarMenu>
             {menuItems.map(item => {
               const isActive = location === item.path;
+
+              // Após o item "Custos" inserir o grupo "Apropriação de Custo"
+              if (item.path === "/custos" && custoSubItems.length > 0) {
+                return (
+                  <React.Fragment key="custos-group">
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        onClick={() => setLocation(item.path)}
+                        tooltip={item.label}
+                        className="h-10 transition-all font-normal"
+                      >
+                        <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    {/* Grupo Apropriação de Custo */}
+                    <SidebarMenuItem key="apropriacao-custo-group">
+                      <SidebarMenuButton
+                        isActive={isCustoActive}
+                        onClick={() => setCustoOpen(o => !o)}
+                        tooltip="Apropriação de Custo"
+                        className="h-10 transition-all font-normal"
+                      >
+                        <PieChart className={`h-4 w-4 ${isCustoActive ? "text-primary" : ""}`} />
+                        <span>Apropriação de Custo</span>
+                        {custoOpen
+                          ? <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                          : <ChevronRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" />}
+                      </SidebarMenuButton>
+                      {custoOpen && (
+                        <SidebarMenuSub>
+                          {custoSubItems.map(sub => {
+                            const isSubActive = location === sub.path;
+                            return (
+                              <SidebarMenuSubItem key={sub.path}>
+                                <SidebarMenuSubButton
+                                  isActive={isSubActive}
+                                  onClick={() => setLocation(sub.path)}
+                                  className="h-9 font-normal"
+                                >
+                                  <sub.icon className={`h-3.5 w-3.5 ${isSubActive ? "text-primary" : ""}`} />
+                                  <span>{sub.label}</span>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      )}
+                    </SidebarMenuItem>
+                  </React.Fragment>
+                );
+              }
+
               return (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton
