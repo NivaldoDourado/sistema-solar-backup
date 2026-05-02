@@ -214,6 +214,37 @@ export const lancamentoCusto = mysqlTable("lancamento_custo", {
 export type LancamentoCusto = typeof lancamentoCusto.$inferSelect;
 export type InsertLancamentoCusto = typeof lancamentoCusto.$inferInsert;
 
+// Lançamento de Custo por Setor (Custo Sintético por Setor)
+export const custoSetor = mysqlTable("custo_setor", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(), // FK para periodo_custo
+  // Grupo/Setor principal (ex: DESMONTE DE ROCHA, BRITAGEM)
+  grupoNome: varchar("grupoNome", { length: 255 }).notNull(),
+  // Subsetor (ex: DESMONTE PRIMÁRIO, BRITAGEM PRIMÁRIA)
+  subsetorNome: varchar("subsetorNome", { length: 255 }).notNull(),
+  // Referência ao setor operacional (pode ser nulo para subsetores agrupados)
+  setorId: int("setorId"),
+  // Valores da planilha RSSET
+  custoFixo: decimal("custoFixo", { precision: 14, scale: 2 }).default("0"),
+  custoVariavel: decimal("custoVariavel", { precision: 14, scale: 2 }).default("0"),
+  totalCusto: decimal("totalCusto", { precision: 14, scale: 2 }).default("0"),
+  despesaFixa: decimal("despesaFixa", { precision: 14, scale: 2 }).default("0"),
+  despesaVariavel: decimal("despesaVariavel", { precision: 14, scale: 2 }).default("0"),
+  totalDespesa: decimal("totalDespesa", { precision: 14, scale: 2 }).default("0"),
+  totalGeral: decimal("totalGeral", { precision: 14, scale: 2 }).default("0"),
+  // Custo por tonelada (calculado)
+  custoTon: decimal("custoTon", { precision: 10, scale: 4 }).default("0"),
+  // Percentual do total
+  percentualTotal: decimal("percentualTotal", { precision: 8, scale: 4 }).default("0"),
+  // Ordem de exibição
+  ordemExibicao: int("ordemExibicao").default(0),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CustoSetor = typeof custoSetor.$inferSelect;
+export type InsertCustoSetor = typeof custoSetor.$inferInsert;
+
 // ============================================================================
 // MÓDULOS OPERACIONAIS
 // ============================================================================

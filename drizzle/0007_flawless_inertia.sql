@@ -1,0 +1,21 @@
+CREATE TABLE `custo_setor` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`periodoCustoId` int NOT NULL,
+	`grupoNome` varchar(255) NOT NULL,
+	`subsetorNome` varchar(255) NOT NULL,
+	`setorId` int,
+	`custoFixo` decimal(14,2) DEFAULT '0',
+	`custoVariavel` decimal(14,2) DEFAULT '0',
+	`totalCusto` decimal(14,2) DEFAULT '0',
+	`despesaFixa` decimal(14,2) DEFAULT '0',
+	`despesaVariavel` decimal(14,2) DEFAULT '0',
+	`totalDespesa` decimal(14,2) DEFAULT '0',
+	`totalGeral` decimal(14,2) DEFAULT '0',
+	`custoTon` decimal(10,4) DEFAULT '0',
+	`percentualTotal` decimal(8,4) DEFAULT '0',
+	`ordemExibicao` int DEFAULT 0,
+	`userId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `custo_setor_id` PRIMARY KEY(`id`)
+);

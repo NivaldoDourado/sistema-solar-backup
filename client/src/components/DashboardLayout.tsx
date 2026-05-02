@@ -83,6 +83,7 @@ export default function DashboardLayout({
     { icon: DollarSign, label: "Custos", path: "/custos", module: "custos" as const },
     { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
+    { icon: BarChart3, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
     { icon: Wrench, label: "Manutenção", path: "/manutencao", module: "manutencao" as const },
     { icon: BarChart3, label: "Medição Pilhas", path: "/medicao-pilhas", module: "medicaoPilhas" as const },
