@@ -7,6 +7,7 @@ import { vendasRouter } from "./vendas_router";
 import { permissoesRouter } from "./permissoes_router";
 import { authLocalRouter } from "./auth_router";
 import { temposDescargaRouter, configuracoesRouter } from "./tempos_descarga_router";
+import { periodoCustoRouter } from "./periodoCusto_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -602,7 +603,7 @@ export const appRouter = router({
       }),
   }),
 
-  contasCusto: router({
+   contasCusto: router({
     list: protectedProcedure
       .use(requirePermission("contaCusto", "view"))
       .query(async () => {
@@ -610,12 +611,14 @@ export const appRouter = router({
         if (!db) return [];
         return await db.select().from(contaCusto).orderBy(asc(contaCusto.nome));
       }),
-
     create: protectedProcedure
       .use(requirePermission("contaCusto", "create"))
       .input(z.object({
         nome: z.string().min(1),
+        divisor: z.enum(["producao", "vendas"]).default("producao"),
+        classificacao: z.enum(["custo_fixo", "custo_variavel", "despesa_fixa", "despesa_variavel"]).default("custo_variavel"),
         observacao: z.string().nullable().optional(),
+        ativo: z.enum(["sim", "nao"]).default("sim"),
       }))
       .mutation(async ({ input }) => {
         const db = await getDb();
@@ -623,13 +626,15 @@ export const appRouter = router({
         const result = await db.insert(contaCusto).values(input);
         return { id: Number(result[0].insertId), ...input };
       }),
-
     update: protectedProcedure
       .use(requirePermission("contaCusto", "edit"))
       .input(z.object({
         id: z.number(),
         nome: z.string().min(1),
+        divisor: z.enum(["producao", "vendas"]).default("producao"),
+        classificacao: z.enum(["custo_fixo", "custo_variavel", "despesa_fixa", "despesa_variavel"]).default("custo_variavel"),
         observacao: z.string().nullable().optional(),
+        ativo: z.enum(["sim", "nao"]).default("sim"),
       }))
       .mutation(async ({ input }) => {
         const db = await getDb();
@@ -638,7 +643,6 @@ export const appRouter = router({
         await db.update(contaCusto).set(data).where(eq(contaCusto.id, id));
         return input;
       }),
-
     delete: protectedProcedure
       .use(requirePermission("contaCusto", "delete"))
       .input(z.object({ id: z.number() }))
@@ -3206,11 +3210,10 @@ export const appRouter = router({
       }),
   }),
 
-  usuarios: usuariosRouter,
-
+   usuarios: usuariosRouter,
   vendas: vendasRouter,
-
   permissoes: permissoesRouter,
+  periodoCusto: periodoCustoRouter,
 
   authLocal: authLocalRouter,
 

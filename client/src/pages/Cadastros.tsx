@@ -12,7 +12,8 @@ import {
   HardHat,
   MessageSquare,
   Wallet,
-  PauseCircle
+  PauseCircle,
+  CalendarRange
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -89,11 +90,18 @@ export default function Cadastros() {
       link: "/setores-custo",
     },
     {
-      titulo: "Conta Custo",
-      descricao: "Cadastrar contas de custo",
+      titulo: "Plano de Contas",
+      descricao: "Classificação, divisor de rateio e status das contas de custo",
       icone: Wallet,
       cor: "text-rose-500",
       link: "/contas-custo",
+    },
+    {
+      titulo: "Períodos de Custo",
+      descricao: "Cabeçalho mensal com produção, vendas e despesas indiretas",
+      icone: CalendarRange,
+      cor: "text-violet-500",
+      link: "/periodo-custo",
     },
     {
       titulo: "Operadores / Motoristas",

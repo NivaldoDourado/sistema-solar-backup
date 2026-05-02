@@ -169,17 +169,36 @@ export const setorDeCusto = mysqlTable("setor_de_custo", {
 export type SetorDeCusto = typeof setorDeCusto.$inferSelect;
 export type InsertSetorDeCusto = typeof setorDeCusto.$inferInsert;
 
-// Conta Custo
+/// Conta Custo (Plano de Contas detalhado com classificação)
 export const contaCusto = mysqlTable("conta_custo", {
   id: int("id").autoincrement().primaryKey(),
   nome: varchar("nome", { length: 255 }).notNull(),
+  divisor: mysqlEnum("divisor", ["producao", "vendas"]).default("producao"),
+  classificacao: mysqlEnum("classificacao", ["custo_fixo", "custo_variavel", "despesa_fixa", "despesa_variavel"]).default("custo_variavel"),
   observacao: text("observacao"),
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type ContaCusto = typeof contaCusto.$inferSelect;
 export type InsertContaCusto = typeof contaCusto.$inferInsert;
+
+// Período de Custo (cabeçalho mensal para apuração de custos)
+export const periodoCusto = mysqlTable("periodo_custo", {
+  id: int("id").autoincrement().primaryKey(),
+  mes: int("mes").notNull(), // 1-12
+  ano: int("ano").notNull(), // ex: 2026
+  producaoTotal: decimal("producaoTotal", { precision: 12, scale: 2 }), // puxada do Método Caminhões
+  quantidadeVendida: decimal("quantidadeVendida", { precision: 12, scale: 2 }), // puxada do módulo de Vendas
+  despesasIndiretas: decimal("despesasIndiretas", { precision: 12, scale: 2 }).default("0"), // lançamento manual
+  observacoes: text("observacoes"),
+  fechado: mysqlEnum("fechado", ["sim", "nao"]).default("nao").notNull(),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PeriodoCusto = typeof periodoCusto.$inferSelect;
+export type InsertPeriodoCusto = typeof periodoCusto.$inferInsert;
 
 // ============================================================================
 // MÓDULOS OPERACIONAIS
