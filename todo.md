@@ -292,3 +292,8 @@
 - [x] Criar página frontend "Custo Sintético por Setor" (client/src/pages/CustoSetor.tsx)
 - [x] Adicionar ao menu lateral (DashboardLayout.tsx) e registrar rota /custo-setor no App.tsx
 - [x] Popular dados de março/2026 no banco (12 subsetores: DESMONTE DE ROCHA, CARGA E TRANSPORTE, BRITAGEM, EXPEDIÇÃO, SERVIÇOS AUXILIARES, ADMINISTRAÇÃO)
+
+## Custo por Setor — Gráfico de Rosca (Mai/2026)
+
+- [x] Instalar/verificar Recharts no projeto (já disponível: recharts ^2.15.2)
+- [x] Adicionar gráfico de rosca (donut chart) na página CustoSetor.tsx mostrando distribuição percentual por grupo, com legenda lateral detalhada, tooltip customizado e percentual nas fatias

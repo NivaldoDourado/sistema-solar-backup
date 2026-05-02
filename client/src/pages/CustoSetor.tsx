@@ -6,8 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Download, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet } from "lucide-react";
+import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart } from "lucide-react";
 import { toast } from "sonner";
+import {
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 // Formatadores
 const fmtBRL = (v: number) =>
@@ -17,23 +25,72 @@ const fmtTon = (v: number) =>
 const fmtPct = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
 
-// Cores dos grupos
+// Paleta de cores para os grupos (ordem fixa)
+const GRUPO_PALETA: Record<string, string> = {
+  "DESMONTE DE ROCHA":    "#f59e0b",
+  "CARGA E TRANSPORTE":   "#3b82f6",
+  "BRITAGEM":             "#22c55e",
+  "EXPEDIÇÃO":            "#a855f7",
+  "SERVIÇOS AUXILIARES":  "#f97316",
+  "ADMINISTRAÇÃO":        "#6b7280",
+};
+
+// Cores de fundo/borda dos cards de grupo
 const GRUPO_CORES: Record<string, string> = {
-  "DESMONTE DE ROCHA": "bg-amber-50 border-amber-200",
-  "CARGA E TRANSPORTE": "bg-blue-50 border-blue-200",
-  "BRITAGEM": "bg-green-50 border-green-200",
-  "EXPEDIÇÃO": "bg-purple-50 border-purple-200",
-  "SERVIÇOS AUXILIARES": "bg-orange-50 border-orange-200",
-  "ADMINISTRAÇÃO": "bg-gray-50 border-gray-200",
+  "DESMONTE DE ROCHA":    "bg-amber-50 border-amber-200",
+  "CARGA E TRANSPORTE":   "bg-blue-50 border-blue-200",
+  "BRITAGEM":             "bg-green-50 border-green-200",
+  "EXPEDIÇÃO":            "bg-purple-50 border-purple-200",
+  "SERVIÇOS AUXILIARES":  "bg-orange-50 border-orange-200",
+  "ADMINISTRAÇÃO":        "bg-gray-50 border-gray-200",
 };
 
 const GRUPO_HEADER_CORES: Record<string, string> = {
-  "DESMONTE DE ROCHA": "bg-amber-100 text-amber-800",
-  "CARGA E TRANSPORTE": "bg-blue-100 text-blue-800",
-  "BRITAGEM": "bg-green-100 text-green-800",
-  "EXPEDIÇÃO": "bg-purple-100 text-purple-800",
-  "SERVIÇOS AUXILIARES": "bg-orange-100 text-orange-800",
-  "ADMINISTRAÇÃO": "bg-gray-100 text-gray-800",
+  "DESMONTE DE ROCHA":    "bg-amber-100 text-amber-800",
+  "CARGA E TRANSPORTE":   "bg-blue-100 text-blue-800",
+  "BRITAGEM":             "bg-green-100 text-green-800",
+  "EXPEDIÇÃO":            "bg-purple-100 text-purple-800",
+  "SERVIÇOS AUXILIARES":  "bg-orange-100 text-orange-800",
+  "ADMINISTRAÇÃO":        "bg-gray-100 text-gray-800",
+};
+
+// Tooltip customizado do gráfico
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    return (
+      <div className="bg-white border border-border rounded-lg shadow-lg px-4 py-3 text-sm">
+        <p className="font-semibold text-foreground mb-1">{d.name}</p>
+        <p className="text-muted-foreground">
+          Total: <span className="font-medium text-foreground">{fmtBRL(d.value)}</span>
+        </p>
+        <p className="text-muted-foreground">
+          Participação: <span className="font-medium text-foreground">{fmtPct(d.pct)}</span>
+        </p>
+        <p className="text-muted-foreground">
+          Custo/t: <span className="font-medium text-foreground">R$ {fmtTon(d.custoTon)}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Label customizado dentro das fatias (só exibe se fatia >= 5%)
+const renderCustomLabel = ({
+  cx, cy, midAngle, innerRadius, outerRadius, pct,
+}: any) => {
+  if (pct < 5) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
+      fontSize={12} fontWeight={600}>
+      {fmtPct(pct)}
+    </text>
+  );
 };
 
 export default function CustoSetor() {
@@ -51,7 +108,6 @@ export default function CustoSetor() {
   );
 
   // Selecionar automaticamente o período mais recente
-  const periodoAtual = periodos?.find((p: any) => p.id === periodoSelecionado) ?? periodos?.[0];
   if (periodos && periodos.length > 0 && !periodoSelecionado) {
     setPeriodoSelecionado(periodos[0].id);
   }
@@ -61,32 +117,22 @@ export default function CustoSetor() {
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       if (!file) return;
-
       setUploading(true);
       setUploadResult(null);
-
       try {
         const formData = new FormData();
         formData.append("file", file);
-
         const response = await fetch("/api/importacao-custo-setor", {
           method: "POST",
           body: formData,
           credentials: "include",
         });
-
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Erro ao importar planilha");
-        }
-
+        if (!response.ok) throw new Error(data.error || "Erro ao importar planilha");
         setUploadResult(data);
         toast.success(
           `Importação concluída: ${data.subsetoresImportados} subsetores (${data.criados} criados, ${data.atualizados} atualizados)`
         );
-
-        // Selecionar o período importado e recarregar
         if (data.periodoCustoId) {
           setPeriodoSelecionado(data.periodoCustoId);
           refetch();
@@ -110,9 +156,18 @@ export default function CustoSetor() {
     disabled: uploading,
   });
 
-  // Calcular totais gerais
+  // Totais gerais
   const totalGeral = relatorio?.totalGeral ?? 0;
   const totalCustoTon = relatorio?.totalCustoTon ?? 0;
+
+  // Dados para o gráfico de rosca
+  const dadosGrafico = (relatorio?.grupos ?? []).map((g) => ({
+    name: g.grupoNome,
+    value: g.subtotalGeral,
+    pct: totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0,
+    custoTon: g.subtotalCustoTon,
+    fill: GRUPO_PALETA[g.grupoNome] ?? "#94a3b8",
+  }));
 
   return (
     <DashboardLayout>
@@ -129,7 +184,6 @@ export default function CustoSetor() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Seletor de período */}
             {periodos && periodos.length > 0 && (
               <Select
                 value={periodoSelecionado?.toString() ?? ""}
@@ -188,7 +242,6 @@ export default function CustoSetor() {
               )}
             </div>
 
-            {/* Resultado do upload */}
             {uploadResult && (
               <div className="mt-4 p-4 rounded-lg bg-muted/50 space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-green-700">
@@ -221,7 +274,7 @@ export default function CustoSetor() {
           </CardContent>
         </Card>
 
-        {/* Relatório */}
+        {/* Loading */}
         {loadingRelatorio && (
           <div className="flex items-center justify-center py-12">
             <RefreshCw className="h-6 w-6 animate-spin text-primary mr-2" />
@@ -229,6 +282,7 @@ export default function CustoSetor() {
           </div>
         )}
 
+        {/* Sem dados */}
         {relatorio && relatorio.grupos.length === 0 && !loadingRelatorio && (
           <Card>
             <CardContent className="py-12 text-center">
@@ -264,17 +318,108 @@ export default function CustoSetor() {
               </Card>
             </div>
 
-            {/* Tabela por grupo */}
+            {/* Gráfico de Rosca + Legenda lateral */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <PieChart className="h-4 w-4 text-primary" />
+                  Distribuição de Custos por Grupo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  {/* Gráfico */}
+                  <div className="w-full md:w-[380px] h-[320px] flex-shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={dadosGrafico}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={80}
+                          outerRadius={140}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                        >
+                          {dadosGrafico.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="white" strokeWidth={2} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        {/* Texto central */}
+                        <text
+                          x="50%"
+                          y="47%"
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          className="fill-muted-foreground"
+                          fontSize={11}
+                          fill="#6b7280"
+                        >
+                          Total Geral
+                        </text>
+                        <text
+                          x="50%"
+                          y="55%"
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize={13}
+                          fontWeight={700}
+                          fill="#1e293b"
+                        >
+                          {fmtBRL(totalGeral)}
+                        </text>
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Legenda detalhada */}
+                  <div className="flex-1 w-full space-y-2">
+                    {dadosGrafico.map((d) => (
+                      <div key={d.name} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                        {/* Cor */}
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: d.fill }}
+                        />
+                        {/* Nome */}
+                        <span className="flex-1 text-sm font-medium text-foreground truncate">{d.name}</span>
+                        {/* Barra de progresso */}
+                        <div className="hidden sm:flex flex-1 max-w-[120px] h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${d.pct}%`, backgroundColor: d.fill }}
+                          />
+                        </div>
+                        {/* Valores */}
+                        <div className="text-right flex-shrink-0 space-y-0.5">
+                          <p className="text-sm font-bold text-foreground">{fmtPct(d.pct)}</p>
+                          <p className="text-xs text-muted-foreground">{fmtBRL(d.value)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabelas por grupo */}
             {relatorio.grupos.map((grupo) => {
               const cardCor = GRUPO_CORES[grupo.grupoNome] ?? "bg-gray-50 border-gray-200";
               const headerCor = GRUPO_HEADER_CORES[grupo.grupoNome] ?? "bg-gray-100 text-gray-800";
               const pctGrupo = totalGeral > 0 ? (grupo.subtotalGeral / totalGeral) * 100 : 0;
+              const corGrupo = GRUPO_PALETA[grupo.grupoNome] ?? "#94a3b8";
 
               return (
                 <Card key={grupo.grupoNome} className={`border ${cardCor}`}>
                   {/* Cabeçalho do grupo */}
                   <div className={`px-4 py-3 rounded-t-lg flex items-center justify-between ${headerCor}`}>
-                    <span className="font-semibold text-sm uppercase tracking-wide">{grupo.grupoNome}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
+                      <span className="font-semibold text-sm uppercase tracking-wide">{grupo.grupoNome}</span>
+                    </div>
                     <div className="flex items-center gap-4 text-sm">
                       <span className="font-bold">{fmtBRL(grupo.subtotalGeral)}</span>
                       <Badge variant="secondary" className="text-xs">
@@ -343,7 +488,6 @@ export default function CustoSetor() {
                             );
                           })}
                         </tbody>
-                        {/* Subtotal do grupo */}
                         <tfoot>
                           <tr className={`font-semibold ${headerCor}`}>
                             <td className="px-4 py-2">Subtotal {grupo.grupoNome}</td>
