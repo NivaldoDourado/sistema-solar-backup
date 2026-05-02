@@ -91,30 +91,50 @@ export function registerImportacaoCustoRoute(app: any) {
         }
       }
 
-      // Extrair dados da aba MEMGERAL - seção TOTAL (linhas 36-55, colunas I-N)
+      // Extrair dados da aba MEMGERAL - seção TOTAL (tabela verde consolidada)
+      // O XLSX.js lê a planilha com índices 0-based.
+      // A aba MEMGERAL tem 3 tabelas lado a lado:
+      //   Col 0-5: RATEIO POR SETOR (Despesas/Custos/Total)
+      //   Col 7-12: RATEIO POR TIPO DE DESEMBOLSO (Despesas/Custos/Total)
+      // As 3 ocorrências de "RATEIO POR TIPO DE DESEMBOLSO" estão na col 7:
+      //   1ª = DESPESAS (laranja), 2ª = CUSTOS (azul), 3ª = TOTAL consolidado (verde)
+      // Usamos a 3ª ocorrência (tabela verde) para importação sintética.
+      // Colunas: 7=conta, 8=CF, 9=CV, 10=DF, 11=DV
       const wsMem = workbook.Sheets["MEMGERAL"];
       const memData = XLSX.utils.sheet_to_json(wsMem, { header: 1, defval: null }) as any[][];
 
-      // Mapeamento de nomes da planilha para nomes do sistema
-      // A seção TOTAL começa na linha 36 (índice 35) com cabeçalho
-      // Colunas: I(8)=conta, J(9)=CF, K(10)=CV, L(11)=DF, M(12)=DV, N(13)=TOTAL
       const HEADER_MARKER = "RATEIO POR TIPO DE DESEMBOLSO";
-      const SKIP_NAMES = new Set(["RATEIO POR TIPO DE DESEMBOLSO", "CUST.FIXO", "LIVRE", null, undefined, ""]);
+      const SKIP_NAMES = new Set(["RATEIO POR TIPO DE DESEMBOLSO", "CUST.FIXO", "CUST.VARIA", "DESP. FIXA", "DESP. VARIA", "TOTAL", "LIVRE", null, undefined, ""]);
 
-      // Encontrar a última seção TOTAL (linhas 36+)
+      // Encontrar a TERCEIRA ocorrência de RATEIO POR TIPO DE DESEMBOLSO na col 7 (tabela verde)
+      let occurrenceCount = 0;
       let totalSectionStart = -1;
-      for (let i = 35; i < memData.length; i++) {
+      for (let i = 0; i < memData.length; i++) {
         const row = memData[i];
-        if (row && row[8] === HEADER_MARKER) {
-          totalSectionStart = i + 1; // linha após o cabeçalho
+        if (row && row[7] === HEADER_MARKER) {
+          occurrenceCount++;
+          if (occurrenceCount === 3) {
+            totalSectionStart = i + 1; // linha após o cabeçalho da tabela verde
+            break;
+          }
         }
       }
 
       if (totalSectionStart === -1) {
-        return res.status(400).json({ error: "Seção 'RATEIO POR TIPO DE DESEMBOLSO' não encontrada na aba MEMGERAL." });
+        // Fallback: tentar qualquer ocorrência na col 7
+        for (let i = 0; i < memData.length; i++) {
+          const row = memData[i];
+          if (row && row[7] === HEADER_MARKER) {
+            totalSectionStart = i + 1;
+          }
+        }
       }
 
-      // Extrair lançamentos da seção TOTAL
+      if (totalSectionStart === -1) {
+        return res.status(400).json({ error: "Seção 'RATEIO POR TIPO DE DESEMBOLSO' não encontrada na aba MEMGERAL. Verifique se o arquivo é o modelo CUSTOSOLAR correto." });
+      }
+
+      // Extrair lançamentos da seção TOTAL (tabela verde)
       interface LancamentoImport {
         nomePlanilha: string;
         custofixo: number;
@@ -127,15 +147,14 @@ export function registerImportacaoCustoRoute(app: any) {
 
       for (let i = totalSectionStart; i < memData.length; i++) {
         const row = memData[i];
-        if (!row || !row[8]) continue;
-        const nome = String(row[8]).trim();
-        if (SKIP_NAMES.has(nome)) continue;
-        if (typeof row[13] !== "number" && row[13] === null) continue;
+        if (!row || row[7] === null || row[7] === undefined) continue;
+        const nome = String(row[7]).trim();
+        if (!nome || SKIP_NAMES.has(nome)) continue;
 
-        const cf = typeof row[9] === "number" ? row[9] : 0;
-        const cv = typeof row[10] === "number" ? row[10] : 0;
-        const df = typeof row[11] === "number" ? row[11] : 0;
-        const dv = typeof row[12] === "number" ? row[12] : 0;
+        const cf = typeof row[8] === "number" ? row[8] : 0;
+        const cv = typeof row[9] === "number" ? row[9] : 0;
+        const df = typeof row[10] === "number" ? row[10] : 0;
+        const dv = typeof row[11] === "number" ? row[11] : 0;
         const total = cf + cv + df + dv;
 
         if (total === 0) continue;
