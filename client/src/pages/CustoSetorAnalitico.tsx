@@ -123,27 +123,34 @@ function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSub
 
       {expanded && (
         <TableRow className="bg-muted/20">
-          <TableCell colSpan={9} className="py-3 px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {despesas.map(d => (
-                <div key={d.label} className="bg-background rounded-md border border-border px-3 py-2">
-                  <p className="text-xs text-muted-foreground mb-0.5">{d.label}</p>
-                  <p className="text-sm font-semibold font-mono">{fmtBRL(d.valor)}</p>
-                </div>
-              ))}
-              {equip.horasTrabalhadas && parseFloat(equip.horasTrabalhadas) > 0 && (
-                <div className="bg-background rounded-md border border-border px-3 py-2">
-                  <p className="text-xs text-muted-foreground mb-0.5">Horas Trabalhadas</p>
-                  <p className="text-sm font-semibold">{parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr</p>
-                </div>
-              )}
-              {equip.producaoTotal && parseFloat(equip.producaoTotal) > 0 && (
-                <div className="bg-background rounded-md border border-border px-3 py-2">
-                  <p className="text-xs text-muted-foreground mb-0.5">Produção</p>
-                  <p className="text-sm font-semibold">{parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} {equip.unidadeProducao}</p>
-                </div>
-              )}
-            </div>
+          <TableCell colSpan={9} className="py-2 px-6">
+            <table className="w-full text-sm">
+              <tbody>
+                {[
+                  { label: "Sal.Oper./Enc. Oper.", valor: sal, show: sal > 0 },
+                  { label: "Combustível", valor: comb, show: comb > 0 },
+                  { label: "Lubrificantes", valor: lubr, show: lubr > 0 },
+                  { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0 },
+                  { label: "Peças de Reposição/Item de Consumo", valor: pRep, show: pRep > 0 },
+                  { label: "Outras Despesas", valor: outras, show: outras > 0 },
+                  ...(equip.horasTrabalhadas && parseFloat(equip.horasTrabalhadas) > 0
+                    ? [{ label: "Horas Trabalhadas", valor: null, show: true, text: `${parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr` }]
+                    : []),
+                  ...(equip.producaoTotal && parseFloat(equip.producaoTotal) > 0
+                    ? [{ label: "Produção", valor: null, show: true, text: `${parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} ${equip.unidadeProducao}` }]
+                    : []),
+                ]
+                  .filter(d => d.show)
+                  .map((d, i) => (
+                    <tr key={d.label} className={i % 2 === 0 ? "bg-background/60" : ""}>
+                      <td className="py-1.5 pl-2 pr-4 text-muted-foreground w-64">{d.label}</td>
+                      <td className="py-1.5 font-semibold font-mono text-foreground">
+                        {d.text ?? fmtBRL(d.valor!)}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </TableCell>
         </TableRow>
       )}

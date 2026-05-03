@@ -353,3 +353,6 @@
 - [x] Diagnosticar por que Total Geral (R$ 4.467.084,24) e Serviços Auxiliares (R$ 2.180.535,60) estão inflados
 - [x] Corrigir leitura da aba MSET (parser usava seção detalhada incorreta; corrigido para usar seção resumida RATEIO POR SETOR)
 - [x] Validar que todos os totais batem com a planilha RSSET
+
+## Relatório Analítico — Detalhe de Equipamento em Linhas
+- [x] Substituir os pequenos cards do detalhe do equipamento por linhas de tabela (Sal.Oper., Combustível, Lubrificantes, Peças Desgaste, Peças Repos., Outras Desp., Horas Trabalhadas)
