@@ -366,3 +366,10 @@
 - [x] Criar script update-ras-producao.mjs para atualizar producaoTotal e unidadeProducao no banco
 - [x] Executar importação: 10 equipamentos atualizados, 0 não encontrados
 - [x] Verificar exibição na interface (BRITADOR JC1200-01: 80.109,99 ton; PERFURATRIZ WOLF FOX: 3.788 metro perf.)
+
+## Correção de Importação de Produções com Fórmulas (Mai/2026)
+- [x] Diagnosticar que células com fórmulas tinham valor calculado em .v mas sheet_to_json retornava null
+- [x] Identificar que para caminhões a produção está na coluna do setor (colIdx) e não na coluna E
+- [x] Corrigir script para usar MAX(colE, colSetor) acessando diretamente a propriedade .v das células
+- [x] Reimportar: 33 equipamentos atualizados (vs 10 anteriores), 0 não encontrados
+- [x] Verificar CAMINHÃO IXE-1F44 exibindo 13.220,2 ton no PEDRA PARA BRITADOR
