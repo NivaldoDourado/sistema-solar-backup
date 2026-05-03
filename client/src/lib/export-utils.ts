@@ -388,41 +388,19 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     curY += 14;
   }
 
-  // Tabela principal com seções
-  const tableBody: any[] = [];
-  const sectionHeaderRows: number[] = [];
-
-  for (const secao of secoes) {
-    sectionHeaderRows.push(tableBody.length);
-    tableBody.push([{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 8 } }]);
-
-    for (const linha of secao.linhas) {
-      const isSpecial = linha.isSubtotal || linha.isTotal;
-      tableBody.push([
-        { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
-        { content: isSpecial ? "" : linha.conta },
-        { content: linha.divisor ?? "" },
-        { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-        { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
-        { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-      ]);
-    }
-  }
-
-  autoTable(doc, {
-    head: [["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]],
-    body: tableBody,
-    startY: curY,
+  // Tabela principal: seções renderizadas separadamente para controle de quebra de página
+  const tableHead = [["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]];
+  const tableStyles = {
     styles: { fontSize: 7.5, cellPadding: 1.8 },
-    headStyles: { fillColor: [15, 50, 120], textColor: 255, fontStyle: "bold", fontSize: 8 },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
+    headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 8 },
+    alternateRowStyles: { fillColor: [248, 250, 252] as [number, number, number] },
     columnStyles: {
       0: { cellWidth: 32 },
       1: { cellWidth: 55 },
       2: { cellWidth: 28 },
-      3: { cellWidth: 32, halign: "right" },
-      4: { cellWidth: 28, halign: "right" },
-      5: { cellWidth: 14, halign: "right" },
+      3: { cellWidth: 32, halign: "right" as const },
+      4: { cellWidth: 28, halign: "right" as const },
+      5: { cellWidth: 14, halign: "right" as const },
     },
     margin: { left: 14, right: 14 },
     didDrawPage: (data: any) => {
@@ -431,7 +409,38 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
       doc.text(`Página ${data.pageNumber} de ${pc}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 8);
       doc.text(SYSTEM_NAME_LINE1, 14, doc.internal.pageSize.getHeight() - 8);
     },
-  });
+  };
+
+  for (let si = 0; si < secoes.length; si++) {
+    const secao = secoes[si];
+    // Quebra de página somente antes da segunda seção (primeiro grupo após o resumo consolidado)
+    if (si === 1) {
+      doc.addPage();
+      curY = 14;
+    }
+    const body: any[] = [
+      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 8 } }],
+      ...secao.linhas.map(linha => {
+        const isSpecial = linha.isSubtotal || linha.isTotal;
+        return [
+          { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
+          { content: isSpecial ? "" : linha.conta },
+          { content: linha.divisor ?? "" },
+          { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+          { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
+          { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+        ];
+      }),
+    ];
+    autoTable(doc, {
+      head: si === 0 ? tableHead : undefined,
+      body,
+      startY: curY,
+      showHead: si === 0 ? "firstPage" : "never",
+      ...tableStyles,
+    });
+    curY = (doc as any).lastAutoTable.finalY + 4;
+  }
 
   doc.save(`${filename}.pdf`);
 }
