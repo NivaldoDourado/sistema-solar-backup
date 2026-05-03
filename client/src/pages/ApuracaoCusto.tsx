@@ -1,5 +1,18 @@
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
+
+// Mapeamento: nome da conta → campo do equipamento no Relatório Analítico
+const CONTA_NOME_PARA_CAMPO: Record<string, string> = {
+  "Combustível": "combustivel",
+  "Lubrificantes": "lubrificantes",
+  "Peças de Desgaste": "pecasDesgaste",
+  "Peças de Reposição / Itens de Consumo": "pecasReposicao",
+  "Outras Despesas dos Equipamentos": "outrasDespesas",
+  "RH - Salários da Operação": "salOperEncOper",
+  "Sal.Oper./Enc. Oper.": "salOperEncOper",
+  "Depreciação": "depreciacao",
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -981,18 +994,29 @@ export default function ApuracaoCusto() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {relatorio.custoVariavel.map((conta) => (
-                        <TableRow key={conta.id}>
-                          <TableCell>{conta.nome}</TableCell>
-                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
-                          <TableCell className="text-right font-mono">
-                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">
-                            {fmtPct(conta.percentualGrupo)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {relatorio.custoVariavel.map((conta) => {
+                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        return (
+                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                            <TableCell>
+                              {href ? (
+                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                                </Link>
+                              ) : conta.nome}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-muted-foreground">
+                              {fmtPct(conta.percentualGrupo)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       <TableRow className="font-semibold bg-green-50">
                         <TableCell>Subtotal Custo Variável</TableCell>
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalCustoVariavel)}</TableCell>
@@ -1037,18 +1061,29 @@ export default function ApuracaoCusto() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {relatorio.despesaVariavel.map((conta) => (
-                        <TableRow key={conta.id}>
-                          <TableCell>{conta.nome}</TableCell>
-                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
-                          <TableCell className="text-right font-mono">
-                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">
-                            {fmtPct(conta.percentualGrupo)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {relatorio.despesaVariavel.map((conta) => {
+                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        return (
+                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                            <TableCell>
+                              {href ? (
+                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                                </Link>
+                              ) : conta.nome}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-muted-foreground">
+                              {fmtPct(conta.percentualGrupo)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       <TableRow className="font-semibold bg-purple-50">
                         <TableCell>Subtotal Despesa Variável</TableCell>
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesaVariavel)}</TableCell>
@@ -1093,18 +1128,29 @@ export default function ApuracaoCusto() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {relatorio.despesasIndiretas.map((conta) => (
-                        <TableRow key={conta.id}>
-                          <TableCell>{conta.nome}</TableCell>
-                          <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
-                          <TableCell className="text-right font-mono">
-                            {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">
-                            {fmtPct(conta.percentualGrupo)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {relatorio.despesasIndiretas.map((conta) => {
+                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        return (
+                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                            <TableCell>
+                              {href ? (
+                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                                </Link>
+                              ) : conta.nome}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              {conta.custoPorTon > 0 ? fmt(conta.custoPorTon) : "—"}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-muted-foreground">
+                              {fmtPct(conta.percentualGrupo)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       <TableRow className="font-semibold bg-orange-50">
                         <TableCell>Subtotal Despesas Indiretas</TableCell>
                         <TableCell className="text-right font-mono">{fmt(relatorio.totalDespesasIndiretas)}</TableCell>

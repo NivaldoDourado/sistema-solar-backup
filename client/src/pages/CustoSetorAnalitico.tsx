@@ -1,11 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb } from "lucide-react";
+import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // ─── Formatadores ────────────────────────────────────────────────────────────
@@ -22,6 +23,17 @@ const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
+
+// ─── Mapeamento: campo do equipamento → label legível ────────────────────────
+export const CONTA_CAMPO_LABEL: Record<string, string> = {
+  salOperEncOper: "Sal.Oper./Enc. Oper.",
+  depreciacao: "Depreciação",
+  combustivel: "Combustível",
+  lubrificantes: "Lubrificantes",
+  pecasDesgaste: "Peças de Desgaste",
+  pecasReposicao: "Peças de Reposição / Itens de Consumo",
+  outrasDespesas: "Outras Despesas",
+};
 
 // ─── Paleta de cores por grupo ───────────────────────────────────────────────
 const GRUPO_PALETA: Record<string, { bg: string; border: string; header: string; badge: string; dot: string }> = {
@@ -75,7 +87,15 @@ type GrupoData = {
 };
 
 // ─── Componente de linha de equipamento ─────────────────────────────────────
-function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSubsetor: number }) {
+function EquipamentoRow({
+  equip,
+  totalSubsetor,
+  filtroContaCampo,
+}: {
+  equip: Equipamento;
+  totalSubsetor: number;
+  filtroContaCampo?: string;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   const sal    = parseFloat(equip.salOperEncOper ?? "0");
@@ -88,20 +108,14 @@ function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSub
   const total  = parseFloat(equip.totalDespesasEquipamento ?? "0");
   const pct    = totalSubsetor > 0 ? (total / totalSubsetor) * 100 : 0;
 
-  const despesas = [
-    { label: "Sal.Oper./Enc. Oper.", valor: sal },
-    { label: "Depreciação", valor: dep },
-    { label: "Combustível", valor: comb },
-    { label: "Lubrificantes", valor: lubr },
-    { label: "Peças de Desgaste", valor: pDesg },
-    { label: "Peças de Reposição/Item de Consumo", valor: pRep },
-    { label: "Outras Despesas", valor: outras },
-  ].filter(d => d.valor > 0);
+  // Destacar a célula da conta filtrada
+  const highlight = (campo: string) =>
+    filtroContaCampo === campo ? "bg-yellow-100 font-bold text-yellow-900 ring-1 ring-yellow-400 rounded" : "";
 
   return (
     <>
       <TableRow
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
+        className={`cursor-pointer hover:bg-muted/50 transition-colors ${filtroContaCampo && parseFloat((equip as any)[filtroContaCampo] ?? "0") === 0 ? "opacity-40" : ""}`}
         onClick={() => setExpanded(!expanded)}
       >
         <TableCell className="w-8">
@@ -112,11 +126,11 @@ function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSub
           )}
         </TableCell>
         <TableCell className="font-medium text-sm">{equip.equipamentoNome}</TableCell>
-        <TableCell className="text-right text-sm font-mono">{fmtBRLShort(sal)}</TableCell>
-        <TableCell className="text-right text-sm font-mono">{fmtBRLShort(lubr)}</TableCell>
-        <TableCell className="text-right text-sm font-mono">{fmtBRLShort(pDesg)}</TableCell>
-        <TableCell className="text-right text-sm font-mono">{fmtBRLShort(pRep)}</TableCell>
-        <TableCell className="text-right text-sm font-mono">{fmtBRLShort(outras)}</TableCell>
+        <TableCell className={`text-right text-sm font-mono ${highlight("salOperEncOper")}`}>{fmtBRLShort(sal)}</TableCell>
+        <TableCell className={`text-right text-sm font-mono ${highlight("lubrificantes")}`}>{fmtBRLShort(lubr)}</TableCell>
+        <TableCell className={`text-right text-sm font-mono ${highlight("pecasDesgaste")}`}>{fmtBRLShort(pDesg)}</TableCell>
+        <TableCell className={`text-right text-sm font-mono ${highlight("pecasReposicao")}`}>{fmtBRLShort(pRep)}</TableCell>
+        <TableCell className={`text-right text-sm font-mono ${highlight("outrasDespesas")}`}>{fmtBRLShort(outras)}</TableCell>
         <TableCell className="text-right text-sm font-semibold font-mono">{fmtBRL(total)}</TableCell>
         <TableCell className="text-right text-xs text-muted-foreground">{fmtPct(pct)}</TableCell>
       </TableRow>
@@ -127,25 +141,25 @@ function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSub
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  { label: "Sal.Oper./Enc. Oper.", valor: sal, show: sal > 0 },
-                  { label: "Combustível", valor: comb, show: comb > 0 },
-                  { label: "Lubrificantes", valor: lubr, show: lubr > 0 },
-                  { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0 },
-                  { label: "Peças de Reposição/Item de Consumo", valor: pRep, show: pRep > 0 },
-                  { label: "Outras Despesas", valor: outras, show: outras > 0 },
+                  { label: "Sal.Oper./Enc. Oper.", valor: sal, show: sal > 0, campo: "salOperEncOper" },
+                  { label: "Combustível", valor: comb, show: comb > 0, campo: "combustivel" },
+                  { label: "Lubrificantes", valor: lubr, show: lubr > 0, campo: "lubrificantes" },
+                  { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0, campo: "pecasDesgaste" },
+                  { label: "Peças de Reposição/Item de Consumo", valor: pRep, show: pRep > 0, campo: "pecasReposicao" },
+                  { label: "Outras Despesas", valor: outras, show: outras > 0, campo: "outrasDespesas" },
                   ...(equip.horasTrabalhadas && parseFloat(equip.horasTrabalhadas) > 0
-                    ? [{ label: "Horas Trabalhadas", valor: null, show: true, text: `${parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr` }]
+                    ? [{ label: "Horas Trabalhadas", valor: null, show: true, text: `${parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr`, campo: "" }]
                     : []),
                   ...(equip.producaoTotal && parseFloat(equip.producaoTotal) > 0
-                    ? [{ label: "Produção", valor: null, show: true, text: `${parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} ${equip.unidadeProducao}` }]
+                    ? [{ label: "Produção", valor: null, show: true, text: `${parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} ${equip.unidadeProducao}`, campo: "" }]
                     : []),
                 ]
                   .filter(d => d.show)
                   .map((d, i) => (
-                    <tr key={d.label} className={i % 2 === 0 ? "bg-background/60" : ""}>
-                      <td className="py-1.5 pl-2 pr-4 text-muted-foreground w-64">{d.label}</td>
-                      <td className="py-1.5 font-semibold font-mono text-foreground">
-                        {d.text ?? fmtBRL(d.valor!)}
+                    <tr key={d.label} className={`${i % 2 === 0 ? "bg-background/60" : ""} ${filtroContaCampo === d.campo ? "bg-yellow-50" : ""}`}>
+                      <td className={`py-1.5 pl-2 pr-4 w-64 ${filtroContaCampo === d.campo ? "text-yellow-700 font-semibold" : "text-muted-foreground"}`}>{d.label}</td>
+                      <td className={`py-1.5 font-semibold font-mono ${filtroContaCampo === d.campo ? "text-yellow-900" : "text-foreground"}`}>
+                        {(d as any).text ?? fmtBRL(d.valor!)}
                       </td>
                     </tr>
                   ))}
@@ -159,28 +173,62 @@ function EquipamentoRow({ equip, totalSubsetor }: { equip: Equipamento; totalSub
 }
 
 // ─── Componente de subsetor ──────────────────────────────────────────────────
-function SubsetorCard({ subsetor, totalGeral, paleta }: {
+function SubsetorCard({
+  subsetor,
+  totalGeral,
+  paleta,
+  filtroContaCampo,
+  isDestaque,
+  setRef,
+}: {
   subsetor: SubsetorData;
   totalGeral: number;
   paleta: typeof DEFAULT_PALETA;
+  filtroContaCampo?: string;
+  isDestaque?: boolean;
+  setRef?: (el: HTMLDivElement | null) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const pctTotal = totalGeral > 0 ? (subsetor.totalSubsetor / totalGeral) * 100 : 0;
 
+  // Ordenar equipamentos por valor total decrescente
+  const equipamentosOrdenados = useMemo(
+    () => [...subsetor.equipamentos].sort(
+      (a, b) => parseFloat(b.totalDespesasEquipamento ?? "0") - parseFloat(a.totalDespesasEquipamento ?? "0")
+    ),
+    [subsetor.equipamentos]
+  );
+
+  // Se há filtro de conta, ordenar pelo valor da conta filtrada
+  const equipamentosExibidos = useMemo(() => {
+    if (!filtroContaCampo) return equipamentosOrdenados;
+    return [...equipamentosOrdenados].sort(
+      (a, b) => parseFloat((b as any)[filtroContaCampo] ?? "0") - parseFloat((a as any)[filtroContaCampo] ?? "0")
+    );
+  }, [equipamentosOrdenados, filtroContaCampo]);
+
   return (
-    <div className={`rounded-lg border ${paleta.border} ${paleta.bg} mb-4`}>
+    <div
+      ref={(el) => { if (setRef) setRef(el); }}
+      className={`rounded-lg border ${isDestaque ? "border-yellow-400 ring-2 ring-yellow-300 shadow-lg" : paleta.border} ${paleta.bg} mb-4 transition-all`}
+    >
       {/* Cabeçalho do subsetor */}
       <button
-        className={`w-full flex items-center justify-between px-4 py-3 rounded-t-lg ${paleta.header} font-semibold text-sm`}
+        className={`w-full flex items-center justify-between px-4 py-3 rounded-t-lg ${isDestaque ? "bg-yellow-100 text-yellow-900" : paleta.header} font-semibold text-sm`}
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-2">
           {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           <Factory className="h-4 w-4" />
           <span>{subsetor.subsetorNome}</span>
-          <Badge variant="outline" className={`text-xs ml-2 ${paleta.badge}`}>
+          <Badge variant="outline" className={`text-xs ml-2 ${isDestaque ? "bg-yellow-50 text-yellow-700 border-yellow-300" : paleta.badge}`}>
             {subsetor.equipamentos.length} equip.
           </Badge>
+          {isDestaque && (
+            <Badge className="text-xs ml-1 bg-yellow-400 text-yellow-900 border-0">
+              <Filter className="h-3 w-3 mr-1" /> Filtrado
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs opacity-75">{fmtPct(pctTotal)} do total</span>
@@ -197,6 +245,11 @@ function SubsetorCard({ subsetor, totalGeral, paleta }: {
                 <Wrench className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground">Equipamentos / Centros de Custo</span>
                 <Badge variant="secondary" className="text-xs">{fmtBRL(subsetor.totalEquipamentos)}</Badge>
+                {filtroContaCampo && (
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">
+                    Ordenado por: {CONTA_CAMPO_LABEL[filtroContaCampo] ?? filtroContaCampo}
+                  </Badge>
+                )}
               </div>
               <div className="rounded-md border border-border bg-background overflow-x-auto">
                 <Table>
@@ -204,21 +257,22 @@ function SubsetorCard({ subsetor, totalGeral, paleta }: {
                     <TableRow className="bg-muted/50">
                       <TableHead className="w-8"></TableHead>
                       <TableHead className="text-xs">Equipamento</TableHead>
-                      <TableHead className="text-right text-xs">Sal.Oper.</TableHead>
-                      <TableHead className="text-right text-xs">Lubrif.</TableHead>
-                      <TableHead className="text-right text-xs">Pç.Desgaste</TableHead>
-                      <TableHead className="text-right text-xs">Pç.Repos.</TableHead>
-                      <TableHead className="text-right text-xs">Outras</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "salOperEncOper" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Sal.Oper.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "lubrificantes" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Lubrif.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasDesgaste" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Pç.Desgaste</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasReposicao" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Pç.Repos.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "outrasDespesas" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Outras</TableHead>
                       <TableHead className="text-right text-xs font-semibold">Total Equip.</TableHead>
                       <TableHead className="text-right text-xs">% Setor</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {subsetor.equipamentos.map(equip => (
+                    {equipamentosExibidos.map(equip => (
                       <EquipamentoRow
                         key={equip.id}
                         equip={equip}
                         totalSubsetor={subsetor.totalSubsetor}
+                        filtroContaCampo={filtroContaCampo}
                       />
                     ))}
                     {/* Linha de subtotal dos equipamentos */}
@@ -309,8 +363,18 @@ function SubsetorCard({ subsetor, totalGeral, paleta }: {
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function CustoSetorAnalitico() {
+  const [location, setLocation] = useLocation();
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<number | null>(null);
   const [expandedGrupos, setExpandedGrupos] = useState<Record<string, boolean>>({});
+
+  // Ler filtros da URL
+  const searchParams = useMemo(() => {
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    return new URLSearchParams(search);
+  }, [location]);
+
+  const filtroSubsetor = searchParams.get("subsetor") ?? "";
+  const filtroContaCampo = searchParams.get("conta") ?? "";
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: relatorio, isLoading } = trpc.custoSetorRas.relatorioAnalitico.useQuery(
@@ -344,12 +408,39 @@ export default function CustoSetorAnalitico() {
     setExpandedGrupos(prev => ({ ...prev, [grupoNome]: !prev[grupoNome] }));
   };
 
+  const limparFiltros = () => {
+    setLocation("/custo-setor-analitico");
+  };
+
   const periodoLabel = periodoAtual
     ? `${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}`
     : "";
 
   const totalGeral = relatorio?.totalGeral ?? 0;
-  const grupos: GrupoData[] = relatorio?.grupos ?? [];
+
+  // Ordenar grupos por totalGrupo decrescente
+  const grupos: GrupoData[] = useMemo(() => {
+    const gs = relatorio?.grupos ?? [];
+    return [...gs].sort((a, b) => b.totalGrupo - a.totalGrupo);
+  }, [relatorio]);
+
+  // Refs para scroll automático até o subsetor filtrado
+  const subsetorRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const setSubsetorRef = (nome: string) => (el: HTMLDivElement | null) => {
+    subsetorRefs.current[nome] = el;
+  };
+
+  // Scroll automático quando filtro de subsetor é aplicado e dados carregados
+  useEffect(() => {
+    if (!filtroSubsetor || !relatorio) return;
+    const timer = setTimeout(() => {
+      const el = subsetorRefs.current[filtroSubsetor];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filtroSubsetor, relatorio]);
 
   // Dados para exportação
   const exportOptions = useMemo(() => {
@@ -357,7 +448,6 @@ export default function CustoSetorAnalitico() {
     const rows: Record<string, any>[] = [];
     for (const grupo of grupos) {
       for (const sub of grupo.subsetores) {
-        // Linha de cabeçalho do subsetor
         rows.push({
           grupo: grupo.grupoNome,
           subsetor: sub.subsetorNome,
@@ -370,8 +460,10 @@ export default function CustoSetorAnalitico() {
           outras: "",
           total: fmtBRL(sub.totalSubsetor),
         });
-        // Linhas de equipamentos
-        for (const equip of sub.equipamentos) {
+        const equipsOrdenados = [...sub.equipamentos].sort(
+          (a, b) => parseFloat(b.totalDespesasEquipamento ?? "0") - parseFloat(a.totalDespesasEquipamento ?? "0")
+        );
+        for (const equip of equipsOrdenados) {
           rows.push({
             grupo: grupo.grupoNome,
             subsetor: sub.subsetorNome,
@@ -385,7 +477,6 @@ export default function CustoSetorAnalitico() {
             total: fmtBRL(parseFloat(equip.totalDespesasEquipamento ?? "0")),
           });
         }
-        // Linhas de despesas específicas
         for (const desp of sub.despesasEspecificas) {
           rows.push({
             grupo: grupo.grupoNome,
@@ -401,7 +492,6 @@ export default function CustoSetorAnalitico() {
           });
         }
       }
-      // Linha de total do grupo
       rows.push({
         grupo: grupo.grupoNome,
         subsetor: "TOTAL DO GRUPO",
@@ -431,6 +521,8 @@ export default function CustoSetorAnalitico() {
       data: rows,
     };
   }, [grupos]);
+
+  const temFiltro = !!filtroSubsetor || !!filtroContaCampo;
 
   return (
     <div className="space-y-6">
@@ -470,6 +562,31 @@ export default function CustoSetorAnalitico() {
           )}
         </div>
       </div>
+
+      {/* Banner de filtro ativo */}
+      {temFiltro && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+          <Filter className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+          <div className="flex-1 text-sm text-yellow-800">
+            {filtroSubsetor && (
+              <span>Exibindo setor: <strong>{filtroSubsetor}</strong></span>
+            )}
+            {filtroSubsetor && filtroContaCampo && <span className="mx-2">·</span>}
+            {filtroContaCampo && (
+              <span>Conta destacada: <strong>{CONTA_CAMPO_LABEL[filtroContaCampo] ?? filtroContaCampo}</strong></span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100 h-7 px-2"
+            onClick={limparFiltros}
+          >
+            <X className="h-3.5 w-3.5 mr-1" />
+            Limpar filtro
+          </Button>
+        </div>
+      )}
 
       {/* Cards de resumo */}
       {relatorio && (
@@ -535,6 +652,11 @@ export default function CustoSetorAnalitico() {
         const pct = totalGeral > 0 ? (grupo.totalGrupo / totalGeral) * 100 : 0;
         const isExpanded = expandedGrupos[grupo.grupoNome] ?? true;
 
+        // Ordenar subsetores por totalSubsetor decrescente
+        const subsetoresOrdenados = [...grupo.subsetores].sort(
+          (a, b) => b.totalSubsetor - a.totalSubsetor
+        );
+
         return (
           <Card key={grupo.grupoNome} className={`border-2 ${paleta.border}`}>
             {/* Cabeçalho do grupo */}
@@ -559,14 +681,20 @@ export default function CustoSetorAnalitico() {
 
             {isExpanded && (
               <CardContent className="p-4 space-y-2">
-                {grupo.subsetores.map((sub: SubsetorData) => (
-                  <SubsetorCard
-                    key={sub.subsetorNome}
-                    subsetor={sub}
-                    totalGeral={totalGeral}
-                    paleta={paleta}
-                  />
-                ))}
+                {subsetoresOrdenados.map((sub: SubsetorData) => {
+                  const isDestaque = !!filtroSubsetor && sub.subsetorNome === filtroSubsetor;
+                  return (
+                    <SubsetorCard
+                      key={sub.subsetorNome}
+                      subsetor={sub}
+                      totalGeral={totalGeral}
+                      paleta={paleta}
+                      filtroContaCampo={filtroContaCampo || undefined}
+                      isDestaque={isDestaque}
+                      setRef={isDestaque ? setSubsetorRef(sub.subsetorNome) : undefined}
+                    />
+                  );
+                })}
               </CardContent>
             )}
           </Card>

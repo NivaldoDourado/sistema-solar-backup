@@ -390,3 +390,11 @@
 - [ ] Desenvolver parser para formato de exportação do DataGold
 - [ ] Adicionar botão "Importar Relatório DataGold" na tela de Importação de Planilha
 - [ ] Avaliar protocolo de integração direta com API DataGold (REST/SOAP/DB direto/Webhook)
+
+## Drill-down: Links de Navegação nas Telas Sintéticas (Mai/2026)
+- [x] Mapear todos os pontos de drill-down em Apuração de Custo e Custo por Setor
+- [x] Adicionar suporte a filtros (conta e subsetor) na URL do Relatório Analítico via query params
+- [x] Implementar leitura dos filtros no Relatório Analítico e aplicar ao carregar a página
+- [x] Adicionar links clicáveis nas linhas de conta (Peças de Reposição, Combustível, etc.) em Apuração de Custo
+- [x] Adicionar links clicáveis nos subsetores do Resumo Consolidado por Subsetor em Custo por Setor
+- [x] Garantir ordenação decrescente por valor total em todas as listagens do Relatório Analítico

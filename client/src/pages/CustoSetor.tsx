@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { Link } from "wouter";
 import { useDropzone } from "react-dropzone";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
@@ -617,7 +618,14 @@ export default function CustoSetor() {
                             <td className="px-4 py-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
-                                <span className="font-medium">{s.subsetorNome}</span>
+                                <Link
+                                  href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}`}
+                                  className="font-medium text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 group"
+                                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                                >
+                                  {s.subsetorNome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                                </Link>
                               </div>
                             </td>
                             <td className="px-4 py-2 text-right text-muted-foreground">
@@ -697,7 +705,16 @@ export default function CustoSetor() {
                                 idx % 2 === 0 ? "bg-white/40" : "bg-white/20"
                               }`}
                             >
-                              <td className="px-4 py-2 font-medium">{s.subsetorNome}</td>
+                              <td className="px-4 py-2 font-medium">
+                                <Link
+                                  href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}`}
+                                  className="text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 group"
+                                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                                >
+                                  {s.subsetorNome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                                </Link>
+                              </td>
                               <td className="px-4 py-2 text-right text-muted-foreground">
                                 {fmtBRL(parseFloat(s.totalCusto ?? "0"))}
                               </td>
