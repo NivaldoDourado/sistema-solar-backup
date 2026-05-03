@@ -373,3 +373,20 @@
 - [x] Corrigir script para usar MAX(colE, colSetor) acessando diretamente a propriedade .v das células
 - [x] Reimportar: 33 equipamentos atualizados (vs 10 anteriores), 0 não encontrados
 - [x] Verificar CAMINHÃO IXE-1F44 exibindo 13.220,2 ton no PEDRA PARA BRITADOR
+
+## Documentação e Base de Conhecimento (Mai/2026)
+- [x] Criar KNOWLEDGE_BASE.md com toda a lógica de importação, estrutura da planilha CUSTOSOLAR e roadmap
+- [x] Documentar estrutura de blocos de equipamentos nas abas RAS (14 linhas, colunas E e colIdx)
+- [x] Documentar lição crítica: células com fórmulas requerem acesso direto à propriedade .v
+- [x] Documentar regra MAX(colE, colSetor) para captura de produção de caminhões
+- [x] Documentar roadmap: Fase 2 (DataGold relatórios), Fase 3 (API DataGold)
+- [x] Documentar estratégia de reutilização em outros dois sistemas com mesma planilha
+
+## Próximos Passos Planejados
+- [ ] Importar planilha de Janeiro/2026 (mesma estrutura, alterar PERIODO_MES=1 e PERIODO_ANO=2026)
+- [ ] Importar planilha de Fevereiro/2026 (mesma estrutura, alterar PERIODO_MES=2 e PERIODO_ANO=2026)
+- [ ] Corrigir unidade da PERFURATRIZ HIDRÁULICA WOLF FOX 8-20 para "metro perf." (UPDATE direto ou correção na planilha fonte)
+- [ ] Mapear relatórios do ERP DataGold que correspondem às abas RAS (para Abr/2026 em diante)
+- [ ] Desenvolver parser para formato de exportação do DataGold
+- [ ] Adicionar botão "Importar Relatório DataGold" na tela de Importação de Planilha
+- [ ] Avaliar protocolo de integração direta com API DataGold (REST/SOAP/DB direto/Webhook)
