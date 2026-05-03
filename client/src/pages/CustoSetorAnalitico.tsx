@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter } from "lucide-react";
+import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // ─── Formatadores ────────────────────────────────────────────────────────────
@@ -576,6 +576,13 @@ export default function CustoSetorAnalitico() {
               <span>Conta destacada: <strong>{CONTA_CAMPO_LABEL[filtroContaCampo] ?? filtroContaCampo}</strong></span>
             )}
           </div>
+          <Link
+            href={filtroContaCampo ? "/apuracao-custo" : "/custo-setor"}
+            className="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100 rounded px-2 py-1 transition-colors border border-yellow-300 hover:border-yellow-400"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            {filtroContaCampo ? "Apuração de Custo" : "Custo por Setor"}
+          </Link>
           <Button
             variant="ghost"
             size="sm"

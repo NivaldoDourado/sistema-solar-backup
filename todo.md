@@ -398,3 +398,6 @@
 - [x] Adicionar links clicáveis nas linhas de conta (Peças de Reposição, Combustível, etc.) em Apuração de Custo
 - [x] Adicionar links clicáveis nos subsetores do Resumo Consolidado por Subsetor em Custo por Setor
 - [x] Garantir ordenação decrescente por valor total em todas as listagens do Relatório Analítico
+
+## Drill-down Reverso — Navegação Bidirecional (Mai/2026)
+- [x] Adicionar link de retorno no banner de filtro ativo do Relatório Analítico: ?conta= → "Voltar para Apuração de Custo", ?subsetor= → "Voltar para Custo por Setor"
