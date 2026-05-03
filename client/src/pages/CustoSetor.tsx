@@ -498,6 +498,73 @@ export default function CustoSetor() {
               </CardContent>
             </Card>
 
+            {/* Tabela Resumo Consolidada — todos os subsetores juntos */}
+            <Card className="border border-slate-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4 text-primary" />
+                  Resumo Consolidado por Subsetor
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-muted/50 bg-muted/30">
+                      <th className="text-left px-4 py-2 font-medium text-muted-foreground">Setor/Processo</th>
+                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Custo</th>
+                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Geral</th>
+                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">R$/t</th>
+                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {relatorio.grupos.flatMap((grupo) =>
+                      grupo.subsetores.map((s: any, idx: number) => {
+                        const pct = totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0;
+                        const corGrupo = GRUPO_PALETA[grupo.grupoNome] ?? "#94a3b8";
+                        return (
+                          <tr
+                            key={s.id}
+                            className={`border-b border-muted/20 hover:bg-muted/30 transition-colors ${
+                              idx % 2 === 0 ? "bg-white" : "bg-muted/10"
+                            }`}
+                          >
+                            <td className="px-4 py-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
+                                <span className="font-medium">{s.subsetorNome}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2 text-right text-muted-foreground">
+                              {fmtBRL(parseFloat(s.totalCusto ?? "0"))}
+                            </td>
+                            <td className="px-4 py-2 text-right font-bold text-foreground">
+                              {fmtBRL(parseFloat(s.totalGeral ?? "0"))}
+                            </td>
+                            <td className="px-4 py-2 text-right font-medium text-primary">
+                              {fmtTon(parseFloat(s.custoTon ?? "0"))}
+                            </td>
+                            <td className="px-4 py-2 text-right text-muted-foreground">
+                              {fmtPct(pct)}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr className="font-bold bg-slate-800 text-white">
+                      <td className="px-4 py-2 uppercase tracking-wide">Total dos Desembolsos</td>
+                      <td className="px-4 py-2 text-right"></td>
+                      <td className="px-4 py-2 text-right">{fmtBRL(totalGeral)}</td>
+                      <td className="px-4 py-2 text-right text-green-400">R$ {fmtTon(totalCustoTon)}</td>
+                      <td className="px-4 py-2 text-right text-blue-400">100,0%</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </CardContent>
+            </Card>
+
             {/* Tabelas por grupo */}
             {relatorio.grupos.map((grupo) => {
               const cardCor = GRUPO_CORES[grupo.grupoNome] ?? "bg-gray-50 border-gray-200";
