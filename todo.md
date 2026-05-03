@@ -344,3 +344,7 @@
 - [x] Custo por Setor: ordenar setores e equipamentos por valor decrescente
 - [x] Relatório Analítico: ordenar grupos, subsetores, equipamentos e despesas específicas por valor decrescente
 - [x] Backend: ajustar queries/lógica de agrupamento para respeitar ordem decrescente
+
+## Cards Apuração de Custo
+- [x] Adicionar card "Gastos sem Despesas Indiretas" (cor azul como Custo/t Produção) antes do card Custo Total
+- [x] Renomear "Custo Total" para "Gastos com Despesas Indiretas" (cor laranja como C.M. c/ Desp. Indiretas)

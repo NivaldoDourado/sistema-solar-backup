@@ -619,12 +619,35 @@ export default function ApuracaoCusto() {
       {/* KPIs Principais */}
       {relatorio && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card className="border-primary/30 bg-primary/5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Card 1: Gastos sem Despesas Indiretas */}
+            <Card className="border-blue-200 bg-blue-50">
               <CardContent className="pt-4">
-                <p className="text-xs text-muted-foreground">Custo Total</p>
-                <p className="text-2xl font-bold text-primary font-mono">
+                <div className="flex items-center gap-1 mb-1">
+                  <Factory className="h-3 w-3 text-blue-600" />
+                  <p className="text-xs text-muted-foreground">Gastos sem Desp. Indiretas</p>
+                </div>
+                <p className="text-2xl font-bold text-blue-700 font-mono">
+                  R$ {fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Custo Var. + Desp. Var.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Gastos com Despesas Indiretas (antes: Custo Total) */}
+            <Card className="border-orange-200 bg-orange-50">
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-1 mb-1">
+                  <Building2 className="h-3 w-3 text-orange-600" />
+                  <p className="text-xs text-muted-foreground">Gastos c/ Desp. Indiretas</p>
+                </div>
+                <p className="text-2xl font-bold text-orange-700 font-mono">
                   R$ {fmt(relatorio.totalGeral)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Total incluindo Desp. Indiretas
                 </p>
               </CardContent>
             </Card>
