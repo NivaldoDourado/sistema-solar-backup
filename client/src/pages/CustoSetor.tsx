@@ -316,26 +316,47 @@ export default function CustoSetor() {
                 { label: "Custo Médio (R$/t)", value: `R$ ${fmtTon(totalCustoTon)}` },
                 { label: "Grupos", value: String(relatorio.grupos.length) },
               ];
-              const buildSecoes = () => relatorio.grupos.map(g => ({
-                titulo: g.grupoNome,
-                corCabecalho: (
-                  g.grupoNome === "DESMONTE DE ROCHA" ? [180, 100, 0] :
-                  g.grupoNome === "CARGA E TRANSPORTE" ? [30, 64, 175] :
-                  g.grupoNome === "BRITAGEM" ? [22, 101, 52] :
-                  g.grupoNome === "EXPEDIÇÃO" ? [126, 34, 206] :
-                  g.grupoNome === "SERVIÇOS AUXILIARES" ? [180, 60, 0] :
-                  [50, 50, 80]
-                ) as [number, number, number],
-                linhas: [
-                  ...g.subsetores.map((s: any) => ({
-                    conta: s.subsetorNome,
-                    valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
-                    custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
-                    percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
-                  })),
-                  { conta: `SUBTOTAL ${g.grupoNome}`, valor: fmtBRL(g.subtotalGeral), custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`, isSubtotal: true },
-                ],
-              }));
+              const buildSecoes = () => {
+                // Seção 1: Resumo Consolidado por Subsetor (todos os subsetores juntos)
+                const resumoConsolidado = {
+                  titulo: "Resumo Consolidado por Subsetor",
+                  corCabecalho: [15, 23, 42] as [number, number, number],
+                  linhas: [
+                    ...relatorio.grupos.flatMap((g: any) =>
+                      g.subsetores.map((s: any) => ({
+                        conta: s.subsetorNome,
+                        divisor: g.grupoNome,
+                        valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                        custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
+                        percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
+                      }))
+                    ),
+                    { conta: "TOTAL DOS DESEMBOLSOS", valor: fmtBRL(totalGeral), custoPorTon: `R$ ${fmtTon(totalCustoTon)}`, percentual: "100,0%", isTotal: true },
+                  ],
+                };
+                // Seções por grupo
+                const secoesGrupos = relatorio.grupos.map((g: any) => ({
+                  titulo: g.grupoNome,
+                  corCabecalho: (
+                    g.grupoNome === "DESMONTE DE ROCHA" ? [180, 100, 0] :
+                    g.grupoNome === "CARGA E TRANSPORTE" ? [30, 64, 175] :
+                    g.grupoNome === "BRITAGEM" ? [22, 101, 52] :
+                    g.grupoNome === "EXPEDIÇÃO" ? [126, 34, 206] :
+                    g.grupoNome === "SERVIÇOS AUXILIARES" ? [180, 60, 0] :
+                    [50, 50, 80]
+                  ) as [number, number, number],
+                  linhas: [
+                    ...g.subsetores.map((s: any) => ({
+                      conta: s.subsetorNome,
+                      valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                      custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
+                      percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
+                    })),
+                    { conta: `SUBTOTAL ${g.grupoNome}`, valor: fmtBRL(g.subtotalGeral), custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`, isSubtotal: true },
+                  ],
+                }));
+                return [resumoConsolidado, ...secoesGrupos];
+              };
               return (
                 <div className="flex items-center gap-2">
                   <button
