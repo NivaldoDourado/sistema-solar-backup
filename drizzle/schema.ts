@@ -842,3 +842,54 @@ export const statusRotinaDiario = mysqlTable("status_rotina_diario", {
 });
 export type StatusRotinaDiario = typeof statusRotinaDiario.$inferSelect;
 export type InsertStatusRotinaDiario = typeof statusRotinaDiario.$inferInsert;
+
+// ============================================================================
+// MÓDULO RELATÓRIO ANALÍTICO POR SETOR (RAS) — Centros de Custo Detalhados
+// ============================================================================
+
+// Centro de Custo por Equipamento (dados das abas RAS01-RAS12)
+// Cada registro representa um equipamento/centro de custo em um subsetor/período
+export const custoSetorEquipamento = mysqlTable("custo_setor_equipamento", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(),   // FK para periodo_custo
+  subsetorNome: varchar("subsetorNome", { length: 255 }).notNull(), // ex: DESMONTE PRIMÁRIO
+  grupoNome: varchar("grupoNome", { length: 255 }).notNull(),       // ex: DESMONTE DE ROCHA
+  equipamentoNome: varchar("equipamentoNome", { length: 255 }).notNull(), // ex: CARRETA PERFURATRIZ - ROCK 01
+  // Despesas do equipamento
+  salOperEncOper: decimal("salOperEncOper", { precision: 14, scale: 2 }).default("0"),
+  depreciacao: decimal("depreciacao", { precision: 14, scale: 2 }).default("0"),
+  combustivel: decimal("combustivel", { precision: 14, scale: 2 }).default("0"),
+  lubrificantes: decimal("lubrificantes", { precision: 14, scale: 2 }).default("0"),
+  pecasDesgaste: decimal("pecasDesgaste", { precision: 14, scale: 2 }).default("0"),
+  pecasReposicao: decimal("pecasReposicao", { precision: 14, scale: 2 }).default("0"),
+  outrasDespesas: decimal("outrasDespesas", { precision: 14, scale: 2 }).default("0"),
+  totalDespesasEquipamento: decimal("totalDespesasEquipamento", { precision: 14, scale: 2 }).default("0"),
+  // Informações operacionais
+  horasTrabalhadas: decimal("horasTrabalhadas", { precision: 10, scale: 2 }).default("0"),
+  qtdCombustivelLitros: decimal("qtdCombustivelLitros", { precision: 10, scale: 2 }).default("0"),
+  producaoTotal: decimal("producaoTotal", { precision: 14, scale: 2 }).default("0"),
+  unidadeProducao: varchar("unidadeProducao", { length: 50 }),
+  ordemExibicao: int("ordemExibicao").default(0),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CustoSetorEquipamento = typeof custoSetorEquipamento.$inferSelect;
+export type InsertCustoSetorEquipamento = typeof custoSetorEquipamento.$inferInsert;
+
+// Despesas Específicas do Setor (dados da aba MSET — Energia Elétrica, Explosivos, etc.)
+// Cada registro representa uma conta de despesa em um subsetor/período
+export const custoSetorDespesa = mysqlTable("custo_setor_despesa", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(),   // FK para periodo_custo
+  subsetorNome: varchar("subsetorNome", { length: 255 }).notNull(), // ex: DESMONTE PRIMÁRIO
+  grupoNome: varchar("grupoNome", { length: 255 }).notNull(),       // ex: DESMONTE DE ROCHA
+  descricao: varchar("descricao", { length: 255 }).notNull(),       // ex: Energia Elétrica
+  valor: decimal("valor", { precision: 14, scale: 2 }).default("0"),
+  ordemExibicao: int("ordemExibicao").default(0),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CustoSetorDespesa = typeof custoSetorDespesa.$inferSelect;
+export type InsertCustoSetorDespesa = typeof custoSetorDespesa.$inferInsert;

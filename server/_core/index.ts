@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerImportacaoCustoRoute } from "../importacaoCusto";
 import { registerImportacaoCustoSetorRoute } from "../importacaoCustoSetor";
+import { registerImportacaoCustoSetorRasRoute } from "../importacaoCustoSetorRas";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -41,6 +42,8 @@ async function startServer() {
   registerImportacaoCustoRoute(app);
   // Importação de custo por setor (aba RSSET)
   registerImportacaoCustoSetorRoute(app);
+  // Importação de custo por setor analítico (abas RAS01-RAS12 e MSET)
+  registerImportacaoCustoSetorRasRoute(app);
   // tRPC API
   app.use(
     "/api/trpc",

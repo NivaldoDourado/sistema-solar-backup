@@ -327,3 +327,14 @@
 - [x] Criar funções exportRelatorioToExcel e exportRelatorioToPDF em export-utils.ts com cabeçalho completo (logo, empresa, título, período, data, KPIs em linha horizontal, tabela multi-seção colorida, rodapé com página)
 - [x] Integrar exportação Excel/PDF/WhatsApp na Apuração de Custo com seções: Custo Variável, Despesa Variável, Despesas Indiretas, Totais
 - [x] Integrar exportação Excel/PDF/WhatsApp no Custo por Setor com seções por grupo (DESMONTE, CARGA, BRITAGEM, EXPEDIÇÃO, SERVIÇOS, ADMINISTRAÇÃO)
+
+## Relatório Analítico por Setor (RAS)
+- [x] Criar tabelas custo_setor_equipamento e custo_setor_despesa no schema
+- [x] Aplicar migração do banco (pnpm db:push)
+- [x] Criar importador das abas RAS01-RAS12 e MSET da planilha CUSTOSOLAR
+- [x] Corrigir mapeamento de colunas por setor (cada setor usa coluna diferente para valores rateados)
+- [x] Popular dados de março/2026 com valores corretos validados contra aba RSSET
+- [x] Criar router tRPC custoSetorRas com procedures getGrupos e getEquipamentos
+- [x] Criar página CustoSetorAnalitico.tsx com visualização detalhada por grupo/subsetor/equipamento
+- [x] Registrar rota /custo-setor-analitico no App.tsx
+- [x] Adicionar item "Relatório Analítico" no menu lateral (DashboardLayout)

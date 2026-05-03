@@ -26,6 +26,7 @@ import PeriodoCusto from "./pages/PeriodoCusto";
 import LancamentoCusto from "./pages/LancamentoCusto";
 import ApuracaoCusto from "./pages/ApuracaoCusto";
 import CustoSetor from "./pages/CustoSetor";
+import CustoSetorAnalitico from "./pages/CustoSetorAnalitico";
 import ImportacaoCusto from "./pages/ImportacaoCusto";
 import Manutencao from "./pages/Manutencao";
 import Usuarios from "./pages/Usuarios";
@@ -150,6 +151,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <CustoSetor />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/custo-setor-analitico"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <CustoSetorAnalitico />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

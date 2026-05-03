@@ -10,6 +10,7 @@ import { temposDescargaRouter, configuracoesRouter } from "./tempos_descarga_rou
 import { periodoCustoRouter } from "./periodoCusto_router";
 import { lancamentoCustoRouter } from "./lancamentoCusto_router";
 import { custoSetorRouter } from "./custoSetor_router";
+import { custoSetorRasRouter } from "./custoSetorRas_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3218,6 +3219,7 @@ export const appRouter = router({
   periodoCusto: periodoCustoRouter,
   lancamentoCusto: lancamentoCustoRouter,
   custoSetor: custoSetorRouter,
+  custoSetorRas: custoSetorRasRouter,
 
   authLocal: authLocalRouter,
 

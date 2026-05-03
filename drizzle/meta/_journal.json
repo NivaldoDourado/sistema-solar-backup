@@ -57,6 +57,13 @@
       "when": 1777743671025,
       "tag": "0007_flawless_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1777817570228,
+      "tag": "0008_aromatic_firestar",
+      "breakpoints": true
     }
   ]
 }

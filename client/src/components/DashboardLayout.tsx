@@ -89,6 +89,7 @@ export default function DashboardLayout({
     { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
+    { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
     { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
   ];
 
