@@ -414,3 +414,8 @@
 - [x] Investigar contas de despesas específicas no banco (tabela custo_setor ou similar)
 - [x] Backend: retornar despesas por conta no relatorioAnalitico
 - [x] Frontend: substituir card genérico por tabela de contas com linhas (Energia, Explosivos, etc.)
+
+## Correção: Importação de Despesas Específicas por Conta (Mai/2026)
+- [x] Inspecionar como o script import-ras.mjs lê as despesas específicas na planilha RAS
+- [x] Corrigir para gravar cada conta individualmente (Energia, Explosivos e Acessórios, etc.)
+- [x] Reimportar os dados e verificar na interface
