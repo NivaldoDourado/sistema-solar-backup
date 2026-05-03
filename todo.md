@@ -356,3 +356,6 @@
 
 ## Relatório Analítico — Detalhe de Equipamento em Linhas
 - [x] Substituir os pequenos cards do detalhe do equipamento por linhas de tabela (Sal.Oper., Combustível, Lubrificantes, Peças Desgaste, Peças Repos., Outras Desp., Horas Trabalhadas)
+
+## Bug: Unidade de Produção DESMONTE PRIMÁRIO
+- [x] Corrigir unidade de produção dos equipamentos do DESMONTE PRIMÁRIO de "ton" para "metro perf." (UPDATE direto no banco)
