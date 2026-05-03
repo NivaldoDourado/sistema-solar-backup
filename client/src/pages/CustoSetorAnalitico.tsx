@@ -305,7 +305,7 @@ function SubsetorCard({
             </div>
           )}
 
-          {/* Despesas específicas do setor */}
+          {/* Despesas específicas do setor — tabela por conta */}
           {subsetor.despesasEspecificas.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -313,24 +313,45 @@ function SubsetorCard({
                 <span className="text-sm font-medium text-foreground">Despesas Específicas do Setor</span>
                 <Badge variant="secondary" className="text-xs">{fmtBRL(subsetor.totalDespesasEspecificas)}</Badge>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {subsetor.despesasEspecificas.map(desp => {
-                  const valor = parseFloat(desp.valor ?? "0");
-                  const isDestaque = desp.descricao.includes("Energia") || desp.descricao.includes("Explosivos");
-                  return (
-                    <div
-                      key={desp.id}
-                      className={`rounded-md border px-3 py-2 ${isDestaque ? "bg-yellow-50 border-yellow-200" : "bg-background border-border"}`}
-                    >
-                      <div className="flex items-center gap-1 mb-0.5">
-                        {desp.descricao.includes("Energia") && <Zap className="h-3 w-3 text-yellow-500" />}
-                        {desp.descricao.includes("Explosivos") && <Bomb className="h-3 w-3 text-red-500" />}
-                        <p className="text-xs text-muted-foreground truncate">{desp.descricao}</p>
-                      </div>
-                      <p className="text-sm font-semibold font-mono">{fmtBRL(valor)}</p>
-                    </div>
-                  );
-                })}
+              <div className="rounded-md border border-border bg-background overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="text-xs">Conta / Descrição</TableHead>
+                      <TableHead className="text-right text-xs font-semibold">Valor</TableHead>
+                      <TableHead className="text-right text-xs">% Setor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {subsetor.despesasEspecificas.map((desp, idx) => {
+                      const valor = parseFloat(desp.valor ?? "0");
+                      const pct = subsetor.totalSubsetor > 0 ? (valor / subsetor.totalSubsetor) * 100 : 0;
+                      const hasIcon = desp.descricao.includes("Energia") || desp.descricao.includes("Explosivos");
+                      return (
+                        <TableRow key={desp.id} className={idx % 2 === 0 ? "" : "bg-muted/20"}>
+                          <TableCell className="text-sm font-medium">
+                            <div className="flex items-center gap-1.5">
+                              {desp.descricao.includes("Energia") && <Zap className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
+                              {desp.descricao.includes("Explosivos") && <Bomb className="h-3.5 w-3.5 text-red-500 shrink-0" />}
+                              {!hasIcon && <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                              {desp.descricao}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-semibold font-mono">{fmtBRL(valor)}</TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">{fmtPct(pct)}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {/* Linha de subtotal */}
+                    <TableRow className="bg-muted/30 font-semibold border-t-2">
+                      <TableCell className="text-sm">Subtotal Despesas Específicas</TableCell>
+                      <TableCell className="text-right text-sm font-semibold font-mono">{fmtBRL(subsetor.totalDespesasEspecificas)}</TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground">
+                        {fmtPct(subsetor.totalSubsetor > 0 ? (subsetor.totalDespesasEspecificas / subsetor.totalSubsetor) * 100 : 0)}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}

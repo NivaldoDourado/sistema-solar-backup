@@ -409,3 +409,8 @@
 
 ## Destaque Visual de Coluna Filtrada (Mai/2026)
 - [x] Relatório Analítico: realçar cabeçalho e células da coluna correspondente a ?conta= com fundo amarelo
+
+## Detalhamento de Despesas Específicas do Setor (Mai/2026)
+- [x] Investigar contas de despesas específicas no banco (tabela custo_setor ou similar)
+- [x] Backend: retornar despesas por conta no relatorioAnalitico
+- [x] Frontend: substituir card genérico por tabela de contas com linhas (Energia, Explosivos, etc.)
