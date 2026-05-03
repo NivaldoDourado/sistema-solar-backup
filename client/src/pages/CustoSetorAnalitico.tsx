@@ -110,7 +110,7 @@ function EquipamentoRow({
 
   // Destacar a célula da conta filtrada
   const highlight = (campo: string) =>
-    filtroContaCampo === campo ? "bg-yellow-100 font-bold text-yellow-900 ring-1 ring-yellow-400 rounded" : "";
+      filtroContaCampo === campo ? "bg-yellow-100 font-bold text-yellow-900 border-l-2 border-yellow-400" : "";
 
   return (
     <>
@@ -257,11 +257,11 @@ function SubsetorCard({
                     <TableRow className="bg-muted/50">
                       <TableHead className="w-8"></TableHead>
                       <TableHead className="text-xs">Equipamento</TableHead>
-                      <TableHead className={`text-right text-xs ${filtroContaCampo === "salOperEncOper" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Sal.Oper.</TableHead>
-                      <TableHead className={`text-right text-xs ${filtroContaCampo === "lubrificantes" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Lubrif.</TableHead>
-                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasDesgaste" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Pç.Desgaste</TableHead>
-                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasReposicao" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Pç.Repos.</TableHead>
-                      <TableHead className={`text-right text-xs ${filtroContaCampo === "outrasDespesas" ? "bg-yellow-50 text-yellow-700 font-bold" : ""}`}>Outras</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "salOperEncOper" ? "bg-yellow-200 text-yellow-800 font-bold border-t-2 border-yellow-400" : ""}`}>Sal.Oper.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "lubrificantes" ? "bg-yellow-200 text-yellow-800 font-bold border-t-2 border-yellow-400" : ""}`}>Lubrif.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasDesgaste" ? "bg-yellow-200 text-yellow-800 font-bold border-t-2 border-yellow-400" : ""}`}>Pç.Desgaste</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "pecasReposicao" ? "bg-yellow-200 text-yellow-800 font-bold border-t-2 border-yellow-400" : ""}`}>Pç.Repos.</TableHead>
+                      <TableHead className={`text-right text-xs ${filtroContaCampo === "outrasDespesas" ? "bg-yellow-200 text-yellow-800 font-bold border-t-2 border-yellow-400" : ""}`}>Outras</TableHead>
                       <TableHead className="text-right text-xs font-semibold">Total Equip.</TableHead>
                       <TableHead className="text-right text-xs">% Setor</TableHead>
                     </TableRow>

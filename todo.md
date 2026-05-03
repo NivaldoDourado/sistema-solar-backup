@@ -406,3 +406,6 @@
 - [x] Custo por Setor: tornar cards de grupo clicáveis com link ?grupo= para o Relatório Analítico
 - [x] Relatório Analítico: suporte a filtro ?grupo= (mostrar apenas subsetores do grupo filtrado)
 - [x] Relatório Analítico: retorno reverso no banner quando ?grupo= → "← Custo por Setor"
+
+## Destaque Visual de Coluna Filtrada (Mai/2026)
+- [x] Relatório Analítico: realçar cabeçalho e células da coluna correspondente a ?conta= com fundo amarelo
