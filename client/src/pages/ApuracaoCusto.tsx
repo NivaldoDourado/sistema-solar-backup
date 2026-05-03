@@ -168,6 +168,11 @@ export default function ApuracaoCusto() {
     const custoMedio = custoPorTonProducao + custoPorTonVendas;
     const custoMedioComDI = custoMedio + custoPorTonDespesasIndiretas;
 
+    // Ordenar contas de cada grupo por valor decrescente
+    custoVariavel.sort((a, b) => b.valor - a.valor);
+    despesaVariavel.sort((a, b) => b.valor - a.valor);
+    despesasIndiretas.sort((a, b) => b.valor - a.valor);
+
     return {
       custoVariavel,
       despesaVariavel,
@@ -195,7 +200,7 @@ export default function ApuracaoCusto() {
       ...relatorio.custoVariavel,
       ...relatorio.despesaVariavel,
       ...relatorio.despesasIndiretas,
-    ];
+    ].sort((a, b) => b.valor - a.valor);
     return todasContas.map((c, idx) => ({
       name: c.nome,
       value: c.valor,

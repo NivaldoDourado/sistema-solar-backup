@@ -267,11 +267,13 @@ export default function CustoSetor() {
     custoTon: g.subtotalCustoTon,
     subtitle: `R$ ${fmtTon(g.subtotalCustoTon)}/t`,
     fill: GRUPO_PALETA[g.grupoNome] ?? "#94a3b8",
-    // Detalhes exibidos no modal ao clicar na fatia
-    details: g.subsetores.map((s: any) => ({
-      label: s.subsetorNome,
-      value: `${fmtBRL(parseFloat(s.totalGeral ?? "0"))} | R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}/t`,
-    })),
+    // Detalhes exibidos no modal ao clicar na fatia (ordem decrescente por totalGeral)
+    details: [...g.subsetores]
+      .sort((a: any, b: any) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0"))
+      .map((s: any) => ({
+        label: s.subsetorNome,
+        value: `${fmtBRL(parseFloat(s.totalGeral ?? "0"))} | R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}/t`,
+      })),
   }));
 
   return (

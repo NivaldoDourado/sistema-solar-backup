@@ -338,3 +338,9 @@
 - [x] Criar página CustoSetorAnalitico.tsx com visualização detalhada por grupo/subsetor/equipamento
 - [x] Registrar rota /custo-setor-analitico no App.tsx
 - [x] Adicionar item "Relatório Analítico" no menu lateral (DashboardLayout)
+
+## Ordenação Decrescente em Apropriação de Custo
+- [x] Apuração de Custo: ordenar grupos, subgrupos e equipamentos por valor decrescente
+- [x] Custo por Setor: ordenar setores e equipamentos por valor decrescente
+- [x] Relatório Analítico: ordenar grupos, subsetores, equipamentos e despesas específicas por valor decrescente
+- [x] Backend: ajustar queries/lógica de agrupamento para respeitar ordem decrescente

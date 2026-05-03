@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -28,7 +28,7 @@ export const lancamentoCustoRouter = router({
         .from(lancamentoCusto)
         .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
         .where(eq(lancamentoCusto.periodoCustoId, input.periodoCustoId))
-        .orderBy(contaCusto.classificacao, contaCusto.nome);
+        .orderBy(contaCusto.classificacao, desc(lancamentoCusto.valor));
     }),
 
   // Criar ou atualizar lançamento (upsert por periodoCustoId + contaCustoId)

@@ -143,8 +143,16 @@ export const custoSetorRouter = router({
         0
       );
 
+      // Ordenar subsetores dentro de cada grupo por totalGeral decrescente
+      const gruposOrdenados = Object.values(grupos).map((g) => ({
+        ...g,
+        subsetores: [...g.subsetores].sort(
+          (a, b) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0")
+        ),
+      }));
+
       return {
-        grupos: Object.values(grupos),
+        grupos: gruposOrdenados,
         totalGeral,
         totalCustoTon,
         lancamentos,

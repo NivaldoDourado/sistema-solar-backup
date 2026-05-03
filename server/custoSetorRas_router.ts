@@ -184,6 +184,18 @@ export const custoSetorRasRouter = router({
         subsetor.totalSubsetor =
           subsetor.totalEquipamentos + subsetor.totalDespesasEspecificas;
 
+        // Ordenar equipamentos por totalDespesasEquipamento decrescente
+        subsetor.equipamentos.sort(
+          (a, b) =>
+            parseFloat(b.totalDespesasEquipamento ?? "0") -
+            parseFloat(a.totalDespesasEquipamento ?? "0")
+        );
+
+        // Ordenar despesas específicas por valor decrescente
+        subsetor.despesasEspecificas.sort(
+          (a, b) => parseFloat(b.valor ?? "0") - parseFloat(a.valor ?? "0")
+        );
+
         if (!gruposMap[subsetor.grupoNome]) {
           gruposMap[subsetor.grupoNome] = {
             grupoNome: subsetor.grupoNome,
