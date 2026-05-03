@@ -348,3 +348,8 @@
 ## Cards Apuração de Custo
 - [x] Adicionar card "Gastos sem Despesas Indiretas" (cor azul como Custo/t Produção) antes do card Custo Total
 - [x] Renomear "Custo Total" para "Gastos com Despesas Indiretas" (cor laranja como C.M. c/ Desp. Indiretas)
+
+## Bug: Totalizadores incorretos no Relatório Analítico
+- [x] Diagnosticar por que Total Geral (R$ 4.467.084,24) e Serviços Auxiliares (R$ 2.180.535,60) estão inflados
+- [x] Corrigir leitura da aba MSET (parser usava seção detalhada incorreta; corrigido para usar seção resumida RATEIO POR SETOR)
+- [x] Validar que todos os totais batem com a planilha RSSET
