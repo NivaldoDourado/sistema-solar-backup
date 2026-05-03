@@ -235,3 +235,193 @@ export const formatters = {
   integer: (value: any) => (value ? parseInt(value).toString() : "0"),
   boolean: (value: any) => (value === "sim" || value === true ? "Sim" : "Não"),
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Exportação de Relatório de Custo (multi-seção: KPIs + tabela + resumo)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface RelatorioKPI {
+  label: string;
+  value: string;
+}
+
+export interface RelatorioSecao {
+  /** Título da seção (ex: "Custo Variável") */
+  titulo: string;
+  /** Cor de fundo do cabeçalho da seção no PDF (RGB) */
+  corCabecalho?: [number, number, number];
+  /** Linhas da tabela */
+  linhas: Array<{
+    conta: string;
+    divisor?: string;
+    valor: string;
+    custoPorTon?: string;
+    percentual?: string;
+    isSubtotal?: boolean;
+    isTotal?: boolean;
+  }>;
+}
+
+export interface RelatorioExportOptions {
+  titulo: string;
+  periodo: string;
+  empresa?: string;
+  kpis: RelatorioKPI[];
+  secoes: RelatorioSecao[];
+  filename: string;
+}
+
+// ── Excel ─────────────────────────────────────────────────────────────────────
+export function exportRelatorioToExcel(opts: RelatorioExportOptions) {
+  const { titulo, periodo, empresa, kpis, secoes, filename } = opts;
+  const wsData: any[][] = [];
+  const merges: any[] = [];
+
+  // Cabeçalho
+  wsData.push([SYSTEM_NAME_LINE1]);
+  wsData.push([empresa ?? SYSTEM_NAME_LINE2]);
+  wsData.push([titulo]);
+  wsData.push([`Período: ${periodo}`]);
+  wsData.push([`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`]);
+  wsData.push([]); // linha em branco
+
+  const COL_COUNT = 5;
+  const startRow = wsData.length;
+  for (let i = 0; i < startRow; i++) {
+    merges.push({ s: { r: i, c: 0 }, e: { r: i, c: COL_COUNT - 1 } });
+  }
+
+  // KPIs
+  wsData.push(["KPIs do Período", "", "", "", ""]);
+  merges.push({ s: { r: wsData.length - 1, c: 0 }, e: { r: wsData.length - 1, c: COL_COUNT - 1 } });
+  for (const kpi of kpis) {
+    wsData.push([kpi.label, kpi.value, "", "", ""]);
+  }
+  wsData.push([]);
+
+  // Colunas da tabela
+  const headerRow = wsData.length;
+  wsData.push(["Grupo / Conta", "Conta de Custo", "Divisor", "Valor (R$)", "Custo/t (R$)"]);
+
+  // Seções
+  for (const secao of secoes) {
+    // Título da seção
+    const secaoRow = wsData.length;
+    wsData.push([secao.titulo, "", "", "", ""]);
+    merges.push({ s: { r: secaoRow, c: 0 }, e: { r: secaoRow, c: COL_COUNT - 1 } });
+
+    for (const linha of secao.linhas) {
+      wsData.push([
+        linha.isSubtotal || linha.isTotal ? linha.conta : "",
+        linha.isSubtotal || linha.isTotal ? "" : linha.conta,
+        linha.divisor ?? "",
+        linha.valor,
+        linha.custoPorTon ?? "",
+      ]);
+    }
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws["!cols"] = [{ wch: 30 }, { wch: 35 }, { wch: 12 }, { wch: 18 }, { wch: 18 }];
+  ws["!merges"] = merges;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Relatório");
+  const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  saveAs(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${filename}.xlsx`);
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
+  const { titulo, periodo, empresa, kpis, secoes, filename } = opts;
+
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Logo
+  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
+  const logoW = 28, logoH = 30;
+  if (logoBase64) {
+    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
+  }
+
+  // Cabeçalho textual
+  let curY = 12;
+  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+  doc.text(SYSTEM_NAME_LINE1, 14, curY); curY += 6;
+
+  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(empresa ?? SYSTEM_NAME_LINE2, 14, curY); curY += 5;
+
+  doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+  doc.text(titulo, 14, curY); curY += 6;
+
+  doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(`Período: ${periodo}`, 14, curY); curY += 5;
+
+  doc.setFontSize(8); doc.setFont("helvetica", "italic"); doc.setTextColor(120, 120, 120);
+  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, curY);
+  curY += 7;
+
+  // KPIs em linha horizontal
+  if (kpis.length > 0) {
+    const kpiW = (pageWidth - 28) / kpis.length;
+    doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+    kpis.forEach((kpi, i) => {
+      const x = 14 + i * kpiW;
+      doc.setFillColor(240, 245, 255);
+      doc.roundedRect(x, curY, kpiW - 3, 10, 2, 2, "F");
+      doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+      doc.text(kpi.label, x + 2, curY + 3.5);
+      doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+      doc.text(kpi.value, x + 2, curY + 8);
+      doc.setFont("helvetica", "normal");
+    });
+    curY += 14;
+  }
+
+  // Tabela principal com seções
+  const tableBody: any[] = [];
+  const sectionHeaderRows: number[] = [];
+
+  for (const secao of secoes) {
+    sectionHeaderRows.push(tableBody.length);
+    tableBody.push([{ content: secao.titulo, colSpan: 5, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 8 } }]);
+
+    for (const linha of secao.linhas) {
+      const isSpecial = linha.isSubtotal || linha.isTotal;
+      tableBody.push([
+        { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
+        { content: isSpecial ? "" : linha.conta },
+        { content: linha.divisor ?? "" },
+        { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+        { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
+      ]);
+    }
+  }
+
+  autoTable(doc, {
+    head: [["Grupo", "Conta de Custo", "Divisor", "Valor (R$)", "Custo/t (R$)"]],
+    body: tableBody,
+    startY: curY,
+    styles: { fontSize: 7.5, cellPadding: 1.8 },
+    headStyles: { fillColor: [15, 50, 120], textColor: 255, fontStyle: "bold", fontSize: 8 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 38 },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 35, halign: "right" },
+      4: { cellWidth: 35, halign: "right" },
+    },
+    margin: { left: 14, right: 14 },
+    didDrawPage: (data: any) => {
+      const pc = doc.getNumberOfPages();
+      doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
+      doc.text(`Página ${data.pageNumber} de ${pc}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 8);
+      doc.text(SYSTEM_NAME_LINE1, 14, doc.internal.pageSize.getHeight() - 8);
+    },
+  });
+
+  doc.save(`${filename}.pdf`);
+}

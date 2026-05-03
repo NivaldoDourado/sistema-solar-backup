@@ -315,3 +315,15 @@
 ## Custo por Setor — Tabela Resumo Consolidada (Mai/2026)
 
 - [x] Adicionar tabela resumo com todos os subsetores juntos (Nome, Total Custo, Total Geral, R$/t, %) entre o gráfico de rosca e os cards de grupo — ponto colorido do grupo, rodapé Total dos Desembolsos em fundo escuro
+
+## Exportação com Cabeçalho de Relatório (Mai/2026)
+
+- [ ] Criar funções exportToExcelRelatorio e exportToPdfRelatorio com cabeçalho (empresa, período, data)
+- [ ] Integrar exportação Excel/PDF com cabeçalho na página Apuração de Custo (plano de contas + KPIs)
+- [ ] Integrar exportação Excel/PDF com cabeçalho na página Custo por Setor (tabela resumo + grupos)
+
+## Exportação com Relatório Completo (Excel/PDF)
+
+- [x] Criar funções exportRelatorioToExcel e exportRelatorioToPDF em export-utils.ts com cabeçalho completo (logo, empresa, título, período, data, KPIs em linha horizontal, tabela multi-seção colorida, rodapé com página)
+- [x] Integrar exportação Excel/PDF/WhatsApp na Apuração de Custo com seções: Custo Variável, Despesa Variável, Despesas Indiretas, Totais
+- [x] Integrar exportação Excel/PDF/WhatsApp no Custo por Setor com seções por grupo (DESMONTE, CARGA, BRITAGEM, EXPEDIÇÃO, SERVIÇOS, ADMINISTRAÇÃO)

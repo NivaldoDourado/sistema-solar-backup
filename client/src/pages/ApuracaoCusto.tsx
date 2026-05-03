@@ -15,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { exportRelatorioToExcel, exportRelatorioToPDF } from "@/lib/export-utils";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -435,15 +436,138 @@ export default function ApuracaoCusto() {
             Relatório de custo por tonelada por classificação e período
           </p>
         </div>
-        {exportOptions && periodoAtual && (
-          <DashboardExportMenu
-            title={`Apuração de Custo — ${periodoLabel}`}
-            subtitle={`Produção: ${relatorio?.producao ? fmt(relatorio.producao) + " t" : "—"} | Vendas: ${relatorio?.vendas ? fmt(relatorio.vendas) + " t" : "—"}`}
-            filename={`apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`}
-            exportOptions={exportOptions}
-            whatsappMessage={whatsappMessage}
-            whatsappDestinatarios={destinatariosAtivos}
-          />
+        {relatorio && periodoAtual && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const kpis = [
+                  { label: "Produção (t)", value: relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "—" },
+                  { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
+                  { label: "Total Geral (R$)", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "Custo Médio (R$/t)", value: "R$ " + fmt(relatorio.custoMedio) },
+                  { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
+                ];
+                const secoes = [
+                  {
+                    titulo: "Custo Variável",
+                    corCabecalho: [22, 101, 52] as [number, number, number],
+                    linhas: [
+                      ...relatorio.custoVariavel.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Custo Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalCustoVariavel), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "", isSubtotal: true },
+                    ],
+                  },
+                  {
+                    titulo: "Despesa Variável",
+                    corCabecalho: [30, 64, 175] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesaVariavel.map(c => ({ conta: c.nome, divisor: "Vendas", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesa Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesaVariavel), custoPorTon: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "", isSubtotal: true },
+                    ],
+                  },
+                  ...(relatorio.despesasIndiretas.length > 0 ? [{
+                    titulo: "Despesas Indiretas",
+                    corCabecalho: [124, 45, 18] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesasIndiretas.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesas Indiretas", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesasIndiretas), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonDespesasIndiretas) : "", isSubtotal: true },
+                    ],
+                  }] : []),
+                  {
+                    titulo: "Totais",
+                    corCabecalho: [15, 23, 42] as [number, number, number],
+                    linhas: [
+                      { conta: "TOTAL GERAL", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
+                      { conta: "CUSTO MÉDIO", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
+                      { conta: "C.M. c/ Despesas Indiretas", custoPorTon: "R$ " + fmt(relatorio.custoMedioComDI), valor: "", isTotal: true },
+                    ],
+                  },
+                ];
+                exportRelatorioToExcel({
+                  titulo: `Apuração de Custo — ${periodoLabel}`,
+                  periodo: periodoLabel,
+                  kpis,
+                  secoes,
+                  filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
+                });
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Excel
+            </button>
+            <button
+              onClick={async () => {
+                const kpis = [
+                  { label: "Produção (t)", value: relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "—" },
+                  { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
+                  { label: "Total Geral (R$)", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "Custo Médio (R$/t)", value: "R$ " + fmt(relatorio.custoMedio) },
+                  { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
+                ];
+                const secoes = [
+                  {
+                    titulo: "Custo Variável",
+                    corCabecalho: [22, 101, 52] as [number, number, number],
+                    linhas: [
+                      ...relatorio.custoVariavel.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Custo Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalCustoVariavel), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "", isSubtotal: true },
+                    ],
+                  },
+                  {
+                    titulo: "Despesa Variável",
+                    corCabecalho: [30, 64, 175] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesaVariavel.map(c => ({ conta: c.nome, divisor: "Vendas", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesa Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesaVariavel), custoPorTon: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "", isSubtotal: true },
+                    ],
+                  },
+                  ...(relatorio.despesasIndiretas.length > 0 ? [{
+                    titulo: "Despesas Indiretas",
+                    corCabecalho: [124, 45, 18] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesasIndiretas.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesas Indiretas", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesasIndiretas), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonDespesasIndiretas) : "", isSubtotal: true },
+                    ],
+                  }] : []),
+                  {
+                    titulo: "Totais",
+                    corCabecalho: [15, 23, 42] as [number, number, number],
+                    linhas: [
+                      { conta: "TOTAL GERAL", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
+                      { conta: "CUSTO MÉDIO", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
+                      { conta: "C.M. c/ Despesas Indiretas", custoPorTon: "R$ " + fmt(relatorio.custoMedioComDI), valor: "", isTotal: true },
+                    ],
+                  },
+                ];
+                await exportRelatorioToPDF({
+                  titulo: `Apuração de Custo — ${periodoLabel}`,
+                  periodo: periodoLabel,
+                  kpis,
+                  secoes,
+                  filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
+                });
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              PDF
+            </button>
+            {whatsappMessage && destinatariosAtivos.length > 0 && (
+              <button
+                onClick={() => {
+                  const encoded = encodeURIComponent(whatsappMessage);
+                  destinatariosAtivos.forEach((tel, idx) => {
+                    const numero = tel.replace(/\D/g, "");
+                    setTimeout(() => window.open(`https://wa.me/${numero}?text=${encoded}`, "_blank"), idx * 800);
+                  });
+                }}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                WhatsApp
+              </button>
+            )}
+          </div>
         )}
       </div>
 

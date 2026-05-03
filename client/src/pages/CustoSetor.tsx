@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { exportRelatorioToExcel, exportRelatorioToPDF } from "@/lib/export-utils";
 import { DonutChartModal } from "@/components/DonutChartModal";
 import {
   PieChart as RechartsPieChart,
@@ -310,16 +310,78 @@ export default function CustoSetor() {
               <RefreshCw className={`h-4 w-4 mr-1 ${loadingRelatorio ? "animate-spin" : ""}`} />
               Atualizar
             </Button>
-            {exportOptions && (
-              <DashboardExportMenu
-                title={`Custo Sintético por Setor — ${periodoLabel}`}
-                subtitle={`Total Geral: ${fmtBRL(totalGeral)} | Custo/t: R$ ${fmtTon(totalCustoTon)}`}
-                filename={`custo-setor-${periodoLabel.replace("/", "-")}`}
-                exportOptions={exportOptions}
-                whatsappMessage={whatsappMessage}
-                whatsappDestinatarios={destinatariosAtivos}
-              />
-            )}
+            {relatorio && relatorio.grupos.length > 0 && (() => {
+              const buildKpis = () => [
+                { label: "Total Geral (R$)", value: fmtBRL(totalGeral) },
+                { label: "Custo Médio (R$/t)", value: `R$ ${fmtTon(totalCustoTon)}` },
+                { label: "Grupos", value: String(relatorio.grupos.length) },
+              ];
+              const buildSecoes = () => relatorio.grupos.map(g => ({
+                titulo: g.grupoNome,
+                corCabecalho: (
+                  g.grupoNome === "DESMONTE DE ROCHA" ? [180, 100, 0] :
+                  g.grupoNome === "CARGA E TRANSPORTE" ? [30, 64, 175] :
+                  g.grupoNome === "BRITAGEM" ? [22, 101, 52] :
+                  g.grupoNome === "EXPEDIÇÃO" ? [126, 34, 206] :
+                  g.grupoNome === "SERVIÇOS AUXILIARES" ? [180, 60, 0] :
+                  [50, 50, 80]
+                ) as [number, number, number],
+                linhas: [
+                  ...g.subsetores.map((s: any) => ({
+                    conta: s.subsetorNome,
+                    valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                    custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
+                    percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
+                  })),
+                  { conta: `SUBTOTAL ${g.grupoNome}`, valor: fmtBRL(g.subtotalGeral), custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`, isSubtotal: true },
+                ],
+              }));
+              return (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => exportRelatorioToExcel({
+                      titulo: `Custo Sintético por Setor — ${periodoLabel}`,
+                      periodo: periodoLabel,
+                      kpis: buildKpis(),
+                      secoes: buildSecoes(),
+                      filename: `custo-setor-${periodoLabel.replace("/", "-")}`,
+                    })}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Excel
+                  </button>
+                  <button
+                    onClick={async () => exportRelatorioToPDF({
+                      titulo: `Custo Sintético por Setor — ${periodoLabel}`,
+                      periodo: periodoLabel,
+                      kpis: buildKpis(),
+                      secoes: buildSecoes(),
+                      filename: `custo-setor-${periodoLabel.replace("/", "-")}`,
+                    })}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    PDF
+                  </button>
+                  {whatsappMessage && destinatariosAtivos.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const encoded = encodeURIComponent(whatsappMessage);
+                        destinatariosAtivos.forEach((tel, idx) => {
+                          const numero = tel.replace(/\D/g, "");
+                          setTimeout(() => window.open(`https://wa.me/${numero}?text=${encoded}`, "_blank"), idx * 800);
+                        });
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      WhatsApp
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
