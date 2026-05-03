@@ -375,6 +375,7 @@ export default function CustoSetorAnalitico() {
 
   const filtroSubsetor = searchParams.get("subsetor") ?? "";
   const filtroContaCampo = searchParams.get("conta") ?? "";
+  const filtroGrupo = searchParams.get("grupo") ?? "";
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: relatorio, isLoading } = trpc.custoSetorRas.relatorioAnalitico.useQuery(
@@ -522,7 +523,7 @@ export default function CustoSetorAnalitico() {
     };
   }, [grupos]);
 
-  const temFiltro = !!filtroSubsetor || !!filtroContaCampo;
+  const temFiltro = !!filtroSubsetor || !!filtroContaCampo || !!filtroGrupo;
 
   return (
     <div className="space-y-6">
@@ -568,20 +569,24 @@ export default function CustoSetorAnalitico() {
         <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-lg">
           <Filter className="h-4 w-4 text-yellow-600 flex-shrink-0" />
           <div className="flex-1 text-sm text-yellow-800">
-            {filtroSubsetor && (
-              <span>Exibindo setor: <strong>{filtroSubsetor}</strong></span>
+            {filtroGrupo && (
+              <span>Grupo: <strong>{filtroGrupo}</strong></span>
             )}
-            {filtroSubsetor && filtroContaCampo && <span className="mx-2">·</span>}
+            {filtroGrupo && filtroSubsetor && <span className="mx-2">·</span>}
+            {filtroSubsetor && (
+              <span>Setor: <strong>{filtroSubsetor}</strong></span>
+            )}
+            {(filtroGrupo || filtroSubsetor) && filtroContaCampo && <span className="mx-2">·</span>}
             {filtroContaCampo && (
               <span>Conta destacada: <strong>{CONTA_CAMPO_LABEL[filtroContaCampo] ?? filtroContaCampo}</strong></span>
             )}
           </div>
           <Link
-            href={filtroContaCampo ? "/apuracao-custo" : "/custo-setor"}
+            href="/custo-setor"
             className="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100 rounded px-2 py-1 transition-colors border border-yellow-300 hover:border-yellow-400"
           >
             <ArrowLeft className="h-3 w-3" />
-            {filtroContaCampo ? "Apuração de Custo" : "Custo por Setor"}
+            {filtroContaCampo && !filtroGrupo && !filtroSubsetor ? "Apuração de Custo" : "Custo por Setor"}
           </Link>
           <Button
             variant="ghost"
@@ -654,7 +659,9 @@ export default function CustoSetorAnalitico() {
       )}
 
       {/* Grupos de setores */}
-      {!isLoading && grupos.map((grupo: GrupoData) => {
+      {!isLoading && grupos
+        .filter((grupo: GrupoData) => !filtroGrupo || grupo.grupoNome === filtroGrupo)
+        .map((grupo: GrupoData) => {
         const paleta = GRUPO_PALETA[grupo.grupoNome] ?? DEFAULT_PALETA;
         const pct = totalGeral > 0 ? (grupo.totalGrupo / totalGeral) * 100 : 0;
         const isExpanded = expandedGrupos[grupo.grupoNome] ?? true;
@@ -688,7 +695,9 @@ export default function CustoSetorAnalitico() {
 
             {isExpanded && (
               <CardContent className="p-4 space-y-2">
-                {subsetoresOrdenados.map((sub: SubsetorData) => {
+                {subsetoresOrdenados
+                  .filter((sub: SubsetorData) => !filtroSubsetor || sub.subsetorNome === filtroSubsetor)
+                  .map((sub: SubsetorData) => {
                   const isDestaque = !!filtroSubsetor && sub.subsetorNome === filtroSubsetor;
                   return (
                     <SubsetorCard

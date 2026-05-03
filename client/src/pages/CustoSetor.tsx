@@ -671,7 +671,14 @@ export default function CustoSetor() {
                   <div className={`px-4 py-3 rounded-t-lg flex items-center justify-between ${headerCor}`}>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
-                      <span className="font-semibold text-sm uppercase tracking-wide">{grupo.grupoNome}</span>
+                      <Link
+                        href={`/custo-setor-analitico?grupo=${encodeURIComponent(grupo.grupoNome)}`}
+                        className="font-semibold text-sm uppercase tracking-wide hover:underline flex items-center gap-1 group"
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                      >
+                        {grupo.grupoNome}
+                        <span className="opacity-0 group-hover:opacity-100 text-xs transition-opacity">↗</span>
+                      </Link>
                     </div>
                     <div className="flex items-center gap-4 text-sm">
                       <span className="font-bold">{fmtBRL(grupo.subtotalGeral)}</span>

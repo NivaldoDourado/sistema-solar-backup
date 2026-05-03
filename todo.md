@@ -401,3 +401,8 @@
 
 ## Drill-down Reverso — Navegação Bidirecional (Mai/2026)
 - [x] Adicionar link de retorno no banner de filtro ativo do Relatório Analítico: ?conta= → "Voltar para Apuração de Custo", ?subsetor= → "Voltar para Custo por Setor"
+
+## Drill-down por Grupo — Terceiro Nível (Mai/2026)
+- [x] Custo por Setor: tornar cards de grupo clicáveis com link ?grupo= para o Relatório Analítico
+- [x] Relatório Analítico: suporte a filtro ?grupo= (mostrar apenas subsetores do grupo filtrado)
+- [x] Relatório Analítico: retorno reverso no banner quando ?grupo= → "← Custo por Setor"
