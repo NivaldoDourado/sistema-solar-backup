@@ -359,3 +359,10 @@
 
 ## Bug: Unidade de Produção DESMONTE PRIMÁRIO
 - [x] Corrigir unidade de produção dos equipamentos do DESMONTE PRIMÁRIO de "ton" para "metro perf." (UPDATE direto no banco)
+
+## Importação de Produções das Abas RAS (Mai/2026)
+- [x] Analisar estrutura das abas RAS01-RAS12 para localizar dados de produção por equipamento
+- [x] Identificar 10 equipamentos com producaoTotal > 0 nos seus setores principais
+- [x] Criar script update-ras-producao.mjs para atualizar producaoTotal e unidadeProducao no banco
+- [x] Executar importação: 10 equipamentos atualizados, 0 não encontrados
+- [x] Verificar exibição na interface (BRITADOR JC1200-01: 80.109,99 ton; PERFURATRIZ WOLF FOX: 3.788 metro perf.)
