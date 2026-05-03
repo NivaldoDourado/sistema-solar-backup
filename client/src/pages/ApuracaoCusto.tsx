@@ -627,8 +627,9 @@ export default function ApuracaoCusto() {
                   <Factory className="h-3 w-3 text-blue-600" />
                   <p className="text-xs text-muted-foreground">Gastos sem Desp. Indiretas</p>
                 </div>
-                <p className="text-2xl font-bold text-blue-700 font-mono">
-                  R$ {fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel)}
+                <p className="text-sm font-bold text-blue-700 font-mono leading-tight">
+                  <span className="block text-xs font-normal">R$</span>
+                  {fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Custo Var. + Desp. Var.
@@ -643,11 +644,12 @@ export default function ApuracaoCusto() {
                   <Building2 className="h-3 w-3 text-orange-600" />
                   <p className="text-xs text-muted-foreground">Gastos c/ Desp. Indiretas</p>
                 </div>
-                <p className="text-2xl font-bold text-orange-700 font-mono">
-                  R$ {fmt(relatorio.totalGeral)}
+                <p className="text-sm font-bold text-orange-700 font-mono leading-tight">
+                  <span className="block text-xs font-normal">R$</span>
+                  {fmt(relatorio.totalGeral)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Total incluindo Desp. Indiretas
+                  Total incl. Desp. Indiretas
                 </p>
               </CardContent>
             </Card>
