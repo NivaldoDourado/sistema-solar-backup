@@ -426,3 +426,8 @@
 
 ## Produção e Vendas no Custo por Setor (Mai/2026)
 - [x] Frontend: exibir produção e total de vendas no cabeçalho do Custo por Setor
+
+## Documentação Completa e Importação Fevereiro/2026 (Mai/2026)
+- [ ] Revisar e atualizar KNOWLEDGE_BASE.md com todo o aprendizado acumulado
+- [ ] Importar planilha de Fevereiro/2026
+- [ ] Verificar dados de Fevereiro na interface

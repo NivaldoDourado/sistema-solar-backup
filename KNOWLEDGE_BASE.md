@@ -1,15 +1,13 @@
-# Base de Conhecimento — Sistema SOLAR
-## Aprendizado Técnico, Lógica de Importação e Roadmap de Evolução
+# KNOWLEDGE BASE — Sistema SOLAR
 
-**Projeto:** Sistema SOLAR — Pedreira Souza e Oliveira Ltda  
-**Última atualização:** Maio/2026  
-**Finalidade:** Documentar toda a lógica, estrutura e aprendizado acumulado para reutilização em outros sistemas que utilizam a mesma planilha de custos CUSTOSOLAR.
+> **Versão:** Mai/2026 — Revisão completa após implementação de Março/2026  
+> **Aplicação:** Este documento cobre todo o aprendizado, estrutura e lógica de importação do Sistema SOLAR. Deve ser reutilizado nos dois outros sistemas que utilizam a mesma planilha CUSTOSOLAR.
 
 ---
 
 ## 1. Contexto de Negócio
 
-O Sistema SOLAR é uma plataforma web de gestão de custos operacionais para mineração/pedreira. Ele centraliza dados que atualmente residem em planilhas Excel (CUSTOSOLAR), permitindo visualização analítica, apuração de custo por tonelada e relatórios gerenciais.
+O **Sistema SOLAR** é uma plataforma web de gestão de custos operacionais para mineração/pedreira. Ele centraliza dados que residem em planilhas Excel (CUSTOSOLAR), permitindo visualização analítica, apuração de custo por tonelada e relatórios gerenciais.
 
 A estratégia de implantação segue três fases:
 
@@ -25,62 +23,82 @@ O mesmo modelo de planilha CUSTOSOLAR é utilizado em **outros dois sistemas** q
 
 ## 2. Estrutura da Planilha CUSTOSOLAR
 
-### 2.1 Abas Principais
+### 2.1 Abas Relevantes para Importação
 
-A planilha contém as seguintes abas relevantes para importação:
+| Aba | Conteúdo | Processado por |
+|-----|----------|----------------|
+| `EMPRESA` | Período (mês/ano), produção vendida (SP09) | Interface web (Etapa 1) |
+| `PRODSEC` | Produção total do mês em toneladas | Interface web (Etapa 1) |
+| `MEMGERAL` | Lançamentos consolidados por conta de custo | Interface web (Etapa 1) |
+| `RSSET` | Custo por setor/subsetor (resumo sintético) | Interface web (Etapa 1) |
+| `RAS01`–`RAS12` | Custo detalhado por equipamento, por setor | `import-ras.mjs` (Etapa 2) |
+| `MSET` | Despesas específicas por setor (Energia, Explosivos, etc.) | `import-ras.mjs` (Etapa 2) |
 
-| Aba | Conteúdo | Setor Correspondente | Coluna de Custo do Setor (0-based) |
-|-----|----------|----------------------|-------------------------------------|
-| RAS01 | Relatório Analítico por Setor | DESMONTE PRIMÁRIO | 11 |
-| RAS02 | Relatório Analítico por Setor | DESMONTE SECUNDÁRIO | 12 |
-| RAS03 | Relatório Analítico por Setor | DECAPEAMENTO | 18 |
-| RAS04 | Relatório Analítico por Setor | PEDRA PARA BRITADOR | 16 |
-| RAS05 | Relatório Analítico por Setor | BRITAGEM PRIMÁRIA | 13 |
-| RAS06 | Relatório Analítico por Setor | BRITAGEM SEC./TERC./QUART. | 14 |
-| RAS07 | Relatório Analítico por Setor | EXPEDIÇÃO | 19 |
-| RAS08 | Relatório Analítico por Setor | MOV. DE ESTOQUE | 17 |
-| RAS09 | Relatório Analítico por Setor | OFICINA E ALMOXARIFADO | 21 |
-| RAS10 | Relatório Analítico por Setor | REFEITÓRIO E LIMPEZA | 22 |
-| RAS11 | Relatório Analítico por Setor | OUTROS SERVIÇOS | 15 |
-| RAS12 | Relatório Analítico por Setor | ADMINISTRAÇÃO | 20 |
-| MSET | Mapa de Setores | Totais consolidados | — |
-| DPEQUIP | Dados por Equipamento | Base de dados dos equipamentos | — |
+### 2.2 Mapeamento das Abas RAS para Setores
 
-### 2.2 Estrutura de Bloco de Equipamento (por aba RAS)
+| Aba | Subsetor | Grupo | setorLinha | colIdx (0-based) |
+|-----|---------|-------|-----------|-----------------|
+| RAS01 | DESMONTE PRIMÁRIO | DESMONTE DE ROCHA | 1 | 11 |
+| RAS02 | DESMONTE SECUNDÁRIO | DESMONTE DE ROCHA | 2 | 12 |
+| RAS03 | DECAPEAMENTO | DESMONTE DE ROCHA | 8 | 18 |
+| RAS04 | PEDRA PARA BRITADOR | CARGA E TRANSPORTE | 6 | 16 |
+| RAS05 | BRITAGEM PRIMÁRIA | BRITAGEM | 3 | 13 |
+| RAS06 | BRITAGEM SEC./TERC./QUART. | BRITAGEM | 4 | 14 |
+| RAS07 | EXPEDIÇÃO | EXPEDIÇÃO | 9 | 19 |
+| RAS08 | MOV. DE ESTOQUE | EXPEDIÇÃO | 7 | 17 |
+| RAS09 | OFICINA E ALMOXARIFADO | SERVIÇOS AUXILIARES | 11 | 21 |
+| RAS10 | REFEITÓRIO E LIMPEZA | SERVIÇOS AUXILIARES | 12 | 22 |
+| RAS11 | OUTROS SERVIÇOS | SERVIÇOS AUXILIARES | 5 | 15 |
+| RAS12 | ADMINISTRAÇÃO | ADMINISTRAÇÃO | 10 | 20 |
 
-Cada equipamento ocupa um bloco fixo de linhas dentro de cada aba RAS. A estrutura do bloco é identificada pelos valores da **coluna C** (descrição do tipo de despesa):
+**`colIdx`** é o índice de coluna (0-based) que contém o valor rateado para aquele setor dentro de cada bloco de equipamento.
 
-| Linha relativa | Coluna C | Coluna B | Coluna E | Coluna do Setor (colIdx) |
-|----------------|----------|----------|----------|--------------------------|
-| 0 | `Sal.Oper./Enc. Oper.` | **Nome do Equipamento** | Valor global | Valor proporcional ao setor |
-| 1 | `Depreciação` | — | Valor global | Valor proporcional |
-| 2 | `Combustível` | Qtd. Combustível (litros) | Valor global | Valor proporcional |
-| 3 | `Lubrificantes` | — | Valor global | Valor proporcional |
-| 4 | `Peças de Desgaste` | — | Valor global | Valor proporcional |
-| 5 | `Peças de Reposição/Item de Consumo` | — | Valor global | Valor proporcional |
-| 6 | `Outras Despesas` | Qtd. Combustível (litros) | Valor global | Valor proporcional |
-| 7 | `Vida Útil (Hr) / Deprec. (R$/Hr)` | — | — | — |
-| 8 | `Valor Inicial / Valor Final` | — | — | — |
-| 9 | `Produção Total do Equipamento` | Qtd. Combustível (litros) | **Produção global** | **Produção proporcional ao setor** |
-| 10 | `Unidade de Produção` | — | **Unidade** (ex: ton, metro perf.) | — |
-| 11 | `Equipamento Controlado por Hrs ou Km?` | Horas Trabalhadas | Hr ou Km | — |
-| 12 | `Total das Despesas do Equipamento` | Horas Trabalhadas (valor) | Total global | **Total do setor** |
+### 2.3 Mapeamento de Linhas de Setor (coluna G, 0-based)
 
-> **Atenção:** O nome do equipamento está na **coluna B** da linha onde coluna C = `Sal.Oper./Enc. Oper.`. O bloco termina quando coluna C = `Total das Despesas do Equipamento`.
+Dentro de cada bloco de equipamento, as linhas de setor seguem esta ordem fixa:
 
-### 2.3 Colunas de Produção — Comportamento Crítico
+| setorLinha | Setor |
+|-----------|-------|
+| 0 | TOTAL DO PERÍODO |
+| 1 | DESMONTE PRIMÁRIO |
+| 2 | DESMONTE SECUNDÁRIO |
+| 3 | BRITAGEM PRIMÁRIA |
+| 4 | BRITAGEM SEC./TERC./QUART. |
+| 5 | OUTROS SERVIÇOS |
+| 6 | PEDRA PARA BRITADOR |
+| 7 | MOV. DE ESTOQUE |
+| 8 | DECAPEAMENTO |
+| 9 | EXPEDIÇÃO |
+| 10 | ADMINISTRAÇÃO |
+| 11 | OFICINA E ALMOXARIFADO |
+| 12 | REFEITÓRIO E LIMPEZA |
 
-Este é o ponto mais importante descoberto durante a implementação:
+### 2.4 Estrutura de Bloco de Equipamento (14 linhas)
 
-**Coluna E (índice 4) — Produção Global:** Contém a produção total do equipamento no período, independente do setor. Para equipamentos de uso exclusivo (perfuratrizes, britadores), este valor é igual ao da coluna do setor. Para equipamentos compartilhados (caminhões), este valor pode ser zero enquanto o valor real está na coluna do setor.
+Cada equipamento ocupa um bloco fixo de linhas dentro de cada aba RAS:
 
-**Coluna do Setor (colIdx) — Produção Proporcional:** Contém a produção calculada proporcionalmente ao tempo alocado naquele setor. Para caminhões que trabalham em múltiplos setores, este é o valor correto para o setor em questão.
+```
+Linha 0  (cabeçalho): col[1] = "EQUIPAMENTO"
+Linha +0: col[1]=NOME_EQUIP, col[2]="Sal.Oper./Enc. Oper.", col[4]=valor_total, col[colIdx]=valor_setor
+Linha +1: "Depreciação"
+Linha +2: "Combustível"
+Linha +3: "Lubrificantes"
+Linha +4: "Peças de Desgaste"
+Linha +5: "Peças de Reposição/Item de Consumo"
+Linha +6: "Outras Despesas"
+Linha +7: "Vida Útil (Hr) / Deprec. (R$/Hr)"
+Linha +8: "Valor Inicial / Valor Final"
+Linha +9: "Produção Total do Equipamento"  ← col[4]=valor_global, col[colIdx]=valor_setor
+Linha +10: "Unidade de Produção"            ← col[4]=unidade (ex: "ton", "metro perf.")
+Linha +11: "Equipamento Controlado por Hrs ou Km?"
+Linha +12: "Total das Despesas do Equipamento" ← col[4]=total_geral, col[colIdx]=total_setor
+```
 
-**Regra de importação:** `producao = MAX(colE, colSetor)`. Isso garante que tanto equipamentos exclusivos quanto compartilhados tenham seus valores capturados corretamente.
+**Filtro de pertinência ao setor:** um equipamento pertence ao setor da aba se tiver `horasTrabalhadas > 0` na linha `setorLinha` (coluna 7, 0-based).
 
-### 2.4 Células com Fórmulas
+### 2.5 Células com Fórmulas — Problema Crítico
 
-A maioria das células de produção e custo contém **fórmulas Excel** (referências a outras abas como `DPEQUIP`). A biblioteca `xlsx` (SheetJS) armazena o valor calculado na propriedade `.v` da célula. O acesso correto é **sempre via propriedade `.v`**, nunca via `sheet_to_json` com `defval: null`, pois este método retorna `null` para células de fórmula.
+A maioria das células de produção e custo contém **fórmulas Excel** (referências a outras abas). A biblioteca `xlsx` (SheetJS) armazena o valor calculado na propriedade `.v` da célula. O acesso correto é **sempre via propriedade `.v`**, nunca via `sheet_to_json` com `defval: null`.
 
 ```javascript
 // ✅ CORRETO — acessa o valor calculado da fórmula
@@ -95,47 +113,128 @@ const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
 const producao = rows[rowIndex][colIndex]; // pode ser null mesmo com valor calculado
 ```
 
-A leitura deve ser feita com a opção `cellFormula: true`:
+Leitura do workbook deve incluir `cellFormula: true`:
 ```javascript
 const workbook = XLSX.read(fileBuffer, { type: 'buffer', cellDates: true, cellFormula: true });
 ```
+
+### 2.6 Lógica de Produção — Regra MAX(colE, colSetor)
+
+- **Coluna E (idx 4):** produção total global do equipamento. Válida para equipamentos de uso exclusivo (perfuratrizes, britadores).
+- **Coluna do setor (colIdx):** produção proporcional ao setor. Usada para caminhões que trabalham em múltiplos setores (colE = 0 nesses casos).
+
+**Regra de importação:**
+```javascript
+producao = Math.max(getCellValue(ws, r, 4) || 0, getCellValue(ws, r, colIdx) || 0);
+```
+
+### 2.7 Estrutura da Aba MSET (Despesas Específicas)
+
+A aba MSET tem **blocos de 14 linhas**, com **dois setores por bloco** (esquerdo e direito):
+
+```
+Linha 0 do bloco: col[1]=nome_setor_esq, col[4]=nome_setor_dir
+Linha 1 do bloco: "DESCRIÇÃO" / "VALOR" (cabeçalho)
+Linhas 2-13:
+  col[1] = descrição da conta (setor esquerdo)
+  col[2] = valor da conta (setor esquerdo)
+  col[4] = descrição da conta (setor direito)
+  col[5] = valor da conta (setor direito)
+```
+
+**Identificação do cabeçalho de bloco:** col[1] está em maiúsculas E a próxima linha tem col[1] = "DESCRIÇÃO".
+
+### 2.8 Estrutura da Aba RSSET
+
+| Coluna | Conteúdo |
+|--------|---------|
+| A | Grupo (aparece apenas na 1ª linha do grupo) |
+| B | Subsetor |
+| E | Custo Fixo |
+| F | Custo Variável |
+| G | Total Custo |
+| H | Despesa Fixa |
+| I | Despesa Variável |
+| J | Total Despesa |
+| K | Total Geral (célula K1 contém o período) |
+| L | Custo/t (R$/ton) |
+
+**Período:** extraído da célula K1 (índice `[0][10]`).  
+**Início dos dados:** linha 6 (índice 5, 0-based).  
+**Parada:** ao encontrar "TOTAL DOS DESEMBOLSOS" na coluna B.
+
+### 2.9 Estrutura da Aba MEMGERAL
+
+A aba MEMGERAL tem 3 tabelas lado a lado. A importação usa a **3ª ocorrência** de "RATEIO POR TIPO DE DESEMBOLSO" na coluna 7 (tabela verde = TOTAL consolidado):
+
+| Índice | Coluna |
+|--------|--------|
+| 7 | Nome da conta |
+| 8 | Custo Fixo (CF) |
+| 9 | Custo Variável (CV) |
+| 10 | Despesa Fixa (DF) |
+| 11 | Despesa Variável (DV) |
+
+O mapeamento de nomes da planilha para contas do banco é feito por **similaridade fuzzy** (limiar mínimo de 70%).
 
 ---
 
 ## 3. Estrutura do Banco de Dados
 
-### 3.1 Tabelas Principais
+### 3.1 Tabelas Principais do Módulo de Custo
 
-| Tabela | Descrição |
-|--------|-----------|
-| `periodo_custo` | Períodos mensais (mes, ano, producaoTotal, quantidadeVendida, etc.) |
-| `custo_setor_equipamento` | Custos por equipamento em cada setor/subsetor |
-| `custo_setor_despesa` | Despesas específicas do setor (não vinculadas a equipamentos) |
+```
+periodo_custo
+├── id (PK)
+├── mes, ano
+├── producaoTotal (toneladas produzidas)
+├── quantidadeVendida (toneladas vendidas/expedidas)
+└── fechado (enum: 'sim'|'nao')
 
-### 3.2 Tabela `custo_setor_equipamento` — Colunas Relevantes
+conta_custo
+├── id (PK)
+├── nome (ex: "Combustível", "Peças de Reposição / Itens de Consumo")
+├── ativo (enum: 'sim'|'nao')
+└── aliases (texto livre para mapeamento fuzzy)
 
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| `periodoCustoId` | FK | Referência ao período |
-| `subsetorNome` | string | Nome do subsetor (ex: "PEDRA PARA BRITADOR") |
-| `grupoNome` | string | Nome do grupo (ex: "CARGA E TRANSPORTE") |
-| `equipamentoNome` | string | Nome completo do equipamento |
-| `salOperEncOper` | decimal | Salário operacional + encargos |
-| `depreciacao` | decimal | Depreciação |
-| `combustivel` | decimal | Combustível |
-| `lubrificantes` | decimal | Lubrificantes |
-| `pecasDesgaste` | decimal | Peças de desgaste |
-| `pecasReposicao` | decimal | Peças de reposição/item de consumo |
-| `outrasDespesas` | decimal | Outras despesas |
-| `totalDespesasEquipamento` | decimal | Total das despesas do equipamento |
-| `horasTrabalhadas` | decimal | Horas trabalhadas no setor |
-| `qtdCombustivelLitros` | decimal | Quantidade de combustível em litros |
-| `producaoTotal` | decimal | **Produção do equipamento no setor** |
-| `unidadeProducao` | string | Unidade de produção (ton, metro perf., etc.) |
+lancamento_custo
+├── id (PK)
+├── periodoCustoId (FK → periodo_custo)
+├── contaCustoId (FK → conta_custo)
+└── valor (decimal 14,2)
 
-### 3.3 Hierarquia de Grupos e Subsetores
+custo_setor
+├── id (PK)
+├── periodoCustoId (FK)
+├── grupoNome, subsetorNome
+├── custoFixo, custoVariavel, totalCusto
+├── despesaFixa, despesaVariavel, totalDespesa
+├── totalGeral, custoTon
+└── ordemExibicao
 
-A ordem de exibição no Relatório Analítico segue esta hierarquia:
+custo_setor_equipamento
+├── id (PK)
+├── periodoCustoId (FK)
+├── grupoNome, subsetorNome
+├── equipamentoNome
+├── salOperEncOper, depreciacao, combustivel, lubrificantes
+├── pecasDesgaste, pecasReposicao, outrasDespesas
+├── totalDespesasEquipamento
+├── horasTrabalhadas, qtdCombustivelLitros
+├── producaoTotal (NULL se não há produção registrada)
+├── unidadeProducao (ex: "ton", "metro perf.")
+└── ordemExibicao
+
+custo_setor_despesa
+├── id (PK)
+├── periodoCustoId (FK)
+├── grupoNome, subsetorNome
+├── descricao (ex: "Energia Elétrica", "Explosivos e Acessórios")
+├── valor
+└── ordemExibicao
+```
+
+### 3.2 Hierarquia de Grupos e Subsetores
 
 | Grupo | Ordem | Subsetores |
 |-------|-------|-----------|
@@ -146,42 +245,88 @@ A ordem de exibição no Relatório Analítico segue esta hierarquia:
 | SERVIÇOS AUXILIARES | 5 | OFICINA E ALMOXARIFADO, REFEITÓRIO E LIMPEZA, OUTROS SERVIÇOS |
 | ADMINISTRAÇÃO | 6 | ADMINISTRAÇÃO |
 
+### 3.3 Contas de Custo Cadastradas
+
+| ID | Nome |
+|----|------|
+| 1 | RH - ADM / Salários não Operacionais |
+| 2 | Impostos, CEFEM e Outras Taxas |
+| 3 | Encargos de Movimentação Financeira |
+| 4 | Despesas Administrativas |
+| 5 | Energia Elétrica |
+| 6 | Explosivos e Acessórios |
+| 7 | Outras Despesas de Setores |
+| 8 | Equipamentos de Apoio |
+| 9 | Despesas Indiretas |
+| 10 | Consultorias Especializadas |
+| 11 | Entrega de Material |
+| 12 | Salários da Diretoria |
+| 13 | RH - Salários da Operação |
+| 14 | Combustível |
+| 15 | Lubrificantes |
+| 16 | Peças de Desgaste |
+| 17 | Peças de Reposição / Itens de Consumo |
+| 18 | Pneus |
+| 19 | Outras Despesas dos Equipamentos |
+| 20 | Depreciação |
+| 30002 | Frota/Man.Pat./Seg./Out. |
+| 30003 | Comissão de Vendas |
+| 30004 | Sal.Oper./Enc. Oper. |
+
 ---
 
-## 4. Scripts de Importação
+## 4. Fluxo de Importação de um Novo Mês
 
-### 4.1 `import-ras.mjs` — Importação Completa dos Dados RAS
+A importação de um novo mês segue **três etapas obrigatórias**, nesta ordem:
 
-Importa todos os dados de custos das abas RAS01-RAS12 e MSET para as tabelas `custo_setor_equipamento` e `custo_setor_despesa`. Deve ser executado uma vez por período.
+### Etapa 1 — Importar via Interface Web
 
-**Localização:** `/home/ubuntu/import-ras.mjs`  
-**Uso:** `node import-ras.mjs`  
-**Pré-requisito:** Arquivo da planilha em `/home/ubuntu/upload/CUSTOSOLAR-[MES]-[ANO].xlsx`
+1. Acessar a tela **Importação de Planilha** no sistema
+2. Fazer upload do arquivo `CUSTOSOLAR-MÊS-ANO.xlsx`
+3. O sistema processa automaticamente:
+   - **Aba EMPRESA**: extrai mês/ano e quantidade vendida (linha SP09 = EXPEDIÇÃO)
+   - **Aba PRODSEC**: extrai produção total do mês
+   - **Aba MEMGERAL**: lê a 3ª ocorrência de "RATEIO POR TIPO DE DESEMBOLSO" e cria lançamentos via mapeamento fuzzy
+   - **Aba RSSET**: lê linha a linha (a partir da linha 6), cria registros em `custo_setor`
 
-### 4.2 `update-ras-producao.mjs` — Atualização das Produções
+### Etapa 2 — Executar `import-ras.mjs`
 
-Atualiza os campos `producaoTotal` e `unidadeProducao` para todos os equipamentos com produção registrada. Deve ser executado após o `import-ras.mjs`.
+```bash
+# 1. Editar as variáveis no início do script:
+#    PLANILHA = '/home/ubuntu/upload/CUSTOSOLAR-MÊS-ANO.xlsx'
+#    (O período é extraído automaticamente da aba RSSET, célula K1)
 
-**Localização:** `/home/ubuntu/update-ras-producao.mjs`  
-**Uso:** `node update-ras-producao.mjs`  
-**Resultado esperado:** ~33 equipamentos atualizados para Março/2026
-
-**Lógica central:**
-```javascript
-// Para cada equipamento em cada aba RAS:
-// 1. Identificar início de bloco: colC === 'Sal.Oper./Enc. Oper.'
-// 2. Capturar nome: colB
-// 3. Na linha 'Produção Total do Equipamento': producao = MAX(getCellValue(ws,r,4), getCellValue(ws,r,colIdx))
-// 4. Na linha 'Unidade de Produção': unidade = getCellValue(ws,r,4)
-// 5. Na linha 'Total das Despesas do Equipamento': se custoSetor > 0 → UPDATE no banco
+# 2. Executar:
+cd /home/ubuntu
+node import-ras.mjs
 ```
 
-### 4.3 Adaptação para Outros Meses
+**O que o script faz:**
+- Busca o `periodoCustoId` pelo mês/ano extraído da planilha
+- **Limpa** todos os registros existentes de `custo_setor_equipamento` e `custo_setor_despesa` para o período
+- Processa as abas **RAS01–RAS12** → insere em `custo_setor_equipamento`
+- Processa a aba **MSET** → insere em `custo_setor_despesa` (cada conta individualmente)
 
-Para importar Janeiro/2026 e Fevereiro/2026, os scripts precisam apenas de:
-1. Alterar o caminho do arquivo (`PLANILHA`)
-2. Alterar `PERIODO_MES` e `PERIODO_ANO`
-3. Criar o período no banco via interface antes de executar
+### Etapa 3 — Executar `update-ras-producao.mjs`
+
+```bash
+# 1. Editar as variáveis no início do script:
+#    PLANILHA = '/home/ubuntu/upload/CUSTOSOLAR-MÊS-ANO.xlsx'
+#    PERIODO_MES = <mês>   (ex: 2 para fevereiro)
+#    PERIODO_ANO = <ano>   (ex: 2026)
+
+# 2. Executar:
+cd /home/ubuntu
+node update-ras-producao.mjs
+```
+
+**O que o script faz:**
+- Atualiza `producaoTotal` e `unidadeProducao` na tabela `custo_setor_equipamento`
+- Usa acesso direto à propriedade `.v` para capturar valores de fórmulas
+- Aplica a regra `MAX(colE, colSetor)` para caminhões e equipamentos compartilhados
+- **Resultado esperado:** ~33 equipamentos atualizados por período
+
+> **Pré-requisito:** O período deve existir no banco (criado na Etapa 1) antes de executar os scripts. Se não existir, o script retorna: `"Período X/YYYY não encontrado. Crie o período em Lançamento de Custos antes de importar."`
 
 ---
 
@@ -189,7 +334,7 @@ Para importar Janeiro/2026 e Fevereiro/2026, os scripts precisam apenas de:
 
 | Subgrupo | Unidade de Produção |
 |----------|---------------------|
-| DESMONTE PRIMÁRIO | **metro perf.** (perfuratrizes) / ton (outros) |
+| DESMONTE PRIMÁRIO | **metro perf.** (perfuratrizes) |
 | DESMONTE SECUNDÁRIO | ton |
 | DECAPEAMENTO | ton |
 | PEDRA PARA BRITADOR | ton |
@@ -197,58 +342,133 @@ Para importar Janeiro/2026 e Fevereiro/2026, os scripts precisam apenas de:
 | BRITAGEM SEC./TERC./QUART. | ton |
 | EXPEDIÇÃO | ton |
 | MOV. DE ESTOQUE | ton |
-| OUTROS SERVIÇOS | ton |
+| OFICINA E ALMOXARIFADO | — (sem produção) |
+| REFEITÓRIO E LIMPEZA | — (sem produção) |
+| OUTROS SERVIÇOS | — (sem produção) |
+| ADMINISTRAÇÃO | — (sem produção) |
 
-> **Observação importante:** As CARRETAS PERFURATRIZ (ROCK 01 e ROCK 02) e a PERFURATRIZ HIDRÁULICA WOLF FOX 8-20 têm unidade **"metro perf."**, não "ton". A planilha RAS01 registra a unidade corretamente para as carretas, mas pode registrar "ton" para a Wolf Fox — nesse caso, o UPDATE manual é necessário até que a planilha fonte seja corrigida.
+> **Atenção:** A PERFURATRIZ HIDRÁULICA WOLF FOX 8-20 pode ter unidade "ton" na planilha fonte. Corrigir via UPDATE direto no banco após cada importação enquanto a planilha fonte não for ajustada pelo responsável.
 
 ---
 
-## 6. Roadmap de Evolução
+## 6. Funcionalidades do Sistema
 
-### 6.1 Fase 2 — Integração com ERP DataGold (Abr/2026 em diante)
+### 6.1 Telas Implementadas
 
-A partir de Abril/2026, os dados de custo passarão a vir dos relatórios exportados do ERP DataGold. As atividades planejadas são:
+| Tela | Rota | Descrição |
+|------|------|-----------|
+| Dashboard | `/` | Visão geral com KPIs |
+| Apuração de Custo | `/apuracao-custo` | Lançamentos consolidados por conta, gráficos, custo/ton |
+| Custo Sintético por Setor | `/custo-setor` | Resumo por grupo e subsetor, custo/ton por setor |
+| Relatório Analítico | `/custo-setor-analitico` | Detalhamento por equipamento e despesas específicas |
+| Importação de Planilha | `/importacao` | Upload da planilha CUSTOSOLAR |
 
-1. **Mapeamento de relatórios:** Identificar quais relatórios do DataGold correspondem às abas RAS da planilha CUSTOSOLAR.
-2. **Parser de relatórios:** Desenvolver um parser para os formatos de exportação do DataGold (CSV, Excel, PDF ou outro formato disponível).
-3. **Tela de importação na interface:** Criar um botão "Importar Relatório DataGold" na tela de Importação de Planilha, eliminando a necessidade de scripts manuais.
-4. **Validação cruzada:** Comparar os primeiros meses importados via DataGold com os dados históricos das planilhas para garantir consistência.
+### 6.2 Sistema de Drill-down (Navegação Bidirecional)
 
-### 6.2 Fase 3 — Integração via API (TBD)
+O sistema implementa navegação bidirecional em três níveis:
 
-Quando a API do DataGold estiver disponível (REST/SOAP ou outro protocolo), a integração direta eliminará a necessidade de exportação manual. As opções a avaliar são:
+```
+Apuração de Custo
+  └─ clique em conta (ex: "Peças de Reposição")
+     → /custo-setor-analitico?conta=pecasReposicao
+       └─ banner amarelo + coluna destacada + botão "← Apuração de Custo"
 
-- **REST API:** Endpoint HTTP com autenticação JWT/OAuth — solução preferencial por ser moderna e amplamente suportada.
-- **SOAP/Web Services:** Comum em ERPs mais antigos — requer geração de cliente WSDL.
-- **Banco de dados direto:** Acesso read-only ao banco do DataGold via conexão MySQL/SQL Server — viável mas requer acordo de infraestrutura.
-- **Webhook/Evento:** DataGold notifica o SOLAR quando novos dados estão disponíveis — ideal para automação em tempo real.
+Custo por Setor
+  ├─ clique em grupo (ex: "BRITAGEM")
+  │  → /custo-setor-analitico?grupo=BRITAGEM
+  │    └─ banner amarelo + botão "← Custo por Setor"
+  └─ clique em subsetor (ex: "PEDRA PARA BRITADOR")
+     → /custo-setor-analitico?subsetor=PEDRA+PARA+BRITADOR
+       └─ banner amarelo + botão "← Custo por Setor"
+```
 
-### 6.3 Reutilização em Outros Sistemas
+**Query params suportados pelo Relatório Analítico:**
 
-Os dois outros sistemas que utilizam a mesma planilha CUSTOSOLAR herdarão toda a estrutura aqui documentada:
+| Param | Exemplo | Efeito |
+|-------|---------|--------|
+| `?conta=<campo>` | `?conta=combustivel` | Filtra e destaca a coluna da conta |
+| `?subsetor=<nome>` | `?subsetor=PEDRA+PARA+BRITADOR` | Exibe apenas o subsetor especificado |
+| `?grupo=<nome>` | `?grupo=BRITAGEM` | Exibe apenas os subsetores do grupo |
 
-- **Schema do banco de dados:** Idêntico (tabelas `periodo_custo`, `custo_setor_equipamento`, `custo_setor_despesa`)
-- **Scripts de importação:** `import-ras.mjs` e `update-ras-producao.mjs` reutilizáveis com ajuste apenas do `DATABASE_URL` e caminho da planilha
-- **Mapeamento de abas:** Idêntico se a estrutura da planilha for a mesma
-- **Lógica de produção:** `MAX(colE, colSetor)` com acesso direto à propriedade `.v`
+**Campos de conta suportados:** `combustivel`, `pecasReposicao`, `lubrificantes`, `pecasDesgaste`, `salOperEncOper`, `outrasDespesas`
+
+### 6.3 Destaque Visual de Coluna Filtrada
+
+Quando o Relatório Analítico abre com `?conta=`, a coluna correspondente recebe:
+- Cabeçalho: `bg-yellow-200` + borda superior amarela + texto em negrito
+- Células: `bg-yellow-100` + borda lateral esquerda amarela
+- Badge: "Ordenado por: [nome da conta]"
+- Equipamentos ordenados por valor decrescente nessa coluna
+
+### 6.4 Indicadores de Produção e Vendas
+
+Exibidos na barra de status de **Apuração de Custo** e **Custo por Setor**:
+```
+Aberto  |  Produção: 92.675,15 t  |  Vendas: 90.236,48 t
+```
 
 ---
 
 ## 7. Lições Aprendidas
 
 | Problema | Causa | Solução |
-|----------|-------|---------|
-| Produção de caminhões não importada | `sheet_to_json` retorna `null` para células de fórmula | Usar `getCellValue()` com acesso direto à propriedade `.v` |
-| Produção de caminhões = 0 mesmo com `.v` correto | Caminhões têm produção na coluna do setor, não na coluna E | Usar `MAX(colE, colSetor)` |
-| Unidade "ton" para perfuratriz | Planilha fonte registra "ton" para Wolf Fox | UPDATE manual; corrigir planilha fonte |
-| Nomes de equipamentos com espaços extras | Inconsistência na planilha | Usar `TRIM(equipamentoNome)` no WHERE do UPDATE |
-| Coluna `codigo` não existe em `periodo_custo` | Schema usa `mes` + `ano` em vez de código | Filtrar por `mes = ? AND ano = ?` |
+|---------|-------|---------|
+| Produção retornava `null` para fórmulas | `sheet_to_json` não avalia fórmulas | Acessar diretamente `cell.v` via `XLSX.utils.encode_cell` |
+| Caminhões com produção = 0 na coluna E | Produção em coluna do setor (colIdx), não em colE | Usar `MAX(colE, colSetor)` |
+| Despesas específicas importadas como uma linha só | Script lia seção resumida da MSET | Reescrever para ler blocos detalhados (col[1]/col[2] e col[4]/col[5]) |
+| Período não encontrado no banco | Etapa 1 não foi executada antes dos scripts | Sempre executar a importação via interface antes dos scripts |
+| Unidade "ton" para PERFURATRIZ WOLF FOX | Planilha fonte tem erro | UPDATE direto no banco após importação |
+| Coluna `codigo` não existe em `periodo_custo` | Schema usa `mes` + `ano` | Filtrar por `mes = ? AND ano = ?` |
+| Nomes de equipamentos com espaços extras | Inconsistência na planilha | Usar `TRIM()` no WHERE do UPDATE |
 
 ---
 
-## 8. Referências Técnicas
+## 8. Roadmap de Fases
 
-- **Biblioteca XLSX (SheetJS):** Leitura de planilhas Excel com suporte a fórmulas via opção `cellFormula: true`. Valores calculados disponíveis em `cell.v`.
-- **Stack do projeto:** React 19 + Tailwind 4 + Express 4 + tRPC 11 + Drizzle ORM + MySQL/TiDB
-- **Autenticação:** Manus OAuth com sessão por cookie
-- **Hospedagem:** Manus WebDev (domínios: `solargest-us3q3oba.manus.space`, `dgsolar.manus.space`, `gem-solar.com`)
+### Fase 1 — Planilha CUSTOSOLAR (Jan–Mar/2026) ✅ Em andamento
+
+Scripts e parsers prontos e documentados.
+
+**Meses a importar:**
+- [x] Março/2026 — concluído
+- [ ] Fevereiro/2026 — próximo
+- [ ] Janeiro/2026 — a seguir
+
+### Fase 2 — Relatórios DataGold (Abr/2026 em diante)
+
+A partir de Abril/2026, os dados virão dos relatórios exportados pelo ERP DataGold. Atividades planejadas:
+
+1. Receber um exemplo de relatório DataGold (qualquer formato: Excel, CSV, PDF)
+2. Analisar a estrutura e desenvolver o parser correspondente
+3. Criar botão "Importar Relatório DataGold" na tela de Importação
+4. Validar os primeiros meses contra os dados históricos da Fase 1
+
+### Fase 3 — Integração via API (futuro)
+
+Conexão direta com o DataGold via API (provavelmente REST ou SOAP). Opções a avaliar:
+- **API SET** (mencionada pelo cliente) — avaliar documentação disponível
+- **REST API** com autenticação OAuth/JWT — solução preferencial
+- **SOAP/Web Services** — comum em ERPs mais antigos
+- **Banco de dados direto** — acesso read-only via MySQL/SQL Server
+- **Webhook/Evento** — ideal para automação em tempo real
+
+---
+
+## 9. Reutilização em Outros Sistemas
+
+Para replicar este sistema em outros dois projetos com a mesma planilha CUSTOSOLAR:
+
+1. **Clonar o projeto** `sistema-solar` como base
+2. **Copiar os scripts** `import-ras.mjs` e `update-ras-producao.mjs`
+3. **Ajustar apenas:**
+   - `DATABASE_URL` (apontar para o banco do novo sistema)
+   - `PLANILHA` (caminho do arquivo)
+   - `PERIODO_MES` e `PERIODO_ANO`
+   - Mapeamento `RAS_ABAS` se a estrutura de setores for diferente
+4. **O schema do banco é idêntico** — tabelas `periodo_custo`, `custo_setor_equipamento`, `custo_setor_despesa`
+5. **A lógica de produção é idêntica** — `MAX(colE, colSetor)` com acesso direto à propriedade `.v`
+6. **As contas de custo podem ter nomes diferentes** — o mapeamento fuzzy da MEMGERAL se adapta automaticamente (limiar 70%)
+
+---
+
+*Documento gerado em Mai/2026. Atualizar a cada nova fase de implementação.*
