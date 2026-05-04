@@ -620,6 +620,11 @@ export default function ApuracaoCusto() {
                 <Badge variant={periodoAtual.fechado === "sim" ? "secondary" : "default"}>
                   {periodoAtual.fechado === "sim" ? <><Lock className="h-3 w-3 mr-1" />Fechado</> : "Aberto"}
                 </Badge>
+                {relatorio && relatorio.producao > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    Produção: <strong>{fmt(relatorio.producao)} t</strong>
+                  </span>
+                )}
                 <span className="text-sm text-muted-foreground">
                   Vendas: <strong>{periodoAtual.quantidadeVendida ? fmt(parseFloat(periodoAtual.quantidadeVendida)) : "—"} t</strong>
                 </span>

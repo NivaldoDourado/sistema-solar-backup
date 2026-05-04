@@ -419,3 +419,7 @@
 - [x] Inspecionar como o script import-ras.mjs lê as despesas específicas na planilha RAS
 - [x] Corrigir para gravar cada conta individualmente (Energia, Explosivos e Acessórios, etc.)
 - [x] Reimportar os dados e verificar na interface
+
+## Produção na Apuração de Custo (Mai/2026)
+- [x] Backend: calcular produção total do período (soma dos equipamentos com produção > 0)
+- [x] Frontend: exibir produção total na barra de status antes das vendas
