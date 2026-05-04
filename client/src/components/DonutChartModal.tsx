@@ -21,6 +21,8 @@ export interface DonutSlice {
   pct: number;
   /** Cor hex da fatia */
   fill: string;
+  /** Custo por tonelada (exibido no tooltip quando disponível) */
+  custoPorTon?: number;
   /** Texto secundário exibido entre o nome e a participação (ex: "R$ 30,74/t") */
   subtitle?: string;
   /** Linhas extras de detalhe exibidas no painel lateral ao clicar */
@@ -97,10 +99,10 @@ const CustomTooltip = ({
           <span>Valor</span>
           <span className="font-medium text-foreground">{formatValue ? formatValue(d.value) : d.value}</span>
         </div>
-        {d.subtitle && (
+        {d.custoPorTon !== undefined && (
           <div className="flex justify-between gap-4">
             <span>Custo/t</span>
-            <span className="font-medium text-foreground">{d.subtitle}</span>
+            <span className="font-medium text-foreground">R$ {d.custoPorTon.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/t</span>
           </div>
         )}
         <div className="flex justify-between gap-4">

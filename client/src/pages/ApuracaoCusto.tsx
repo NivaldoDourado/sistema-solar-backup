@@ -232,31 +232,32 @@ export default function ApuracaoCusto() {
   const dadosCustoMedio = useMemo(() => {
     if (!relatorio) return [];
     const items: any[] = [];
+    const totalCustoMedio = relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel;
     if (relatorio.totalCustoVariavel > 0) {
       items.push({
         name: "Custo Variável (÷ Produção)",
-        value: relatorio.custoPorTonProducao,
-        pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedio) * 100 : 0,
+        value: relatorio.totalCustoVariavel,
+        pct: totalCustoMedio > 0 ? (relatorio.totalCustoVariavel / totalCustoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
         subtitle: `R$ ${fmt(relatorio.custoPorTonProducao)}/t`,
         fill: COLORS_CUSTO_MEDIO[0],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
-          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}/t` },
         ],
       });
     }
     if (relatorio.totalDespesaVariavel > 0) {
       items.push({
         name: "Despesa Variável (÷ Vendas)",
-        value: relatorio.custoPorTonVendas,
-        pct: relatorio.custoMedio > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedio) * 100 : 0,
+        value: relatorio.totalDespesaVariavel,
+        pct: totalCustoMedio > 0 ? (relatorio.totalDespesaVariavel / totalCustoMedio) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
         subtitle: `R$ ${fmt(relatorio.custoPorTonVendas)}/t`,
         fill: COLORS_CUSTO_MEDIO[1],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
-          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}/t` },
         ],
       });
     }
@@ -267,45 +268,46 @@ export default function ApuracaoCusto() {
   const dadosCustoMedioComDI = useMemo(() => {
     if (!relatorio) return [];
     const items: any[] = [];
+    const totalComDI = relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel + relatorio.totalDespesasIndiretas;
     if (relatorio.totalCustoVariavel > 0) {
       items.push({
         name: "Custo Variável (÷ Produção)",
-        value: relatorio.custoPorTonProducao,
-        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonProducao / relatorio.custoMedioComDI) * 100 : 0,
+        value: relatorio.totalCustoVariavel,
+        pct: totalComDI > 0 ? (relatorio.totalCustoVariavel / totalComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonProducao,
         subtitle: `R$ ${fmt(relatorio.custoPorTonProducao)}/t`,
         fill: COLORS_CUSTO_MEDIO[0],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalCustoVariavel)}` },
-          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonProducao)}/t` },
         ],
       });
     }
     if (relatorio.totalDespesaVariavel > 0) {
       items.push({
         name: "Despesa Variável (÷ Vendas)",
-        value: relatorio.custoPorTonVendas,
-        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonVendas / relatorio.custoMedioComDI) * 100 : 0,
+        value: relatorio.totalDespesaVariavel,
+        pct: totalComDI > 0 ? (relatorio.totalDespesaVariavel / totalComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonVendas,
         subtitle: `R$ ${fmt(relatorio.custoPorTonVendas)}/t`,
         fill: COLORS_CUSTO_MEDIO[1],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesaVariavel)}` },
-          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonVendas)}/t` },
         ],
       });
     }
     if (relatorio.totalDespesasIndiretas > 0) {
       items.push({
         name: "Despesas Indiretas (÷ Produção)",
-        value: relatorio.custoPorTonDespesasIndiretas,
-        pct: relatorio.custoMedioComDI > 0 ? (relatorio.custoPorTonDespesasIndiretas / relatorio.custoMedioComDI) * 100 : 0,
+        value: relatorio.totalDespesasIndiretas,
+        pct: totalComDI > 0 ? (relatorio.totalDespesasIndiretas / totalComDI) * 100 : 0,
         custoPorTon: relatorio.custoPorTonDespesasIndiretas,
         subtitle: `R$ ${fmt(relatorio.custoPorTonDespesasIndiretas)}/t`,
         fill: COLORS_CUSTO_MEDIO[2],
         details: [
           { label: "Total R$", value: `R$ ${fmt(relatorio.totalDespesasIndiretas)}` },
-          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonDespesasIndiretas)}` },
+          { label: "Custo/t", value: `R$ ${fmt(relatorio.custoPorTonDespesasIndiretas)}/t` },
         ],
       });
     }
@@ -815,11 +817,11 @@ export default function ApuracaoCusto() {
                   data={dadosCustoMedio}
                   centerLabel="Custo Médio"
                   centerValue={`R$ ${fmt(relatorio.custoMedio)}/t`}
-                  formatValue={(v) => `R$ ${fmt(v)}/t`}
+                  formatValue={(v) => `R$ ${fmt(v)}`}
                   formatPct={fmtPct}
                 />
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-violet-700">
+                  <CardTitle className="text-sm font-semibold">
                     Custo Médio (R$/t)
                   </CardTitle>
                   <p className="text-xs text-muted-foreground">Composição do custo médio por tonelada</p>
@@ -894,12 +896,12 @@ export default function ApuracaoCusto() {
                   data={dadosCustoMedioComDI}
                   centerLabel="C.M. c/ D.I."
                   centerValue={`R$ ${fmt(relatorio.custoMedioComDI)}/t`}
-                  formatValue={(v) => `R$ ${fmt(v)}/t`}
+                     formatValue={(v) => `R$ ${fmt(v)}`}
                   formatPct={fmtPct}
                 />
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-orange-700">
-                    C.M. c/ Despesas Indiretas (R$/t)
+                  <CardTitle className="text-sm font-semibold">
+                    C.M. c/ Despesas Indiretassas Indiretas (R$/t)
                   </CardTitle>
                   <p className="text-xs text-muted-foreground">Composição incluindo despesas indiretas</p>
                 </CardHeader>

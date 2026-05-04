@@ -465,3 +465,7 @@
 ## Despesas Indiretas Janeiro/2026 (Mai/2026)
 - [x] Lançar Despesas Indiretas R$ 319.788,47 para o período 1/2026 (ID=30002)
 - [x] Verificar exibição na Apuração de Custo: Gastos c/ DI = R$ 2.744.031,34 | C.M. c/ DI = R$ 28,71 ✅
+
+## Bug: Gráficos Custo Médio e C.M. c/ Desp. Indiretas (Mai/2026)
+- [x] Corrigir campo "Valor" no tooltip dos gráficos de Custo Médio (R$/t) — agora exibe valor financeiro total (R$) e custo/t separados
+- [x] Corrigir campo "Valor" no tooltip do gráfico C.M. c/ Despesas Indiretas — corrigido
