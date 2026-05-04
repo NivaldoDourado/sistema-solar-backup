@@ -384,7 +384,7 @@
 
 ## Próximos Passos Planejados
 - [ ] Importar planilha de Janeiro/2026 (mesma estrutura, alterar PERIODO_MES=1 e PERIODO_ANO=2026)
-- [ ] Importar planilha de Fevereiro/2026 (mesma estrutura, alterar PERIODO_MES=2 e PERIODO_ANO=2026)
+- [x] Importar planilha de Fevereiro/2026 (mesma estrutura, alterar PERIODO_MES=2 e PERIODO_ANO=2026)
 - [ ] Corrigir unidade da PERFURATRIZ HIDRÁULICA WOLF FOX 8-20 para "metro perf." (UPDATE direto ou correção na planilha fonte)
 - [ ] Mapear relatórios do ERP DataGold que correspondem às abas RAS (para Abr/2026 em diante)
 - [ ] Desenvolver parser para formato de exportação do DataGold
@@ -429,5 +429,5 @@
 
 ## Documentação Completa e Importação Fevereiro/2026 (Mai/2026)
 - [ ] Revisar e atualizar KNOWLEDGE_BASE.md com todo o aprendizado acumulado
-- [ ] Importar planilha de Fevereiro/2026
-- [ ] Verificar dados de Fevereiro na interface
+- [x] Importar planilha de Fevereiro/2026
+- [x] Verificar dados de Fevereiro na interface
