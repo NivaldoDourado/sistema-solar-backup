@@ -268,22 +268,33 @@ export default function CustoSetor() {
     return msg;
   }, [relatorio, totalGeral, totalCustoTon, periodoLabel]);
 
-  // Dados para o gráfico de rosca
-  const dadosGrafico = (relatorio?.grupos ?? []).map((g) => ({
-    name: g.grupoNome,
-    value: g.subtotalGeral,
-    pct: totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0,
-    custoTon: g.subtotalCustoTon,
-    subtitle: `R$ ${fmtTon(g.subtotalCustoTon)}/t`,
-    fill: GRUPO_PALETA[g.grupoNome] ?? "#94a3b8",
-    // Detalhes exibidos no modal ao clicar na fatia (ordem decrescente por totalGeral)
-    details: [...g.subsetores]
-      .sort((a: any, b: any) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0"))
-      .map((s: any) => ({
-        label: s.subsetorNome,
-        value: `${fmtBRL(parseFloat(s.totalGeral ?? "0"))} | R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}/t`,
-      })),
-  }));
+  // Dados para o gráfico de rosca — subsetores individuais (ordem decrescente por totalGeral)
+  const dadosGrafico = useMemo(() => {
+    if (!relatorio?.grupos?.length) return [];
+    const subsetores: any[] = [];
+    for (const g of relatorio.grupos) {
+      const corBase = GRUPO_PALETA[g.grupoNome] ?? "#94a3b8";
+      for (const s of g.subsetores ?? []) {
+        const totalSub = parseFloat(String(s.totalGeral ?? 0));
+        const custoTon = parseFloat(String(s.custoTon ?? 0));
+        subsetores.push({
+          name: s.subsetorNome,
+          value: totalSub,
+          pct: totalGeral > 0 ? (totalSub / totalGeral) * 100 : 0,
+          custoTon,
+          subtitle: `R$ ${fmtTon(custoTon)}/t`,
+          fill: corBase,
+          grupo: g.grupoNome,
+          details: [
+            { label: "Grupo", value: g.grupoNome },
+            { label: "Total R$", value: fmtBRL(totalSub) },
+            { label: "Custo/t", value: `R$ ${fmtTon(custoTon)}/t` },
+          ],
+        });
+      }
+    }
+    return subsetores.sort((a, b) => b.value - a.value);
+  }, [relatorio, totalGeral]);
 
   return (
     <DashboardLayout>
@@ -548,7 +559,7 @@ export default function CustoSetor() {
             <Card className="relative">
               {/* Botão de expansão */}
               <DonutChartModal
-                title={`Distribuição por Setor — ${periodoLabel}`}
+                title={`Distribuição por Subsetor — ${periodoLabel}`}
                 data={dadosGrafico}
                 centerLabel="Total Geral"
                 centerValue={fmtBRL(totalGeral)}
@@ -558,7 +569,7 @@ export default function CustoSetor() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <PieChart className="h-4 w-4 text-primary" />
-                  Distribuição por Setor
+                  Distribuição por Subsetor
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">

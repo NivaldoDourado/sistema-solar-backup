@@ -473,3 +473,6 @@
 ## Gráfico Distribuição por Subsetor (Mai/2026)
 - [x] Substituir gráfico "Distribuição por Setor" (macro) pelo "Distribuição por Subsetor" usando dados do Resumo Consolidado por Subsetor
 - [x] Usar os 11 subsetores individuais (DESMONTE PRIMÁRIO, DECAPEAMENTO, DESMONTE SECUNDÁRIO, PEDRA PARA BRITADOR, etc.) com cores por grupo
+
+## Gráfico Distribuição por Subsetor — CustoSetor.tsx (Mai/2026)
+- [x] Modificar gráfico "Distribuição por Setor" no CustoSetor.tsx para exibir subsetores individuais em vez de grupos macro
