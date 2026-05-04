@@ -778,8 +778,79 @@ export default function ApuracaoCusto() {
             </Card>
           </div>
 
-          {/* ── Gráficos de Rosca ─────────────────────────────────────────────── */}
+          {/* ── Gráficos de Rosca ────────────────────────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            {/* Gráfico 0: Distribuição por Plano de Contas */}
+            {dadosPlanoContas.length > 0 && relatorio && (
+              <Card className="relative">
+                <DonutChartModal
+                  title={`Distribuição por Plano de Contas — ${periodoLabel}`}
+                  data={dadosPlanoContas}
+                  centerLabel="Total"
+                  centerValue={`R$ ${fmt(relatorio.totalGeral)}`}
+                  formatValue={(v) => `R$ ${fmt(v)}`}
+                  formatPct={fmtPct}
+                />
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    Distribuição por Plano de Contas
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Participação de cada conta no custo total</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="relative h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={dadosPlanoContas}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                        >
+                          {dadosPlanoContas.map((_, idx) => (
+                            <Cell key={idx} fill={COLORS_CONTAS[idx % COLORS_CONTAS.length]} />
+                          ))}
+                        </Pie>
+                        <text
+                          x="50%" y="46%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-muted-foreground" fontSize={10}
+                        >
+                          Total
+                        </text>
+                        <text
+                          x="50%" y="58%" textAnchor="middle" dominantBaseline="middle"
+                          className="fill-foreground" fontSize={12} fontWeight="700"
+                        >
+                          R$ {fmt(relatorio.totalGeral)}
+                        </text>
+                        <Tooltip content={<CustomTooltip />} />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legenda */}
+                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto pr-1">
+                    {dadosPlanoContas.map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ background: COLORS_CONTAS[idx % COLORS_CONTAS.length] }}
+                          />
+                          <span className="truncate text-muted-foreground">{d.name}</span>
+                        </div>
+                        <span className="font-mono font-medium shrink-0">{fmtPct(d.pct)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Gráfico 1: Distribuição por Subsetor */}
             {dadosSubsetor.length > 0 && relatorio && (

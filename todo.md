@@ -476,3 +476,6 @@
 
 ## Gráfico Distribuição por Subsetor — CustoSetor.tsx (Mai/2026)
 - [x] Modificar gráfico "Distribuição por Setor" no CustoSetor.tsx para exibir subsetores individuais em vez de grupos macro
+
+## Gráfico Plano de Contas na Apuração de Custo (Mai/2026)
+- [x] Adicionar gráfico "Distribuição por Plano de Contas" antes do "Distribuição por Subsetor" com todas as contas (Custo Variável + Despesa Variável + Despesas Indiretas) em um único gráfico
