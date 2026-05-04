@@ -423,3 +423,6 @@
 ## Produção na Apuração de Custo (Mai/2026)
 - [x] Backend: calcular produção total do período (soma dos equipamentos com produção > 0)
 - [x] Frontend: exibir produção total na barra de status antes das vendas
+
+## Produção e Vendas no Custo por Setor (Mai/2026)
+- [x] Frontend: exibir produção e total de vendas no cabeçalho do Custo por Setor

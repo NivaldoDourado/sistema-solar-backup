@@ -174,6 +174,14 @@ export default function CustoSetor() {
     ? `${String(periodoAtual.mes).padStart(2, "0")}/${periodoAtual.ano}`
     : "";
 
+  // Buscar produção do módulo para o período selecionado
+  const { data: producaoModulo } = trpc.periodoCusto.getProducaoDoModulo.useQuery(
+    { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
+    { enabled: !!periodoAtual }
+  );
+  const producaoTotal = producaoModulo?.total ?? parseFloat(periodoAtual?.producaoTotal ?? "0") ?? 0;
+  const vendasTotal = parseFloat(periodoAtual?.quantidadeVendida ?? "0") || 0;
+
   // Totais gerais
   const totalGeral = relatorio?.totalGeral ?? 0;
   const totalCustoTon = relatorio?.totalCustoTon ?? 0;
@@ -290,6 +298,23 @@ export default function CustoSetor() {
             <p className="text-muted-foreground text-sm mt-1">
               Relatório de custos distribuídos por setor produtivo
             </p>
+            {periodoAtual && (
+              <div className="flex items-center gap-3 flex-wrap mt-2">
+                <Badge variant={periodoAtual.fechado === "sim" ? "secondary" : "default"}>
+                  {periodoAtual.fechado === "sim" ? "Fechado" : "Aberto"}
+                </Badge>
+                {producaoTotal > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    Produção: <strong>{producaoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t</strong>
+                  </span>
+                )}
+                {vendasTotal > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    Vendas: <strong>{vendasTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} t</strong>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {periodos && periodos.length > 0 && (
