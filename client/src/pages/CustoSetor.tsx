@@ -644,7 +644,7 @@ export default function CustoSetor() {
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
                                 <Link
-                                  href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}${periodoSelecionado ? `&periodo=${periodoSelecionado}` : ''}`}
+                                  href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}${periodoSelecionado ? '&periodo=' + periodoSelecionado : ''}`}
                                   className="font-medium text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 group"
                                   onClick={(e: React.MouseEvent) => e.stopPropagation()}
                                 >
@@ -739,7 +739,7 @@ export default function CustoSetor() {
                             >
                               <td className="px-4 py-2 font-medium">
                                 <Link
-                                href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}${periodoSelecionado ? `&periodo=${periodoSelecionado}` : ''}`}
+                                href={`/custo-setor-analitico?subsetor=${encodeURIComponent(s.subsetorNome)}${periodoSelecionado ? '&periodo=' + periodoSelecionado : ''}`}
                                   className="text-blue-700 hover:text-blue-900 hover:underline font-medium flex items-center gap-1 group"
                                   onClick={(e: React.MouseEvent) => e.stopPropagation()}
                                 >

@@ -1,21 +1,23 @@
 /**
- * Importador das abas RAS01-RAS12 e MSET da planilha CUSTOSOLAR
+ * Importador das abas MEM e MSET da planilha CUSTOSOLAR
  *
- * RAS01-RAS12: Centros de custo por equipamento em cada subsetor
- * MSET: Despesas específicas do setor (Energia Elétrica, Explosivos, etc.)
+ * Fonte primária de dados analíticos:
+ *   MEM  → custo_setor_equipamento (equipamentos com custo rateado por setor)
+ *   MSET → custo_setor_despesa     (despesas específicas de cada setor)
  *
- * Estrutura de cada bloco de equipamento nas abas RAS (14 linhas por equipamento):
- *   Linha 1: Nome do equipamento
- *   Linhas 2-8: Despesas individuais:
- *     - Sal.Oper./Enc.Oper.
- *     - Depreciação
- *     - Combustível
- *     - Lubrificantes
- *     - Peças de Desgaste
- *     - Peças de Reposição/Item de Consumo
- *     - Outras Despesas
- *   Linha 9: Total das Despesas do Equipamento
- *   Linhas 10-14: Informações operacionais (horas, combustível litros, produção, etc.)
+ * Estrutura da aba MEM:
+ *   Cada equipamento tem um bloco de linhas onde:
+ *   - col 1 = nome do equipamento (aparece na primeira linha do bloco)
+ *   - col 2 = tipo de despesa (Salário do Operador, Combustível, etc.)
+ *   - col 4 = valor total da despesa
+ *   - col 11-22 = valor da despesa rateado por setor
+ *   - Linha "Total das Despesas do Equipame": col 4 = total geral, col 11-22 = total por setor
+ *
+ * Estrutura da aba MSET:
+ *   Blocos de 14 linhas com 2 setores por bloco (lado esquerdo e direito).
+ *   Linha de cabeçalho do bloco: col 1 = setor esquerdo, col 4 = setor direito
+ *   Linha "DESCRIÇÃO / VALOR": col 2 = "VALOR", col 5 = "VALOR"
+ *   Linhas de contas: col 1 = descrição, col 2 = valor; col 4 = descrição, col 5 = valor
  */
 
 import * as XLSX from "xlsx";
@@ -27,35 +29,71 @@ import {
 } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
-// Mapeamento das abas RAS para subsetor/grupo
-const RAS_ABAS: Record<string, { subsetor: string; grupo: string; ordem: number }> = {
-  RAS01: { subsetor: "DESMONTE PRIMÁRIO",       grupo: "DESMONTE DE ROCHA",   ordem: 1 },
-  RAS02: { subsetor: "DESMONTE SECUNDÁRIO",      grupo: "DESMONTE DE ROCHA",   ordem: 2 },
-  RAS03: { subsetor: "CARGA E TRANSPORTE",       grupo: "CARGA E TRANSPORTE",  ordem: 1 },
-  RAS04: { subsetor: "BRITAGEM PRIMÁRIA",        grupo: "BRITAGEM",            ordem: 1 },
-  RAS05: { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM",          ordem: 2 },
-  RAS06: { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM",          ordem: 2 },
-  RAS07: { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM",          ordem: 2 },
-  RAS08: { subsetor: "EXPEDIÇÃO",                grupo: "EXPEDIÇÃO",           ordem: 1 },
-  RAS09: { subsetor: "SERVIÇOS AUXILIARES",      grupo: "SERVIÇOS AUXILIARES", ordem: 1 },
-  RAS10: { subsetor: "OFICINA E ALMOXARIFADO",   grupo: "SERVIÇOS AUXILIARES", ordem: 2 },
-  RAS11: { subsetor: "REFEITÓRIO E LIMPEZA",     grupo: "SERVIÇOS AUXILIARES", ordem: 3 },
-  RAS12: { subsetor: "ADMINISTRAÇÃO",            grupo: "ADMINISTRAÇÃO",       ordem: 1 },
+// ─── Mapeamento de colunas 11-22 da MEM para setores ─────────────────────────
+const COL_SETOR_MAP: Record<number, { subsetor: string; grupo: string }> = {
+  11: { subsetor: "DESMONTE PRIMÁRIO",          grupo: "DESMONTE DE ROCHA"   },
+  12: { subsetor: "DESMONTE SECUNDÁRIO",         grupo: "DESMONTE DE ROCHA"   },
+  13: { subsetor: "BRITAGEM PRIMÁRIA",           grupo: "BRITAGEM"            },
+  14: { subsetor: "BRITAGEM SEC./TERC./QUART.",  grupo: "BRITAGEM"            },
+  15: { subsetor: "OUTROS SERVIÇOS",             grupo: "APOIO À PRODUÇÃO"    },
+  16: { subsetor: "PEDRA PARA BRITADOR",         grupo: "PEDRA PARA BRITADOR" },
+  17: { subsetor: "MOV. DE ESTOQUE",             grupo: "APOIO À PRODUÇÃO"    },
+  18: { subsetor: "DECAPEAMENTO",                grupo: "DESMONTE DE ROCHA"   },
+  19: { subsetor: "EXPEDIÇÃO",                   grupo: "EXPEDIÇÃO"           },
+  20: { subsetor: "ADMINISTRAÇÃO",               grupo: "ADMINISTRAÇÃO"       },
+  21: { subsetor: "OFICINA E ALMOXARIFADO",      grupo: "SERVIÇOS AUXILIARES" },
+  22: { subsetor: "REFEITÓRIO E LIMPEZA",        grupo: "SERVIÇOS AUXILIARES" },
 };
 
-// Nomes das linhas de despesas dentro de cada bloco de equipamento
-const DESPESAS_LINHAS = [
-  "salOperEncOper",
-  "depreciacao",
-  "combustivel",
-  "lubrificantes",
-  "pecasDesgaste",
-  "pecasReposicao",
-  "outrasDespesas",
-] as const;
+// ─── Mapeamento de tipo de despesa (col 2 da MEM) para campo do banco ─────────
+const CONTA_MAP_MEM: Record<string, string> = {
+  "Salário do Operador":               "salOperEncOper",
+  "Sal.Oper./Enc. Oper.":              "salOperEncOper",
+  "Sal. Oper./Enc. Oper.":             "salOperEncOper",
+  "Depreciação":                       "depreciacao",
+  "Depreciacao":                       "depreciacao",
+  "Combustível (Critério 1)":          "combustivel",
+  "Combustível":                       "combustivel",
+  "Lubrificantes":                     "lubrificantes",
+  "Peças de Desgaste":                 "pecasDesgaste",
+  "Peças de Repos./Item de Cons.":     "pecasReposicao",
+  "Peças de Reposição/Item de Consumo": "pecasReposicao",
+  "Peças de Reposição":                "pecasReposicao",
+  "Outras Despesas":                   "outrasDespesas",
+  "Outras Despesas (Serviços, etc)":   "outrasDespesas",
+};
+
+// ─── Mapeamento de setores MSET para grupos ───────────────────────────────────
+const MSET_GRUPO_MAP: Record<string, string> = {
+  "DESMONTE PRIMÁRIO":          "DESMONTE DE ROCHA",
+  "DESMONTE SECUNDÁRIO":        "DESMONTE DE ROCHA",
+  "DECAPEAMENTO":               "DESMONTE DE ROCHA",
+  "BRITAGEM PRIMÁRIA":          "BRITAGEM",
+  "BRITAGEM SEC./TERC./QUART.": "BRITAGEM",
+  "PEDRA PARA BRITADOR":        "PEDRA PARA BRITADOR",
+  "EXPEDIÇÃO":                  "EXPEDIÇÃO",
+  "MOV. DE ESTOQUE":            "EXPEDIÇÃO",
+  "OFICINA E ALMOXARIFADO":     "SERVIÇOS AUXILIARES",
+  "REFEITÓRIO E LIMPEZA":       "SERVIÇOS AUXILIARES",
+  "OUTROS SERVIÇOS":            "SERVIÇOS AUXILIARES",
+  "APOIO GERAL":                "SERVIÇOS AUXILIARES",
+  "ADMINISTRAÇÃO":              "ADMINISTRAÇÃO",
+};
+
+// Todos os nomes de setores válidos na MSET
+const MSET_SETORES_VALIDOS = new Set(Object.keys(MSET_GRUPO_MAP));
+
+// Linhas a ignorar na MSET
+const MSET_SKIP = new Set([
+  "DESCRIÇÃO / VALOR",
+  "TOTAL DAS DESPESAS",
+  "TOTAL",
+  "",
+]);
 
 function toNum(val: any): number {
   if (val === null || val === undefined || val === "" || val === "#REF!" || val === "#N/A") return 0;
+  if (typeof val === "number") return isNaN(val) ? 0 : val;
   const s = String(val).replace(/\./g, "").replace(",", ".");
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;
@@ -66,213 +104,214 @@ function strVal(val: any): string {
   return String(val).trim();
 }
 
-/**
- * Parseia uma aba RAS e retorna array de equipamentos com suas despesas
- */
-function parseAbaRas(ws: XLSX.WorkSheet, subsetor: string, grupo: string) {
-  const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
-    header: 1,
-    defval: null,
-    raw: false,
-  });
-
-  const equipamentos: Array<{
-    equipamentoNome: string;
-    salOperEncOper: number;
-    depreciacao: number;
-    combustivel: number;
-    lubrificantes: number;
-    pecasDesgaste: number;
-    pecasReposicao: number;
-    outrasDespesas: number;
-    totalDespesasEquipamento: number;
-    horasTrabalhadas: number;
-    qtdCombustivelLitros: number;
-    producaoTotal: number;
-    unidadeProducao: string;
-    ordemExibicao: number;
-  }> = [];
-
-  // Encontrar onde começa a tabela de equipamentos
-  // Procurar por uma linha que tenha "EQUIPAMENTOS" ou similar como cabeçalho
-  // Na estrutura da planilha, os blocos de equipamentos geralmente começam após linha 5-6
-  let startRow = 0;
-  for (let i = 0; i < Math.min(20, rows.length); i++) {
-    const row = rows[i];
-    if (!row) continue;
-    // Procurar por linha que contenha "EQUIPAMENTOS" em alguma coluna
-    const hasEquipamentos = row.some(
-      (cell) => cell && String(cell).toUpperCase().includes("EQUIPAMENTO")
-    );
-    if (hasEquipamentos) {
-      startRow = i + 1;
-      break;
-    }
-  }
-
-  // Se não encontrou cabeçalho, tentar a partir da linha 6 (índice 5)
-  if (startRow === 0) startRow = 5;
-
-  let ordem = 0;
-  let i = startRow;
-
-  while (i < rows.length) {
-    const row = rows[i];
-    if (!row) { i++; continue; }
-
-    // Coluna A (índice 0) = nome do equipamento
-    const nomeEquip = strVal(row[0]);
-
-    // Pular linhas vazias ou de total/subtotal
-    if (!nomeEquip) { i++; continue; }
-    if (
-      nomeEquip.toUpperCase().includes("TOTAL") ||
-      nomeEquip.toUpperCase().includes("SUB-TOTAL") ||
-      nomeEquip.toUpperCase().includes("SUBTOTAL")
-    ) {
-      i++;
-      continue;
-    }
-
-    // Verificar se há pelo menos 8 linhas abaixo (bloco de equipamento)
-    if (i + 8 >= rows.length) break;
-
-    // Ler as 7 linhas de despesas (linhas i+1 a i+7)
-    // Coluna B (índice 1) = valor da despesa
-    const salOper = toNum(rows[i + 1]?.[1]);
-    const deprec = toNum(rows[i + 2]?.[1]);
-    const combust = toNum(rows[i + 3]?.[1]);
-    const lubr = toNum(rows[i + 4]?.[1]);
-    const pecasDesg = toNum(rows[i + 5]?.[1]);
-    const pecasRep = toNum(rows[i + 6]?.[1]);
-    const outras = toNum(rows[i + 7]?.[1]);
-
-    // Linha i+8 = total das despesas
-    const totalDesp = toNum(rows[i + 8]?.[1]);
-
-    // Linhas operacionais (i+9 a i+13)
-    const horasTrab = toNum(rows[i + 9]?.[1]);
-    const qtdCombust = toNum(rows[i + 10]?.[1]);
-    const producao = toNum(rows[i + 11]?.[1]);
-    const unidade = strVal(rows[i + 12]?.[1]) || "t";
-
-    // Só adicionar se tiver algum valor
-    const temValor = salOper + deprec + combust + lubr + pecasDesg + pecasRep + outras + totalDesp > 0;
-    if (temValor || nomeEquip.length > 2) {
-      ordem++;
-      equipamentos.push({
-        equipamentoNome: nomeEquip,
-        salOperEncOper: salOper,
-        depreciacao: deprec,
-        combustivel: combust,
-        lubrificantes: lubr,
-        pecasDesgaste: pecasDesg,
-        pecasReposicao: pecasRep,
-        outrasDespesas: outras,
-        totalDespesasEquipamento: totalDesp || (salOper + deprec + combust + lubr + pecasDesg + pecasRep + outras),
-        horasTrabalhadas: horasTrab,
-        qtdCombustivelLitros: qtdCombust,
-        producaoTotal: producao,
-        unidadeProducao: unidade,
-        ordemExibicao: ordem,
-      });
-    }
-
-    // Avançar 14 linhas (bloco completo)
-    i += 14;
-  }
-
-  return equipamentos;
+// ─── Parser da aba MEM ────────────────────────────────────────────────────────
+interface EquipamentoMem {
+  equipamentoNome: string;
+  subsetorNome: string;
+  grupoNome: string;
+  salOperEncOper: number;
+  depreciacao: number;
+  combustivel: number;
+  lubrificantes: number;
+  pecasDesgaste: number;
+  pecasReposicao: number;
+  outrasDespesas: number;
+  totalDespesasEquipamento: number;
+  horasTrabalhadas: number;
+  producaoTotal: number;
+  unidadeProducao: string;
 }
 
-/**
- * Parseia a aba MSET e retorna despesas específicas por subsetor
- */
-function parseAbaMset(ws: XLSX.WorkSheet) {
+function parseAbaMem(ws: XLSX.WorkSheet): EquipamentoMem[] {
   const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
     header: 1,
     defval: null,
-    raw: false,
+    raw: true,
   });
 
-  const despesas: Array<{
-    subsetorNome: string;
-    grupoNome: string;
-    descricao: string;
-    valor: number;
-    ordemExibicao: number;
-  }> = [];
+  const result: EquipamentoMem[] = [];
 
-  // Mapeamento de subsetores da aba MSET para grupos
-  const SUBSETOR_GRUPO: Record<string, string> = {
-    "DESMONTE PRIMÁRIO": "DESMONTE DE ROCHA",
-    "DESMONTE SECUNDÁRIO": "DESMONTE DE ROCHA",
-    "CARGA E TRANSPORTE": "CARGA E TRANSPORTE",
-    "BRITAGEM PRIMÁRIA": "BRITAGEM",
-    "BRITAGEM SEC./TERC./QUART.": "BRITAGEM",
-    "EXPEDIÇÃO": "EXPEDIÇÃO",
-    "SERVIÇOS AUXILIARES": "SERVIÇOS AUXILIARES",
-    "OFICINA E ALMOXARIFADO": "SERVIÇOS AUXILIARES",
-    "REFEITÓRIO E LIMPEZA": "SERVIÇOS AUXILIARES",
-    "ADMINISTRAÇÃO": "ADMINISTRAÇÃO",
-  };
-
-  let subsetorAtual = "";
-  let grupoAtual = "";
-  let ordemDespesa = 0;
+  let equipAtual: string | null = null;
+  let blocoLinhas: any[][] = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row) continue;
 
-    const colA = strVal(row[0]);
-    const colB = strVal(row[1]);
+    const col1 = strVal(row[1]);
+    const col2 = strVal(row[2]);
+    const col4 = toNum(row[4]);
 
-    if (!colA && !colB) continue;
+    // Linha de total do equipamento
+    if (col2.startsWith("Total das Despesas")) {
+      if (equipAtual && col4 > 0) {
+        const totalGeral = col4;
+        const totalRow = row;
 
-    // Detectar linha de subsetor (coluna A preenchida, sem valor numérico em B)
-    if (colA && !colB) {
-      const colAUpper = colA.toUpperCase();
-      // Verificar se é um nome de subsetor conhecido
-      const subsetorMatch = Object.keys(SUBSETOR_GRUPO).find(
-        (s) => colAUpper.includes(s.toUpperCase()) || s.toUpperCase().includes(colAUpper)
-      );
-      if (subsetorMatch) {
-        subsetorAtual = subsetorMatch;
-        grupoAtual = SUBSETOR_GRUPO[subsetorMatch];
-        ordemDespesa = 0;
-      } else if (colAUpper.length > 3 && !colAUpper.includes("TOTAL") && !colAUpper.includes("SUBTOTAL")) {
-        // Pode ser um nome de subsetor não mapeado
-        subsetorAtual = colA;
-        grupoAtual = "OUTROS";
-        ordemDespesa = 0;
+        // Extrair custos por tipo de despesa
+        const custosPorTipo: Record<string, number> = {};
+        let producao = 0;
+        let unidadeProducao = "ton";
+        let horasTrabalhadas = 0;
+
+        for (const bRow of blocoLinhas) {
+          const bCol2 = strVal(bRow[2]);
+          const bCol4 = toNum(bRow[4]);
+
+          if (bCol2.startsWith("Produção Total")) {
+            producao = bCol4;
+            if (bRow[5] && strVal(bRow[5])) unidadeProducao = strVal(bRow[5]);
+            else if (bRow[3] && strVal(bRow[3])) unidadeProducao = strVal(bRow[3]);
+          } else if (bCol2 && !bCol2.startsWith("Total") && bCol4 > 0) {
+            const campo = CONTA_MAP_MEM[bCol2];
+            if (campo) custosPorTipo[campo] = (custosPorTipo[campo] || 0) + bCol4;
+          }
+
+          // Horas trabalhadas: col 7 da primeira linha do bloco
+          if (bRow === blocoLinhas[0] && toNum(bRow[7]) > 0) {
+            horasTrabalhadas = toNum(bRow[7]);
+          }
+        }
+
+        // Para cada setor (colunas 11-22), criar um registro se houver valor
+        for (const [colStr, setorInfo] of Object.entries(COL_SETOR_MAP)) {
+          const col = parseInt(colStr);
+          const valorSetor = toNum(totalRow[col]);
+          if (valorSetor <= 0) continue;
+
+          // Proporcionar os custos por tipo ao setor
+          const proporcao = totalGeral > 0 ? valorSetor / totalGeral : 0;
+
+          result.push({
+            equipamentoNome: equipAtual,
+            subsetorNome: setorInfo.subsetor,
+            grupoNome: setorInfo.grupo,
+            salOperEncOper: (custosPorTipo["salOperEncOper"] || 0) * proporcao,
+            depreciacao: (custosPorTipo["depreciacao"] || 0) * proporcao,
+            combustivel: (custosPorTipo["combustivel"] || 0) * proporcao,
+            lubrificantes: (custosPorTipo["lubrificantes"] || 0) * proporcao,
+            pecasDesgaste: (custosPorTipo["pecasDesgaste"] || 0) * proporcao,
+            pecasReposicao: (custosPorTipo["pecasReposicao"] || 0) * proporcao,
+            outrasDespesas: (custosPorTipo["outrasDespesas"] || 0) * proporcao,
+            totalDespesasEquipamento: valorSetor,
+            horasTrabalhadas: horasTrabalhadas * proporcao,
+            producaoTotal: producao * proporcao,
+            unidadeProducao,
+          });
+        }
       }
+      // Resetar para o próximo equipamento
+      equipAtual = null;
+      blocoLinhas = [];
       continue;
     }
 
-    // Linha de despesa: coluna A = descrição, coluna B = valor
-    if (colA && colB && subsetorAtual) {
-      const valor = toNum(colB);
-      if (
-        !colA.toUpperCase().includes("TOTAL") &&
-        !colA.toUpperCase().includes("SUBTOTAL") &&
-        valor !== 0
-      ) {
+    // Linha de cabeçalho de equipamento
+    // Ignorar linhas auxiliares: "FOTO", linhas de setor, linhas vazias
+    if (
+      col1 &&
+      col2 &&
+      col1 !== "FOTO" &&
+      !col1.startsWith("TOTAL") &&
+      col2 !== "TOTAL DO PERÍODO" &&
+      !col2.startsWith("Produção Total")
+    ) {
+      // Verificar se col2 é um tipo de despesa válido
+      const isDespevaValida =
+        CONTA_MAP_MEM[col2] ||
+        col2.startsWith("Sal") ||
+        col2.startsWith("Comb") ||
+        col2.startsWith("Lubr") ||
+        col2.startsWith("Peç") ||
+        col2.startsWith("Outr") ||
+        col2.startsWith("Depr");
+
+      if (isDespevaValida) {
+        if (!equipAtual || col1 !== equipAtual) {
+          equipAtual = col1;
+          blocoLinhas = [];
+        }
+      }
+    }
+
+    // Adicionar linha ao bloco atual
+    if (equipAtual) {
+      blocoLinhas.push(row);
+    }
+  }
+
+  return result;
+}
+
+// ─── Parser da aba MSET ───────────────────────────────────────────────────────
+interface DespesaMset {
+  subsetorNome: string;
+  grupoNome: string;
+  descricao: string;
+  valor: number;
+  ordemExibicao: number;
+}
+
+function parseAbaMset(ws: XLSX.WorkSheet): DespesaMset[] {
+  const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    defval: null,
+    raw: true,
+  });
+
+  const result: DespesaMset[] = [];
+
+  // Encontrar blocos: linhas onde col[2] === 'VALOR' e col[5] === 'VALOR'
+  // A linha anterior (i-1) tem os nomes dos setores
+  const blocoHeaders: number[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (row && strVal(row[2]) === "VALOR" && strVal(row[5]) === "VALOR") {
+      blocoHeaders.push(i - 1);
+    }
+  }
+
+  for (const headerIdx of blocoHeaders) {
+    const headerRow = rows[headerIdx];
+    if (!headerRow) continue;
+
+    // Processar lado esquerdo (col 1, val col 2) e direito (col 4, val col 5)
+    for (const [nameCol, valCol] of [[1, 2], [4, 5]] as [number, number][]) {
+      const subsetorNome = strVal(headerRow[nameCol]);
+      if (!subsetorNome || !MSET_SETORES_VALIDOS.has(subsetorNome)) continue;
+
+      const grupoNome = MSET_GRUPO_MAP[subsetorNome];
+      let ordemDespesa = 0;
+
+      // Processar linhas de contas (headerIdx+2 a headerIdx+12)
+      for (let r = headerIdx + 2; r < headerIdx + 13 && r < rows.length; r++) {
+        const row = rows[r];
+        if (!row) continue;
+
+        const desc = strVal(row[nameCol]);
+        // Ler valor diretamente da célula para evitar perda de precisão
+        const cellAddr = XLSX.utils.encode_cell({ r, c: valCol });
+        const cell = ws[cellAddr];
+        const val = cell ? toNum(cell.v) : 0;
+
+        if (!desc || MSET_SKIP.has(desc) || val === 0) continue;
+
         ordemDespesa++;
-        despesas.push({
-          subsetorNome: subsetorAtual,
-          grupoNome: grupoAtual,
-          descricao: colA,
-          valor,
+        result.push({
+          subsetorNome,
+          grupoNome,
+          descricao: desc,
+          valor: val,
           ordemExibicao: ordemDespesa,
         });
       }
     }
   }
 
-  return despesas;
+  return result;
 }
 
+// ─── Resultado da importação ──────────────────────────────────────────────────
 export interface ImportacaoCustoSetorRasResult {
   periodoCustoId: number;
   mes: number;
@@ -284,6 +323,7 @@ export interface ImportacaoCustoSetorRasResult {
   erros: string[];
 }
 
+// ─── Função principal de importação ──────────────────────────────────────────
 export async function importarCustoSetorRas(
   buffer: Buffer,
   userId: number
@@ -291,61 +331,44 @@ export async function importarCustoSetorRas(
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
 
-  // Ler planilha
-  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true });
+  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true, raw: true });
 
-  // Extrair período da aba RAS01 (ou qualquer RAS disponível)
-  // Tentar extrair da célula que contém o mês/ano — geralmente célula B1 ou C1
+  // ─── Extrair período ────────────────────────────────────────────────────────
   let mes = 0;
   let ano = 0;
 
-  // Tentar extrair período da aba RSSET ou de qualquer aba disponível
-  const abasDisponiveis = workbook.SheetNames;
-
-  // Tentar extrair o período da aba RAS01
-  const wsRas01 = workbook.Sheets["RAS01"];
-  if (wsRas01) {
-    const rows01: any[][] = XLSX.utils.sheet_to_json(wsRas01, {
+  // Tentar da aba EMPRESA (campo DATA INICIAL DO CUSTO)
+  const wsEmpresa = workbook.Sheets["EMPRESA"];
+  if (wsEmpresa) {
+    const empRows: any[][] = XLSX.utils.sheet_to_json(wsEmpresa, {
       header: 1,
       defval: null,
       raw: false,
     });
-    // Procurar nas primeiras 5 linhas por uma data
-    for (let i = 0; i < Math.min(5, rows01.length); i++) {
-      const row = rows01[i];
-      if (!row) continue;
-      for (const cell of row) {
-        if (!cell) continue;
-        const d = new Date(String(cell));
-        if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+    for (const row of empRows) {
+      if (row[2] === "DATA INICIAL DO CUSTO" && row[3]) {
+        const d = row[3] instanceof Date ? row[3] : new Date(String(row[3]));
+        if (!isNaN(d.getTime())) {
           mes = d.getMonth() + 1;
           ano = d.getFullYear();
           break;
         }
-        // Tentar formato "MM/YYYY" ou "MÊS/ANO"
-        const match = String(cell).match(/(\d{1,2})\/(\d{4})/);
-        if (match) {
-          mes = parseInt(match[1]);
-          ano = parseInt(match[2]);
-          break;
-        }
       }
-      if (mes && ano) break;
     }
   }
 
-  // Se não encontrou na RAS01, tentar na RSSET
+  // Fallback: tentar da aba RSSET (célula K1)
   if (!mes || !ano) {
     const wsRsset = workbook.Sheets["RSSET"];
     if (wsRsset) {
-      const rowsRsset: any[][] = XLSX.utils.sheet_to_json(wsRsset, {
+      const rssetRows: any[][] = XLSX.utils.sheet_to_json(wsRsset, {
         header: 1,
         defval: null,
         raw: false,
       });
-      const dataCelula = rowsRsset[0]?.[10];
+      const dataCelula = rssetRows[0]?.[10];
       if (dataCelula) {
-        const d = new Date(dataCelula);
+        const d = new Date(String(dataCelula));
         if (!isNaN(d.getTime())) {
           mes = d.getMonth() + 1;
           ano = d.getFullYear();
@@ -354,13 +377,44 @@ export async function importarCustoSetorRas(
     }
   }
 
+  // Fallback: tentar de qualquer aba com data nas primeiras linhas
+  if (!mes || !ano) {
+    for (const sheetName of workbook.SheetNames) {
+      const ws = workbook.Sheets[sheetName];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: null,
+        raw: false,
+      });
+      for (const row of rows.slice(0, 5)) {
+        for (const cell of (row || [])) {
+          if (!cell) continue;
+          const match = String(cell).match(/(\d{1,2})\/(\d{4})/);
+          if (match) {
+            mes = parseInt(match[1]);
+            ano = parseInt(match[2]);
+            break;
+          }
+          const d = new Date(String(cell));
+          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+            mes = d.getMonth() + 1;
+            ano = d.getFullYear();
+            break;
+          }
+        }
+        if (mes && ano) break;
+      }
+      if (mes && ano) break;
+    }
+  }
+
   if (!mes || !ano) {
     throw new Error(
-      "Não foi possível extrair o período da planilha. Verifique se a planilha contém a aba RAS01 ou RSSET com data válida."
+      "Não foi possível extrair o período da planilha. Verifique se a planilha contém a aba EMPRESA ou RSSET com data válida."
     );
   }
 
-  // Buscar o período de custo
+  // ─── Buscar período de custo ────────────────────────────────────────────────
   const [periodoExistente] = await db
     .select({ id: periodoCusto.id })
     .from(periodoCusto)
@@ -380,60 +434,22 @@ export async function importarCustoSetorRas(
   let equipamentosImportados = 0;
   let despesasImportadas = 0;
 
-  // =====================================================================
-  // Importar abas RAS01-RAS12
-  // =====================================================================
+  // ─── Importar aba MEM ───────────────────────────────────────────────────────
+  const wsMem = workbook.Sheets["MEM"];
+  if (!wsMem) {
+    erros.push("Aba MEM não encontrada na planilha — equipamentos não importados");
+  } else {
+    const equipamentos = parseAbaMem(wsMem);
 
-  // Para subsetores que acumulam (BRITAGEM SEC./TERC./QUART.), precisamos
-  // agregar equipamentos de múltiplas abas
-  const equipamentosPorSubsetor: Record<
-    string,
-    {
-      subsetorNome: string;
-      grupoNome: string;
-      equipamentos: ReturnType<typeof parseAbaRas>;
-    }
-  > = {};
-
-  for (const [abaName, meta] of Object.entries(RAS_ABAS)) {
-    const ws = workbook.Sheets[abaName];
-    if (!ws) {
-      // Aba não encontrada — não é erro, pode não existir
-      continue;
-    }
-
-    const equips = parseAbaRas(ws, meta.subsetor, meta.grupo);
-
-    if (!equipamentosPorSubsetor[meta.subsetor]) {
-      equipamentosPorSubsetor[meta.subsetor] = {
-        subsetorNome: meta.subsetor,
-        grupoNome: meta.grupo,
-        equipamentos: [],
-      };
-    }
-
-    // Adicionar equipamentos ao subsetor (com ordem ajustada para não colidir)
-    const offsetOrdem = equipamentosPorSubsetor[meta.subsetor].equipamentos.length;
-    for (const eq_ of equips) {
-      equipamentosPorSubsetor[meta.subsetor].equipamentos.push({
-        ...eq_,
-        ordemExibicao: eq_.ordemExibicao + offsetOrdem,
-      });
-    }
-  }
-
-  // Fazer upsert dos equipamentos
-  for (const { subsetorNome, grupoNome, equipamentos } of Object.values(equipamentosPorSubsetor)) {
     for (const equip of equipamentos) {
       try {
-        // Verificar se já existe
         const [existing] = await db
           .select({ id: custoSetorEquipamento.id })
           .from(custoSetorEquipamento)
           .where(
             and(
               eq(custoSetorEquipamento.periodoCustoId, periodoCustoId),
-              eq(custoSetorEquipamento.subsetorNome, subsetorNome),
+              eq(custoSetorEquipamento.subsetorNome, equip.subsetorNome),
               eq(custoSetorEquipamento.equipamentoNome, equip.equipamentoNome)
             )
           )
@@ -441,8 +457,8 @@ export async function importarCustoSetorRas(
 
         const data = {
           periodoCustoId,
-          subsetorNome,
-          grupoNome,
+          subsetorNome: equip.subsetorNome,
+          grupoNome: equip.grupoNome,
           equipamentoNome: equip.equipamentoNome,
           salOperEncOper: equip.salOperEncOper.toFixed(2),
           depreciacao: equip.depreciacao.toFixed(2),
@@ -453,10 +469,9 @@ export async function importarCustoSetorRas(
           outrasDespesas: equip.outrasDespesas.toFixed(2),
           totalDespesasEquipamento: equip.totalDespesasEquipamento.toFixed(2),
           horasTrabalhadas: equip.horasTrabalhadas.toFixed(2),
-          qtdCombustivelLitros: equip.qtdCombustivelLitros.toFixed(2),
-          producaoTotal: equip.producaoTotal.toFixed(2),
+          producaoTotal: equip.producaoTotal > 0 ? equip.producaoTotal.toFixed(4) : null,
           unidadeProducao: equip.unidadeProducao,
-          ordemExibicao: equip.ordemExibicao,
+          ordemExibicao: equipamentosImportados + 1,
           userId,
         };
 
@@ -473,17 +488,17 @@ export async function importarCustoSetorRas(
         equipamentosImportados++;
       } catch (err: any) {
         erros.push(
-          `Erro ao importar equipamento "${equip.equipamentoNome}" (${subsetorNome}): ${err.message}`
+          `Erro ao importar equipamento "${equip.equipamentoNome}" (${equip.subsetorNome}): ${err.message}`
         );
       }
     }
   }
 
-  // =====================================================================
-  // Importar aba MSET (despesas específicas do setor)
-  // =====================================================================
+  // ─── Importar aba MSET ──────────────────────────────────────────────────────
   const wsMset = workbook.Sheets["MSET"];
-  if (wsMset) {
+  if (!wsMset) {
+    erros.push("Aba MSET não encontrada na planilha — despesas setoriais não importadas");
+  } else {
     const despesas = parseAbaMset(wsMset);
 
     for (const desp of despesas) {
@@ -541,9 +556,7 @@ export async function importarCustoSetorRas(
   };
 }
 
-// ============================================================
-// Rota Express para upload da planilha RAS
-// ============================================================
+// ─── Rota Express ─────────────────────────────────────────────────────────────
 import { Router } from "express";
 import multer from "multer";
 import { sdk } from "./_core/sdk";
@@ -561,7 +574,6 @@ export function registerImportacaoCustoSetorRasRoute(app: any) {
     upload.single("file"),
     async (req: any, res: any) => {
       try {
-        // Verificar autenticação
         let currentUser: any = null;
         try {
           currentUser = await sdk.authenticateRequest(req as any);
@@ -582,7 +594,7 @@ export function registerImportacaoCustoSetorRasRoute(app: any) {
         console.error("[importacao-custo-setor-ras] Erro:", err);
         return res
           .status(500)
-          .json({ error: err.message || "Erro interno ao importar planilha RAS" });
+          .json({ error: err.message || "Erro interno ao importar planilha MEM+MSET" });
       }
     }
   );

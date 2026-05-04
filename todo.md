@@ -452,3 +452,12 @@
 - [x] Reescrever importador para usar MEM (equipamentos por setor) e MSET (despesas setoriais)
 - [x] Corrigir mapeamento MSET para incluir OUTROS SERVIÇOS e REFEITÓRIO E LIMPEZA
 - [x] Verificar que todos os 12 setores batem com MEMGERAL (Total R$ 2.189.100,63 ✅)
+
+## Atualização do Importador Web para lógica MEM+MSET (Mai/2026)
+- [x] Ler código atual do importador web (server/importacaoCustoSetorRas.ts e client/ImportacaoCusto.tsx)
+- [x] Reescrever parsing MEM (equipamentos por setor via colunas 11-22) no servidor (já implementado em importacaoCustoSetorRas.ts)
+- [x] Reescrever parsing MSET (despesas setoriais com mapeamento completo de 12 setores) no servidor (já implementado)
+- [x] Manter parsing MEMGERAL para validação de totais (já implementado em importacaoCusto.ts)
+- [x] Importador web já executa Etapa 1 (MEMGERAL) + Etapa 2 (MEM+MSET) automaticamente em sequência
+- [x] Testar importador web com planilha real de Março/2026: 16 contas mapeadas + 73 equipamentos + 23 despesas setoriais
+- [x] Importar Março/2026 completo (MEMGERAL + MEM+MSET + Despesas Indiretas R$ 69.714,82)
