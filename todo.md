@@ -441,3 +441,14 @@
 - [x] Corrigir links de conta em ApuracaoCusto.tsx para incluir &periodo=X na URL do Relatório Analítico
 - [x] Corrigir links de subsetor/grupo em CustoSetor.tsx para incluir &periodo=X na URL do Relatório Analítico
 - [x] Verificar que CustoSetorAnalitico.tsx lê o parâmetro periodo da URL e o aplica ao seletor de período
+
+## Bug: Relatório Analítico acumula valores de múltiplos períodos (Mai/2026)
+- [x] Investigar query relatorioAnalitico no servidor para identificar filtro de período faltando
+- [x] Corrigir a query para filtrar corretamente por periodoCustoId
+- [x] Verificar que os totais de Fevereiro/2026 estão corretos após a correção
+
+## Reimportação Fevereiro/2026 com MEM+MSET (Mai/2026)
+- [x] Entender estrutura das abas MEM, MSET e MEMGERAL como memória de cálculo principal
+- [x] Reescrever importador para usar MEM (equipamentos por setor) e MSET (despesas setoriais)
+- [x] Corrigir mapeamento MSET para incluir OUTROS SERVIÇOS e REFEITÓRIO E LIMPEZA
+- [x] Verificar que todos os 12 setores batem com MEMGERAL (Total R$ 2.189.100,63 ✅)
