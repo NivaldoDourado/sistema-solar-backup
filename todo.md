@@ -461,3 +461,7 @@
 - [x] Importador web já executa Etapa 1 (MEMGERAL) + Etapa 2 (MEM+MSET) automaticamente em sequência
 - [x] Testar importador web com planilha real de Março/2026: 16 contas mapeadas + 73 equipamentos + 23 despesas setoriais
 - [x] Importar Março/2026 completo (MEMGERAL + MEM+MSET + Despesas Indiretas R$ 69.714,82)
+
+## Despesas Indiretas Janeiro/2026 (Mai/2026)
+- [x] Lançar Despesas Indiretas R$ 319.788,47 para o período 1/2026 (ID=30002)
+- [x] Verificar exibição na Apuração de Custo: Gastos c/ DI = R$ 2.744.031,34 | C.M. c/ DI = R$ 28,71 ✅
