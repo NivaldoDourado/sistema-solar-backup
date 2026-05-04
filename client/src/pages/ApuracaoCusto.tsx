@@ -92,6 +92,10 @@ export default function ApuracaoCusto() {
     { periodoCustoId: selectedPeriodoId! },
     { enabled: !!selectedPeriodoId }
   );
+  const { data: relatorioSetor } = trpc.custoSetor.relatorio.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId }
+  );
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
 
   const periodoAtual = useMemo(
@@ -202,9 +206,48 @@ export default function ApuracaoCusto() {
       custoMedio,
       custoMedioComDI,
     };
-  }, [lancamentos, periodoAtual, producaoModulo]);
+  }, [lancamentos, periodoAtual, producaoModulo]);  // ── Dados para gráficos ────────────────────────────────────────────────────────────────────────────
 
-  // ── Dados para gráficos ──────────────────────────────────────────────────────
+  // Paleta de cores para subsetores (por grupo)
+  const SUBSETOR_PALETA: Record<string, string> = {
+    "DESMONTE DE ROCHA":   "#f59e0b",
+    "CARGA E TRANSPORTE":  "#3b82f6",
+    "BRITAGEM":            "#22c55e",
+    "EXPEDIÇÃO":           "#a855f7",
+    "SERVIÇOS AUXILIARES": "#f97316",
+    "ADMINISTRAÇÃO":       "#6b7280",
+  };
+
+  // Gráfico 0: Distribuição por Subsetor (Resumo Consolidado por Subsetor)
+  const dadosSubsetor = useMemo(() => {
+    if (!relatorioSetor || !relatorioSetor.grupos?.length) return [];
+    const totalGeral = relatorioSetor.totalGeral ?? 0;
+    // Achatar todos os subsetores de todos os grupos
+    const subsetores: any[] = [];
+    for (const grupo of relatorioSetor.grupos) {
+      const corBase = SUBSETOR_PALETA[grupo.grupoNome] ?? "#94a3b8";
+      for (const sub of grupo.subsetores ?? []) {
+        const totalSub = parseFloat(String(sub.totalGeral ?? 0));
+        const custoTon = parseFloat(String(sub.custoTon ?? 0));
+        subsetores.push({
+          name: sub.subsetorNome,
+          value: totalSub,
+          pct: totalGeral > 0 ? (totalSub / totalGeral) * 100 : 0,
+          custoPorTon: custoTon,
+          subtitle: `R$ ${fmt(custoTon)}/t`,
+          fill: corBase,
+          grupo: grupo.grupoNome,
+          details: [
+            { label: "Grupo", value: grupo.grupoNome },
+            { label: "Total R$", value: `R$ ${fmt(totalSub)}` },
+            { label: "Custo/t", value: `R$ ${fmt(custoTon)}/t` },
+          ],
+        });
+      }
+    }
+    // Ordenar por valor decrescente
+    return subsetores.sort((a, b) => b.value - a.value);
+  }, [relatorioSetor]);
 
   // Gráfico 1: Distribuição por Plano de Contas (todas as contas juntas)
   const dadosPlanoContas = useMemo(() => {
@@ -738,29 +781,29 @@ export default function ApuracaoCusto() {
           {/* ── Gráficos de Rosca ─────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-            {/* Gráfico 1: Distribuição por Plano de Contas */}
-            {dadosPlanoContas.length > 0 && (
+            {/* Gráfico 1: Distribuição por Subsetor */}
+            {dadosSubsetor.length > 0 && relatorio && (
               <Card className="relative">
                 <DonutChartModal
-                  title={`Distribuição por Plano de Contas — ${periodoLabel}`}
-                  data={dadosPlanoContas}
+                  title={`Distribuição por Subsetor — ${periodoLabel}`}
+                  data={dadosSubsetor}
                   centerLabel="Total"
-                  centerValue={`R$ ${fmt(relatorio.totalGeral)}`}
+                  centerValue={`R$ ${fmt(relatorioSetor?.totalGeral ?? 0)}`}
                   formatValue={(v) => `R$ ${fmt(v)}`}
                   formatPct={fmtPct}
                 />
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold text-foreground">
-                    Distribuição por Plano de Contas
+                    Distribuição por Subsetor
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">Participação de cada conta no custo total</p>
+                  <p className="text-xs text-muted-foreground">Participação de cada subsetor no custo total</p>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="relative h-52">
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
-                          data={dadosPlanoContas}
+                          data={dadosSubsetor}
                           cx="50%"
                           cy="50%"
                           innerRadius={55}
@@ -770,8 +813,8 @@ export default function ApuracaoCusto() {
                           labelLine={false}
                           label={renderCustomLabel}
                         >
-                          {dadosPlanoContas.map((_, idx) => (
-                            <Cell key={idx} fill={COLORS_CONTAS[idx % COLORS_CONTAS.length]} />
+                          {dadosSubsetor.map((d, idx) => (
+                            <Cell key={idx} fill={d.fill} />
                           ))}
                         </Pie>
                         <text
@@ -784,7 +827,7 @@ export default function ApuracaoCusto() {
                           x="50%" y="58%" textAnchor="middle" dominantBaseline="middle"
                           className="fill-foreground" fontSize={12} fontWeight="700"
                         >
-                          R$ {fmt(relatorio.totalGeral)}
+                          R$ {fmt(relatorioSetor?.totalGeral ?? 0)}
                         </text>
                         <Tooltip content={<CustomTooltip />} />
                       </RechartsPieChart>
@@ -792,12 +835,12 @@ export default function ApuracaoCusto() {
                   </div>
                   {/* Legenda */}
                   <div className="mt-2 space-y-1 max-h-40 overflow-y-auto pr-1">
-                    {dadosPlanoContas.map((d, idx) => (
+                    {dadosSubsetor.map((d, idx) => (
                       <div key={idx} className="flex items-center justify-between gap-2 text-xs">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             className="h-2.5 w-2.5 rounded-full shrink-0"
-                            style={{ background: COLORS_CONTAS[idx % COLORS_CONTAS.length] }}
+                            style={{ background: d.fill }}
                           />
                           <span className="truncate text-muted-foreground">{d.name}</span>
                         </div>

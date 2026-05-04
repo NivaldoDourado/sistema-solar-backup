@@ -469,3 +469,7 @@
 ## Bug: Gráficos Custo Médio e C.M. c/ Desp. Indiretas (Mai/2026)
 - [x] Corrigir campo "Valor" no tooltip dos gráficos de Custo Médio (R$/t) — agora exibe valor financeiro total (R$) e custo/t separados
 - [x] Corrigir campo "Valor" no tooltip do gráfico C.M. c/ Despesas Indiretas — corrigido
+
+## Gráfico Distribuição por Subsetor (Mai/2026)
+- [x] Substituir gráfico "Distribuição por Setor" (macro) pelo "Distribuição por Subsetor" usando dados do Resumo Consolidado por Subsetor
+- [x] Usar os 11 subsetores individuais (DESMONTE PRIMÁRIO, DECAPEAMENTO, DESMONTE SECUNDÁRIO, PEDRA PARA BRITADOR, etc.) com cores por grupo
