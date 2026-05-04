@@ -431,3 +431,8 @@
 - [ ] Revisar e atualizar KNOWLEDGE_BASE.md com todo o aprendizado acumulado
 - [x] Importar planilha de Fevereiro/2026
 - [x] Verificar dados de Fevereiro na interface
+
+## Despesas Indiretas Fevereiro/2026 (Mai/2026)
+- [x] Inspecionar aba RSDESMB da planilha de Fevereiro/2026 e localizar valor de Despesas Indiretas
+- [x] Lançar Despesas Indiretas no banco para o período 2/2026
+- [x] Verificar exibição na Apuração de Custo (Custo Médio c/ Despesas Indiretas)
