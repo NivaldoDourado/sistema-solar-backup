@@ -397,6 +397,7 @@ export default function CustoSetorAnalitico() {
   const filtroSubsetor = searchParams.get("subsetor") ?? "";
   const filtroContaCampo = searchParams.get("conta") ?? "";
   const filtroGrupo = searchParams.get("grupo") ?? "";
+  const filtroPeriodoId = searchParams.get("periodo") ? Number(searchParams.get("periodo")) : null;
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: relatorio, isLoading } = trpc.custoSetorRas.relatorioAnalitico.useQuery(
@@ -411,9 +412,11 @@ export default function CustoSetorAnalitico() {
 
   useEffect(() => {
     if (periodos && periodos.length > 0 && !selectedPeriodoId) {
-      setSelectedPeriodoId(periodos[0].id);
+      // Se vier parâmetro periodo na URL, usar esse; senão usar o mais recente
+      const periodoUrl = filtroPeriodoId && periodos.find((p: any) => p.id === filtroPeriodoId);
+      setSelectedPeriodoId(periodoUrl ? filtroPeriodoId : periodos[0].id);
     }
-  }, [periodos, selectedPeriodoId]);
+  }, [periodos, selectedPeriodoId, filtroPeriodoId]);
 
   // Inicializar grupos expandidos quando o relatório carregar
   useEffect(() => {

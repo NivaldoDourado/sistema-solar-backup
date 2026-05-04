@@ -436,3 +436,8 @@
 - [x] Inspecionar aba RSDESMB da planilha de Fevereiro/2026 e localizar valor de Despesas Indiretas
 - [x] Lançar Despesas Indiretas no banco para o período 2/2026
 - [x] Verificar exibição na Apuração de Custo (Custo Médio c/ Despesas Indiretas)
+
+## Bug: Drill-down não propaga período selecionado (Mai/2026)
+- [x] Corrigir links de conta em ApuracaoCusto.tsx para incluir &periodo=X na URL do Relatório Analítico
+- [x] Corrigir links de subsetor/grupo em CustoSetor.tsx para incluir &periodo=X na URL do Relatório Analítico
+- [x] Verificar que CustoSetorAnalitico.tsx lê o parâmetro periodo da URL e o aplica ao seletor de período

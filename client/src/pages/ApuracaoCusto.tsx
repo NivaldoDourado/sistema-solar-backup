@@ -1001,7 +1001,7 @@ export default function ApuracaoCusto() {
                     <TableBody>
                       {relatorio.custoVariavel.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
                         return (
                           <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
@@ -1068,7 +1068,7 @@ export default function ApuracaoCusto() {
                     <TableBody>
                       {relatorio.despesaVariavel.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
                         return (
                           <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
@@ -1135,7 +1135,7 @@ export default function ApuracaoCusto() {
                     <TableBody>
                       {relatorio.despesasIndiretas.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}` : null;
+                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
                         return (
                           <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
