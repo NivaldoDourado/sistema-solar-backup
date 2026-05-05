@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { z } from "zod";
-import { sql, and } from "drizzle-orm";
+import { sql, and, gte, lte } from "drizzle-orm";
 import {
   periodoCusto, custoSetor, resumoVendasProduto, avaliacaoGlobal,
   abastecimento, producao
@@ -9,18 +9,8 @@ import {
 import { TRPCError } from "@trpc/server";
 
 /**
- * Converte ano/mês para string de data "YYYY-MM-DD"
- */
-function anoMesToDateStr(ano: number, mes: number, ultimo = false): string {
-  const m = String(mes).padStart(2, "0");
-  if (!ultimo) return `${ano}-${m}-01`;
-  // Último dia do mês
-  const d = new Date(ano, mes, 0).getDate();
-  return `${ano}-${m}-${String(d).padStart(2, "0")}`;
-}
-
-/**
  * Router de Comparativos Históricos
+ * Consolida dados mensais de múltiplos módulos para análise comparativa.
  */
 export const comparativosRouter = router({
 
@@ -38,14 +28,14 @@ export const comparativosRouter = router({
 
       const { anoInicio, anoFim } = input;
 
-      // 1. Buscar todos os períodos de custo no intervalo
+      // 1. Buscar todos os períodos de custo no intervalo (periodoCusto.ano é int, funciona com gte/lte)
       const periodos = await db
         .select()
         .from(periodoCusto)
         .where(
           and(
-            sql`${periodoCusto.ano} >= ${anoInicio}`,
-            sql`${periodoCusto.ano} <= ${anoFim}`
+            gte(periodoCusto.ano, anoInicio),
+            lte(periodoCusto.ano, anoFim)
           )
         )
         .orderBy(periodoCusto.ano, periodoCusto.mes);
@@ -67,14 +57,14 @@ export const comparativosRouter = router({
         }
       }
 
-      // 3. Buscar avaliação global para frete e investimentos
+      // 3. Buscar avaliação global para frete e investimentos (avaliacaoGlobal.ano é int)
       const avaliacoes = await db
         .select()
         .from(avaliacaoGlobal)
         .where(
           and(
-            sql`${avaliacaoGlobal.ano} >= ${anoInicio}`,
-            sql`${avaliacaoGlobal.ano} <= ${anoFim}`
+            gte(avaliacaoGlobal.ano, anoInicio),
+            lte(avaliacaoGlobal.ano, anoFim)
           )
         );
       const avaliacaoMap: Record<string, typeof avaliacoes[0]> = {};
@@ -83,9 +73,9 @@ export const comparativosRouter = router({
       }
 
       // 4. Buscar faturamento (resumo_vendas_produto) agrupado por mês/ano
-      // Filtrar por data completa: de 01/01/anoInicio até 31/12/anoFim
-      const dataInicioFat = `${anoInicio}-01-01`;
-      const dataFimFat = `${anoFim}-12-31`;
+      // periodoInicio é date — usar Date objects com gte/lte
+      const dataInicioFat = new Date(`${anoInicio}-01-01T00:00:00`);
+      const dataFimFat = new Date(`${anoFim}-12-31T23:59:59`);
       const faturamentoRows = await db
         .select({
           mes: sql<number>`MONTH(${resumoVendasProduto.periodoInicio})`,
@@ -96,8 +86,8 @@ export const comparativosRouter = router({
         .from(resumoVendasProduto)
         .where(
           and(
-            sql`${resumoVendasProduto.periodoInicio} >= ${dataInicioFat}`,
-            sql`${resumoVendasProduto.periodoInicio} <= ${dataFimFat}`
+            gte(resumoVendasProduto.periodoInicio, dataInicioFat),
+            lte(resumoVendasProduto.periodoInicio, dataFimFat)
           )
         )
         .groupBy(
@@ -113,8 +103,9 @@ export const comparativosRouter = router({
       }
 
       // 5. Buscar combustível (abastecimento) agrupado por mês/ano
-      const dataInicioAbast = `${anoInicio}-01-01`;
-      const dataFimAbast = `${anoFim}-12-31`;
+      // abastecimento.data é date — usar Date objects com gte/lte
+      const dataInicioAbast = new Date(`${anoInicio}-01-01T00:00:00`);
+      const dataFimAbast = new Date(`${anoFim}-12-31T23:59:59`);
       const combustivelRows = await db
         .select({
           mes: sql<number>`MONTH(${abastecimento.data})`,
@@ -125,8 +116,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            sql`${abastecimento.data} >= ${dataInicioAbast}`,
-            sql`${abastecimento.data} <= ${dataFimAbast}`
+            gte(abastecimento.data, dataInicioAbast),
+            lte(abastecimento.data, dataFimAbast)
           )
         )
         .groupBy(
@@ -142,8 +133,8 @@ export const comparativosRouter = router({
       }
 
       // 6. Buscar produção agrupada por mês/ano
-      const dataInicioProducao = `${anoInicio}-01-01`;
-      const dataFimProducao = `${anoFim}-12-31`;
+      const dataInicioProducao = new Date(`${anoInicio}-01-01T00:00:00`);
+      const dataFimProducao = new Date(`${anoFim}-12-31T23:59:59`);
       const producaoRows = await db
         .select({
           mes: sql<number>`MONTH(${producao.data})`,
@@ -153,8 +144,8 @@ export const comparativosRouter = router({
         .from(producao)
         .where(
           and(
-            sql`${producao.data} >= ${dataInicioProducao}`,
-            sql`${producao.data} <= ${dataFimProducao}`
+            gte(producao.data, dataInicioProducao),
+            lte(producao.data, dataFimProducao)
           )
         )
         .groupBy(
@@ -237,14 +228,14 @@ export const comparativosRouter = router({
 
       const { anoInicio, anoFim } = input;
 
-      // Buscar períodos
+      // Buscar períodos (periodoCusto.ano é int — gte/lte funciona direto)
       const periodos = await db
         .select({ id: periodoCusto.id, mes: periodoCusto.mes, ano: periodoCusto.ano })
         .from(periodoCusto)
         .where(
           and(
-            sql`${periodoCusto.ano} >= ${anoInicio}`,
-            sql`${periodoCusto.ano} <= ${anoFim}`
+            gte(periodoCusto.ano, anoInicio),
+            lte(periodoCusto.ano, anoFim)
           )
         )
         .orderBy(periodoCusto.ano, periodoCusto.mes);
@@ -306,8 +297,8 @@ export const comparativosRouter = router({
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const { anoInicio, anoFim } = input;
-      const dataInicio = `${anoInicio}-01-01`;
-      const dataFim = `${anoFim}-12-31`;
+      const dataInicio = new Date(`${anoInicio}-01-01T00:00:00`);
+      const dataFim = new Date(`${anoFim}-12-31T23:59:59`);
 
       const rows = await db
         .select({
@@ -321,8 +312,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            sql`${abastecimento.data} >= ${dataInicio}`,
-            sql`${abastecimento.data} <= ${dataFim}`
+            gte(abastecimento.data, dataInicio),
+            lte(abastecimento.data, dataFim)
           )
         )
         .groupBy(
