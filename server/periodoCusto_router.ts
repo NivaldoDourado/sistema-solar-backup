@@ -51,6 +51,7 @@ export const periodoCustoRouter = router({
         producaoTotal: z.string().optional(),
         quantidadeVendida: z.string().optional(),
         despesasIndiretas: z.string().optional(),
+        fretePeriodo: z.string().optional(),
         observacoes: z.string().optional(),
       })
     )
@@ -75,6 +76,7 @@ export const periodoCustoRouter = router({
             producaoTotal: input.producaoTotal ?? null,
             quantidadeVendida: input.quantidadeVendida ?? null,
             despesasIndiretas: input.despesasIndiretas ?? "0",
+            fretePeriodo: input.fretePeriodo ?? "0",
             observacoes: input.observacoes ?? null,
           })
           .where(eq(periodoCusto.id, existing.id));
@@ -86,6 +88,7 @@ export const periodoCustoRouter = router({
           producaoTotal: input.producaoTotal ?? null,
           quantidadeVendida: input.quantidadeVendida ?? null,
           despesasIndiretas: input.despesasIndiretas ?? "0",
+          fretePeriodo: input.fretePeriodo ?? "0",
           observacoes: input.observacoes ?? null,
           fechado: "nao",
           userId: ctx.user.id,

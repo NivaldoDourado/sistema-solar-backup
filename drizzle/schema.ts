@@ -191,6 +191,7 @@ export const periodoCusto = mysqlTable("periodo_custo", {
   producaoTotal: decimal("producaoTotal", { precision: 12, scale: 2 }), // puxada do Método Caminhões
   quantidadeVendida: decimal("quantidadeVendida", { precision: 12, scale: 2 }), // puxada do módulo de Vendas
   despesasIndiretas: decimal("despesasIndiretas", { precision: 12, scale: 2 }).default("0"), // lançamento manual
+  fretePeriodo: decimal("fretePeriodo", { precision: 12, scale: 2 }).default("0"), // frete repassado a transportadores (deduzido da receita bruta)
   observacoes: text("observacoes"),
   fechado: mysqlEnum("fechado", ["sim", "nao"]).default("nao").notNull(),
   userId: int("userId").notNull(),

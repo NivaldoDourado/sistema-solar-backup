@@ -1,0 +1,1 @@
+ALTER TABLE `periodo_custo` ADD `fretePeriodo` decimal(12,2) DEFAULT '0';

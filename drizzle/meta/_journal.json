@@ -71,6 +71,13 @@
       "when": 1777981027050,
       "tag": "0009_giant_karma",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1777986697825,
+      "tag": "0010_abnormal_prowler",
+      "breakpoints": true
     }
   ]
 }

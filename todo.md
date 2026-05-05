@@ -525,3 +525,10 @@
 ## Card Vendas no Dashboard (Mai/2026)
 - [x] Simplificar card de Vendas: exibir apenas Qtd Total (toneladas) e Valor Total, sem conversão m³→toneladas
 - [x] Usar dados do Resumo de Vendas ERP (tabela resumo_vendas_produto) para o período selecionado
+
+## Frete do Período no Card Receita vs. Custo (Mai/2026)
+- [x] Adicionar coluna fretePeriodo na tabela periodo_custo e migrar banco
+- [x] Adicionar campo fretePeriodo no procedure tRPC upsert do periodoCusto
+- [x] Refazer cálculos: Receita dos Produtos = Receita Bruta − Frete; Margem = Receita dos Produtos − Custo Total
+- [x] Card Receita vs. Custo exibe 4 KPIs: Receita Bruta, Frete do Período, Receita dos Produtos, Margem Bruta
+- [x] Adicionar campo Frete do Período no formulário de Períodos de Custo (com coluna na tabela de histórico)
