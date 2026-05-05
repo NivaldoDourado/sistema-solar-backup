@@ -541,3 +541,11 @@
 - [x] Registrar rota /avaliacao-global no App.tsx e menu lateral (submenu Custos)
 - [x] Integrar Frete do painel de Avaliação Global ao card Receita vs. Custo (substituir fretePeriodo da tabela periodo_custo)
 - [x] Remover campo Frete do Período do formulário de Períodos de Custo (migrar para Avaliação Global)
+
+## Módulo Comparativos Históricos (Mai/2026)
+- [x] Criar procedure tRPC comparativos.historico consolidando dados mensais de custos, produção, vendas, faturamento, frete e margem
+- [x] Criar procedure tRPC comparativos.evolucaoCustoSetor com custo por setor ao longo dos meses
+- [x] Criar procedure tRPC comparativos.evolucaoCombustivel com litros e custo de combustível por mês
+- [x] Implementar página ComparativosHistoricos.tsx com gráficos de linha, barras e tabela resumo
+- [x] Registrar rota /comparativos-historicos no App.tsx e menu lateral (submenu Custos)
+- [x] Salvar checkpoint

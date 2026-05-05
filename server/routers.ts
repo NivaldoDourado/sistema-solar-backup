@@ -12,6 +12,7 @@ import { lancamentoCustoRouter } from "./lancamentoCusto_router";
 import { custoSetorRouter } from "./custoSetor_router";
 import { custoSetorRasRouter } from "./custoSetorRas_router";
 import { avaliacaoGlobalRouter } from "./avaliacaoGlobal_router";
+import { comparativosRouter } from "./comparativos_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3222,6 +3223,7 @@ export const appRouter = router({
   custoSetor: custoSetorRouter,
   custoSetorRas: custoSetorRasRouter,
   avaliacaoGlobal: avaliacaoGlobalRouter,
+  comparativos: comparativosRouter,
 
   authLocal: authLocalRouter,
 
