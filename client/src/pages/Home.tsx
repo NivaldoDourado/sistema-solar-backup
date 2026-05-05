@@ -136,6 +136,16 @@ export default function Home() {
   const { data: producaoMotoristasData, isLoading: loadingMotoristas } = trpc.parteDiaria.producaoMotoristas.useQuery(filtroParams, { enabled: hasModuleAccess("parteDiaria") });
   const { data: revisoesPreventivas } = trpc.manutencao.revisoesPreventivas.useQuery(undefined, { enabled: hasModuleAccess("manutencao") });
   const { data: vendasData, isLoading: loadingVendas } = trpc.vendas.vendasList.useQuery(undefined, { enabled: hasModuleAccess("vendas") });
+
+  // Resumo de Vendas ERP (importado do PDF) para o período selecionado
+  const resumoVendasERPDash = useMemo(() => {
+    if (!dataInicio || !dataFim) return null;
+    return { periodoInicio: dataInicio, periodoFim: dataFim };
+  }, [dataInicio, dataFim]);
+  const { data: resumoVendasERP } = trpc.vendas.resumoVendasParaPeriodoCusto.useQuery(
+    { periodoInicio: resumoVendasERPDash?.periodoInicio ?? "", periodoFim: resumoVendasERPDash?.periodoFim ?? "" },
+    { enabled: !!resumoVendasERPDash && hasModuleAccess("vendas") }
+  );
   const { data: producaoUltimoDia, isLoading: loadingUltimoDia } = trpc.parteDiaria.producaoUltimoDia.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
   const { data: metaDiariaConfig } = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const utils = trpc.useUtils();
@@ -1042,37 +1052,64 @@ export default function Home() {
                       { header: 'Indicador', key: 'indicador', width: 25 },
                       { header: 'Valor', key: 'valor', width: 20 },
                     ],
-                    data: [
-                      { indicador: 'Quantidade (m³)', valor: fmtNum(vendasPorTipo.venda.totalM3) },
-                      { indicador: 'Valor Total', valor: `R$ ${fmtNum(vendasPorTipo.venda.valor)}` },
-                      { indicador: 'Toneladas', valor: fmtNum(vendasPorTipo.venda.totalTon) },
-                    ],
+                    data: resumoVendasERP?.temDados
+                      ? [
+                          { indicador: 'Quantidade Total (ton)', valor: fmtNum(resumoVendasERP.totalQuantidade) },
+                          { indicador: 'Valor Total', valor: `R$ ${fmtNum(resumoVendasERP.totalReceita)}` },
+                          { indicador: 'Vl. Médio (R$/t)', valor: fmtNum(resumoVendasERP.vlMedioGeral) },
+                        ]
+                      : [
+                          { indicador: 'Quantidade (m³)', valor: fmtNum(vendasPorTipo.venda.totalM3) },
+                          { indicador: 'Valor Total', valor: `R$ ${fmtNum(vendasPorTipo.venda.valor)}` },
+                        ],
                   }}
                 />
                 <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">Qtd Total (m³)</p>
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{fmtNum(vendasPorTipo.venda.totalM3)}</div>
+              {resumoVendasERP?.temDados ? (
+                // Dados do ERP importado (toneladas + valor)
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">Qtd Total (ton)</p>
+                      <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{fmtNum(resumoVendasERP.totalQuantidade)}</div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-blue-600 dark:text-blue-400">Valor Total</p>
+                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                        R$ {fmtNum(resumoVendasERP.totalReceita)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-blue-600 dark:text-blue-400">Valor Total</p>
-                    <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                      R$ {fmtNum(vendasPorTipo.venda.valor)}
+                  <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
+                    <p className="text-xs text-blue-600 dark:text-blue-400">Vl. Médio (R$/t)</p>
+                    <div className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      R$ {fmtNum(resumoVendasERP.vlMedioGeral)}/t
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
-                  <p className="text-xs text-blue-600 dark:text-blue-400">Conversão para Toneladas</p>
-                  <div className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                    {fmtNum(vendasPorTipo.venda.totalM3)} m³ = {fmtNum(vendasPorTipo.venda.totalTon)} ton
+              ) : (
+                // Sem dados ERP: exibe mensagem orientando importação
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">Qtd Total (ton)</p>
+                      <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">—</div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-blue-600 dark:text-blue-400">Valor Total</p>
+                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">R$ 0,00</div>
+                    </div>
+                  </div>
+                  <div className="border-t border-blue-200 dark:border-blue-800 pt-2">
+                    <p className="text-xs text-blue-500 dark:text-blue-400 italic">
+                      Importe o PDF do ERP em Vendas para ver os totais.
+                    </p>
                   </div>
                 </div>
-              </div>
+              )}
             </CardContent>
             </>)}
           </Card>

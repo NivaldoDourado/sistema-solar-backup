@@ -521,3 +521,7 @@
 - [x] Adicionar procedure tRPC resumoVendasParaPeriodoCusto (busca receita pelo período do custo)
 - [x] Adicionar painel comparativo Receita × Custo × Margem Bruta na tela de Apuração de Custo
 - [x] Exibir detalhamento de receita por produto no painel (tabela expansível com botão "Ver produtos")
+
+## Card Vendas no Dashboard (Mai/2026)
+- [x] Simplificar card de Vendas: exibir apenas Qtd Total (toneladas) e Valor Total, sem conversão m³→toneladas
+- [x] Usar dados do Resumo de Vendas ERP (tabela resumo_vendas_produto) para o período selecionado
