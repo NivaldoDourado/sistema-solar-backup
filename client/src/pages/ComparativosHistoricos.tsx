@@ -14,6 +14,7 @@ import {
   Factory, ShoppingCart, AlertCircle, Download, FileText
 } from "lucide-react";
 import { exportToExcel, exportToPDF } from "@/lib/export-utils";
+import { MessageCircle } from "lucide-react";
 
 const ANO_ATUAL = new Date().getFullYear();
 const ANOS = Array.from({ length: 6 }, (_, i) => ANO_ATUAL - 3 + i);
@@ -143,6 +144,13 @@ export default function ComparativosHistoricos() {
     { enabled: anoInicio <= anoFim }
   );
 
+  // Destinatários WhatsApp
+  const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
+  const destinatariosAtivos = useMemo(
+    () => (destinatariosWpp || []).filter((d: any) => d.ativo === "sim").map((d: any) => d.telefone),
+    [destinatariosWpp]
+  );
+
   const serie = serieData?.serie ?? [];
 
   // KPIs de resumo (últimos 2 períodos com dados)
@@ -171,6 +179,20 @@ export default function ComparativosHistoricos() {
   const totalCombustivel = combustivelData?.reduce((s, p) => s + p.litros, 0) ?? 0;
 
   const loading = loadingSerie || loadingCustoSetor || loadingCombustivel;
+
+  // Mensagem WhatsApp para Comparativos Históricos
+  const whatsappMessage = useMemo(() => {
+    if (!serie.length) return undefined;
+    let msg = `📊 *Comparativos Históricos — ${anoInicio} a ${anoFim}*\n\n`;
+    for (const p of serie) {
+      const fat = p.faturamento > 0 ? fmtMil(p.faturamento) : "—";
+      const cust = p.custoTotal > 0 ? fmtMil(p.custoTotal) : "—";
+      const mg = p.temCusto && p.temVendas ? fmtPct(p.margemBruta) : "—";
+      msg += `*${p.label}:* Fat. ${fat} | Custo ${cust} | Mg. ${mg}\n`;
+    }
+    msg += `\n*Totais:* Fat. ${fmtMil(totalFaturamento)} | Custo ${fmtMil(totalCusto)} | Prod. ${fmt(totalProducao, 0)} t`;
+    return msg;
+  }, [serie, anoInicio, anoFim, totalFaturamento, totalCusto, totalProducao]);
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -693,6 +715,23 @@ export default function ComparativosHistoricos() {
                       <FileText className="h-4 w-4" />
                       PDF
                     </Button>
+                    {whatsappMessage && destinatariosAtivos.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50"
+                        onClick={() => {
+                          const encoded = encodeURIComponent(whatsappMessage);
+                          destinatariosAtivos.forEach((tel: string, idx: number) => {
+                            const numero = tel.replace(/\D/g, "");
+                            setTimeout(() => window.open(`https://wa.me/${numero}?text=${encoded}`, "_blank"), idx * 800);
+                          });
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        WhatsApp
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

@@ -565,3 +565,7 @@
 ## Exportação PDF - Tabela Resumo dos Comparativos Históricos (Mai/2026)
 - [x] Adicionar botão "Exportar PDF" na aba Tabela Resumo (ao lado do botão Excel existente)
 - [x] Gerar arquivo PDF com cabeçalho padronizado, seguindo padrão do Custo por Setor
+
+## Exportação Excel/PDF/WhatsApp - Avaliação Global e Comparativos Históricos (Mai/2026)
+- [x] Avaliação Global: Adicionar botões Excel, PDF e WhatsApp
+- [x] Comparativos Históricos: Adicionar botão WhatsApp (Excel e PDF já existem)

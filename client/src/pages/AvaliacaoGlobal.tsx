@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,10 @@ import { toast } from "sonner";
 import {
   TrendingUp, TrendingDown, DollarSign, Truck, Building2,
   Calculator, Save, BarChart3, AlertCircle, CheckCircle2,
-  ChevronDown, ChevronUp, Info
+  ChevronDown, ChevronUp, Info, Download, FileText, MessageCircle
 } from "lucide-react";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import { exportToExcel, exportToPDF } from "@/lib/export-utils";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -126,6 +128,13 @@ export default function AvaliacaoGlobal() {
     { enabled: !!periodoAtual?.id }
   );
 
+  // Destinatários WhatsApp
+  const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
+  const destinatariosAtivos = useMemo(
+    () => (destinatariosWpp || []).filter((d: any) => d.ativo === "sim").map((d: any) => d.telefone),
+    [destinatariosWpp]
+  );
+
   // Mutation
   const upsert = trpc.avaliacaoGlobal.upsert.useMutation({
     onSuccess: () => {
@@ -215,6 +224,51 @@ export default function AvaliacaoGlobal() {
   const temDadosCusto = custos > 0;
   const temDadosVendas = faturamento > 0;
 
+  // Período label
+  const periodoLabel = `${MESES[mes - 1]}/${ano}`;
+
+  // Mensagem WhatsApp
+  const whatsappMessage = useMemo(() => {
+    if (!temDadosVendas && !temDadosCusto) return undefined;
+    let msg = `📊 *Avaliação Global — ${periodoLabel}*\n\n`;
+    msg += `*(A) Faturamento:* ${formatMoney(faturamento)}\n`;
+    msg += `*(B) Custos:* ${formatMoney(custos)}\n`;
+    msg += `*(C) Frete:* ${formatMoney(frete)}\n`;
+    msg += `*Saldo Bruto:* ${formatMoney(saldoBruto)} (${formatPct(margemBruta)})\n`;
+    if (totalD > 0) {
+      msg += `\n_Valores fora dos Custos:_\n`;
+      if (investEquip > 0) msg += `• Invest. Equip.: ${formatMoney(investEquip)}\n`;
+      if (investBritagem > 0) msg += `• Invest. Britagem: ${formatMoney(investBritagem)}\n`;
+      if (difFrete > 0) msg += `• Dif. Frete: ${formatMoney(difFrete)}\n`;
+      if (difImpostos > 0) msg += `• Dif. Impostos: ${formatMoney(difImpostos)}\n`;
+      if (distribLucro > 0) msg += `• Distrib. Lucro: ${formatMoney(distribLucro)}\n`;
+      if (outros > 0) msg += `• Outros: ${formatMoney(outros)}\n`;
+      msg += `*Total (D):* ${formatMoney(totalD)}\n`;
+    }
+    msg += `\n✅ *Saldo Final:* ${formatMoney(saldoFinal)} (${formatPct(margemFinal)})`;
+    return msg;
+  }, [faturamento, custos, frete, saldoBruto, margemBruta, totalD, investEquip, investBritagem, difFrete, difImpostos, distribLucro, outros, saldoFinal, margemFinal, periodoLabel, temDadosVendas, temDadosCusto]);
+
+  // Dados para exportação Excel/PDF
+  const exportData = useMemo(() => {
+    const rows: any[] = [];
+    rows.push({ item: "(A) Faturamento pela Competência", valor: faturamento, pct: "" });
+    rows.push({ item: "(B) Despesas dos Custos pela Competência", valor: -custos, pct: "" });
+    rows.push({ item: "(C) Frete pela Competência", valor: -frete, pct: "" });
+    rows.push({ item: "Saldo Bruto (A-B-C)", valor: saldoBruto, pct: formatPct(margemBruta) });
+    rows.push({ item: "", valor: null, pct: "" });
+    if (investEquip > 0) rows.push({ item: "D1 — Invest. Equipamentos/Terrenos", valor: -investEquip, pct: "" });
+    if (investBritagem > 0) rows.push({ item: "D2 — Invest. Britagem/Processos", valor: -investBritagem, pct: "" });
+    if (difFrete > 0) rows.push({ item: "D3 — Dif. Frete (Cx. x Competência)", valor: -difFrete, pct: "" });
+    if (difImpostos > 0) rows.push({ item: "D4 — Dif. Impostos (Cx. x Competência)", valor: -difImpostos, pct: "" });
+    if (distribLucro > 0) rows.push({ item: "D5 — Distrib. Lucro/Retirada Sócios", valor: -distribLucro, pct: "" });
+    if (outros > 0) rows.push({ item: "D6 — Outros/Duplicatas", valor: -outros, pct: "" });
+    if (totalD > 0) rows.push({ item: "Total (D)", valor: -totalD, pct: "" });
+    rows.push({ item: "", valor: null, pct: "" });
+    rows.push({ item: "SALDO FINAL (A-B-C-D)", valor: saldoFinal, pct: formatPct(margemFinal) });
+    return rows;
+  }, [faturamento, custos, frete, saldoBruto, margemBruta, investEquip, investBritagem, difFrete, difImpostos, distribLucro, outros, totalD, saldoFinal, margemFinal]);
+
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Cabeçalho */}
@@ -228,7 +282,7 @@ export default function AvaliacaoGlobal() {
             Análise do Lucro/Prejuízo — Estudo dos Custos pela Competência
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={String(mes)} onValueChange={(v) => setMes(Number(v))}>
             <SelectTrigger className="w-36">
               <SelectValue />
@@ -249,6 +303,23 @@ export default function AvaliacaoGlobal() {
               ))}
             </SelectContent>
           </Select>
+          {(temDadosVendas || temDadosCusto) && (
+            <DashboardExportMenu
+              title="Avaliação Global"
+              subtitle={`${periodoLabel} — Análise do Lucro/Prejuízo`}
+              filename={`avaliacao_global_${String(mes).padStart(2, "0")}_${ano}`}
+              exportOptions={{
+                columns: [
+                  { header: "Item", key: "item", width: 40 },
+                  { header: "Valor (R$)", key: "valor", width: 20, format: (v: number | null) => v !== null ? formatMoney(v) : "" },
+                  { header: "Margem", key: "pct", width: 14 },
+                ],
+                data: exportData,
+              }}
+              whatsappMessage={whatsappMessage}
+              whatsappDestinatarios={destinatariosAtivos}
+            />
+          )}
         </div>
       </div>
 
