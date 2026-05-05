@@ -1,10 +1,10 @@
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { z } from "zod";
-import { sql, and, gte, lte, eq } from "drizzle-orm";
+import { sql, and } from "drizzle-orm";
 import {
   periodoCusto, custoSetor, resumoVendasProduto, avaliacaoGlobal,
-  abastecimento, producao, lancamentoCusto
+  abastecimento, producao
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 
@@ -28,14 +28,16 @@ export const comparativosRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      const { anoInicio, anoFim } = input;
+
       // 1. Buscar todos os períodos de custo no intervalo
       const periodos = await db
         .select()
         .from(periodoCusto)
         .where(
           and(
-            gte(periodoCusto.ano, input.anoInicio),
-            lte(periodoCusto.ano, input.anoFim)
+            sql`${periodoCusto.ano} >= ${anoInicio}`,
+            sql`${periodoCusto.ano} <= ${anoFim}`
           )
         )
         .orderBy(periodoCusto.ano, periodoCusto.mes);
@@ -63,8 +65,8 @@ export const comparativosRouter = router({
         .from(avaliacaoGlobal)
         .where(
           and(
-            gte(avaliacaoGlobal.ano, input.anoInicio),
-            lte(avaliacaoGlobal.ano, input.anoFim)
+            sql`${avaliacaoGlobal.ano} >= ${anoInicio}`,
+            sql`${avaliacaoGlobal.ano} <= ${anoFim}`
           )
         );
       const avaliacaoMap: Record<string, typeof avaliacoes[0]> = {};
@@ -83,8 +85,8 @@ export const comparativosRouter = router({
         .from(resumoVendasProduto)
         .where(
           and(
-            gte(sql`YEAR(${resumoVendasProduto.periodoInicio})`, input.anoInicio),
-            lte(sql`YEAR(${resumoVendasProduto.periodoInicio})`, input.anoFim)
+            sql`YEAR(${resumoVendasProduto.periodoInicio}) >= ${anoInicio}`,
+            sql`YEAR(${resumoVendasProduto.periodoInicio}) <= ${anoFim}`
           )
         )
         .groupBy(
@@ -110,8 +112,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            gte(sql`YEAR(${abastecimento.data})`, input.anoInicio),
-            lte(sql`YEAR(${abastecimento.data})`, input.anoFim)
+            sql`YEAR(${abastecimento.data}) >= ${anoInicio}`,
+            sql`YEAR(${abastecimento.data}) <= ${anoFim}`
           )
         )
         .groupBy(
@@ -136,8 +138,8 @@ export const comparativosRouter = router({
         .from(producao)
         .where(
           and(
-            gte(sql`YEAR(${producao.data})`, input.anoInicio),
-            lte(sql`YEAR(${producao.data})`, input.anoFim)
+            sql`YEAR(${producao.data}) >= ${anoInicio}`,
+            sql`YEAR(${producao.data}) <= ${anoFim}`
           )
         )
         .groupBy(
@@ -218,14 +220,16 @@ export const comparativosRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      const { anoInicio, anoFim } = input;
+
       // Buscar períodos
       const periodos = await db
         .select({ id: periodoCusto.id, mes: periodoCusto.mes, ano: periodoCusto.ano })
         .from(periodoCusto)
         .where(
           and(
-            gte(periodoCusto.ano, input.anoInicio),
-            lte(periodoCusto.ano, input.anoFim)
+            sql`${periodoCusto.ano} >= ${anoInicio}`,
+            sql`${periodoCusto.ano} <= ${anoFim}`
           )
         )
         .orderBy(periodoCusto.ano, periodoCusto.mes);
@@ -286,6 +290,8 @@ export const comparativosRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      const { anoInicio, anoFim } = input;
+
       const rows = await db
         .select({
           mes: sql<number>`MONTH(${abastecimento.data})`,
@@ -298,8 +304,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            gte(sql`YEAR(${abastecimento.data})`, input.anoInicio),
-            lte(sql`YEAR(${abastecimento.data})`, input.anoFim)
+            sql`YEAR(${abastecimento.data}) >= ${anoInicio}`,
+            sql`YEAR(${abastecimento.data}) <= ${anoFim}`
           )
         )
         .groupBy(
