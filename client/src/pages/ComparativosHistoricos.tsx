@@ -11,9 +11,9 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, BarChart3, DollarSign, Truck, Fuel,
-  Factory, ShoppingCart, AlertCircle, Download
+  Factory, ShoppingCart, AlertCircle, Download, FileText
 } from "lucide-react";
-import { exportToExcel } from "@/lib/export-utils";
+import { exportToExcel, exportToPDF } from "@/lib/export-utils";
 
 const ANO_ATUAL = new Date().getFullYear();
 const ANOS = Array.from({ length: 6 }, (_, i) => ANO_ATUAL - 3 + i);
@@ -572,66 +572,128 @@ export default function ComparativosHistoricos() {
                   <CardDescription>Todos os indicadores consolidados em uma visão tabular</CardDescription>
                 </div>
                 {serie.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => {
-                      const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
-                      const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
-                      const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
-                      const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
+                        const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
+                        const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
+                        const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
 
-                      const dataRows = serie.map(p => ({
-                        periodo: p.label,
-                        faturamento: p.faturamento,
-                        frete: p.frete,
-                        recProdutos: p.faturamento - p.frete,
-                        custoTotal: p.custoTotal,
-                        saldoBruto: p.saldoBruto,
-                        margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
-                        producao: p.producaoTotal,
-                        custoTon: p.custoTon,
-                        combustivel: p.combustivelLitros,
-                      }));
+                        const dataRows = serie.map(p => ({
+                          periodo: p.label,
+                          faturamento: p.faturamento,
+                          frete: p.frete,
+                          recProdutos: p.faturamento - p.frete,
+                          custoTotal: p.custoTotal,
+                          saldoBruto: p.saldoBruto,
+                          margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
+                          producao: p.producaoTotal,
+                          custoTon: p.custoTon,
+                          combustivel: p.combustivelLitros,
+                        }));
 
-                      // Adicionar linha de totais
-                      dataRows.push({
-                        periodo: "TOTAL",
-                        faturamento: totalFaturamento,
-                        frete: totalFrete,
-                        recProdutos: totalRecProdutos,
-                        custoTotal: totalCusto,
-                        saldoBruto: totalSaldoBruto,
-                        margemBruta: null,
-                        producao: totalProducao,
-                        custoTon: totalCustoTon,
-                        combustivel: totalCombustivel,
-                      });
+                        // Adicionar linha de totais
+                        dataRows.push({
+                          periodo: "TOTAL",
+                          faturamento: totalFaturamento,
+                          frete: totalFrete,
+                          recProdutos: totalRecProdutos,
+                          custoTotal: totalCusto,
+                          saldoBruto: totalSaldoBruto,
+                          margemBruta: null,
+                          producao: totalProducao,
+                          custoTon: totalCustoTon,
+                          combustivel: totalCombustivel,
+                        });
 
-                      exportToExcel({
-                        title: "Comparativos Históricos — Tabela Resumo",
-                        subtitle: `Período: ${anoInicio} a ${anoFim}`,
-                        filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
-                        columns: [
-                          { header: "Período", key: "periodo", width: 12 },
-                          { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                          { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                          { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                          { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                          { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
-                          { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
-                          { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                          { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
-                          { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                        ],
-                        data: dataRows,
-                      });
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                    Exportar Excel
-                  </Button>
+                        exportToExcel({
+                          title: "Comparativos Históricos — Tabela Resumo",
+                          subtitle: `Período: ${anoInicio} a ${anoFim}`,
+                          filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
+                          columns: [
+                            { header: "Período", key: "periodo", width: 12 },
+                            { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
+                            { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
+                            { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                            { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
+                            { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                          ],
+                          data: dataRows,
+                        });
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      Excel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={async () => {
+                        const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
+                        const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
+                        const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
+                        const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
+
+                        const dataRows = serie.map(p => ({
+                          periodo: p.label,
+                          faturamento: p.faturamento,
+                          frete: p.frete,
+                          recProdutos: p.faturamento - p.frete,
+                          custoTotal: p.custoTotal,
+                          saldoBruto: p.saldoBruto,
+                          margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
+                          producao: p.producaoTotal,
+                          custoTon: p.custoTon,
+                          combustivel: p.combustivelLitros,
+                        }));
+
+                        // Adicionar linha de totais
+                        dataRows.push({
+                          periodo: "TOTAL",
+                          faturamento: totalFaturamento,
+                          frete: totalFrete,
+                          recProdutos: totalRecProdutos,
+                          custoTotal: totalCusto,
+                          saldoBruto: totalSaldoBruto,
+                          margemBruta: null,
+                          producao: totalProducao,
+                          custoTon: totalCustoTon,
+                          combustivel: totalCombustivel,
+                        });
+
+                        await exportToPDF({
+                          title: "Comparativos Históricos — Tabela Resumo",
+                          subtitle: `Período: ${anoInicio} a ${anoFim}`,
+                          filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
+                          columns: [
+                            { header: "Período", key: "periodo", width: 12 },
+                            { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                            { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
+                            { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
+                            { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                            { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
+                            { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                          ],
+                          data: dataRows,
+                        });
+                      }}
+                    >
+                      <FileText className="h-4 w-4" />
+                      PDF
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>

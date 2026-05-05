@@ -561,3 +561,7 @@
 ## Exportação Excel - Tabela Resumo dos Comparativos Históricos (Mai/2026)
 - [x] Adicionar botão "Exportar Excel" na aba Tabela Resumo
 - [x] Gerar arquivo .xlsx com cabeçalho padronizado (empresa, período) e dados da tabela
+
+## Exportação PDF - Tabela Resumo dos Comparativos Históricos (Mai/2026)
+- [x] Adicionar botão "Exportar PDF" na aba Tabela Resumo (ao lado do botão Excel existente)
+- [x] Gerar arquivo PDF com cabeçalho padronizado, seguindo padrão do Custo por Setor
