@@ -207,7 +207,7 @@ export function registerImportacaoCustoRoute(app: any) {
       // Valor: nome do sistema normalizado (para comparar com o banco)
       const ALIASES: Record<string, string> = {
         // Salários administrativos
-        "sal adm diretoria pro labore encargos": "rh adm salarios nao operacionais",
+        "sal adm diretoria pro labore encargos": "sal adm diretoria pro lab almox ofic serv aux encargos",
         // Salários operacionais — aceita tanto 'RH - Salários da Operação' quanto 'Sal.Oper./Enc. Oper.'
         "sal do oper": "sal oper enc oper",
         "sal oper": "sal oper enc oper",

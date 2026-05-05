@@ -249,7 +249,7 @@ export const custoSetorRasRouter = router({
         "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
         "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
         "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
-         "RH - ADM / Salários não Operacionais": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
         "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
         // Corrigir variações de acento
         "Jurídico/Cons.Esp./Serv.Ter.": "Jurídco/Cons.Esp./Serv.Ter.",

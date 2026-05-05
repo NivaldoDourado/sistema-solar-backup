@@ -96,7 +96,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Frota/Man.Pat./Seg./Out.",
   "Consultorias Especializadas",   // mapeado para Juridíco/Cons.Esp./Serv.Ter. no servidor
   "Equipamentos de Apoio",         // mapeado para Equip.Apoio (Comb./Lub/Peças/Serv.) no servidor
-  "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+  "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
   "Imp., Trib., Taxas e CEFEM",
   "Desp.Admin.Telef.e Inform.",
   "Outras Desp.Setor/Proc.",
@@ -104,7 +104,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Jurídico/Cons.Esp./Serv.Ter.",  // variação de acento tratada no servidor
   "Comissão de Vendas",
   "Outras Despesas de Setores",   // mapeado para Outras Desp.Setor/Proc. no servidor
-  "RH - ADM / Salários não Operacionais",  // mapeado para Sal.Adm./Diretoria/Pró-Labore/Encargos
+  "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",  // nome atual no banco
   "Impostos, CEFEM e Outras Taxas",           // mapeado para Imp., Trib., Taxas e CEFEM no servidor
 ]);
 

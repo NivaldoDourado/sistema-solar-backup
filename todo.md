@@ -502,3 +502,6 @@
 - [x] Adicionar módulos faltantes: periodoCusto, lancamentoCusto, apuracaoCusto, custoSetor, custoSetorAnalitico, importacaoCusto, destinatariosWhatsapp, metasAlertas, rotinas
 - [x] Atualizar tela de Permissões com grupo "Custos" e grupo "Administração" separados
 - [x] Sincronizar permissões padrão no backend para todos os perfis × todos os módulos novos
+
+## Renomeação de Conta (Mai/2026)
+- [x] Renomear "Sal.Adm./Diretoria/Pró-Labore/Encargos" → "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos" no banco e nos aliases
