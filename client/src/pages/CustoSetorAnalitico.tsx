@@ -329,6 +329,10 @@ function SubsetorCard({
                     {subsetor.despesasEspecificas.map((desp, idx) => {
                       const valor = parseFloat(desp.valor ?? "0");
                       const pct = subsetor.totalSubsetor > 0 ? (valor / subsetor.totalSubsetor) * 100 : 0;
+                      const isSalAdm = desp.descricao === "Sal.Adm./Diretoria/Pr\u00f3-Labore/Encargos";
+                      const labelExibido = isSalAdm && subsetor.subsetorNome !== "ADMINISTRA\u00c7\u00c3O"
+                        ? "Sal\u00e1rios com Encargos"
+                        : desp.descricao;
                       const hasIcon = desp.descricao.includes("Energia") || desp.descricao.includes("Explosivos");
                       return (
                         <TableRow key={desp.id} className={idx % 2 === 0 ? "" : "bg-muted/20"}>
@@ -337,7 +341,7 @@ function SubsetorCard({
                               {desp.descricao.includes("Energia") && <Zap className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
                               {desp.descricao.includes("Explosivos") && <Bomb className="h-3.5 w-3.5 text-red-500 shrink-0" />}
                               {!hasIcon && <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                              {desp.descricao}
+                              {labelExibido}
                             </div>
                           </TableCell>
                           <TableCell className="text-right text-sm font-semibold font-mono">{fmtBRL(valor)}</TableCell>
