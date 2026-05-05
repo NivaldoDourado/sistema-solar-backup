@@ -6,16 +6,21 @@ import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 /**
- * Converte string monetária no formato brasileiro (ex: "1.552.995,14") para string decimal americana ("1552995.14").
- * Aceita também formato americano direto ("1552995.14") e strings vazias/nulas.
+ * Garante que o valor é uma string decimal válida para o banco MySQL.
+ * O frontend já envia os valores convertidos para formato americano (ex: "1552995.14").
+ * Esta função apenas valida e normaliza, sem tentar converter formato BR.
  */
 function parseBRDecimal(value: string | undefined | null): string {
   if (value === undefined || value === null || String(value).trim() === "") return "0";
-  // Remove pontos de milhar e substitui vírgula decimal por ponto
-  const cleaned = String(value).trim().replace(/\./g, "").replace(",", ".");
-  const num = parseFloat(cleaned);
-  if (isNaN(num)) return "0";
-  return num.toFixed(2);
+  const s = String(value).trim();
+  // Se ainda vier no formato brasileiro (com vírgula), converter
+  if (s.includes(",")) {
+    const num = parseFloat(s.replace(/\./g, "").replace(",", "."));
+    return isNaN(num) ? "0" : num.toFixed(2);
+  }
+  // Formato americano ou inteiro: usar diretamente
+  const num = parseFloat(s);
+  return isNaN(num) ? "0" : num.toFixed(2);
 }
 
 export const avaliacaoGlobalRouter = router({

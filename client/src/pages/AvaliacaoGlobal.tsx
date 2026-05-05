@@ -138,16 +138,24 @@ export default function AvaliacaoGlobal() {
   });
 
   // Preencher formulário quando carregar dados existentes
+  // Converte valor decimal americano do banco ("1552995.14") para formato BR de exibição ("1.552.995,14")
+  const dbToDisplay = (v: string | null | undefined): string => {
+    if (!v || v === "0" || v === "0.00") return "";
+    const num = parseFloat(v);
+    if (isNaN(num)) return "";
+    return num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   useEffect(() => {
     if (avaliacao) {
       setForm({
-        frete: avaliacao.frete ?? "",
-        investEquip: avaliacao.investEquip ?? "",
-        investBritagem: avaliacao.investBritagem ?? "",
-        difFrete: avaliacao.difFrete ?? "",
-        difImpostos: avaliacao.difImpostos ?? "",
-        distribLucro: avaliacao.distribLucro ?? "",
-        outros: avaliacao.outros ?? "",
+        frete: dbToDisplay(avaliacao.frete),
+        investEquip: dbToDisplay(avaliacao.investEquip),
+        investBritagem: dbToDisplay(avaliacao.investBritagem),
+        difFrete: dbToDisplay(avaliacao.difFrete),
+        difImpostos: dbToDisplay(avaliacao.difImpostos),
+        distribLucro: dbToDisplay(avaliacao.distribLucro),
+        outros: dbToDisplay(avaliacao.outros),
         observacoes: avaliacao.observacoes ?? "",
       });
     } else {
@@ -176,16 +184,28 @@ export default function AvaliacaoGlobal() {
   const saldoFinal = saldoBruto - totalD;
   const margemFinal = faturamento > 0 ? (saldoFinal / faturamento) * 100 : 0;
 
+  // Converte valor do formato brasileiro ("1.552.995,14") ou americano ("1552995.14") para string decimal americana
+  const toDecimalStr = (v: string): string => {
+    if (!v || v.trim() === "") return "0";
+    const s = v.trim();
+    // Se tem vírgula: formato brasileiro (pontos = milhar, vírgula = decimal)
+    if (s.includes(",")) {
+      return String(parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0);
+    }
+    // Se não tem vírgula: pode ser americano (ponto = decimal) ou inteiro
+    return String(parseFloat(s) || 0);
+  };
+
   const handleSave = () => {
     upsert.mutate({
       mes, ano,
-      frete: form.frete || "0",
-      investEquip: form.investEquip || "0",
-      investBritagem: form.investBritagem || "0",
-      difFrete: form.difFrete || "0",
-      difImpostos: form.difImpostos || "0",
-      distribLucro: form.distribLucro || "0",
-      outros: form.outros || "0",
+      frete: toDecimalStr(form.frete),
+      investEquip: toDecimalStr(form.investEquip),
+      investBritagem: toDecimalStr(form.investBritagem),
+      difFrete: toDecimalStr(form.difFrete),
+      difImpostos: toDecimalStr(form.difImpostos),
+      distribLucro: toDecimalStr(form.distribLucro),
+      outros: toDecimalStr(form.outros),
       observacoes: form.observacoes || undefined,
     });
   };
