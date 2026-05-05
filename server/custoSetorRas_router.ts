@@ -231,6 +231,54 @@ export const custoSetorRasRouter = router({
       return { grupos, totalGeral };
     }),
 
+  // Distribuição de uma conta específica (ex: Energia Elétrica) por subsetor
+  despesasPorDescricao: protectedProcedure
+    .input(
+      z.object({
+        periodoCustoId: z.number(),
+        descricao: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { subsetores: [], total: 0 };
+
+      // Mapeamento de nomes do MEMGERAL para nomes no MSET (quando diferem)
+      const MEMGERAL_TO_MSET: Record<string, string> = {
+        "Despesas Administrativas": "Desp.Admin.Telef.e Inform.",
+        "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
+        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Pe\u00e7as/Serv.)",
+        // Corrigir variações de acento
+        "Jur\u00eddico/Cons.Esp./Serv.Ter.": "Juridíco/Cons.Esp./Serv.Ter.",
+      };
+      const descricaoBusca = MEMGERAL_TO_MSET[input.descricao] ?? input.descricao;
+
+      const rows = await db
+        .select()
+        .from(custoSetorDespesa)
+        .where(
+          and(
+            eq(custoSetorDespesa.periodoCustoId, input.periodoCustoId),
+            eq(custoSetorDespesa.descricao, descricaoBusca)
+          )
+        )
+        .orderBy(asc(custoSetorDespesa.ordemExibicao));
+
+      // Ordenar por valor decrescente
+      rows.sort((a, b) => parseFloat(b.valor ?? "0") - parseFloat(a.valor ?? "0"));
+
+      const total = rows.reduce((s, r) => s + parseFloat(r.valor ?? "0"), 0);
+
+      return {
+        subsetores: rows.map((r) => ({
+          subsetorNome: r.subsetorNome,
+          grupoNome: r.grupoNome,
+          valor: parseFloat(r.valor ?? "0"),
+        })),
+        total,
+      };
+    }),
+
   // Deletar todos os dados RAS de um período (para reimportação)
   deletarPorPeriodo: protectedProcedure
     .input(z.object({ periodoCustoId: z.number() }))

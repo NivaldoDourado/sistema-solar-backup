@@ -479,3 +479,11 @@
 
 ## Gráfico Plano de Contas na Apuração de Custo (Mai/2026)
 - [x] Adicionar gráfico "Distribuição por Plano de Contas" antes do "Distribuição por Subsetor" com todas as contas (Custo Variável + Despesa Variável + Despesas Indiretas) em um único gráfico
+
+## Links Analíticos para Contas Pretas (DESPSET) — Apuração de Custo (Mai/2026)
+- [x] Analisar como os dados DESPSET estão armazenados no banco (tabela custo_setor_despesa)
+- [x] Criar endpoint tRPC `custoSetorRas.despesasPorDescricao` para buscar distribuição por subsetor de uma conta
+- [x] Criar modal de drill-down mostrando subsetor → valor da conta com % de participação
+- [x] Adicionar links verdes nas contas pretas das 3 tabelas (Custo Variável, Despesa Variável, Despesas Indiretas)
+- [x] Mapear nomes MEMGERAL → MSET (Despesas Administrativas, Consultorias Especializadas, Equipamentos de Apoio)
+- [x] Remover contas sem dados DESPSET do conjunto (RH-ADM, Livre)

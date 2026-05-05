@@ -13,6 +13,7 @@ const CONTA_NOME_PARA_CAMPO: Record<string, string> = {
   "Sal.Oper./Enc. Oper.": "salOperEncOper",
   "Depreciação": "depreciacao",
 };
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -84,8 +85,29 @@ function renderCustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, pct }: 
   );
 }
 
+// Contas que têm dados DESPSET (distribuição por subsetor)
+// Qualquer conta que NÃO esteja em CONTA_NOME_PARA_CAMPO pode ter dados DESPSET
+// Contas que possuem dados analíticos por subsetor na tabela custo_setor_despesa (aba MSET)
+// Os nomes aqui devem corresponder exatamente ao campo conta_nome em lancamento_custo
+const CONTAS_COM_DESPSET = new Set([
+  "Energia Elétrica",
+  "Explosivos e Acessórios",
+  "Despesas Administrativas",      // mapeado para Desp.Admin.Telef.e Inform. no servidor
+  "Frota/Man.Pat./Seg./Out.",
+  "Consultorias Especializadas",   // mapeado para Juridíco/Cons.Esp./Serv.Ter. no servidor
+  "Equipamentos de Apoio",         // mapeado para Equip.Apoio (Comb./Lub/Peças/Serv.) no servidor
+  "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+  "Imp., Trib., Taxas e CEFEM",
+  "Desp.Admin.Telef.e Inform.",
+  "Outras Desp.Setor/Proc.",
+  "Equip.Apoio (Comb./Lub/Peças/Serv.)",
+  "Jurídico/Cons.Esp./Serv.Ter.",  // variação de acento tratada no servidor
+  "Comissão de Vendas",
+]);
+
 export default function ApuracaoCusto() {
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<number | null>(null);
+  const [despesaModal, setDespesaModal] = useState<{ descricao: string; total: number } | null>(null);
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: lancamentos } = trpc.lancamentoCusto.listByPeriodo.useQuery(
@@ -97,6 +119,12 @@ export default function ApuracaoCusto() {
     { enabled: !!selectedPeriodoId }
   );
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
+
+  // Query para dados DESPSET do modal de drill-down
+  const { data: despesaSetorData, isLoading: despesaSetorLoading } = trpc.custoSetorRas.despesasPorDescricao.useQuery(
+    { periodoCustoId: selectedPeriodoId!, descricao: despesaModal?.descricao ?? "" },
+    { enabled: !!selectedPeriodoId && !!despesaModal }
+  );
 
   const periodoAtual = useMemo(
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
@@ -1118,14 +1146,23 @@ export default function ApuracaoCusto() {
                       {relatorio.custoVariavel.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
                         const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
+                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
                         return (
-                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
                               {href ? (
                                 <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
                                   {conta.nome}
                                   <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
                                 </Link>
+                              ) : hasDespset ? (
+                                <button
+                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
+                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
+                                >
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
+                                </button>
                               ) : conta.nome}
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
@@ -1185,14 +1222,23 @@ export default function ApuracaoCusto() {
                       {relatorio.despesaVariavel.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
                         const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
+                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
                         return (
-                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
                               {href ? (
                                 <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
                                   {conta.nome}
                                   <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
                                 </Link>
+                              ) : hasDespset ? (
+                                <button
+                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
+                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
+                                >
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
+                                </button>
                               ) : conta.nome}
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
@@ -1252,14 +1298,23 @@ export default function ApuracaoCusto() {
                       {relatorio.despesasIndiretas.map((conta) => {
                         const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
                         const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
+                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
                         return (
-                          <TableRow key={conta.id} className={href ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
                             <TableCell>
                               {href ? (
                                 <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
                                   {conta.nome}
                                   <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
                                 </Link>
+                              ) : hasDespset ? (
+                                <button
+                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
+                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
+                                >
+                                  {conta.nome}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
+                                </button>
                               ) : conta.nome}
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
@@ -1389,6 +1444,56 @@ export default function ApuracaoCusto() {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Drill-down DESPSET */}
+      <Dialog open={!!despesaModal} onOpenChange={(open) => { if (!open) setDespesaModal(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {despesaModal?.descricao} — Distribuição por Subsetor
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              Total: <span className="font-mono font-semibold">R$ {fmt(despesaModal?.total ?? 0)}</span>
+              {periodoAtual && <span className="ml-2">| {periodoAtual.mes}/{periodoAtual.ano}</span>}
+            </p>
+          </DialogHeader>
+          {despesaSetorLoading ? (
+            <div className="py-8 text-center text-muted-foreground text-sm">Carregando...</div>
+          ) : despesaSetorData && despesaSetorData.subsetores.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Subsetor</TableHead>
+                  <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                  <TableHead className="text-right w-24">%</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {despesaSetorData.subsetores.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium">{row.subsetorNome}</TableCell>
+                    <TableCell className="text-right font-mono">{fmt(row.valor)}</TableCell>
+                    <TableCell className="text-right font-mono text-muted-foreground">
+                      {despesaSetorData.total > 0
+                        ? fmtPct((row.valor / despesaSetorData.total) * 100)
+                        : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="font-semibold bg-muted/40">
+                  <TableCell>Total</TableCell>
+                  <TableCell className="text-right font-mono">{fmt(despesaSetorData.total)}</TableCell>
+                  <TableCell className="text-right font-mono">100,0%</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              Nenhum dado encontrado para esta conta neste período.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
