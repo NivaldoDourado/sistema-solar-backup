@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -10,8 +11,9 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, BarChart3, DollarSign, Truck, Fuel,
-  Factory, ShoppingCart, AlertCircle
+  Factory, ShoppingCart, AlertCircle, Download
 } from "lucide-react";
+import { exportToExcel } from "@/lib/export-utils";
 
 const ANO_ATUAL = new Date().getFullYear();
 const ANOS = Array.from({ length: 6 }, (_, i) => ANO_ATUAL - 3 + i);
@@ -564,8 +566,74 @@ export default function ComparativosHistoricos() {
         <TabsContent value="tabela" className="mt-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Tabela Resumo por Período</CardTitle>
-              <CardDescription>Todos os indicadores consolidados em uma visão tabular</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Tabela Resumo por Período</CardTitle>
+                  <CardDescription>Todos os indicadores consolidados em uma visão tabular</CardDescription>
+                </div>
+                {serie.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
+                      const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
+                      const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
+                      const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
+
+                      const dataRows = serie.map(p => ({
+                        periodo: p.label,
+                        faturamento: p.faturamento,
+                        frete: p.frete,
+                        recProdutos: p.faturamento - p.frete,
+                        custoTotal: p.custoTotal,
+                        saldoBruto: p.saldoBruto,
+                        margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
+                        producao: p.producaoTotal,
+                        custoTon: p.custoTon,
+                        combustivel: p.combustivelLitros,
+                      }));
+
+                      // Adicionar linha de totais
+                      dataRows.push({
+                        periodo: "TOTAL",
+                        faturamento: totalFaturamento,
+                        frete: totalFrete,
+                        recProdutos: totalRecProdutos,
+                        custoTotal: totalCusto,
+                        saldoBruto: totalSaldoBruto,
+                        margemBruta: null,
+                        producao: totalProducao,
+                        custoTon: totalCustoTon,
+                        combustivel: totalCombustivel,
+                      });
+
+                      exportToExcel({
+                        title: "Comparativos Históricos — Tabela Resumo",
+                        subtitle: `Período: ${anoInicio} a ${anoFim}`,
+                        filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
+                        columns: [
+                          { header: "Período", key: "periodo", width: 12 },
+                          { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
+                          { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
+                          { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                          { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
+                          { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                        ],
+                        data: dataRows,
+                      });
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    Exportar Excel
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               {serie.length === 0 ? (

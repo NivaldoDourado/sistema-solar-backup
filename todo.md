@@ -557,3 +557,7 @@
 - [x] Corrigir ORDER BY: mesmo padrão do GROUP BY no evolucaoCombustivel
 - [x] Testar todas as 6 queries do comparativos_router via script direto (todas passam)
 - [x] Validar no navegador: todas as 6 abas dos Comparativos Históricos carregam sem erros
+
+## Exportação Excel - Tabela Resumo dos Comparativos Históricos (Mai/2026)
+- [x] Adicionar botão "Exportar Excel" na aba Tabela Resumo
+- [x] Gerar arquivo .xlsx com cabeçalho padronizado (empresa, período) e dados da tabela
