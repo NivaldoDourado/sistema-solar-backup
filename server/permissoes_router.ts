@@ -8,8 +8,9 @@ import bcrypt from "bcryptjs";
 
 const SALT_ROUNDS = 10;
 
-// Lista de todos os módulos do sistema
+// Lista de todos os módulos do sistema (agrupados por categoria)
 const ALL_MODULES = [
+  // Cadastros
   "equipamentos",
   "setores",
   "servicos",
@@ -20,17 +21,30 @@ const ALL_MODULES = [
   "setorDeCusto",
   "tiposProdutos",
   "operadoresMotoristas",
+  "outrasParadas",
+  // Operacional
   "parteDiaria",
   "abastecimento",
   "producao",
-  "custos",
   "manutencao",
   "medicaoPilhas",
   "pecasDesgaste",
   "vendas",
   "clientes",
+  // Custos
+  "custos",
+  "contaCusto",
+  "periodoCusto",
+  "lancamentoCusto",
+  "apuracaoCusto",
+  "custoSetor",
+  "custoSetorAnalitico",
+  "importacaoCusto",
+  // Administrativo
   "usuarios",
-  "outrasParadas",
+  "destinatariosWhatsapp",
+  "metasAlertas",
+  "rotinas",
 ] as const;
 
 const ALL_ROLES = [
@@ -44,8 +58,18 @@ const ALL_ROLES = [
   "operador",
 ] as const;
 
+// Módulos relacionados a custos (acesso restrito por padrão)
+const CUSTO_MODULES = [
+  "custos", "contaCusto", "periodoCusto", "lancamentoCusto",
+  "apuracaoCusto", "custoSetor", "custoSetorAnalitico", "importacaoCusto",
+];
+
+// Módulos administrativos (acesso restrito por padrão)
+const ADMIN_MODULES = ["usuarios", "destinatariosWhatsapp", "metasAlertas", "rotinas"];
+
 // Labels amigáveis para os módulos
 const MODULE_LABELS: Record<string, string> = {
+  // Cadastros
   equipamentos: "Equipamentos",
   setores: "Setores",
   servicos: "Serviços",
@@ -56,17 +80,50 @@ const MODULE_LABELS: Record<string, string> = {
   setorDeCusto: "Setor de Custo",
   tiposProdutos: "Tipos de Produtos",
   operadoresMotoristas: "Operadores/Motoristas",
+  outrasParadas: "Outras Paradas",
+  // Operacional
   parteDiaria: "Parte Diária",
   abastecimento: "Abastecimento",
   producao: "Produção",
-  custos: "Custos",
   manutencao: "Manutenção",
   medicaoPilhas: "Medição de Pilhas",
   pecasDesgaste: "Peças de Desgaste",
   vendas: "Vendas",
   clientes: "Clientes",
+  // Custos
+  custos: "Custos (Geral)",
+  contaCusto: "Plano de Contas",
+  periodoCusto: "Períodos de Custo",
+  lancamentoCusto: "Lançamentos de Custo",
+  apuracaoCusto: "Apuração de Custo",
+  custoSetor: "Custo por Setor",
+  custoSetorAnalitico: "Relatório Analítico de Custo",
+  importacaoCusto: "Importação de Planilha CUSTOSOLAR",
+  // Administrativo
   usuarios: "Usuários",
-  outrasParadas: "Outras Paradas",
+  destinatariosWhatsapp: "Destinatários WhatsApp",
+  metasAlertas: "Metas e Alertas",
+  rotinas: "Rotinas Diárias",
+};
+
+// Grupos de módulos para exibição na tela de permissões
+const MODULE_GROUPS: Record<string, string[]> = {
+  "Cadastros": [
+    "equipamentos", "setores", "servicos", "produtos", "combustiveis",
+    "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos",
+    "operadoresMotoristas", "outrasParadas",
+  ],
+  "Operacional": [
+    "parteDiaria", "abastecimento", "producao", "manutencao",
+    "medicaoPilhas", "pecasDesgaste", "vendas", "clientes",
+  ],
+  "Custos": [
+    "custos", "contaCusto", "periodoCusto", "lancamentoCusto",
+    "apuracaoCusto", "custoSetor", "custoSetorAnalitico", "importacaoCusto",
+  ],
+  "Administrativo": [
+    "usuarios", "destinatariosWhatsapp", "metasAlertas", "rotinas",
+  ],
 };
 
 // Permissões padrão (fallback) - mesmas regras que existiam antes
@@ -75,12 +132,12 @@ type DefaultPermissions = Record<string, Record<string, { view: boolean; create:
 const DEFAULT_PERMISSIONS: DefaultPermissions = {
   admin: Object.fromEntries(ALL_MODULES.map(m => [m, { view: true, create: true, edit: true, delete: true }])),
   diretor: Object.fromEntries(ALL_MODULES.map(m => [m, { view: true, create: true, edit: true, delete: true }])),
-  gerente: Object.fromEntries(ALL_MODULES.map(m => [m, { view: true, create: false, edit: false, delete: false }])),
   consultoria: Object.fromEntries(ALL_MODULES.map(m => [m, { view: true, create: true, edit: true, delete: true }])),
-  coordenador: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
-  usuario: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
-  controle: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
-  operador: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: false }])),
+  gerente: Object.fromEntries(ALL_MODULES.map(m => [m, m === "usuarios" ? { view: false, create: false, edit: false, delete: false } : { view: true, create: false, edit: false, delete: false }])),
+  coordenador: Object.fromEntries(ALL_MODULES.map(m => [m, CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m) ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
+  usuario: Object.fromEntries(ALL_MODULES.map(m => [m, CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m) ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
+  controle: Object.fromEntries(ALL_MODULES.map(m => [m, CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m) ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: true }])),
+  operador: Object.fromEntries(ALL_MODULES.map(m => [m, CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m) ? { view: false, create: false, edit: false, delete: false } : { view: true, create: true, edit: true, delete: false }])),
 };
 
 /**
@@ -109,6 +166,7 @@ export const permissoesRouter = router({
       modules: ALL_MODULES,
       roles: ALL_ROLES,
       moduleLabels: MODULE_LABELS,
+      moduleGroups: MODULE_GROUPS,
       defaults: DEFAULT_PERMISSIONS,
     };
   }),

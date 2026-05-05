@@ -12,6 +12,7 @@ export type UserRole = "admin" | "diretor" | "gerente" | "consultoria" | "coorde
 export type Permission = "view" | "create" | "edit" | "delete";
 
 export type Module = 
+  // Cadastros
   | "equipamentos"
   | "setores"
   | "servicos"
@@ -22,25 +23,54 @@ export type Module =
   | "setorDeCusto"
   | "tiposProdutos"
   | "operadoresMotoristas"
+  | "outrasParadas"
+  // Operacional
   | "parteDiaria"
   | "abastecimento"
   | "producao"
-  | "custos"
   | "manutencao"
   | "medicaoPilhas"
   | "pecasDesgaste"
   | "vendas"
   | "clientes"
+  // Custos
+  | "custos"
   | "contaCusto"
-  | "usuarios";
+  | "periodoCusto"
+  | "lancamentoCusto"
+  | "apuracaoCusto"
+  | "custoSetor"
+  | "custoSetorAnalitico"
+  | "importacaoCusto"
+  // Administrativo
+  | "usuarios"
+  | "destinatariosWhatsapp"
+  | "metasAlertas"
+  | "rotinas";
 
 const ALL_MODULES: Module[] = [
+  // Cadastros
   "equipamentos", "setores", "servicos", "produtos", "combustiveis",
   "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos",
-  "operadoresMotoristas", "parteDiaria", "abastecimento", "producao",
-  "custos", "manutencao", "medicaoPilhas", "pecasDesgaste", "vendas",
-  "clientes", "contaCusto", "usuarios",
+  "operadoresMotoristas", "outrasParadas",
+  // Operacional
+  "parteDiaria", "abastecimento", "producao", "manutencao",
+  "medicaoPilhas", "pecasDesgaste", "vendas", "clientes",
+  // Custos
+  "custos", "contaCusto", "periodoCusto", "lancamentoCusto",
+  "apuracaoCusto", "custoSetor", "custoSetorAnalitico", "importacaoCusto",
+  // Administrativo
+  "usuarios", "destinatariosWhatsapp", "metasAlertas", "rotinas",
 ];
+
+// Módulos relacionados a custos (acesso restrito por padrão)
+const CUSTO_MODULES: Module[] = [
+  "custos", "contaCusto", "periodoCusto", "lancamentoCusto",
+  "apuracaoCusto", "custoSetor", "custoSetorAnalitico", "importacaoCusto",
+];
+
+// Módulos administrativos (acesso restrito por padrão)
+const ADMIN_MODULES: Module[] = ["usuarios", "destinatariosWhatsapp", "metasAlertas", "rotinas"];
 
 /**
  * Matriz de permissões padrão (fallback quando não há configuração no banco)
@@ -48,12 +78,27 @@ const ALL_MODULES: Module[] = [
 const defaultPermissionsMatrix: Record<UserRole, Record<Module, Permission[]>> = {
   admin: Object.fromEntries(ALL_MODULES.map(m => [m, ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
   diretor: Object.fromEntries(ALL_MODULES.map(m => [m, ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
-  gerente: Object.fromEntries(ALL_MODULES.map(m => [m, m === "usuarios" ? [] as Permission[] : ["view"] as Permission[]])) as Record<Module, Permission[]>,
   consultoria: Object.fromEntries(ALL_MODULES.map(m => [m, ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
-  coordenador: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? [] as Permission[] : ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
-  usuario: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? [] as Permission[] : ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
-  controle: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? [] as Permission[] : ["view", "create", "edit", "delete"] as Permission[]])) as Record<Module, Permission[]>,
-  operador: Object.fromEntries(ALL_MODULES.map(m => [m, m === "custos" || m === "usuarios" ? [] as Permission[] : ["view", "create", "edit"] as Permission[]])) as Record<Module, Permission[]>,
+  gerente: Object.fromEntries(ALL_MODULES.map(m => {
+    if (m === "usuarios") return [m, [] as Permission[]];
+    return [m, ["view"] as Permission[]];
+  })) as Record<Module, Permission[]>,
+  coordenador: Object.fromEntries(ALL_MODULES.map(m => {
+    if (CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m)) return [m, [] as Permission[]];
+    return [m, ["view", "create", "edit", "delete"] as Permission[]];
+  })) as Record<Module, Permission[]>,
+  usuario: Object.fromEntries(ALL_MODULES.map(m => {
+    if (CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m)) return [m, [] as Permission[]];
+    return [m, ["view", "create", "edit", "delete"] as Permission[]];
+  })) as Record<Module, Permission[]>,
+  controle: Object.fromEntries(ALL_MODULES.map(m => {
+    if (CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m)) return [m, [] as Permission[]];
+    return [m, ["view", "create", "edit", "delete"] as Permission[]];
+  })) as Record<Module, Permission[]>,
+  operador: Object.fromEntries(ALL_MODULES.map(m => {
+    if (CUSTO_MODULES.includes(m) || ADMIN_MODULES.includes(m)) return [m, [] as Permission[]];
+    return [m, ["view", "create", "edit"] as Permission[]];
+  })) as Record<Module, Permission[]>,
 };
 
 // Cache de permissões do banco (TTL de 30 segundos)

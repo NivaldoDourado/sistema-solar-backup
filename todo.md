@@ -496,3 +496,9 @@
 
 ## Mapeamento Impostos DESPSET (Mai/2026)
 - [x] Adicionar "Impostos, CEFEM e Outras Taxas" → "Imp., Trib., Taxas e CEFEM" no mapeamento MEMGERAL→MSET (servidor e frontend)
+
+## Auditoria de Permissões - Novos Módulos (Mai/2026)
+- [x] Auditar todos os módulos do frontend vs ALL_MODULES no backend
+- [x] Adicionar módulos faltantes: periodoCusto, lancamentoCusto, apuracaoCusto, custoSetor, custoSetorAnalitico, importacaoCusto, destinatariosWhatsapp, metasAlertas, rotinas
+- [x] Atualizar tela de Permissões com grupo "Custos" e grupo "Administração" separados
+- [x] Sincronizar permissões padrão no backend para todos os perfis × todos os módulos novos

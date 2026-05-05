@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Shield, RotateCcw, Save, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, RotateCcw, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -42,20 +41,52 @@ const moduleGroups = [
     modules: ["vendas", "clientes"],
   },
   {
-    label: "Financeiro",
-    modules: ["custos", "pecasDesgaste"],
+    label: "Custos",
+    modules: [
+      "custos",
+      "contaCusto",
+      "periodoCusto",
+      "lancamentoCusto",
+      "apuracaoCusto",
+      "custoSetor",
+      "custoSetorAnalitico",
+      "importacaoCusto",
+    ],
   },
   {
     label: "Cadastros",
-    modules: ["equipamentos", "setores", "servicos", "produtos", "combustiveis", "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos", "operadoresMotoristas", "outrasParadas"],
+    modules: [
+      "equipamentos", "setores", "servicos", "produtos", "combustiveis",
+      "unidades", "gruposEquipamentos", "setorDeCusto", "tiposProdutos",
+      "operadoresMotoristas", "outrasParadas", "pecasDesgaste",
+    ],
   },
   {
     label: "Administração",
-    modules: ["usuarios"],
+    modules: ["usuarios", "destinatariosWhatsapp", "metasAlertas", "rotinas"],
   },
 ];
 
 const moduleLabels: Record<string, string> = {
+  // Operacional
+  parteDiaria: "Parte Diária",
+  abastecimento: "Abastecimento",
+  producao: "Produção",
+  manutencao: "Manutenção",
+  medicaoPilhas: "Medição de Pilhas",
+  // Comercial
+  vendas: "Vendas",
+  clientes: "Clientes",
+  // Custos
+  custos: "Custos (Geral / Lançamentos)",
+  contaCusto: "Plano de Contas",
+  periodoCusto: "Períodos de Custo",
+  lancamentoCusto: "Lançamentos de Custo",
+  apuracaoCusto: "Apuração de Custo",
+  custoSetor: "Custo por Setor",
+  custoSetorAnalitico: "Relatório Analítico de Custo",
+  importacaoCusto: "Importação de Planilha CUSTOSOLAR",
+  // Cadastros
   equipamentos: "Equipamentos",
   setores: "Setores",
   servicos: "Serviços",
@@ -63,20 +94,16 @@ const moduleLabels: Record<string, string> = {
   combustiveis: "Combustíveis",
   unidades: "Unidades",
   gruposEquipamentos: "Grupos de Equipamentos",
-  setorDeCusto: "Plano de Contas",
+  setorDeCusto: "Setores de Custo",
   tiposProdutos: "Tipos de Produtos",
   operadoresMotoristas: "Operadores/Motoristas",
-  parteDiaria: "Parte Diária",
-  abastecimento: "Abastecimento",
-  producao: "Produção",
-  custos: "Custos",
-  manutencao: "Manutenção",
-  medicaoPilhas: "Medição de Pilhas",
-  pecasDesgaste: "Peças de Desgaste",
-  vendas: "Vendas",
-  clientes: "Clientes",
-  usuarios: "Usuários",
   outrasParadas: "Outras Paradas",
+  pecasDesgaste: "Peças de Desgaste",
+  // Administração
+  usuarios: "Usuários",
+  destinatariosWhatsapp: "Destinatários WhatsApp",
+  metasAlertas: "Metas e Alertas",
+  rotinas: "Rotinas Diárias",
 };
 
 type PermMap = Record<string, { view: boolean; create: boolean; edit: boolean; delete: boolean }>;
@@ -89,7 +116,7 @@ export default function Permissoes() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Operacional": true,
     "Comercial": true,
-    "Financeiro": true,
+    "Custos": true,
     "Cadastros": false,
     "Administração": true,
   });
@@ -207,11 +234,12 @@ export default function Permissoes() {
     );
   }
 
-  // Contadores de permissões
+  // Contadores de permissões (todos os módulos)
+  const allModules = moduleGroups.flatMap(g => g.modules);
   const permCounts = useMemo(() => {
     let total = 0;
     let granted = 0;
-    for (const module of Object.keys(moduleLabels)) {
+    for (const module of allModules) {
       const p = permissions[module];
       if (p) {
         total += 4;
