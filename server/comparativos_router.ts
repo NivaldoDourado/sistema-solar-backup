@@ -111,8 +111,8 @@ export const comparativosRouter = router({
       }
 
       // 4. Buscar faturamento agrupado por mês/ano
-      const dataInicioFat = new Date(`${anoInicio}-01-01T00:00:00`);
-      const dataFimFat = new Date(`${anoFim}-12-31T23:59:59`);
+      const strInicioFat = `${anoInicio}-01-01`;
+      const strFimFat = `${anoFim}-12-31`;
       const faturamentoRows = await db
         .select({
           mes: sql<number>`MONTH(${resumoVendasProduto.periodoInicio})`,
@@ -122,8 +122,8 @@ export const comparativosRouter = router({
         })
         .from(resumoVendasProduto)
         .where(and(
-          gte(resumoVendasProduto.periodoInicio, dataInicioFat),
-          lte(resumoVendasProduto.periodoInicio, dataFimFat)
+          gte(resumoVendasProduto.periodoInicio, sql`${strInicioFat}`),
+          lte(resumoVendasProduto.periodoInicio, sql`${strFimFat}`)
         ))
         .groupBy(
           sql`YEAR(${resumoVendasProduto.periodoInicio})`,
@@ -138,8 +138,8 @@ export const comparativosRouter = router({
       }
 
       // 5. Buscar combustível agrupado por mês/ano
-      const dataInicioAbast = new Date(`${anoInicio}-01-01T00:00:00`);
-      const dataFimAbast = new Date(`${anoFim}-12-31T23:59:59`);
+      const strInicioAbast = `${anoInicio}-01-01`;
+      const strFimAbast = `${anoFim}-12-31`;
       const combustivelRows = await db
         .select({
           mes: sql<number>`MONTH(${abastecimento.data})`,
@@ -149,8 +149,8 @@ export const comparativosRouter = router({
         })
         .from(abastecimento)
         .where(and(
-          gte(abastecimento.data, dataInicioAbast),
-          lte(abastecimento.data, dataFimAbast)
+          gte(abastecimento.data, sql`${strInicioAbast}`),
+          lte(abastecimento.data, sql`${strFimAbast}`)
         ))
         .groupBy(
           sql`YEAR(${abastecimento.data})`,
@@ -165,8 +165,8 @@ export const comparativosRouter = router({
       }
 
       // 6. Buscar produção agrupada por mês/ano
-      const dataInicioProducao = new Date(`${anoInicio}-01-01T00:00:00`);
-      const dataFimProducao = new Date(`${anoFim}-12-31T23:59:59`);
+      const strInicioProducao = `${anoInicio}-01-01`;
+      const strFimProducao = `${anoFim}-12-31`;
       const producaoRows = await db
         .select({
           mes: sql<number>`MONTH(${producao.data})`,
@@ -175,8 +175,8 @@ export const comparativosRouter = router({
         })
         .from(producao)
         .where(and(
-          gte(producao.data, dataInicioProducao),
-          lte(producao.data, dataFimProducao)
+          gte(producao.data, sql`${strInicioProducao}`),
+          lte(producao.data, sql`${strFimProducao}`)
         ))
         .groupBy(
           sql`YEAR(${producao.data})`,
@@ -318,8 +318,8 @@ export const comparativosRouter = router({
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const { anoInicio, anoFim } = input;
-      const dataInicio = new Date(`${anoInicio}-01-01T00:00:00`);
-      const dataFim = new Date(`${anoFim}-12-31T23:59:59`);
+      const strInicioComb = `${anoInicio}-01-01`;
+      const strFimComb = `${anoFim}-12-31`;
 
       const rows = await db
         .select({
@@ -332,8 +332,8 @@ export const comparativosRouter = router({
         })
         .from(abastecimento)
         .where(and(
-          gte(abastecimento.data, dataInicio),
-          lte(abastecimento.data, dataFim)
+          gte(abastecimento.data, sql`${strInicioComb}`),
+          lte(abastecimento.data, sql`${strFimComb}`)
         ))
         .groupBy(
           sql`YEAR(${abastecimento.data})`,
