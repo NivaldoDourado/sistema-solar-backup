@@ -487,3 +487,6 @@
 - [x] Adicionar links verdes nas contas pretas das 3 tabelas (Custo Variável, Despesa Variável, Despesas Indiretas)
 - [x] Mapear nomes MEMGERAL → MSET (Despesas Administrativas, Consultorias Especializadas, Equipamentos de Apoio)
 - [x] Remover contas sem dados DESPSET do conjunto (RH-ADM, Livre)
+
+## Mapeamentos DESPSET Adicionais (Mai/2026)
+- [x] Adicionar "Outras Despesas de Setor" → "Outras Desp.Setor/Proc." no mapeamento MEMGERAL→MSET

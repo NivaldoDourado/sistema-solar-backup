@@ -247,9 +247,10 @@ export const custoSetorRasRouter = router({
       const MEMGERAL_TO_MSET: Record<string, string> = {
         "Despesas Administrativas": "Desp.Admin.Telef.e Inform.",
         "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
-        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Pe\u00e7as/Serv.)",
+        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
+        "Outras Despesas de Setor": "Outras Desp.Setor/Proc.",
         // Corrigir variações de acento
-        "Jur\u00eddico/Cons.Esp./Serv.Ter.": "Juridíco/Cons.Esp./Serv.Ter.",
+        "Jurídico/Cons.Esp./Serv.Ter.": "Juridíco/Cons.Esp./Serv.Ter.",
       };
       const descricaoBusca = MEMGERAL_TO_MSET[input.descricao] ?? input.descricao;
 
