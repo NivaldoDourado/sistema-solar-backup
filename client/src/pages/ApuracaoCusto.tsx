@@ -105,6 +105,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Comissão de Vendas",
   "Outras Despesas de Setores",   // mapeado para Outras Desp.Setor/Proc. no servidor
   "RH - ADM / Salários não Operacionais",  // mapeado para Sal.Adm./Diretoria/Pró-Labore/Encargos
+  "Impostos, CEFEM e Outras Taxas",           // mapeado para Imp., Trib., Taxas e CEFEM no servidor
 ]);
 
 export default function ApuracaoCusto() {

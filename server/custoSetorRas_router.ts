@@ -249,9 +249,10 @@ export const custoSetorRasRouter = router({
         "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
         "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
         "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
-        "RH - ADM / Sal\u00e1rios n\u00e3o Operacionais": "Sal.Adm./Diretoria/Pr\u00f3-Labore/Encargos",
+         "RH - ADM / Salários não Operacionais": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
         // Corrigir variações de acento
-        "Jurídico/Cons.Esp./Serv.Ter.": "Juridíco/Cons.Esp./Serv.Ter.",
+        "Jurídico/Cons.Esp./Serv.Ter.": "Jurídco/Cons.Esp./Serv.Ter.",
       };
       const descricaoBusca = MEMGERAL_TO_MSET[input.descricao] ?? input.descricao;
 

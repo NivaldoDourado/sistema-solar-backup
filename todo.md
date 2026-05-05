@@ -493,3 +493,6 @@
 
 ## Mapeamento RH-ADM DESPSET (Mai/2026)
 - [x] Adicionar "RH - ADM / Salários não Operacionais" → "Sal.Adm./Diretoria/Pró-Labore/Encargos" no mapeamento MEMGERAL→MSET (todos os subsetores, inclusive valor zero)
+
+## Mapeamento Impostos DESPSET (Mai/2026)
+- [x] Adicionar "Impostos, CEFEM e Outras Taxas" → "Imp., Trib., Taxas e CEFEM" no mapeamento MEMGERAL→MSET (servidor e frontend)
