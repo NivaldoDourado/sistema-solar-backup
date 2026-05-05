@@ -549,3 +549,11 @@
 - [x] Implementar página ComparativosHistoricos.tsx com gráficos de linha, barras e tabela resumo
 - [x] Registrar rota /comparativos-historicos no App.tsx e menu lateral (submenu Custos)
 - [x] Salvar checkpoint
+
+## Correção Bug Crítico - Filtros de Data no Comparativos Históricos (Mai/2026)
+- [x] Diagnosticar causa raiz: Drizzle ORM gera GROUP BY com referência qualificada de tabela (`tabela`.`campo`) que TiDB rejeita em queries com funções de agregação
+- [x] Corrigir WHERE: substituir gte/lte com sql template por sql.raw() para valores literais de data
+- [x] Corrigir GROUP BY: substituir sql`YEAR(${campo})` por sql.raw("YEAR(`campo`)") sem qualificação de tabela
+- [x] Corrigir ORDER BY: mesmo padrão do GROUP BY no evolucaoCombustivel
+- [x] Testar todas as 6 queries do comparativos_router via script direto (todas passam)
+- [x] Validar no navegador: todas as 6 abas dos Comparativos Históricos carregam sem erros
