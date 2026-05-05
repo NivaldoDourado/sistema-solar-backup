@@ -540,4 +540,4 @@
 - [x] Implementar tela AvaliacaoGlobal.tsx com formulário de entrada e cálculos automáticos
 - [x] Registrar rota /avaliacao-global no App.tsx e menu lateral (submenu Custos)
 - [x] Integrar Frete do painel de Avaliação Global ao card Receita vs. Custo (substituir fretePeriodo da tabela periodo_custo)
-- [ ] Remover campo Frete do Período do formulário de Períodos de Custo (migrar para Avaliação Global)
+- [x] Remover campo Frete do Período do formulário de Períodos de Custo (migrar para Avaliação Global)

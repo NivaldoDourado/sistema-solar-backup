@@ -27,7 +27,6 @@ const emptyForm = {
   producaoTotal: "",
   quantidadeVendida: "",
   despesasIndiretas: "0",
-  fretePeriodo: "0",
   observacoes: "",
 };
 
@@ -99,7 +98,6 @@ export default function PeriodoCusto() {
       producaoTotal: periodo.producaoTotal ?? "",
       quantidadeVendida: periodo.quantidadeVendida ?? "",
       despesasIndiretas: periodo.despesasIndiretas ?? "0",
-      fretePeriodo: (periodo as any).fretePeriodo ?? "0",
       observacoes: periodo.observacoes ?? "",
     });
     setOpen(true);
@@ -143,7 +141,6 @@ export default function PeriodoCusto() {
       producaoTotal: formData.producaoTotal || undefined,
       quantidadeVendida: formData.quantidadeVendida || undefined,
       despesasIndiretas: formData.despesasIndiretas || "0",
-      fretePeriodo: formData.fretePeriodo || "0",
       observacoes: formData.observacoes || undefined,
     });
   };
@@ -254,18 +251,6 @@ export default function PeriodoCusto() {
               </div>
 
               <div className="space-y-2">
-                <Label>Frete do Período (R$)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.fretePeriodo}
-                  onChange={(e) => setFormData({ ...formData, fretePeriodo: e.target.value })}
-                  placeholder="0,00"
-                />
-                <p className="text-xs text-muted-foreground">Frete repassado a transportadores — será deduzido da Receita Bruta no painel Receita vs. Custo</p>
-              </div>
-
-              <div className="space-y-2">
                 <Label>Despesas Indiretas (R$)</Label>
                 <Input
                   type="number"
@@ -311,7 +296,6 @@ export default function PeriodoCusto() {
                     <TableHead>Período</TableHead>
                     <TableHead className="text-right">Produção (t)</TableHead>
                     <TableHead className="text-right">Qtd. Vendida (t)</TableHead>
-                    <TableHead className="text-right">Frete (R$)</TableHead>
                     <TableHead className="text-right">Desp. Indiretas (R$)</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Observações</TableHead>
@@ -324,7 +308,6 @@ export default function PeriodoCusto() {
                       <TableCell className="font-semibold">{MESES[p.mes - 1]}/{p.ano}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(p.producaoTotal)}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(p.quantidadeVendida)}</TableCell>
-                      <TableCell className="text-right font-mono">{(p as any).fretePeriodo ? `R$ ${fmt((p as any).fretePeriodo)}` : "-"}</TableCell>
                       <TableCell className="text-right font-mono">{p.despesasIndiretas ? `R$ ${fmt(p.despesasIndiretas)}` : "-"}</TableCell>
                       <TableCell>
                         <Badge variant={p.fechado === "sim" ? "secondary" : "default"}>
