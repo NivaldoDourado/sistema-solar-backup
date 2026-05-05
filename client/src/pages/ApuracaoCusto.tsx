@@ -104,6 +104,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Jurídico/Cons.Esp./Serv.Ter.",  // variação de acento tratada no servidor
   "Comissão de Vendas",
   "Outras Despesas de Setores",   // mapeado para Outras Desp.Setor/Proc. no servidor
+  "RH - ADM / Salários não Operacionais",  // mapeado para Sal.Adm./Diretoria/Pró-Labore/Encargos
 ]);
 
 export default function ApuracaoCusto() {

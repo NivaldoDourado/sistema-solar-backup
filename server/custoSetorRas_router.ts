@@ -249,6 +249,7 @@ export const custoSetorRasRouter = router({
         "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
         "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
         "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
+        "RH - ADM / Sal\u00e1rios n\u00e3o Operacionais": "Sal.Adm./Diretoria/Pr\u00f3-Labore/Encargos",
         // Corrigir variações de acento
         "Jurídico/Cons.Esp./Serv.Ter.": "Juridíco/Cons.Esp./Serv.Ter.",
       };

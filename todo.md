@@ -490,3 +490,6 @@
 
 ## Mapeamentos DESPSET Adicionais (Mai/2026)
 - [x] Adicionar "Outras Despesas de Setor" → "Outras Desp.Setor/Proc." no mapeamento MEMGERAL→MSET
+
+## Mapeamento RH-ADM DESPSET (Mai/2026)
+- [x] Adicionar "RH - ADM / Salários não Operacionais" → "Sal.Adm./Diretoria/Pró-Labore/Encargos" no mapeamento MEMGERAL→MSET (todos os subsetores, inclusive valor zero)
