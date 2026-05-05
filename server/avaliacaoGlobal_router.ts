@@ -5,6 +5,19 @@ import { avaliacaoGlobal } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
+/**
+ * Converte string monetária no formato brasileiro (ex: "1.552.995,14") para string decimal americana ("1552995.14").
+ * Aceita também formato americano direto ("1552995.14") e strings vazias/nulas.
+ */
+function parseBRDecimal(value: string | undefined | null): string {
+  if (value === undefined || value === null || String(value).trim() === "") return "0";
+  // Remove pontos de milhar e substitui vírgula decimal por ponto
+  const cleaned = String(value).trim().replace(/\./g, "").replace(",", ".");
+  const num = parseFloat(cleaned);
+  if (isNaN(num)) return "0";
+  return num.toFixed(2);
+}
+
 export const avaliacaoGlobalRouter = router({
   // Buscar avaliação global de um período (mes/ano)
   getByPeriodo: protectedProcedure
@@ -63,14 +76,15 @@ export const avaliacaoGlobalRouter = router({
         .where(and(eq(avaliacaoGlobal.mes, input.mes), eq(avaliacaoGlobal.ano, input.ano)))
         .limit(1);
 
+      // Converte todos os valores monetários do formato BR para decimal americano
       const data = {
-        frete: input.frete ?? "0",
-        investEquip: input.investEquip ?? "0",
-        investBritagem: input.investBritagem ?? "0",
-        difFrete: input.difFrete ?? "0",
-        difImpostos: input.difImpostos ?? "0",
-        distribLucro: input.distribLucro ?? "0",
-        outros: input.outros ?? "0",
+        frete: parseBRDecimal(input.frete),
+        investEquip: parseBRDecimal(input.investEquip),
+        investBritagem: parseBRDecimal(input.investBritagem),
+        difFrete: parseBRDecimal(input.difFrete),
+        difImpostos: parseBRDecimal(input.difImpostos),
+        distribLucro: parseBRDecimal(input.distribLucro),
+        outros: parseBRDecimal(input.outros),
         observacoes: input.observacoes ?? null,
         userId: ctx.user.id,
       };
