@@ -64,6 +64,13 @@
       "when": 1777817570228,
       "tag": "0008_aromatic_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1777981027050,
+      "tag": "0009_giant_karma",
+      "breakpoints": true
     }
   ]
 }

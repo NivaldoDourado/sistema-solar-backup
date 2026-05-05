@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Search, FileText, Eye, X, DollarSign, Package, ShoppingCart, Truck, Gift, RefreshCw, BarChart3 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileText, Eye, X, DollarSign, Package, ShoppingCart, Truck, Gift, RefreshCw, BarChart3, Upload, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -64,6 +64,11 @@ export default function Vendas() {
   });
   const [filterDataFim, setFilterDataFim] = useState(() => new Date().toISOString().split("T")[0]);
 
+  // ── Resumo de Vendas PDF ──
+  const [resumoImportando, setResumoImportando] = useState(false);
+  const [resumoPeriodoSel, setResumoPeriodoSel] = useState<{ periodoInicio: string; periodoFim: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { canCreate, canEdit, canDelete } = usePermissions();
   const canCreateItem = canCreate("vendas");
   const canEditItem = canEdit("vendas");
@@ -75,6 +80,37 @@ export default function Vendas() {
   const { data: resumoPorProduto, isLoading: loadingPorProduto } = trpc.vendas.vendasResumoPorProduto.useQuery(
     { dataInicio: filterDataInicio, dataFim: filterDataFim }
   );
+  const { data: resumoPeriodos, refetch: refetchPeriodos } = trpc.vendas.resumoVendasPeriodos.useQuery();
+  const { data: resumoPDFData, isLoading: loadingResumoPDF } = trpc.vendas.resumoVendasPorPeriodo.useQuery(
+    resumoPeriodoSel ?? { periodoInicio: "", periodoFim: "" },
+    { enabled: !!resumoPeriodoSel }
+  );
+  const deletarResumoPeriodo = trpc.vendas.resumoVendasDeletar.useMutation({
+    onSuccess: () => { toast.success("Período excluído com sucesso"); setResumoPeriodoSel(null); refetchPeriodos(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  async function handleImportarPDF(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf")) { toast.error("Selecione um arquivo PDF"); return; }
+    setResumoImportando(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const resp = await fetch("/api/importacao-vendas", { method: "POST", body: formData, credentials: "include" });
+      const json = await resp.json();
+      if (!resp.ok) throw new Error(json.error ?? "Erro na importação");
+      toast.success(`Importado: ${json.totalProdutos} produtos | Período: ${json.periodo}`);
+      refetchPeriodos();
+      setResumoPeriodoSel({ periodoInicio: json.periodo.split(" a ")[0], periodoFim: json.periodo.split(" a ")[1] });
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao importar PDF");
+    } finally {
+      setResumoImportando(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
   const { data: clientesData } = trpc.vendas.clientesList.useQuery();
   const { data: produtosData } = trpc.produtos.list.useQuery();
   const { data: unidadesData } = trpc.unidades.list.useQuery();
@@ -539,6 +575,141 @@ export default function Vendas() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Card de Resumo de Vendas (Importado do PDF) */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Resumo de Vendas (ERP)
+              </CardTitle>
+              <CardDescription>Dados importados do PDF &ldquo;Resumo de Vendas (Produto)&rdquo; exportado do ERP</CardDescription>
+            </div>
+            <div className="flex gap-2 items-center flex-wrap">
+              {/* Seletor de período */}
+              {resumoPeriodos && resumoPeriodos.length > 0 && (
+                <Select
+                  value={resumoPeriodoSel ? `${resumoPeriodoSel.periodoInicio}|${resumoPeriodoSel.periodoFim}` : ""}
+                  onValueChange={(v) => {
+                    const [ini, fim] = v.split("|");
+                    setResumoPeriodoSel({ periodoInicio: ini, periodoFim: fim });
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-52">
+                    <SelectValue placeholder="Selecione o período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {resumoPeriodos.map((p: any) => {
+                      const ini = p.periodoInicio instanceof Date ? p.periodoInicio.toISOString().split("T")[0] : String(p.periodoInicio).split("T")[0];
+                      const fim = p.periodoFim instanceof Date ? p.periodoFim.toISOString().split("T")[0] : String(p.periodoFim).split("T")[0];
+                      const label = `${new Date(ini + "T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`;
+                      return (
+                        <SelectItem key={`${ini}|${fim}`} value={`${ini}|${fim}`}>{label}</SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
+              {/* Botão importar */}
+              {canCreateItem && (
+                <>
+                  <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleImportarPDF} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={resumoImportando}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {resumoImportando ? "Importando..." : "Importar PDF"}
+                  </Button>
+                </>
+              )}
+              {/* Botão excluir período */}
+              {canDeleteItem && resumoPeriodoSel && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+                  onClick={() => {
+                    if (confirm("Excluir todos os dados deste período?")) {
+                      deletarResumoPeriodo.mutate(resumoPeriodoSel);
+                    }
+                  }}
+                >
+                  <Trash className="h-4 w-4" />
+                  Excluir Período
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!resumoPeriodoSel ? (
+            <div className="text-sm text-muted-foreground py-8 text-center">
+              {resumoPeriodos && resumoPeriodos.length > 0
+                ? "Selecione um período acima para visualizar os dados"
+                : "Nenhum resumo importado. Clique em \"Importar PDF\" para carregar o arquivo do ERP."}
+            </div>
+          ) : loadingResumoPDF ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">Carregando...</div>
+          ) : !resumoPDFData || resumoPDFData.rows.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">Nenhum dado encontrado para este período</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Valor Total</p>
+                  <p className="text-lg font-bold text-primary">{resumoPDFData.totalValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Quantidade Total</p>
+                  <p className="text-lg font-bold">{resumoPDFData.totalQtd.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Vl. Médio Geral</p>
+                  <p className="text-lg font-bold">{resumoPDFData.vlMedioGeral.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>Grupo</TableHead>
+                      <TableHead>Marca</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="text-right">Quantidade</TableHead>
+                      <TableHead className="text-right">Vl. Médio</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {resumoPDFData.rows.map((row: any) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="font-medium">{row.produto}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{row.grupo || "-"}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{row.marca || "-"}</TableCell>
+                        <TableCell className="text-right">{parseFloat(String(row.valor)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</TableCell>
+                        <TableCell className="text-right">{parseFloat(String(row.quantidade)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-right">{parseFloat(String(row.vlMedio || "0")).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="bg-muted/50 font-bold">
+                      <TableCell colSpan={3}>Total</TableCell>
+                      <TableCell className="text-right">{resumoPDFData.totalValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</TableCell>
+                      <TableCell className="text-right">{resumoPDFData.totalQtd.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell className="text-right">{resumoPDFData.vlMedioGeral.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Card de Vendas por Produto (Granulometria) */}
       <Card>

@@ -3,7 +3,7 @@ import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
-import { clientes, vendas, vendaItens, produtos, unidades } from "../drizzle/schema";
+import { clientes, vendas, vendaItens, produtos, unidades, resumoVendasProduto } from "../drizzle/schema";
 
 /** Converte Date para string YYYY-MM-DD */
 function toDateStr(d: Date | string): string {
@@ -417,6 +417,73 @@ export const vendasRouter = router({
       }
 
       return resumo;
+    }),
+
+  // ============================================================================
+  // RESUMO DE VENDAS IMPORTADO DO PDF
+  // ============================================================================
+
+  resumoVendasPeriodos: protectedProcedure
+    .use(requirePermission("vendas", "view"))
+    .query(async () => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const rows = await db
+        .selectDistinct({
+          periodoInicio: resumoVendasProduto.periodoInicio,
+          periodoFim: resumoVendasProduto.periodoFim,
+          setor: resumoVendasProduto.setor,
+        })
+        .from(resumoVendasProduto)
+        .orderBy(desc(resumoVendasProduto.periodoInicio));
+      return rows;
+    }),
+
+  resumoVendasPorPeriodo: protectedProcedure
+    .use(requirePermission("vendas", "view"))
+    .input(
+      z.object({
+        periodoInicio: z.string(),
+        periodoFim: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const rows = await db
+        .select()
+        .from(resumoVendasProduto)
+        .where(
+          and(
+            sql`DATE(${resumoVendasProduto.periodoInicio}) = ${input.periodoInicio}`,
+            sql`DATE(${resumoVendasProduto.periodoFim}) = ${input.periodoFim}`
+          )
+        )
+        .orderBy(desc(resumoVendasProduto.valor));
+      const totalValor = rows.reduce((s, r) => s + parseFloat(String(r.valor ?? "0")), 0);
+      const totalQtd   = rows.reduce((s, r) => s + parseFloat(String(r.quantidade ?? "0")), 0);
+      const vlMedioGeral = totalQtd > 0 ? totalValor / totalQtd : 0;
+      return { rows, totalValor, totalQtd, vlMedioGeral };
+    }),
+
+  resumoVendasDeletar: protectedProcedure
+    .use(requirePermission("vendas", "delete"))
+    .input(
+      z.object({
+        periodoInicio: z.string(),
+        periodoFim: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      await db.delete(resumoVendasProduto).where(
+        and(
+          sql`DATE(${resumoVendasProduto.periodoInicio}) = ${input.periodoInicio}`,
+          sql`DATE(${resumoVendasProduto.periodoFim}) = ${input.periodoFim}`
+        )
+      );
+      return { success: true };
     }),
 
   // Resumo de vendas por produto (granulometria) — usado pelo módulo de Custos

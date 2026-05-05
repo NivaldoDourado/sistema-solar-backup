@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerImportacaoCustoRoute } from "../importacaoCusto";
 import { registerImportacaoCustoSetorRoute } from "../importacaoCustoSetor";
 import { registerImportacaoCustoSetorRasRoute } from "../importacaoCustoSetorRas";
+import { registerImportacaoVendasRoute } from "../importacaoVendas";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -44,6 +45,8 @@ async function startServer() {
   registerImportacaoCustoSetorRoute(app);
   // Importação de custo por setor analítico (abas RAS01-RAS12 e MSET)
   registerImportacaoCustoSetorRasRoute(app);
+  // Importação do Resumo de Vendas (PDF do ERP)
+  registerImportacaoVendasRoute(app);
   // tRPC API
   app.use(
     "/api/trpc",

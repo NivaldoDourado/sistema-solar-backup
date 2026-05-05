@@ -508,3 +508,11 @@
 
 ## Exibição Condicional de Conta no Analítico (Mai/2026)
 - [x] No relatório analítico por setor: exibir "Sal.Adm./Diretoria/Pró-Labore/Encargos" em ADMINISTRAÇÃO e "Salários com Encargos" nos demais setores
+
+## Importação de Resumo de Vendas (Mai/2026)
+- [x] Auditar schema e router de Vendas existentes
+- [x] Atualizar schema do banco com tabela resumo_vendas_produto (produto, grupo, marca, valor, quantidade, vlMedio, periodo)
+- [x] Implementar parser de PDF do Resumo de Vendas no servidor (server/importacaoVendas.ts)
+- [x] Criar router de importação de vendas (POST /api/importacao-vendas)
+- [x] Adicionar procedures tRPC: resumoVendasPeriodos, resumoVendasPorPeriodo, resumoVendasDeletar
+- [x] Atualizar tela de Vendas com botão "Importar PDF", seletor de período e tabela de exibição

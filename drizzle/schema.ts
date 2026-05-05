@@ -728,7 +728,33 @@ export const vendaItens = mysqlTable("venda_itens", {
 });
 
 export type VendaItem = typeof vendaItens.$inferSelect;
-export type InsertVendaItem = typeof vendaItens.$inferInsert;
+export type InsertVendaItem = typeof vendaItens.$inferSelect;
+
+// ============================================================================
+// RESUMO DE VENDAS POR PRODUTO (importado do ERP)
+// ============================================================================
+export const resumoVendasProduto = mysqlTable("resumo_vendas_produto", {
+  id: int("id").autoincrement().primaryKey(),
+  // Período de referência
+  periodoInicio: date("periodoInicio").notNull(),
+  periodoFim: date("periodoFim").notNull(),
+  // Dados do produto
+  produto: varchar("produto", { length: 200 }).notNull(),
+  grupo: varchar("grupo", { length: 100 }),
+  marca: varchar("marca", { length: 100 }),
+  // Valores
+  valor: decimal("valor", { precision: 15, scale: 4 }).notNull(),
+  quantidade: decimal("quantidade", { precision: 15, scale: 4 }).notNull(),
+  vlMedio: decimal("vlMedio", { precision: 15, scale: 4 }),
+  // Metadados
+  setor: varchar("setor", { length: 100 }),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ResumoVendaProduto = typeof resumoVendasProduto.$inferSelect;
+export type InsertResumoVendaProduto = typeof resumoVendasProduto.$inferInsert;
 
 // ============================================================================
 // SISTEMA DE PERMISSÕES CONFIGURÁVEIS
