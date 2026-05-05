@@ -103,7 +103,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Equip.Apoio (Comb./Lub/Peças/Serv.)",
   "Jurídico/Cons.Esp./Serv.Ter.",  // variação de acento tratada no servidor
   "Comissão de Vendas",
-  "Outras Despesas de Setor",    // mapeado para Outras Desp.Setor/Proc. no servidor
+  "Outras Despesas de Setores",   // mapeado para Outras Desp.Setor/Proc. no servidor
 ]);
 
 export default function ApuracaoCusto() {
