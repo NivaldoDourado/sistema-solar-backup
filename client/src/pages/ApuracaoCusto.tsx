@@ -828,6 +828,7 @@ export default function ApuracaoCusto() {
                     Distribuição por Plano de Contas
                   </CardTitle>
                   <p className="text-xs text-muted-foreground">Participação de cada conta no custo total</p>
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-0.5">com Despesas Indiretas</p>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="relative h-52">
@@ -899,6 +900,7 @@ export default function ApuracaoCusto() {
                     Distribuição por Subsetor
                   </CardTitle>
                   <p className="text-xs text-muted-foreground">Participação de cada subsetor no custo total</p>
+                  <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mt-0.5">sem Despesas Indiretas</p>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="relative h-52">
