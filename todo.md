@@ -516,3 +516,8 @@
 - [x] Criar router de importação de vendas (POST /api/importacao-vendas)
 - [x] Adicionar procedures tRPC: resumoVendasPeriodos, resumoVendasPorPeriodo, resumoVendasDeletar
 - [x] Atualizar tela de Vendas com botão "Importar PDF", seletor de período e tabela de exibição
+
+## Integração Resumo de Vendas × Apuração de Custo (Mai/2026)
+- [x] Adicionar procedure tRPC resumoVendasParaPeriodoCusto (busca receita pelo período do custo)
+- [x] Adicionar painel comparativo Receita × Custo × Margem Bruta na tela de Apuração de Custo
+- [x] Exibir detalhamento de receita por produto no painel (tabela expansível com botão "Ver produtos")

@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart } from "lucide-react";
+import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart, ShoppingCart, DollarSign, Percent, ChevronDown, ChevronUp } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { DonutChartModal } from "@/components/DonutChartModal";
 import {
@@ -111,6 +111,7 @@ const CONTAS_COM_DESPSET = new Set([
 export default function ApuracaoCusto() {
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<number | null>(null);
   const [despesaModal, setDespesaModal] = useState<{ descricao: string; total: number } | null>(null);
+  const [showVendasDetalhe, setShowVendasDetalhe] = useState(false);
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: lancamentos } = trpc.lancamentoCusto.listByPeriodo.useQuery(
@@ -137,6 +138,23 @@ export default function ApuracaoCusto() {
   const { data: producaoModulo } = trpc.periodoCusto.getProducaoDoModulo.useQuery(
     { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
     { enabled: !!periodoAtual }
+  );
+
+  // Calcular datas de início/fim do período de custo para buscar o resumo de vendas ERP
+  const periodoVendasDatas = useMemo(() => {
+    if (!periodoAtual) return null;
+    const mes = String(periodoAtual.mes).padStart(2, "0");
+    const ano = periodoAtual.ano;
+    const lastDay = new Date(ano, periodoAtual.mes, 0).getDate();
+    return {
+      periodoInicio: `${ano}-${mes}-01`,
+      periodoFim: `${ano}-${mes}-${String(lastDay).padStart(2, "0")}`,
+    };
+  }, [periodoAtual]);
+
+  const { data: resumoVendasERP } = trpc.vendas.resumoVendasParaPeriodoCusto.useQuery(
+    { periodoInicio: periodoVendasDatas?.periodoInicio ?? "", periodoFim: periodoVendasDatas?.periodoFim ?? "" },
+    { enabled: !!periodoVendasDatas }
   );
 
   useEffect(() => {
@@ -809,8 +827,159 @@ export default function ApuracaoCusto() {
             </Card>
           </div>
 
-          {/* ── Gráficos de Rosca ────────────────────────────────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* ── Painel Comparativo Receita × Custo × Margem ─────────────────────────────────────────────────────────────── */}
+          {resumoVendasERP && (
+            <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                    <CardTitle className="text-sm font-semibold text-emerald-800">Receita vs. Custo — {periodoLabel}</CardTitle>
+                  </div>
+                  {resumoVendasERP.temDados && (
+                    <button
+                      onClick={() => setShowVendasDetalhe(v => !v)}
+                      className="flex items-center gap-1 text-xs text-emerald-700 hover:text-emerald-900 transition-colors"
+                    >
+                      {showVendasDetalhe ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      {showVendasDetalhe ? "Ocultar" : "Ver produtos"}
+                    </button>
+                  )}
+                </div>
+                {!resumoVendasERP.temDados && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Nenhum resumo de vendas importado para este período.
+                    Acesse <strong>Vendas → Importar PDF</strong> para carregar os dados do ERP.
+                  </p>
+                )}
+              </CardHeader>
+              {resumoVendasERP.temDados && relatorio && (
+                <CardContent className="pt-0">
+                  {/* Cards de KPIs de margem */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {/* Receita */}
+                    <div className="rounded-lg bg-emerald-100 p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <DollarSign className="h-3 w-3 text-emerald-700" />
+                        <span className="text-xs text-emerald-700 font-medium">Receita Bruta</span>
+                      </div>
+                      <p className="text-sm font-bold text-emerald-800 font-mono">
+                        R$ {fmt(resumoVendasERP.totalReceita)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {fmt(resumoVendasERP.totalQuantidade)} t · R$ {fmt(resumoVendasERP.vlMedioGeral)}/t
+                      </p>
+                    </div>
+                    {/* Custo Total */}
+                    <div className="rounded-lg bg-orange-100 p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Factory className="h-3 w-3 text-orange-700" />
+                        <span className="text-xs text-orange-700 font-medium">Custo Total</span>
+                      </div>
+                      <p className="text-sm font-bold text-orange-800 font-mono">
+                        R$ {fmt(relatorio.totalGeral)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        c/ Desp. Indiretas
+                      </p>
+                    </div>
+                    {/* Margem Bruta */}
+                    {(() => {
+                      const margem = resumoVendasERP.totalReceita - relatorio.totalGeral;
+                      const margemPct = resumoVendasERP.totalReceita > 0
+                        ? (margem / resumoVendasERP.totalReceita) * 100
+                        : 0;
+                      const positivo = margem >= 0;
+                      return (
+                        <div className={`rounded-lg p-3 ${positivo ? "bg-blue-100" : "bg-red-100"}`}>
+                          <div className="flex items-center gap-1 mb-1">
+                            <Percent className="h-3 w-3" style={{ color: positivo ? "#1d4ed8" : "#dc2626" }} />
+                            <span className="text-xs font-medium" style={{ color: positivo ? "#1e40af" : "#b91c1c" }}>Margem Bruta</span>
+                          </div>
+                          <p className="text-sm font-bold font-mono" style={{ color: positivo ? "#1e3a8a" : "#991b1b" }}>
+                            R$ {fmt(margem)}
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: positivo ? "#1d4ed8" : "#dc2626" }}>
+                            {fmtPct(margemPct)} da receita
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Barra de proporção Custo / Margem */}
+                  {(() => {
+                    const custo = relatorio.totalGeral;
+                    const receita = resumoVendasERP.totalReceita;
+                    const pctCusto = receita > 0 ? Math.min((custo / receita) * 100, 100) : 0;
+                    const pctMargem = 100 - pctCusto;
+                    return (
+                      <div className="mb-4">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>Custo sobre Receita: <strong>{fmtPct(pctCusto)}</strong></span>
+                          <span>Margem: <strong>{fmtPct(Math.max(pctMargem, 0))}</strong></span>
+                        </div>
+                        <div className="h-3 rounded-full overflow-hidden bg-gray-200 flex">
+                          <div
+                            className="h-full bg-orange-400 transition-all"
+                            style={{ width: `${Math.min(pctCusto, 100)}%` }}
+                          />
+                          {pctMargem > 0 && (
+                            <div
+                              className="h-full bg-emerald-400 transition-all"
+                              style={{ width: `${pctMargem}%` }}
+                            />
+                          )}
+                        </div>
+                        <div className="flex gap-4 mt-1 text-xs">
+                          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-orange-400"></span>Custo</span>
+                          <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>Margem</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Tabela de produtos (expansível) */}
+                  {showVendasDetalhe && (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/50">
+                            <TableHead className="text-xs">Produto</TableHead>
+                            <TableHead className="text-xs text-right">Qtd (t)</TableHead>
+                            <TableHead className="text-xs text-right">Vl. Médio (R$/t)</TableHead>
+                            <TableHead className="text-xs text-right">Receita (R$)</TableHead>
+                            <TableHead className="text-xs text-right">% Receita</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {resumoVendasERP.rows.map((row) => (
+                            <TableRow key={row.id} className="text-xs">
+                              <TableCell className="font-medium">{row.produto}</TableCell>
+                              <TableCell className="text-right font-mono">{fmt(row.quantidade)}</TableCell>
+                              <TableCell className="text-right font-mono">{fmt(row.vlMedio)}</TableCell>
+                              <TableCell className="text-right font-mono">{fmt(row.valor)}</TableCell>
+                              <TableCell className="text-right font-mono">
+                                {resumoVendasERP.totalReceita > 0
+                                  ? fmtPct((row.valor / resumoVendasERP.totalReceita) * 100)
+                                  : "—"}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <div className="bg-muted/30 px-4 py-2 flex justify-between text-xs font-semibold border-t">
+                        <span>Total</span>
+                        <span className="font-mono">R$ {fmt(resumoVendasERP.totalReceita)}</span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          )}
+
+          {/* ── Gráficos de Rosca ────────────────────────────────────────────────────────────────────────────────────── */}        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
             {/* Gráfico 0: Distribuição por Plano de Contas */}
             {dadosPlanoContas.length > 0 && relatorio && (

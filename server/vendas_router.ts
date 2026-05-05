@@ -486,6 +486,51 @@ export const vendasRouter = router({
       return { success: true };
     }),
 
+  // Receita de vendas (ERP) para um período de custo — integração com Apuração de Custo
+  resumoVendasParaPeriodoCusto: protectedProcedure
+    .use(requirePermission("vendas", "view"))
+    .input(
+      z.object({
+        periodoInicio: z.string(), // YYYY-MM-DD
+        periodoFim: z.string(),    // YYYY-MM-DD
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const rows = await db
+        .select()
+        .from(resumoVendasProduto)
+        .where(
+          and(
+            sql`DATE(${resumoVendasProduto.periodoInicio}) = ${input.periodoInicio}`,
+            sql`DATE(${resumoVendasProduto.periodoFim}) = ${input.periodoFim}`
+          )
+        )
+        .orderBy(sql`CAST(${resumoVendasProduto.valor} AS DECIMAL) DESC`);
+
+      const totalReceita = rows.reduce((s, r) => s + parseFloat(String(r.valor || "0")), 0);
+      const totalQuantidade = rows.reduce((s, r) => s + parseFloat(String(r.quantidade || "0")), 0);
+      const vlMedioGeral = totalQuantidade > 0 ? totalReceita / totalQuantidade : 0;
+
+      return {
+        rows: rows.map(r => ({
+          id: r.id,
+          produto: r.produto,
+          grupo: r.grupo,
+          marca: r.marca,
+          valor: parseFloat(String(r.valor || "0")),
+          quantidade: parseFloat(String(r.quantidade || "0")),
+          vlMedio: parseFloat(String(r.vlMedio || "0")),
+        })),
+        totalReceita,
+        totalQuantidade,
+        vlMedioGeral,
+        temDados: rows.length > 0,
+      };
+    }),
+
   // Resumo de vendas por produto (granulometria) — usado pelo módulo de Custos
   vendasResumoPorProduto: protectedProcedure
     .use(requirePermission("vendas", "view"))
