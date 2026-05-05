@@ -91,6 +91,7 @@ export default function DashboardLayout({
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
     { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
+    { icon: BarChart3, label: "Avaliação Global", path: "/avaliacao-global", module: "custos" as const },
   ];
 
   const allMenuItems = [

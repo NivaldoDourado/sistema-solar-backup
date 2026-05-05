@@ -78,6 +78,13 @@
       "when": 1777986697825,
       "tag": "0010_abnormal_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1777987510794,
+      "tag": "0011_clear_khan",
+      "breakpoints": true
     }
   ]
 }

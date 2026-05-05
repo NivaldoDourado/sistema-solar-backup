@@ -157,6 +157,12 @@ export default function ApuracaoCusto() {
     { enabled: !!periodoVendasDatas }
   );
 
+  // Buscar avaliação global para usar o frete informado naquele painel (fonte primária)
+  const { data: avaliacaoGlobal } = trpc.avaliacaoGlobal.getByPeriodo.useQuery(
+    { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
+    { enabled: !!periodoAtual }
+  );
+
   useEffect(() => {
     if (periodos && periodos.length > 0 && !selectedPeriodoId) {
       setSelectedPeriodoId(periodos[0].id);
@@ -858,7 +864,10 @@ export default function ApuracaoCusto() {
                   {/* Cálculos base */}
                   {(() => {
                     const receitaBruta = resumoVendasERP.totalReceita;
-                    const frete = parseFloat((periodoAtual as any)?.fretePeriodo ?? "0") || 0;
+                    // Frete: usa Avaliação Global como fonte primária, fallback para fretePeriodo do período
+                    const freteAG = parseFloat((avaliacaoGlobal as any)?.frete ?? "0") || 0;
+                    const fretePeriodo = parseFloat((periodoAtual as any)?.fretePeriodo ?? "0") || 0;
+                    const frete = freteAG > 0 ? freteAG : fretePeriodo;
                     const receitaProdutos = receitaBruta - frete;
                     const custo = relatorio.totalGeral;
                     const margem = receitaProdutos - custo;
@@ -887,7 +896,7 @@ export default function ApuracaoCusto() {
                             </div>
                             <p className="text-sm font-bold text-yellow-800 font-mono">R$ {fmt(frete)}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {frete > 0 ? `${fmtPct((frete / receitaBruta) * 100)} da receita` : "Informe em Períodos"}
+                              {frete > 0 ? `${fmtPct((frete / receitaBruta) * 100)} da receita` : "Informe na Avaliação Global"}
                             </p>
                           </div>
                           {/* Receita dos Produtos */}

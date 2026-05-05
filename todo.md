@@ -532,3 +532,12 @@
 - [x] Refazer cálculos: Receita dos Produtos = Receita Bruta − Frete; Margem = Receita dos Produtos − Custo Total
 - [x] Card Receita vs. Custo exibe 4 KPIs: Receita Bruta, Frete do Período, Receita dos Produtos, Margem Bruta
 - [x] Adicionar campo Frete do Período no formulário de Períodos de Custo (com coluna na tabela de histórico)
+
+## Painel de Avaliação Global (Mai/2026)
+- [x] Criar tabela avaliacao_global no schema (faturamento, frete, custos, investimentos, diferenças de caixa)
+- [x] Migrar banco com pnpm db:push
+- [x] Criar procedures tRPC: upsert, getByPeriodo, delete
+- [x] Implementar tela AvaliacaoGlobal.tsx com formulário de entrada e cálculos automáticos
+- [x] Registrar rota /avaliacao-global no App.tsx e menu lateral (submenu Custos)
+- [x] Integrar Frete do painel de Avaliação Global ao card Receita vs. Custo (substituir fretePeriodo da tabela periodo_custo)
+- [ ] Remover campo Frete do Período do formulário de Períodos de Custo (migrar para Avaliação Global)

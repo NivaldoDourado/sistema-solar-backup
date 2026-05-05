@@ -920,3 +920,37 @@ export const custoSetorDespesa = mysqlTable("custo_setor_despesa", {
 });
 export type CustoSetorDespesa = typeof custoSetorDespesa.$inferSelect;
 export type InsertCustoSetorDespesa = typeof custoSetorDespesa.$inferInsert;
+
+
+// ============================================================================
+// AVALIAÇÃO GLOBAL (Análise do Lucro/Prejuízo — modelo RSDESMB E35:E49)
+// ============================================================================
+
+export const avaliacaoGlobal = mysqlTable("avaliacao_global", {
+  id: int("id").autoincrement().primaryKey(),
+  mes: int("mes").notNull(),
+  ano: int("ano").notNull(),
+
+  // Bloco A — preenchido automaticamente (buscado do sistema)
+  // faturamento: vem do resumo_vendas_produto
+  // custos: vem da apuracao_custo (totalGeral com Despesas Indiretas)
+
+  // Bloco C — Frete pela Competência (informado manualmente)
+  frete: decimal("frete", { precision: 15, scale: 2 }).default("0").notNull(),
+
+  // Bloco D — Valores que não são dos Custos pela Competência (informados manualmente)
+  investEquip: decimal("investEquip", { precision: 15, scale: 2 }).default("0").notNull(),     // D1: Investimentos Equipamentos/Terrenos/Afins
+  investBritagem: decimal("investBritagem", { precision: 15, scale: 2 }).default("0").notNull(), // D2: Investimentos Britagem/Processos/Afins
+  difFrete: decimal("difFrete", { precision: 15, scale: 2 }).default("0").notNull(),           // D3: Diferença Frete (Fluxo de Caixa x Competência)
+  difImpostos: decimal("difImpostos", { precision: 15, scale: 2 }).default("0").notNull(),     // D4: Diferença Impostos (Fluxo de Caixa x Competência)
+  distribLucro: decimal("distribLucro", { precision: 15, scale: 2 }).default("0").notNull(),   // D5: Distribuição de Lucro/Retirada Sócios e Afins
+  outros: decimal("outros", { precision: 15, scale: 2 }).default("0").notNull(),               // D6: Outros/Duplicatas
+
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AvaliacaoGlobal = typeof avaliacaoGlobal.$inferSelect;
+export type InsertAvaliacaoGlobal = typeof avaliacaoGlobal.$inferInsert;

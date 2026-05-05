@@ -28,6 +28,7 @@ import ApuracaoCusto from "./pages/ApuracaoCusto";
 import CustoSetor from "./pages/CustoSetor";
 import CustoSetorAnalitico from "./pages/CustoSetorAnalitico";
 import ImportacaoCusto from "./pages/ImportacaoCusto";
+import AvaliacaoGlobal from "./pages/AvaliacaoGlobal";
 import Manutencao from "./pages/Manutencao";
 import Usuarios from "./pages/Usuarios";
 import MeuPerfil from "./pages/MeuPerfil";
@@ -165,6 +166,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <ImportacaoCusto />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/avaliacao-global"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <AvaliacaoGlobal />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>
