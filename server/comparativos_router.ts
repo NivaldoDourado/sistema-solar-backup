@@ -9,15 +9,23 @@ import {
 import { TRPCError } from "@trpc/server";
 
 /**
+ * Converte ano/mês para string de data "YYYY-MM-DD"
+ */
+function anoMesToDateStr(ano: number, mes: number, ultimo = false): string {
+  const m = String(mes).padStart(2, "0");
+  if (!ultimo) return `${ano}-${m}-01`;
+  // Último dia do mês
+  const d = new Date(ano, mes, 0).getDate();
+  return `${ano}-${m}-${String(d).padStart(2, "0")}`;
+}
+
+/**
  * Router de Comparativos Históricos
- * Consolida dados mensais de múltiplos módulos para análise comparativa.
  */
 export const comparativosRouter = router({
 
   /**
-   * Retorna série histórica mensal consolidada:
-   * faturamento, frete, custoTotal, producaoTotal, qtdVendida,
-   * saldoBruto, margemBruta, custoTon, combustivelLitros, combustivelCusto
+   * Retorna série histórica mensal consolidada
    */
   serieHistorica: protectedProcedure
     .input(z.object({
@@ -75,6 +83,9 @@ export const comparativosRouter = router({
       }
 
       // 4. Buscar faturamento (resumo_vendas_produto) agrupado por mês/ano
+      // Filtrar por data completa: de 01/01/anoInicio até 31/12/anoFim
+      const dataInicioFat = `${anoInicio}-01-01`;
+      const dataFimFat = `${anoFim}-12-31`;
       const faturamentoRows = await db
         .select({
           mes: sql<number>`MONTH(${resumoVendasProduto.periodoInicio})`,
@@ -85,8 +96,8 @@ export const comparativosRouter = router({
         .from(resumoVendasProduto)
         .where(
           and(
-            sql`YEAR(${resumoVendasProduto.periodoInicio}) >= ${anoInicio}`,
-            sql`YEAR(${resumoVendasProduto.periodoInicio}) <= ${anoFim}`
+            sql`${resumoVendasProduto.periodoInicio} >= ${dataInicioFat}`,
+            sql`${resumoVendasProduto.periodoInicio} <= ${dataFimFat}`
           )
         )
         .groupBy(
@@ -102,6 +113,8 @@ export const comparativosRouter = router({
       }
 
       // 5. Buscar combustível (abastecimento) agrupado por mês/ano
+      const dataInicioAbast = `${anoInicio}-01-01`;
+      const dataFimAbast = `${anoFim}-12-31`;
       const combustivelRows = await db
         .select({
           mes: sql<number>`MONTH(${abastecimento.data})`,
@@ -112,8 +125,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            sql`YEAR(${abastecimento.data}) >= ${anoInicio}`,
-            sql`YEAR(${abastecimento.data}) <= ${anoFim}`
+            sql`${abastecimento.data} >= ${dataInicioAbast}`,
+            sql`${abastecimento.data} <= ${dataFimAbast}`
           )
         )
         .groupBy(
@@ -128,7 +141,9 @@ export const comparativosRouter = router({
         };
       }
 
-      // 6. Buscar produção (producao) agrupada por mês/ano
+      // 6. Buscar produção agrupada por mês/ano
+      const dataInicioProducao = `${anoInicio}-01-01`;
+      const dataFimProducao = `${anoFim}-12-31`;
       const producaoRows = await db
         .select({
           mes: sql<number>`MONTH(${producao.data})`,
@@ -138,8 +153,8 @@ export const comparativosRouter = router({
         .from(producao)
         .where(
           and(
-            sql`YEAR(${producao.data}) >= ${anoInicio}`,
-            sql`YEAR(${producao.data}) <= ${anoFim}`
+            sql`${producao.data} >= ${dataInicioProducao}`,
+            sql`${producao.data} <= ${dataFimProducao}`
           )
         )
         .groupBy(
@@ -291,6 +306,8 @@ export const comparativosRouter = router({
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const { anoInicio, anoFim } = input;
+      const dataInicio = `${anoInicio}-01-01`;
+      const dataFim = `${anoFim}-12-31`;
 
       const rows = await db
         .select({
@@ -304,8 +321,8 @@ export const comparativosRouter = router({
         .from(abastecimento)
         .where(
           and(
-            sql`YEAR(${abastecimento.data}) >= ${anoInicio}`,
-            sql`YEAR(${abastecimento.data}) <= ${anoFim}`
+            sql`${abastecimento.data} >= ${dataInicio}`,
+            sql`${abastecimento.data} <= ${dataFim}`
           )
         )
         .groupBy(
