@@ -1,20 +1,53 @@
 /**
  * Rota REST para importação do PDF "Resumo de Vendas (Produto)" exportado do ERP.
- * Extrai os dados de produto, grupo, marca, valor, quantidade e valor médio.
+ * Usa pdftotext (poppler-utils) para extração de texto — mais confiável que pdf-parse.
  * Persiste na tabela resumo_vendas_produto, substituindo dados do mesmo período.
  */
 import { Router } from "express";
 import multer from "multer";
-import * as pdfParseModule from "pdf-parse";
-const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
+import { execFile } from "child_process";
+import { promisify } from "util";
+import { writeFile, unlink } from "fs/promises";
+import { tmpdir } from "os";
+import { join } from "path";
+import { randomBytes } from "crypto";
 import { getDb } from "./db";
 import { resumoVendasProduto } from "../drizzle/schema";
 import { and, gte, lte } from "drizzle-orm";
 import { sdk } from "./_core/sdk";
 
+const execFileAsync = promisify(execFile);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-// ─── Parser do texto extraído do PDF ─────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Converte "01/04/2026" → "2026-04-01" */
+function parseDateBR(s: string): string {
+  const [d, m, y] = s.trim().split("/");
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+/** Converte "1.007.254,9300" → 1007254.93 */
+function parseBRNumber(s: string): number {
+  if (!s || s.trim() === "-" || s.trim() === "") return 0;
+  const clean = s.trim().replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(clean);
+  return isNaN(n) ? 0 : n;
+}
+
+/** Extrai texto de um PDF usando pdftotext (poppler-utils) */
+async function pdfToText(buffer: Buffer): Promise<string> {
+  const tmpFile = join(tmpdir(), `solar_venda_${randomBytes(8).toString("hex")}.pdf`);
+  try {
+    await writeFile(tmpFile, buffer);
+    const { stdout } = await execFileAsync("pdftotext", ["-layout", tmpFile, "-"], { maxBuffer: 10 * 1024 * 1024 });
+    return stdout;
+  } finally {
+    await unlink(tmpFile).catch(() => {});
+  }
+}
+
+// ─── Parser ───────────────────────────────────────────────────────────────────
 
 interface LinhaVenda {
   produto: string;
@@ -32,122 +65,109 @@ interface CabecalhoPDF {
 }
 
 /**
- * Converte "01/04/2026" → "2026-04-01"
- */
-function parseDateBR(s: string): string {
-  const [d, m, y] = s.trim().split("/");
-  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-}
-
-/**
- * Converte número no formato brasileiro "1.007.254,9300" → 1007254.93
- */
-function parseBRNumber(s: string): number {
-  if (!s || s.trim() === "-" || s.trim() === "") return 0;
-  // Remove pontos de milhar, troca vírgula por ponto
-  const clean = s.trim().replace(/\./g, "").replace(",", ".");
-  const n = parseFloat(clean);
-  return isNaN(n) ? 0 : n;
-}
-
-/**
  * Extrai cabeçalho e linhas do texto do PDF.
  *
- * Estrutura esperada do texto:
+ * O pdftotext -layout preserva colunas. Estrutura do PDF:
  *   Período:  01/04/2026 a 30/04/2026
- *   Setor:    BALCAO/ATACADO
  *   ...
- *   Produto   Grupo   Marca   Valor   Quant   Vl.Médio
- *   BICA CORRIDA  1 - PRODUÇÃO  2 - GERAL  1.007.254,9300  12.519,2000  80,4568
+ *   Produto       Grupo          Marca        Valor          Quant         Vl.Médio
+ *   BICA CORRIDA  1 - PRODUÇÃO   2 - GERAL    1.007.254,9300 12.519,2000   80,4568
  *   ...
- *   Total:    7.588.173,9000  93.271,0000  81,3562
+ *   Total:                                    7.588.173,9000 93.271,0000   81,3562
+ *
+ * Com -layout, cada produto aparece em UMA linha com colunas alinhadas por espaços.
  */
 export function parseResumoVendasPDF(text: string): { cabecalho: CabecalhoPDF; linhas: LinhaVenda[] } {
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = text.split("\n").map(l => l.trimEnd()).filter(l => l.trim());
 
-  // ── Extrair cabeçalho ──
+  // ── Cabeçalho ──
   let periodoInicio = "";
   let periodoFim = "";
   let setor = "";
 
   for (const line of lines) {
-    // "Período:  01/04/2026 a 30/04/2026"
     const mPeriodo = line.match(/Per[ií]odo[:\s]+(\d{2}\/\d{2}\/\d{4})\s+a\s+(\d{2}\/\d{2}\/\d{4})/i);
     if (mPeriodo) {
       periodoInicio = parseDateBR(mPeriodo[1]);
       periodoFim = parseDateBR(mPeriodo[2]);
     }
-    // "Setor:  BALCAO/ATACADO"
     const mSetor = line.match(/^Setor[:\s]+(.+)$/i);
-    if (mSetor) {
-      setor = mSetor[1].trim();
-    }
+    if (mSetor) setor = mSetor[1].trim();
   }
 
-  // ── Extrair linhas de produtos ──
-  // Padrão: produto pode ter espaços, depois grupo "N - TEXTO", marca "N - TEXTO",
-  // depois 3 números no formato BR
+  // ── Linhas de produto ──
+  // Com -layout, cada linha de produto tem 3 números BR no final (valor, quant, vlMedio)
   const linhas: LinhaVenda[] = [];
+  const numBR = /([\d.]+,\d+)/g;
 
-  // Regex para capturar: NOME_PRODUTO  N - GRUPO  N - MARCA  VALOR  QUANT  VLMEDIO
-  // Os números BR têm formato: dígitos com pontos e vírgula
-  const numBR = /[\d.]+,\d+/;
-  const grupoMarcaPattern = /\d+\s*-\s*[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s\/]+/;
+  // Linhas a ignorar
+  const SKIP = /^(Produto|Grupo|Marca|Valor|Quant|Vl\.M|Total:|Emitido|P[áa]gina|Vendedor|Per[ií]odo|Setor|Cliente|Descontar|Incluir|S[eé]rie|Produto:|SOLAR PEDREIRA|Resumo|NÃO|SIM|TODOS|BALCAO|Usuario|28-)/i;
 
-  // Estratégia: percorrer linhas e tentar identificar linhas de produto
-  // Uma linha de produto termina com 3 números BR consecutivos
   for (const line of lines) {
-    // Ignorar linhas de cabeçalho, rodapé, total
-    if (/^(Produto|Grupo|Marca|Valor|Quant|Vl\.M|Total:|Emitido|P[áa]gina|Vendedor|Per[ií]odo|Setor|Cliente|Descontar|Incluir|S[eé]rie|Produto:)/i.test(line)) continue;
-    if (/^\s*$/.test(line)) continue;
+    const trimmed = line.trim();
+    if (!trimmed || SKIP.test(trimmed)) continue;
 
-    // Tentar extrair os 3 números do final da linha
-    const nums = line.match(/([\d.]+,\d+)\s+([\d.]+,\d+)\s+([\d.]+,\d+)\s*$/);
-    if (!nums) continue;
+    // Encontrar todos os números BR na linha
+    const numPat = /([\d]{1,3}(?:\.\d{3})*,\d+)/g;
+    const matches: RegExpExecArray[] = [];
+    let mx: RegExpExecArray | null;
+    while ((mx = numPat.exec(trimmed)) !== null) matches.push(mx);
+    if (matches.length < 3) continue;
 
-    const valor = parseBRNumber(nums[1]);
-    const quantidade = parseBRNumber(nums[2]);
-    const vlMedio = parseBRNumber(nums[3]);
+    // Os 3 últimos números são: valor, quantidade, vlMedio
+    const vlMedio = parseBRNumber(matches[matches.length - 1][1]);
+    const quantidade = parseBRNumber(matches[matches.length - 2][1]);
+    const valor = parseBRNumber(matches[matches.length - 3][1]);
 
-    // O restante da linha (sem os 3 números) contém: PRODUTO  GRUPO  MARCA
-    const resto = line.slice(0, line.lastIndexOf(nums[1])).trim();
+    if (valor === 0 && quantidade === 0) continue;
 
-    // Tentar separar produto, grupo e marca
-    // Grupos e marcas têm padrão "N - TEXTO"
-    const partes = resto.split(/\s{2,}/); // separar por 2+ espaços
+    // Remover os números do final para obter a parte textual
+    let resto = trimmed;
+    // Remover os 3 últimos números BR e espaços ao redor
+    for (let i = 0; i < 3; i++) {
+      resto = resto.replace(/\s+[\d]{1,3}(?:\.\d{3})*,\d+\s*$/, "").trimEnd();
+    }
+
+    // Separar produto, grupo e marca
+    // Grupos/marcas têm padrão "N - TEXTO" ou "N - TEXTO/TEXTO"
+    // Dividir por 2+ espaços (layout preservado pelo pdftotext -layout)
+    const partes = resto.split(/\s{2,}/).map(p => p.trim()).filter(Boolean);
 
     let produto = "";
     let grupo = "";
     let marca = "";
 
     if (partes.length >= 3) {
-      produto = partes[0].trim();
-      grupo = partes[1].trim();
-      marca = partes[2].trim();
+      produto = partes[0];
+      grupo = partes[1];
+      marca = partes[2];
     } else if (partes.length === 2) {
-      produto = partes[0].trim();
-      grupo = partes[1].trim();
+      produto = partes[0];
+      grupo = partes[1];
     } else {
-      // Tentar separar pelo padrão "N - "
-      const mGrupo = resto.match(/^(.+?)\s+(\d+\s*-\s*[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s\/]+?)\s+(\d+\s*-\s*[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s\/]+?)\s*$/);
-      if (mGrupo) {
-        produto = mGrupo[1].trim();
-        grupo = mGrupo[2].trim();
-        marca = mGrupo[3].trim();
+      // Tentar separar por padrão "N - "
+      const mGM = resto.match(/^(.+?)\s{1,}(\d+\s*-\s*[^\d]+?)\s{1,}(\d+\s*-\s*[^\d]+?)\s*$/);
+      if (mGM) {
+        produto = mGM[1].trim();
+        grupo = mGM[2].trim();
+        marca = mGM[3].trim();
       } else {
-        produto = resto.trim();
+        const mG = resto.match(/^(.+?)\s{1,}(\d+\s*-\s*.+?)\s*$/);
+        if (mG) {
+          produto = mG[1].trim();
+          grupo = mG[2].trim();
+        } else {
+          produto = resto.trim();
+        }
       }
     }
 
-    if (!produto || valor === 0) continue;
+    if (!produto) continue;
 
     linhas.push({ produto, grupo, marca, valor, quantidade, vlMedio });
   }
 
-  return {
-    cabecalho: { periodoInicio, periodoFim, setor },
-    linhas,
-  };
+  return { cabecalho: { periodoInicio, periodoFim, setor }, linhas };
 }
 
 // ─── Rota Express ─────────────────────────────────────────────────────────────
@@ -157,36 +177,29 @@ export function registerImportacaoVendasRoute(app: any) {
 
   router.post("/api/importacao-vendas", upload.single("file"), async (req: any, res: any) => {
     try {
-      // Verificar autenticação
+      // Autenticação
       let currentUser: any = null;
       try {
         currentUser = await sdk.authenticateRequest(req as any);
       } catch (_e) {
         return res.status(401).json({ error: "Não autenticado" });
       }
-      if (!currentUser?.id) {
-        return res.status(401).json({ error: "Não autenticado" });
-      }
+      if (!currentUser?.id) return res.status(401).json({ error: "Não autenticado" });
 
-      if (!req.file) {
-        return res.status(400).json({ error: "Nenhum arquivo enviado" });
-      }
+      if (!req.file) return res.status(400).json({ error: "Nenhum arquivo enviado" });
 
       const db = await getDb();
-      if (!db) {
-        return res.status(500).json({ error: "Banco de dados indisponível" });
-      }
+      if (!db) return res.status(500).json({ error: "Banco de dados indisponível" });
 
-      // Extrair texto do PDF
+      // Extrair texto do PDF via pdftotext
       let pdfText = "";
       try {
-        const parsed = await pdfParse(req.file.buffer);
-        pdfText = parsed.text;
+        pdfText = await pdfToText(req.file.buffer);
       } catch (e: any) {
         return res.status(400).json({ error: `Erro ao ler PDF: ${e.message}` });
       }
 
-      // Parsear o texto
+      // Parsear
       const { cabecalho, linhas } = parseResumoVendasPDF(pdfText);
 
       if (!cabecalho.periodoInicio || !cabecalho.periodoFim) {
@@ -203,9 +216,8 @@ export function registerImportacaoVendasRoute(app: any) {
         });
       }
 
-      // Converter datas para Date objects (Drizzle exige Date para colunas date)
-      const dtInicio = new Date(cabecalho.periodoInicio + "T00:00:00Z");
-      const dtFim = new Date(cabecalho.periodoFim + "T00:00:00Z");
+      const dtInicio = new Date(cabecalho.periodoInicio + "T12:00:00Z");
+      const dtFim = new Date(cabecalho.periodoFim + "T12:00:00Z");
 
       // Deletar registros existentes do mesmo período
       await db.delete(resumoVendasProduto).where(
