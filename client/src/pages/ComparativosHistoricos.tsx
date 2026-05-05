@@ -597,7 +597,7 @@ export default function ComparativosHistoricos() {
                           {p.frete > 0 ? `R$ ${fmt(p.frete)}` : "—"}
                         </td>
                         <td className="py-2 px-2 text-right font-mono text-blue-600">
-                          {p.receitaProdutos > 0 ? `R$ ${fmt(p.receitaProdutos)}` : "—"}
+                          {(p.faturamento - p.frete) > 0 ? `R$ ${fmt(p.faturamento - p.frete)}` : "—"}
                         </td>
                         <td className="py-2 px-2 text-right font-mono text-red-500">
                           {p.custoTotal > 0 ? `R$ ${fmt(p.custoTotal)}` : "—"}
@@ -624,7 +624,7 @@ export default function ComparativosHistoricos() {
                       <td className="py-2 px-2 text-foreground">TOTAL</td>
                       <td className="py-2 px-2 text-right font-mono text-emerald-600">R$ {fmt(totalFaturamento)}</td>
                       <td className="py-2 px-2 text-right font-mono text-amber-600">R$ {fmt(serie.reduce((s, p) => s + p.frete, 0))}</td>
-                      <td className="py-2 px-2 text-right font-mono text-blue-600">R$ {fmt(serie.reduce((s, p) => s + p.receitaProdutos, 0))}</td>
+                      <td className="py-2 px-2 text-right font-mono text-blue-600">R$ {fmt(serie.reduce((s, p) => s + (p.faturamento - p.frete), 0))}</td>
                       <td className="py-2 px-2 text-right font-mono text-red-500">R$ {fmt(totalCusto)}</td>
                       <td className={`py-2 px-2 text-right font-mono ${(totalFaturamento - totalCusto) >= 0 ? "text-emerald-600" : "text-red-500"}`}>
                         R$ {fmt(serie.reduce((s, p) => s + p.saldoBruto, 0))}

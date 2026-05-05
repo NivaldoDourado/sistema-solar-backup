@@ -1,12 +1,70 @@
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { z } from "zod";
-import { sql, and, gte, lte } from "drizzle-orm";
+import { sql, and, gte, lte, eq } from "drizzle-orm";
 import {
-  periodoCusto, custoSetor, resumoVendasProduto, avaliacaoGlobal,
-  abastecimento, producao
+  periodoCusto, custoSetorEquipamento, custoSetorDespesa,
+  resumoVendasProduto, avaliacaoGlobal, abastecimento, producao
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
+
+/**
+ * Calcula o custo total por grupo/subsetor para um conjunto de períodos
+ * usando custo_setor_equipamento + custo_setor_despesa (fonte primária, igual ao custoSetorRas_router).
+ * Não depende da tabela custo_setor (que requer importação RSSET separada).
+ */
+async function calcularCustosPorPeriodos(
+  db: Awaited<ReturnType<typeof getDb>>,
+  periodoIds: number[]
+): Promise<{
+  totalPorPeriodo: Record<string, number>;
+  totalPorGrupoPeriodo: Record<string, Record<string, number>>;
+}> {
+  if (!db || periodoIds.length === 0) {
+    return { totalPorPeriodo: {}, totalPorGrupoPeriodo: {} };
+  }
+
+  const idsSql = sql.join(periodoIds.map(id => sql`${id}`), sql`, `);
+
+  const [equipamentos, despesas] = await Promise.all([
+    db.select({
+      periodoCustoId: custoSetorEquipamento.periodoCustoId,
+      grupoNome: custoSetorEquipamento.grupoNome,
+      total: sql<string>`SUM(${custoSetorEquipamento.totalDespesasEquipamento})`,
+    })
+      .from(custoSetorEquipamento)
+      .where(sql`${custoSetorEquipamento.periodoCustoId} IN (${idsSql})`)
+      .groupBy(custoSetorEquipamento.periodoCustoId, custoSetorEquipamento.grupoNome),
+    db.select({
+      periodoCustoId: custoSetorDespesa.periodoCustoId,
+      grupoNome: custoSetorDespesa.grupoNome,
+      total: sql<string>`SUM(${custoSetorDespesa.valor})`,
+    })
+      .from(custoSetorDespesa)
+      .where(sql`${custoSetorDespesa.periodoCustoId} IN (${idsSql})`)
+      .groupBy(custoSetorDespesa.periodoCustoId, custoSetorDespesa.grupoNome),
+  ]);
+
+  // Consolidar totais por período e por grupo/período
+  const totalPorPeriodo: Record<string, number> = {};
+  const totalPorGrupoPeriodo: Record<string, Record<string, number>> = {};
+
+  const addValor = (periodoCustoId: number, grupoNome: string, valor: number) => {
+    const pid = String(periodoCustoId);
+    totalPorPeriodo[pid] = (totalPorPeriodo[pid] ?? 0) + valor;
+    if (!totalPorGrupoPeriodo[pid]) totalPorGrupoPeriodo[pid] = {};
+    totalPorGrupoPeriodo[pid][grupoNome] = (totalPorGrupoPeriodo[pid][grupoNome] ?? 0) + valor;
+  };
+
+  for (const row of equipamentos) {
+    addValor(row.periodoCustoId, row.grupoNome, parseFloat(String(row.total || "0")));
+  }
+  for (const row of despesas) {
+    addValor(row.periodoCustoId, row.grupoNome, parseFloat(String(row.total || "0")));
+  }
+
+  return { totalPorPeriodo, totalPorGrupoPeriodo };
+}
 
 /**
  * Router de Comparativos Históricos
@@ -28,52 +86,31 @@ export const comparativosRouter = router({
 
       const { anoInicio, anoFim } = input;
 
-      // 1. Buscar todos os períodos de custo no intervalo (periodoCusto.ano é int, funciona com gte/lte)
+      // 1. Buscar todos os períodos de custo no intervalo
       const periodos = await db
         .select()
         .from(periodoCusto)
-        .where(
-          and(
-            gte(periodoCusto.ano, anoInicio),
-            lte(periodoCusto.ano, anoFim)
-          )
-        )
+        .where(and(gte(periodoCusto.ano, anoInicio), lte(periodoCusto.ano, anoFim)))
         .orderBy(periodoCusto.ano, periodoCusto.mes);
 
-      // 2. Para cada período, buscar custo total (soma dos custoSetor)
-      const custosMap: Record<string, number> = {};
-      if (periodos.length > 0) {
-        const periodoIds = periodos.map(p => p.id);
-        const custoRows = await db
-          .select({
-            periodoCustoId: custoSetor.periodoCustoId,
-            totalGeral: sql<string>`SUM(${custoSetor.totalGeral})`,
-          })
-          .from(custoSetor)
-          .where(sql`${custoSetor.periodoCustoId} IN (${sql.join(periodoIds.map(id => sql`${id}`), sql`, `)})`)
-          .groupBy(custoSetor.periodoCustoId);
-        for (const row of custoRows) {
-          custosMap[String(row.periodoCustoId)] = parseFloat(String(row.totalGeral || "0"));
-        }
-      }
+      if (periodos.length === 0) return { serie: [] };
 
-      // 3. Buscar avaliação global para frete e investimentos (avaliacaoGlobal.ano é int)
+      const periodoIds = periodos.map(p => p.id);
+
+      // 2. Buscar custos por período (usando custo_setor_equipamento + custo_setor_despesa)
+      const { totalPorPeriodo } = await calcularCustosPorPeriodos(db, periodoIds);
+
+      // 3. Buscar avaliação global
       const avaliacoes = await db
         .select()
         .from(avaliacaoGlobal)
-        .where(
-          and(
-            gte(avaliacaoGlobal.ano, anoInicio),
-            lte(avaliacaoGlobal.ano, anoFim)
-          )
-        );
+        .where(and(gte(avaliacaoGlobal.ano, anoInicio), lte(avaliacaoGlobal.ano, anoFim)));
       const avaliacaoMap: Record<string, typeof avaliacoes[0]> = {};
       for (const av of avaliacoes) {
         avaliacaoMap[`${av.ano}-${av.mes}`] = av;
       }
 
-      // 4. Buscar faturamento (resumo_vendas_produto) agrupado por mês/ano
-      // periodoInicio é date — usar Date objects com gte/lte
+      // 4. Buscar faturamento agrupado por mês/ano
       const dataInicioFat = new Date(`${anoInicio}-01-01T00:00:00`);
       const dataFimFat = new Date(`${anoFim}-12-31T23:59:59`);
       const faturamentoRows = await db
@@ -84,12 +121,10 @@ export const comparativosRouter = router({
           totalQuantidade: sql<string>`SUM(${resumoVendasProduto.quantidade})`,
         })
         .from(resumoVendasProduto)
-        .where(
-          and(
-            gte(resumoVendasProduto.periodoInicio, dataInicioFat),
-            lte(resumoVendasProduto.periodoInicio, dataFimFat)
-          )
-        )
+        .where(and(
+          gte(resumoVendasProduto.periodoInicio, dataInicioFat),
+          lte(resumoVendasProduto.periodoInicio, dataFimFat)
+        ))
         .groupBy(
           sql`YEAR(${resumoVendasProduto.periodoInicio})`,
           sql`MONTH(${resumoVendasProduto.periodoInicio})`
@@ -102,8 +137,7 @@ export const comparativosRouter = router({
         };
       }
 
-      // 5. Buscar combustível (abastecimento) agrupado por mês/ano
-      // abastecimento.data é date — usar Date objects com gte/lte
+      // 5. Buscar combustível agrupado por mês/ano
       const dataInicioAbast = new Date(`${anoInicio}-01-01T00:00:00`);
       const dataFimAbast = new Date(`${anoFim}-12-31T23:59:59`);
       const combustivelRows = await db
@@ -114,12 +148,10 @@ export const comparativosRouter = router({
           totalCusto: sql<string>`SUM(${abastecimento.valorTotal})`,
         })
         .from(abastecimento)
-        .where(
-          and(
-            gte(abastecimento.data, dataInicioAbast),
-            lte(abastecimento.data, dataFimAbast)
-          )
-        )
+        .where(and(
+          gte(abastecimento.data, dataInicioAbast),
+          lte(abastecimento.data, dataFimAbast)
+        ))
         .groupBy(
           sql`YEAR(${abastecimento.data})`,
           sql`MONTH(${abastecimento.data})`
@@ -142,12 +174,10 @@ export const comparativosRouter = router({
           totalProducao: sql<string>`SUM(${producao.quantidade})`,
         })
         .from(producao)
-        .where(
-          and(
-            gte(producao.data, dataInicioProducao),
-            lte(producao.data, dataFimProducao)
-          )
-        )
+        .where(and(
+          gte(producao.data, dataInicioProducao),
+          lte(producao.data, dataFimProducao)
+        ))
         .groupBy(
           sql`YEAR(${producao.data})`,
           sql`MONTH(${producao.data})`
@@ -164,11 +194,10 @@ export const comparativosRouter = router({
         const comb = combustivelMap[key] ?? { litros: 0, custo: 0 };
         const prod = producaoMap[key] ?? 0;
         const av = avaliacaoMap[key];
-        const custo = custosMap[String(p.id)] ?? 0;
+        const custo = totalPorPeriodo[String(p.id)] ?? 0;
         const despesasIndiretas = parseFloat(String(p.despesasIndiretas || "0"));
         const custoTotal = custo + despesasIndiretas;
         const frete = av ? parseFloat(String(av.frete || "0")) : parseFloat(String(p.fretePeriodo || "0"));
-        const receitaProdutos = fat.receita - frete;
         const saldoBruto = fat.receita - custoTotal - frete;
         const margemBruta = fat.receita > 0 ? (saldoBruto / fat.receita) * 100 : 0;
         const producaoTotal = parseFloat(String(p.producaoTotal || "0")) || prod;
@@ -192,7 +221,6 @@ export const comparativosRouter = router({
           label: `${String(p.mes).padStart(2, "0")}/${p.ano}`,
           faturamento: fat.receita,
           frete,
-          receitaProdutos,
           custoTotal,
           saldoBruto,
           margemBruta,
@@ -215,7 +243,8 @@ export const comparativosRouter = router({
     }),
 
   /**
-   * Evolução de custos por setor/grupo ao longo dos períodos
+   * Evolução de custos por grupo ao longo dos períodos
+   * Usa custo_setor_equipamento + custo_setor_despesa (fonte primária)
    */
   evolucaoCustoSetor: protectedProcedure
     .input(z.object({
@@ -228,60 +257,52 @@ export const comparativosRouter = router({
 
       const { anoInicio, anoFim } = input;
 
-      // Buscar períodos (periodoCusto.ano é int — gte/lte funciona direto)
+      // Buscar períodos
       const periodos = await db
         .select({ id: periodoCusto.id, mes: periodoCusto.mes, ano: periodoCusto.ano })
         .from(periodoCusto)
-        .where(
-          and(
-            gte(periodoCusto.ano, anoInicio),
-            lte(periodoCusto.ano, anoFim)
-          )
-        )
+        .where(and(gte(periodoCusto.ano, anoInicio), lte(periodoCusto.ano, anoFim)))
         .orderBy(periodoCusto.ano, periodoCusto.mes);
 
       if (periodos.length === 0) return { periodos: [], grupos: [], dados: [] };
 
       const periodoIds = periodos.map(p => p.id);
-
-      // Buscar custo por grupo para cada período
-      const custoRows = await db
-        .select({
-          periodoCustoId: custoSetor.periodoCustoId,
-          grupoNome: custoSetor.grupoNome,
-          totalGeral: sql<string>`SUM(${custoSetor.totalGeral})`,
-        })
-        .from(custoSetor)
-        .where(sql`${custoSetor.periodoCustoId} IN (${sql.join(periodoIds.map(id => sql`${id}`), sql`, `)})`)
-        .groupBy(custoSetor.periodoCustoId, custoSetor.grupoNome);
+      const { totalPorGrupoPeriodo } = await calcularCustosPorPeriodos(db, periodoIds);
 
       // Coletar grupos únicos
       const gruposSet = new Set<string>();
-      for (const row of custoRows) {
-        gruposSet.add(row.grupoNome);
+      for (const grupos of Object.values(totalPorGrupoPeriodo)) {
+        for (const g of Object.keys(grupos)) gruposSet.add(g);
       }
-      const grupos = Array.from(gruposSet).sort();
 
-      // Montar matriz: periodos x grupos
-      const dadosMap: Record<string, Record<string, number>> = {};
-      for (const row of custoRows) {
-        const p = periodos.find(p => p.id === row.periodoCustoId);
-        if (!p) continue;
-        const label = `${String(p.mes).padStart(2, "0")}/${p.ano}`;
-        if (!dadosMap[label]) dadosMap[label] = {};
-        dadosMap[label][row.grupoNome] = parseFloat(String(row.totalGeral || "0"));
-      }
+      // Ordenar grupos por ordem de exibição
+      const ORDEM_GRUPOS: Record<string, number> = {
+        "DESMONTE DE ROCHA": 1,
+        "CARGA E TRANSPORTE": 2,
+        "BRITAGEM": 3,
+        "EXPEDIÇÃO": 4,
+        "SERVIÇOS AUXILIARES": 5,
+        "ADMINISTRAÇÃO": 6,
+        "APOIO À PRODUÇÃO": 7,
+        "PEDRA PARA BRITADOR": 8,
+      };
+      const grupos = Array.from(gruposSet).sort(
+        (a, b) => (ORDEM_GRUPOS[a] ?? 99) - (ORDEM_GRUPOS[b] ?? 99)
+      );
 
       const periodosLabels = periodos.map(p => `${String(p.mes).padStart(2, "0")}/${p.ano}`);
 
-      return {
-        periodos: periodosLabels,
-        grupos,
-        dados: periodosLabels.map(label => ({
-          label,
-          ...Object.fromEntries(grupos.map(g => [g, dadosMap[label]?.[g] ?? 0])),
-        })),
-      };
+      const dados = periodos.map((p, i) => {
+        const pid = String(p.id);
+        const label = periodosLabels[i];
+        const entry: Record<string, number | string> = { label };
+        for (const g of grupos) {
+          entry[g] = totalPorGrupoPeriodo[pid]?.[g] ?? 0;
+        }
+        return entry;
+      });
+
+      return { periodos: periodosLabels, grupos, dados };
     }),
 
   /**
@@ -310,12 +331,10 @@ export const comparativosRouter = router({
           qtdAbastecimentos: sql<number>`COUNT(*)`,
         })
         .from(abastecimento)
-        .where(
-          and(
-            gte(abastecimento.data, dataInicio),
-            lte(abastecimento.data, dataFim)
-          )
-        )
+        .where(and(
+          gte(abastecimento.data, dataInicio),
+          lte(abastecimento.data, dataFim)
+        ))
         .groupBy(
           sql`YEAR(${abastecimento.data})`,
           sql`MONTH(${abastecimento.data})`
