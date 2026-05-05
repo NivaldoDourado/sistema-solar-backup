@@ -505,3 +505,6 @@
 
 ## Renomeação de Conta (Mai/2026)
 - [x] Renomear "Sal.Adm./Diretoria/Pró-Labore/Encargos" → "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos" no banco e nos aliases
+
+## Exibição Condicional de Conta no Analítico (Mai/2026)
+- [x] No relatório analítico por setor: exibir "Sal.Adm./Diretoria/Pró-Labore/Encargos" em ADMINISTRAÇÃO e "Salários com Encargos" nos demais setores

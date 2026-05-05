@@ -91,10 +91,12 @@ function EquipamentoRow({
   equip,
   totalSubsetor,
   filtroContaCampo,
+  subsetorNome,
 }: {
   equip: Equipamento;
   totalSubsetor: number;
   filtroContaCampo?: string;
+  subsetorNome?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -141,7 +143,7 @@ function EquipamentoRow({
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  { label: "Sal.Oper./Enc. Oper.", valor: sal, show: sal > 0, campo: "salOperEncOper" },
+                  { label: subsetorNome === "ADMINISTRAÇÃO" ? "Sal.Adm./Diretoria/Pró-Labore/Encargos" : "Salários com Encargos", valor: sal, show: sal > 0, campo: "salOperEncOper" },
                   { label: "Combustível", valor: comb, show: comb > 0, campo: "combustivel" },
                   { label: "Lubrificantes", valor: lubr, show: lubr > 0, campo: "lubrificantes" },
                   { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0, campo: "pecasDesgaste" },
@@ -273,6 +275,7 @@ function SubsetorCard({
                         equip={equip}
                         totalSubsetor={subsetor.totalSubsetor}
                         filtroContaCampo={filtroContaCampo}
+                        subsetorNome={subsetor.subsetorNome}
                       />
                     ))}
                     {/* Linha de subtotal dos equipamentos */}
