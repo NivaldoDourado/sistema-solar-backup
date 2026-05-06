@@ -954,3 +954,16 @@ export const avaliacaoGlobal = mysqlTable("avaliacao_global", {
 
 export type AvaliacaoGlobal = typeof avaliacaoGlobal.$inferSelect;
 export type InsertAvaliacaoGlobal = typeof avaliacaoGlobal.$inferInsert;
+
+// ============================================================================
+// META DE CUSTO POR TONELADA (Simulação de Custos)
+// ============================================================================
+export const metaCustoTonelada = mysqlTable("meta_custo_tonelada", {
+  id: int("id").autoincrement().primaryKey(),
+  valor: decimal("valor", { precision: 15, scale: 2 }).notNull(),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type MetaCustoTonelada = typeof metaCustoTonelada.$inferSelect;
+export type InsertMetaCustoTonelada = typeof metaCustoTonelada.$inferInsert;

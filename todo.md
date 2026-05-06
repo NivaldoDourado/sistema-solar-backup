@@ -583,3 +583,9 @@
 - [x] Frontend: exibir produção acumulada, gastos parciais, projeção por setor e custo unitário projetado
 - [x] Frontend: alertas de desvio comparando projeção com meses anteriores
 - [x] Adicionar rota e link no menu lateral
+
+## Meta de Custo por Tonelada na Simulação de Custos (Mai/2026)
+- [x] Schema: criar tabela metaCustoTonelada no banco (valor, criadoPor, criadoEm)
+- [x] Backend: procedures para salvar e buscar meta de custo/t
+- [x] Frontend: campo editável para definir meta de custo/t na página Simulação
+- [x] Frontend: alerta visual quando projeção ultrapassar a meta definida

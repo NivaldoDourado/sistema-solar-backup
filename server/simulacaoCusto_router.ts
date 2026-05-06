@@ -12,6 +12,7 @@ import {
   servicos,
   lancamentoCusto,
   contaCusto,
+  metaCustoTonelada,
 } from "../drizzle/schema";
 
 // Helper para calcular primeiro e último dia do mês
@@ -29,6 +30,39 @@ function mesAnterior(mes: number, ano: number): { mes: number; ano: number } {
 }
 
 export const simulacaoCustoRouter = router({
+  // ========================================================
+  // META DE CUSTO POR TONELADA
+  // ========================================================
+  getMeta: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .query(async () => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const [meta] = await db.select().from(metaCustoTonelada).orderBy(desc(metaCustoTonelada.updatedAt)).limit(1);
+      return meta ? { valor: parseFloat(String(meta.valor)) } : null;
+    }),
+
+  setMeta: protectedProcedure
+    .use(requirePermission("custos", "edit"))
+    .input(z.object({ valor: z.number().min(0) }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      // Buscar meta existente
+      const [existente] = await db.select().from(metaCustoTonelada).orderBy(desc(metaCustoTonelada.updatedAt)).limit(1);
+      if (existente) {
+        await db.update(metaCustoTonelada)
+          .set({ valor: String(input.valor), userId: ctx.user.id })
+          .where(eq(metaCustoTonelada.id, existente.id));
+      } else {
+        await db.insert(metaCustoTonelada).values({
+          valor: String(input.valor),
+          userId: ctx.user.id,
+        });
+      }
+      return { success: true };
+    }),
+
   // Simulação principal: projeção do custo do mês corrente
   simular: protectedProcedure
     .use(requirePermission("custos", "view"))

@@ -2,13 +2,16 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, Info,
   CheckCircle2, Activity, BarChart3, Fuel, Factory,
-  Calendar, Target, ArrowRight
+  Calendar, Target, ArrowRight, Pencil, Save, X, ShieldAlert
 } from "lucide-react";
 
 const MESES = [
@@ -40,8 +43,33 @@ function TendenciaIcon({ tendencia }: { tendencia: "subindo" | "estavel" | "desc
 export default function SimulacaoCusto() {
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(ANO_ATUAL);
-
+  const [editandoMeta, setEditandoMeta] = useState(false);
+  const [metaInput, setMetaInput] = useState("");
   const { data: simulacao, isLoading } = trpc.simulacaoCusto.simular.useQuery({ mes, ano });
+  const { data: metaData } = trpc.simulacaoCusto.getMeta.useQuery();
+  const utils = trpc.useUtils();
+  const setMetaMutation = trpc.simulacaoCusto.setMeta.useMutation({
+    onSuccess: () => {
+      utils.simulacaoCusto.getMeta.invalidate();
+      setEditandoMeta(false);
+      toast.success("Meta de custo por tonelada atualizada com sucesso.");
+    },
+    onError: () => {
+      toast.error("Não foi possível salvar a meta.");
+    },
+  });
+
+  const metaValor = metaData?.valor ?? null;
+  const metaUltrapassada = metaValor !== null && simulacao && simulacao.custoTonProjetado > 0 && simulacao.custoTonProjetado > metaValor;
+
+  function handleSalvarMeta() {
+    const valor = parseFloat(metaInput.replace(",", "."));
+    if (isNaN(valor) || valor <= 0) {
+      toast.error("Informe um valor numérico positivo.");
+      return;
+    }
+    setMetaMutation.mutate({ valor });
+  }
 
   const progressoPeriodo = simulacao
     ? Math.min(100, (simulacao.diasTranscorridos / simulacao.diasNoMes) * 100)
@@ -119,6 +147,98 @@ export default function SimulacaoCusto() {
               ))}
             </div>
           )}
+
+          {/* Alerta de Meta Ultrapassada */}
+          {metaUltrapassada && (
+            <div className="flex items-center gap-3 p-4 rounded-lg border-2 border-red-400 bg-red-50 text-red-800 animate-pulse">
+              <ShieldAlert className="h-6 w-6 shrink-0 text-red-600" />
+              <div>
+                <p className="font-bold text-sm">Meta de Custo/t Ultrapassada!</p>
+                <p className="text-xs mt-0.5">
+                  Projeção: <strong>{formatMoney(simulacao!.custoTonProjetado)}/t</strong> — Meta: <strong>{formatMoney(metaValor!)}/t</strong>
+                  {" "}— Desvio: <strong className="text-red-700">+{formatPct(((simulacao!.custoTonProjetado - metaValor!) / metaValor!) * 100)}</strong> acima da meta
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Card Meta de Custo/t */}
+          <Card className={metaUltrapassada ? "border-red-300 bg-red-50/30" : ""}>
+            <CardContent className="pt-5 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Meta de Custo por Tonelada</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!editandoMeta ? (
+                    <>
+                      {metaValor !== null ? (
+                        <span className={`font-mono font-bold text-lg ${metaUltrapassada ? "text-red-700" : "text-emerald-700"}`}>
+                          {formatMoney(metaValor)}/t
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">Não definida</span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setMetaInput(metaValor !== null ? metaValor.toFixed(2).replace(".", ",") : "");
+                          setEditandoMeta(true);
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">R$</span>
+                      <Input
+                        className="w-32 h-8 font-mono text-right"
+                        placeholder="0,00"
+                        value={metaInput}
+                        onChange={(e) => setMetaInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleSalvarMeta(); if (e.key === "Escape") setEditandoMeta(false); }}
+                        autoFocus
+                      />
+                      <span className="text-sm text-muted-foreground">/t</span>
+                      <Button variant="ghost" size="sm" onClick={handleSalvarMeta} disabled={setMetaMutation.isPending}>
+                        <Save className="h-3.5 w-3.5 text-emerald-600" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditandoMeta(false)}>
+                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {metaValor !== null && simulacao && simulacao.custoTonProjetado > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                    <span>Projeção atual vs Meta</span>
+                    <span>{formatPct((simulacao.custoTonProjetado / metaValor) * 100)} da meta</span>
+                  </div>
+                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden relative">
+                    <div
+                      className={`h-full rounded-full transition-all ${metaUltrapassada ? "bg-red-500" : "bg-emerald-500"}`}
+                      style={{ width: `${Math.min(150, (simulacao.custoTonProjetado / metaValor) * 100)}%` }}
+                    />
+                    {/* Linha da meta (100%) */}
+                    <div className="absolute top-0 bottom-0 w-0.5 bg-gray-800" style={{ left: "100%" }} />
+                  </div>
+                  <div className="flex justify-between mt-1 text-xs">
+                    <span className={metaUltrapassada ? "text-red-600 font-medium" : "text-emerald-600 font-medium"}>
+                      {formatMoney(simulacao.custoTonProjetado)}/t
+                    </span>
+                    <span className="text-muted-foreground font-medium">
+                      Meta: {formatMoney(metaValor)}/t
+                    </span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Progresso do período */}
           <Card>
