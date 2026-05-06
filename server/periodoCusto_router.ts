@@ -3,7 +3,11 @@ import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
-import { periodoCusto, producao } from "../drizzle/schema";
+import { periodoCusto, producao, parteDiaria, parteDiariaItens, servicos, equipamentos, pesagensEquipamentos } from "../drizzle/schema";
+
+// Data de corte: a partir de abril/2026, produção vem do Método Caminhões
+const CORTE_ANO = 2026;
+const CORTE_MES = 4; // Abril
 
 // Helper para calcular primeiro e último dia do mês
 function getMesDates(mes: number, ano: number) {
@@ -112,20 +116,60 @@ export const periodoCustoRouter = router({
     }),
 
   // Buscar produção total do módulo Produção para um período (mês/ano)
+  // A partir de abril/2026: usa Produção Método Caminhões (soma toneladas transportadas)
+  // Antes de abril/2026: usa tabela producao (legado)
   getProducaoDoModulo: protectedProcedure
     .use(requirePermission("custos", "view"))
     .input(z.object({ mes: z.number().min(1).max(12), ano: z.number().min(2020) }))
     .query(async ({ input }) => {
       const db = await getDb();
-      if (!db) return { total: 0 };
+      if (!db) return { total: 0, fonte: "indisponivel" as const };
       const { dataInicio, dataFim } = getMesDates(input.mes, input.ano);
-      const dtInicio = new Date(dataInicio + "T00:00:00");
-      const dtFim = new Date(dataFim + "T23:59:59");
-      const [result] = await db
-        .select({ total: sql<string>`COALESCE(SUM(${producao.quantidade}), 0)` })
-        .from(producao)
-        .where(and(gte(producao.data, dtInicio), lte(producao.data, dtFim)));
-      return { total: parseFloat(String(result?.total ?? "0")) };
+
+      // Verificar se é abril/2026 ou posterior
+      const usarMetodoCaminhoes = input.ano > CORTE_ANO || (input.ano === CORTE_ANO && input.mes >= CORTE_MES);
+
+      if (usarMetodoCaminhoes) {
+        // Produção Método Caminhões: soma de producao (toneladas) dos itens de parte diária
+        // com serviços de transporte para britador
+        const servicosData = await db.select().from(servicos);
+        const servicosBritagemFixa = servicosData.filter(s =>
+          s.nome.toUpperCase().includes('TRANSPORTE DE PEDRA PARA O BRITADOR') ||
+          s.nome.toUpperCase().includes('ALIMENTANDO O BRITADOR PRIMARIO') ||
+          s.nome.toUpperCase().includes('TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR')
+        ).map(s => s.id);
+        const servicosBritagemMovel = servicosData.filter(s =>
+          s.nome.toUpperCase().includes('TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL')
+        ).map(s => s.id);
+        const servicosCaminhoes = [...servicosBritagemFixa, ...servicosBritagemMovel];
+
+        const itens = await db
+          .select({
+            servicoId: parteDiariaItens.servicoId,
+            producao: parteDiariaItens.producao,
+            data: parteDiaria.data,
+          })
+          .from(parteDiariaItens)
+          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id));
+
+        const itensFiltrados = itens.filter(item => {
+          if (!servicosCaminhoes.includes(item.servicoId)) return false;
+          const itemDate = item.data instanceof Date ? item.data.toISOString().split('T')[0] : String(item.data).split('T')[0];
+          return itemDate >= dataInicio && itemDate <= dataFim;
+        });
+
+        const total = itensFiltrados.reduce((acc, item) => acc + parseFloat(item.producao || '0'), 0);
+        return { total, fonte: "metodo_caminhoes" as const };
+      } else {
+        // Legado: tabela producao
+        const dtInicio = new Date(dataInicio + "T00:00:00");
+        const dtFim = new Date(dataFim + "T23:59:59");
+        const [result] = await db
+          .select({ total: sql<string>`COALESCE(SUM(${producao.quantidade}), 0)` })
+          .from(producao)
+          .where(and(gte(producao.data, dtInicio), lte(producao.data, dtFim)));
+        return { total: parseFloat(String(result?.total ?? "0")), fonte: "legado" as const };
+      }
     }),
 
   // Excluir período

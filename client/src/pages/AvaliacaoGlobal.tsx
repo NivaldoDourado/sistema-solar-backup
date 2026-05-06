@@ -128,6 +128,12 @@ export default function AvaliacaoGlobal() {
     { enabled: !!periodoAtual?.id }
   );
 
+  // Produção automática do período (Método Caminhões para abril/26+, legado para anteriores)
+  const { data: producaoData } = trpc.periodoCusto.getProducaoDoModulo.useQuery({ mes, ano });
+  const producaoTotal = producaoData?.total ?? 0;
+  const producaoFonte = producaoData?.fonte ?? "indisponivel";
+  const isMetodoCaminhoes = producaoFonte === "metodo_caminhoes";
+
   // Destinatários WhatsApp
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const destinatariosAtivos = useMemo(
@@ -227,12 +233,21 @@ export default function AvaliacaoGlobal() {
   // Período label
   const periodoLabel = `${MESES[mes - 1]}/${ano}`;
 
+  // Custo por tonelada
+  const custoTon = producaoTotal > 0 ? custos / producaoTotal : 0;
+
   // Mensagem WhatsApp
   const whatsappMessage = useMemo(() => {
     if (!temDadosVendas && !temDadosCusto) return undefined;
     let msg = `📊 *Avaliação Global — ${periodoLabel}*\n\n`;
+    if (producaoTotal > 0) {
+      msg += `🚧 *Produção:* ${producaoTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} t`;
+      if (isMetodoCaminhoes) msg += ` _(Método Caminhões)_`;
+      msg += `\n`;
+    }
     msg += `*(A) Faturamento:* ${formatMoney(faturamento)}\n`;
     msg += `*(B) Custos:* ${formatMoney(custos)}\n`;
+    if (producaoTotal > 0) msg += `*Custo/t:* ${formatMoney(custoTon)}/t\n`;
     msg += `*(C) Frete:* ${formatMoney(frete)}\n`;
     msg += `*Saldo Bruto:* ${formatMoney(saldoBruto)} (${formatPct(margemBruta)})\n`;
     if (totalD > 0) {
@@ -247,7 +262,7 @@ export default function AvaliacaoGlobal() {
     }
     msg += `\n✅ *Saldo Final:* ${formatMoney(saldoFinal)} (${formatPct(margemFinal)})`;
     return msg;
-  }, [faturamento, custos, frete, saldoBruto, margemBruta, totalD, investEquip, investBritagem, difFrete, difImpostos, distribLucro, outros, saldoFinal, margemFinal, periodoLabel, temDadosVendas, temDadosCusto]);
+  }, [faturamento, custos, frete, saldoBruto, margemBruta, totalD, investEquip, investBritagem, difFrete, difImpostos, distribLucro, outros, saldoFinal, margemFinal, periodoLabel, temDadosVendas, temDadosCusto, producaoTotal, isMetodoCaminhoes, custoTon]);
 
   // Dados para exportação Excel/PDF
   const exportData = useMemo(() => {
@@ -360,6 +375,20 @@ export default function AvaliacaoGlobal() {
                   <p className="font-mono font-bold text-emerald-700">{formatMoney(faturamento)}</p>
                 </div>
                 {temDadosVendas ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-amber-500" />
+                )}
+              </div>
+              <div className="flex justify-between items-center p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <div>
+                  <p className="text-xs text-muted-foreground">Produção do Período (t)</p>
+                  <p className="font-mono font-bold text-blue-700">{producaoTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} t</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isMetodoCaminhoes ? "Fonte: Método Caminhões (automático)" : producaoFonte === "legado" ? "Fonte: Módulo Produção (legado)" : ""}
+                  </p>
+                </div>
+                {producaoTotal > 0 ? (
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                 ) : (
                   <AlertCircle className="h-5 w-5 text-amber-500" />
@@ -556,6 +585,20 @@ export default function AvaliacaoGlobal() {
                   </p>
                   <p className="text-xs text-muted-foreground">Custos sobre receita líquida</p>
                 </div>
+                {producaoTotal > 0 && (
+                  <div className="p-3 rounded-lg bg-muted/50 border">
+                    <p className="text-xs text-muted-foreground">Produção do Período</p>
+                    <p className="font-mono font-semibold text-sm mt-1">{producaoTotal.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} t</p>
+                    <p className="text-xs text-muted-foreground">{isMetodoCaminhoes ? "Método Caminhões" : "Módulo Produção"}</p>
+                  </div>
+                )}
+                {custoTon > 0 && (
+                  <div className="p-3 rounded-lg bg-muted/50 border">
+                    <p className="text-xs text-muted-foreground">Custo por Tonelada</p>
+                    <p className="font-mono font-semibold text-sm mt-1">{formatMoney(custoTon)}/t</p>
+                    <p className="text-xs text-muted-foreground">Custo Total ÷ Produção</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -565,7 +608,7 @@ export default function AvaliacaoGlobal() {
             <CardContent className="pt-4">
               <p className="text-xs text-muted-foreground flex items-start gap-2">
                 <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                Os valores do <strong>Bloco A</strong> (Faturamento e Custos) são preenchidos automaticamente a partir dos dados importados no sistema. Os campos do <strong>Bloco C</strong> (Frete) e <strong>Bloco D</strong> (Investimentos e Diferenças de Caixa) devem ser informados manualmente a cada período.
+                Os valores do <strong>Bloco A</strong> (Faturamento, Custos e Produção) são preenchidos automaticamente. A partir de abril/2026, a produção é calculada pelo <strong>Método Caminhões</strong> (soma das toneladas transportadas no período). Os campos do <strong>Bloco C</strong> (Frete) e <strong>Bloco D</strong> (Investimentos e Diferenças de Caixa) devem ser informados manualmente a cada período.
               </p>
             </CardContent>
           </Card>

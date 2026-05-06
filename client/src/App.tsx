@@ -30,6 +30,7 @@ import CustoSetorAnalitico from "./pages/CustoSetorAnalitico";
 import ImportacaoCusto from "./pages/ImportacaoCusto";
 import AvaliacaoGlobal from "./pages/AvaliacaoGlobal";
 import ComparativosHistoricos from "./pages/ComparativosHistoricos";
+import SimulacaoCusto from "./pages/SimulacaoCusto";
 import Manutencao from "./pages/Manutencao";
 import Usuarios from "./pages/Usuarios";
 import MeuPerfil from "./pages/MeuPerfil";
@@ -181,6 +182,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <ComparativosHistoricos />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/simulacao-custo"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <SimulacaoCusto />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

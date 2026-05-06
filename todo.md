@@ -569,3 +569,17 @@
 ## Exportação Excel/PDF/WhatsApp - Avaliação Global e Comparativos Históricos (Mai/2026)
 - [x] Avaliação Global: Adicionar botões Excel, PDF e WhatsApp
 - [x] Comparativos Históricos: Adicionar botão WhatsApp (Excel e PDF já existem)
+
+## Etapa 1: Produção Automática na Avaliação Global (Mai/2026)
+- [x] Backend: criar procedure que busca produção do "Produção Método Caminhões" para um mês/ano
+- [x] Avaliação Global: para abril/26+, preencher produção automaticamente (campo automático, não editável)
+- [x] Avaliação Global: para março/26 e anteriores, manter comportamento atual (valor manual importado)
+
+## Etapa 2: Página Simulação de Custos (Mai/2026)
+- [x] Backend: procedure que calcula projeção de custos baseada em dados parciais do mês corrente
+- [x] Backend: lógica de média corrigida dos últimos 3 meses por setor
+- [x] Backend: projeção proporcional (dias transcorridos / dias totais) com ajuste pela média histórica
+- [x] Frontend: criar página dedicada "Simulação de Custos" com visão completa da projeção
+- [x] Frontend: exibir produção acumulada, gastos parciais, projeção por setor e custo unitário projetado
+- [x] Frontend: alertas de desvio comparando projeção com meses anteriores
+- [x] Adicionar rota e link no menu lateral
