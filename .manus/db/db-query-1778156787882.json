@@ -1,0 +1,76 @@
+{
+  "query": "SELECT COUNT(*) as total FROM equipamentos; SELECT id, codigoTag, nomeDoEquipamento, grupoId FROM equipamentos LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT COUNT(*) as total FROM equipamentos; SELECT id, codigoTag, nomeDoEquipamento, grupoId FROM equipamentos LIMIT 20;",
+  "rows": [
+    {
+      "total": "104"
+    },
+    {
+      "total": "id\tcodigoTag\tnomeDoEquipamento\tgrupoId"
+    },
+    {
+      "total": "1\tTEST-001\tEquipamento de Teste\tNULL"
+    },
+    {
+      "total": "2\tROCK 02\tPERFURATRIZ WOLF PW5000 - 02\t13"
+    },
+    {
+      "total": "3\tJC1200-01\tBRITADOR FURLAN JC1200 - 01\t2"
+    },
+    {
+      "total": "4\tJC1200-02\tBRITADOR FURLAN JC1200 - 02\t2"
+    },
+    {
+      "total": "5\tXAS420\tCOMPRESSOR DE AR ATLAS COPCO XAS420\t6"
+    },
+    {
+      "total": "6\tGA160\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\t6"
+    },
+    {
+      "total": "7\tCC1200\tBRITADOR CÔNICO FURLAN CC1200\t2"
+    },
+    {
+      "total": "8\tH3800-01\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\t2"
+    },
+    {
+      "total": "9\tH3800-02\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\t2"
+    },
+    {
+      "total": "10\tOM100\tBRITADOR DE IMPACTO FURLAN VSI OM100\t2"
+    },
+    {
+      "total": "11\tPENEIRA01\tPENEIRA FURLAN - PENEIRA 01\t12"
+    },
+    {
+      "total": "12\tPENEIRA02\tPENEIRA UNIVERSO - PENEIRA 02\t12"
+    },
+    {
+      "total": "13\tPENEIRA03\tPENEIRA SANDIVIK - PENEIRA 03\t12"
+    },
+    {
+      "total": "14\tPENEIRA04\tPENEIRA FAÇO - PENEIRA 04\t12"
+    },
+    {
+      "total": "15\tPENEIRA05\tPENEIRA FAÇO - PENEIRA 05\t12"
+    },
+    {
+      "total": "16\tFH200\tESCAVADEIRA HIDRÁULICA FIATALLIS FH200\t8"
+    },
+    {
+      "total": "17\tPICÃO\tROMPEDOR HIDRÁULICO STONE 2180\t14"
+    },
+    {
+      "total": "18\tFX215\tESCAVADEIRA HIDRÁULICA FIATALLIS FX215\t8"
+    },
+    {
+      "total": "19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t8"
+    },
+    {
+      "total": "20\tPC300\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\t8"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n104\nid\tcodigoTag\tnomeDoEquipamento\tgrupoId\n1\tTEST-001\tEquipamento de Teste\tNULL\n2\tROCK 02\tPERFURATRIZ WOLF PW5000 - 02\t13\n3\tJC1200-01\tBRITADOR FURLAN JC1200 - 01\t2\n4\tJC1200-02\tBRITADOR FURLAN JC1200 - 02\t2\n5\tXAS420\tCOMPRESSOR DE AR ATLAS COPCO XAS420\t6\n6\tGA160\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\t6\n7\tCC1200\tBRITADOR CÔNICO FURLAN CC1200\t2\n8\tH3800-01\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\t2\n9\tH3800-02\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\t2\n10\tOM100\tBRITADOR DE IMPACTO FURLAN VSI OM100\t2\n11\tPENEIRA01\tPENEIRA FURLAN - PENEIRA 01\t12\n12\tPENEIRA02\tPENEIRA UNIVERSO - PENEIRA 02\t12\n13\tPENEIRA03\tPENEIRA SANDIVIK - PENEIRA 03\t12\n14\tPENEIRA04\tPENEIRA FAÇO - PENEIRA 04\t12\n15\tPENEIRA05\tPENEIRA FAÇO - PENEIRA 05\t12\n16\tFH200\tESCAVADEIRA HIDRÁULICA FIATALLIS FH200\t8\n17\tPICÃO\tROMPEDOR HIDRÁULICO STONE 2180\t14\n18\tFX215\tESCAVADEIRA HIDRÁULICA FIATALLIS FX215\t8\n19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t8\n20\tPC300\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\t8\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

@@ -1,0 +1,98 @@
+{
+  "query": "SELECT id, nome FROM grupos_de_equipamentos ORDER BY nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM grupos_de_equipamentos ORDER BY nome;",
+  "rows": [
+    {
+      "id": "30002",
+      "nome": "BALANÇAS INTEGRADORAS"
+    },
+    {
+      "id": "17",
+      "nome": "BASCULANTES"
+    },
+    {
+      "id": "2",
+      "nome": "BRITADORES"
+    },
+    {
+      "id": "16",
+      "nome": "CAMINHÕES DA ENTREGA DE MATERIAL"
+    },
+    {
+      "id": "5",
+      "nome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "3",
+      "nome": "CAMINHÕES MELOSA"
+    },
+    {
+      "id": "7",
+      "nome": "CAMINHÕES PIPA"
+    },
+    {
+      "id": "4",
+      "nome": "CARROS PEQUENOS"
+    },
+    {
+      "id": "6",
+      "nome": "COMPRESSORES DE AR DIESEL"
+    },
+    {
+      "id": "18",
+      "nome": "COMPRESSORES DE AR ELETRICOS"
+    },
+    {
+      "id": "1",
+      "nome": "DRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL"
+    },
+    {
+      "id": "8",
+      "nome": "ESCAVADEIRAS HIDRÁULICAS"
+    },
+    {
+      "id": "9",
+      "nome": "GERADORES ELÉTRICOS DIESEL"
+    },
+    {
+      "id": "21",
+      "nome": "MARTELOS PERFURATRIZES HIDRÁULICAS"
+    },
+    {
+      "id": "20",
+      "nome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "10",
+      "nome": "PÁS CARREGADEIRAS"
+    },
+    {
+      "id": "11",
+      "nome": "PATRÓIS"
+    },
+    {
+      "id": "12",
+      "nome": "PENEIRAS VIBRATÓRIAS"
+    },
+    {
+      "id": "19",
+      "nome": "PERFURATRIZES HIDRAULICAS"
+    },
+    {
+      "id": "13",
+      "nome": "PERFURATRIZES PNEUMÁTICAS"
+    },
+    {
+      "id": "14",
+      "nome": "ROMPEDORES HIDRÁULICOS"
+    },
+    {
+      "id": "15",
+      "nome": "TRATORES DE ESTEIRA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n30002\tBALANÇAS INTEGRADORAS\n17\tBASCULANTES\n2\tBRITADORES\n16\tCAMINHÕES DA ENTREGA DE MATERIAL\n5\tCAMINHÕES INTERNOS\n3\tCAMINHÕES MELOSA\n7\tCAMINHÕES PIPA\n4\tCARROS PEQUENOS\n6\tCOMPRESSORES DE AR DIESEL\n18\tCOMPRESSORES DE AR ELETRICOS\n1\tDRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL\n8\tESCAVADEIRAS HIDRÁULICAS\n9\tGERADORES ELÉTRICOS DIESEL\n21\tMARTELOS PERFURATRIZES HIDRÁULICAS\n20\tOUTROS PARA CUSTO\n10\tPÁS CARREGADEIRAS\n11\tPATRÓIS\n12\tPENEIRAS VIBRATÓRIAS\n19\tPERFURATRIZES HIDRAULICAS\n13\tPERFURATRIZES PNEUMÁTICAS\n14\tROMPEDORES HIDRÁULICOS\n15\tTRATORES DE ESTEIRA\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

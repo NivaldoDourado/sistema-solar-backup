@@ -589,3 +589,14 @@
 - [x] Backend: procedures para salvar e buscar meta de custo/t
 - [x] Frontend: campo editável para definir meta de custo/t na página Simulação
 - [x] Frontend: alerta visual quando projeção ultrapassar a meta definida
+
+## Tela de Upload de Despesas de Equipamentos (Mai/2026)
+- [x] Backend: parser da planilha .xls (extrair equipamentos, despesas, valores)
+- [x] Backend: regras de classificação automática (Lubrificantes, Peças de Desgaste, Peças de Reposição, Outras Despesas)
+- [x] Backend: correspondência de equipamentos da planilha com equipamentos cadastrados no sistema
+- [x] Backend: procedure de importação com seleção de equipamentos a incluir/excluir
+- [x] Frontend: tela de upload com drag-and-drop
+- [x] Frontend: pré-visualização dos equipamentos encontrados na planilha com status de correspondência
+- [x] Frontend: seleção de quais equipamentos importar (checkbox com exclusão dos não-pedreira)
+- [x] Frontend: resumo da classificação automática por equipamento antes de confirmar importação
+- [ ] Persistir despesas importadas na tabela lancamentoCusto com classificação correta (pendente: testar confirmação)

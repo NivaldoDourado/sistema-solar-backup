@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, nome, classificacao FROM conta_custo WHERE id > 13 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome, classificacao FROM conta_custo WHERE id > 13 ORDER BY id;",
+  "rows": [
+    {
+      "id": "14",
+      "nome": "Combustível",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "15",
+      "nome": "Lubrificantes",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "16",
+      "nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "18",
+      "nome": "Pneus",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "20",
+      "nome": "Depreciação",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas",
+      "classificacao": "despesa_variavel"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "classificacao": "custo_variavel"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tclassificacao\n14\tCombustível\tcusto_variavel\n15\tLubrificantes\tcusto_variavel\n16\tPeças de Desgaste\tcusto_variavel\n17\tPeças de Reposição / Itens de Consumo\tcusto_variavel\n18\tPneus\tcusto_variavel\n19\tOutras Despesas dos Equipamentos\tcusto_variavel\n20\tDepreciação\tcusto_variavel\n30002\tFrota/Man.Pat./Seg./Out.\tcusto_variavel\n30003\tComissão de Vendas\tdespesa_variavel\n30004\tSal.Oper./Enc. Oper.\tcusto_variavel\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}
