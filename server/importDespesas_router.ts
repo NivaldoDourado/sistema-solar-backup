@@ -82,15 +82,19 @@ function norm(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+const COMBUSTIVEL_KEYWORDS = ["oleo diesel", "óleo diesel", "gasolina", "alcool", "álcool", "etanol", "diesel s10", "diesel s500", "diesel s-10", "diesel s-500"];
+
 function classificarDespesa(
   descricaoProduto: string,
   grupoProduto: string,
   nomeEquipamento: string
-): "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao" {
+): "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao" | "combustivel" {
   const desc = norm(descricaoProduto);
   const equip = norm(nomeEquipamento);
   const grupo = grupoProduto.toLowerCase();
-
+  // 0. COMBUSTÍVEL
+  if (grupo.includes("combustível") || grupo.includes("combustivel")) return "combustivel";
+  if (COMBUSTIVEL_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "combustivel";
   // 1. LUBRIFICANTE
   if (grupo === "lubrificantes") return "lubrificantes";
   if (LUBRIFICANTES_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
@@ -135,9 +139,8 @@ interface DespesaParsed {
   quantidade: number;
   custo: number;
   observacoes: string;
-  classificacao: "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao";
+  classificacao: "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao" | "combustivel";
 }
-
 interface EquipamentoParsed {
   nomeCompleto: string;
   codigoTag: string;
@@ -149,6 +152,7 @@ interface EquipamentoParsed {
   totalPecasDesgaste: number;
   totalOutrasDespesas: number;
   totalPecasReposicao: number;
+  totalCombustivel: number;
   excluirDefault: boolean;
 }
 
@@ -187,6 +191,7 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
         totalPecasDesgaste: 0,
         totalOutrasDespesas: 0,
         totalPecasReposicao: 0,
+        totalCombustivel: 0,
         excluirDefault: deveExcluirEquipamento(col0, grupoPlanilha),
       };
       skipNextHeader = true;
@@ -210,10 +215,7 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
       const custo = Number(row[23]) || 0;
       const observacoes = String(row[38] || "").trim();
 
-      // Ignorar combustível
-      if (grupoProduto.toUpperCase().includes("COMBUSTÍVEL") || grupoProduto.toUpperCase().includes("COMBUSTIVEL")) {
-        continue;
-      }
+      // Combustível agora é classificado normalmente (não mais ignorado)
 
       const classificacao = classificarDespesa(produto, grupoProduto, currentEquip.descricao);
 
@@ -225,6 +227,7 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
         case "pecas_desgaste": currentEquip.totalPecasDesgaste += custo; break;
         case "outras_despesas": currentEquip.totalOutrasDespesas += custo; break;
         case "pecas_reposicao": currentEquip.totalPecasReposicao += custo; break;
+        case "combustivel": currentEquip.totalCombustivel += custo; break;
       }
     }
   }
@@ -337,6 +340,7 @@ export const importDespesasRouter = router({
           totalPecasDesgaste: e.totalPecasDesgaste,
           totalOutrasDespesas: e.totalOutrasDespesas,
           totalPecasReposicao: e.totalPecasReposicao,
+          totalCombustivel: e.totalCombustivel,
           qtdDespesas: e.despesas.length,
           correspondencia: e.correspondencia,
           excluirDefault: e.excluirDefault,
@@ -397,6 +401,8 @@ export const importDespesasRouter = router({
         throw new Error("Contas de custo não encontradas. Verifique: Lubrificantes, Peças de Desgaste, Peças de Reposição / Itens de Consumo, Outras Despesas dos Equipamentos");
       }
 
+      // Buscar conta "Combustível" para lançamentos de combustível
+      const contaCombustivel = contas.find(c => c.nome.toLowerCase().includes("combustível") || c.nome.toLowerCase().includes("combustivel"));
       // Buscar conta "Outras Despesas de Setores" para lançamentos de setor
       const contaOutrasDesp = contas.find(c => c.nome.toLowerCase().includes("outras despesas de setores") || c.nome.toLowerCase().includes("outras despesas de setor"));
 
@@ -450,7 +456,7 @@ export const importDespesasRouter = router({
           fatorCorrecao = VALOR_CORRECAO_TRANSPORTADORA / equip.totalGeral;
         }
 
-        const porClassificacao = { lubrificantes: 0, pecas_desgaste: 0, pecas_reposicao: 0, outras_despesas: 0 };
+        const porClassificacao = { lubrificantes: 0, pecas_desgaste: 0, pecas_reposicao: 0, outras_despesas: 0, combustivel: 0 };
         for (const desp of equip.despesas) {
           porClassificacao[desp.classificacao] += desp.custo * fatorCorrecao;
         }
@@ -471,7 +477,9 @@ export const importDespesasRouter = router({
           lancamentos.push({ periodoCustoId: periodoId, contaCustoId: contaOutrasDespesas.id, valor: porClassificacao.outras_despesas.toFixed(2), observacoes: `[Import] ${equip.codigoTag} - ${equip.descricao} | Outras Despesas`, userId: ctx.user.id });
           totalOutrasDespesas += porClassificacao.outras_despesas;
         }
-
+        if (porClassificacao.combustivel > 0 && contaCombustivel) {
+          lancamentos.push({ periodoCustoId: periodoId, contaCustoId: contaCombustivel.id, valor: porClassificacao.combustivel.toFixed(2), observacoes: `[Import] ${equip.codigoTag} - ${equip.descricao} | Combustível`, userId: ctx.user.id });
+        }
         totalImportado += equip.totalGeral * fatorCorrecao;
       }
 

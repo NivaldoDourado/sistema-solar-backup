@@ -143,6 +143,7 @@ export default function ImportDespesas() {
       pecasDesgaste: selected.reduce((sum: number, e: any) => sum + e.totalPecasDesgaste, 0),
       pecasReposicao: selected.reduce((sum: number, e: any) => sum + e.totalPecasReposicao, 0),
       outrasDespesas: selected.reduce((sum: number, e: any) => sum + e.totalOutrasDespesas, 0),
+      combustivel: selected.reduce((sum: number, e: any) => sum + (e.totalCombustivel || 0), 0),
     };
   }, [parseResult, selecionados]);
 
@@ -261,8 +262,8 @@ export default function ImportDespesas() {
                     <li><strong>Peças de Desgaste:</strong> Pneus, unhas, dentes, mandíbulas, telas, roletes, bits (contextualizado por tipo de equipamento)</li>
                     <li><strong>Outras Despesas:</strong> Fretes, serviços de terceiros, mão-de-obra, lavagem, recapagem, pintura</li>
                     <li><strong>Peças de Reposição / Itens de Consumo:</strong> Tudo que não se enquadra nas categorias anteriores (residual)</li>
+                    <li><strong>Combustível:</strong> Óleo diesel, gasolina e álcool</li>
                   </ul>
-                  <p className="mt-2">Combustível é ignorado pois já é tratado pelo módulo de abastecimentos.</p>
                 </div>
               </div>
             </CardContent>
@@ -308,7 +309,7 @@ export default function ImportDespesas() {
                 <CardTitle className="text-base">Classificação dos Selecionados</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
                     <p className="text-xs text-blue-700 font-medium">Lubrificantes</p>
                     <p className="text-lg font-bold text-blue-900">{formatCurrency(resumoSelecionados.lubrificantes)}</p>
@@ -324,6 +325,10 @@ export default function ImportDespesas() {
                   <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
                     <p className="text-xs text-purple-700 font-medium">Outras Despesas</p>
                     <p className="text-lg font-bold text-purple-900">{formatCurrency(resumoSelecionados.outrasDespesas)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                    <p className="text-xs text-red-700 font-medium">Combustível</p>
+                    <p className="text-lg font-bold text-red-900">{formatCurrency(resumoSelecionados.combustivel)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -401,6 +406,9 @@ export default function ImportDespesas() {
                         )}
                         {equip.totalOutrasDespesas > 0 && (
                           <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">Outras: {formatCurrency(equip.totalOutrasDespesas)}</span>
+                        )}
+                        {equip.totalCombustivel > 0 && (
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700">Comb: {formatCurrency(equip.totalCombustivel)}</span>
                         )}
                       </div>
                     </div>

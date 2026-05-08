@@ -643,3 +643,10 @@
 - [x] PRANCHA 3 EIXOS → Cadastrar equipamento (ID 120064) e remover de TAGS_EXCLUIR
 - [x] Remover PRANCHA 3 EIXOS e OBRA ALMOXARIFADO de EQUIPAMENTOS_EXCLUIR_KEYWORDS
 - [x] Testes passando (102 testes, 10 arquivos)
+
+## Importação de Combustível (Mai/2026)
+- [x] Remover filtro que ignora combustível no parser de despesas
+- [x] Adicionar classificação "combustivel" (Óleo Diesel, Gasolina, Álcool)
+- [x] Criar/verificar conta de custo "Combustível" no banco (já existia ID 14)
+- [x] Atualizar confirmarImportacao para lançar despesas de combustível
+- [x] Atualizar frontend para exibir classificação Combustível nos cards
