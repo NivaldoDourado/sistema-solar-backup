@@ -50,6 +50,7 @@ import {
   Bell,
   Smartphone,
   ClipboardList,
+  ClipboardCheck,
   ChevronDown,
   ChevronRight,
   PieChart,
@@ -97,6 +98,7 @@ export default function DashboardLayout({
     { icon: BarChart3, label: "Avaliação Global", path: "/avaliacao-global", module: "custos" as const },
     { icon: TrendingUp, label: "Comparativos Históricos", path: "/comparativos-historicos", module: "custos" as const },
     { icon: Activity, label: "Simulação de Custos", path: "/simulacao-custo", module: "custos" as const },
+    { icon: ClipboardCheck, label: "Revisão Correspondências", path: "/revisao-correspondencias", module: "custos" as const },
   ];
 
   const allMenuItems = [

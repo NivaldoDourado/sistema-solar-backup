@@ -622,3 +622,7 @@
 - [ ] Excluir: CD MURIBECA, ENSACADEIRA SOLOMIN, TOA1F53, CD SERRA DO MACHADO, OBRAS
 - [ ] HZH3J61 → CAMINHÃO PIPA HZH 3961 (correspondência manual)
 - [ ] Lançar centros de custo genéricos como "Outras Despesas de Setor" nos setores corretos
+
+## Correções de Interface (Mai/2026)
+- [x] Adicionar link "Revisão Correspondências" no menu lateral (submenu Apropriação de Custo)
+- [x] Limpar cache do Vite (erro antigo de use-toast já corrigido no código)
