@@ -46,17 +46,19 @@ describe("importDespesas_correspondencias", () => {
     expect(TAGS_OUTRAS_DESP_SETOR["SETOR RH"]).toBe("ADMINISTRAÇÃO");
     expect(TAGS_OUTRAS_DESP_SETOR["OFICINA"]).toBe("OFICINA");
     expect(TAGS_OUTRAS_DESP_SETOR["CANTINA"]).toBe("REFEITÓRIO");
-    expect(TAGS_OUTRAS_DESP_SETOR["MATERIAL EPI"]).toBe("OFICINA");
+    expect(TAGS_OUTRAS_DESP_SETOR["MATERIAL EPI"]).toBe("OUTROS SERVIÇOS");
+    expect(TAGS_OUTRAS_DESP_SETOR["TORNEARIA"]).toBe("OUTROS SERVIÇOS");
     expect(TAGS_OUTRAS_DESP_SETOR["OBRA ALMOXARIFADO"]).toBe("ALMOXARIFADO");
   });
 
   it("deve ter tags para excluir", () => {
     expect(TAGS_EXCLUIR).toContain("CD MURIBECA");
     expect(TAGS_EXCLUIR).toContain("SOLOMIN OUTROS");
-    expect(TAGS_EXCLUIR).toContain("BALANÇA");
-    // PRANCHA 3 EIXOS foi removida da lista de excluir (agora é correspondência forçada)
+    // BALANÇA e TORNEARIA removidas da lista de excluir (agora são correspondência forçada e desp. setor)
+    expect(TAGS_EXCLUIR).not.toContain("BALANÇA");
+    expect(TAGS_EXCLUIR).not.toContain("TORNEARIA");
     expect(TAGS_EXCLUIR).not.toContain("PRANCHA 3 EIXOS");
-    expect(TAGS_EXCLUIR.length).toBeGreaterThanOrEqual(12);
+    expect(TAGS_EXCLUIR.length).toBeGreaterThanOrEqual(10);
   });
 
   it("deve ter valor de correção da TRANSPORTADORA", () => {

@@ -75,7 +75,7 @@ const EQUIPAMENTOS_EXCLUIR_KEYWORDS = [
   "ITABLOQUE", "ITABLOCK", "MISTURADOR SOLO",
   "SOLOMIN", "PENEIRA RESERVA", "TRANSPORTADOR RM",
   "CD SERRA DO MACHADO", "QMD 4977",
-  "TOA1F53", "TORNEARIA", "BALANÇA"
+  "TOA1F53"
 ];
 
 function norm(s: string): string {
@@ -126,6 +126,9 @@ function classificarDespesa(
 }
 
 function deveExcluirEquipamento(nomeEquipPlanilha: string, grupoPlanilha: string): boolean {
+  // Não excluir se está em correspondências forçadas ou é despesa de setor
+  if (CORRESPONDENCIAS_FORCADAS[nomeEquipPlanilha]) return false;
+  if (TAGS_OUTRAS_DESP_SETOR[nomeEquipPlanilha]) return false;
   if (GRUPOS_EXCLUIR_DEFAULT.some(g => grupoPlanilha.toUpperCase().includes(g))) return true;
   if (EQUIPAMENTOS_EXCLUIR_KEYWORDS.some(kw => nomeEquipPlanilha.toUpperCase().includes(kw.toUpperCase()))) return true;
   return false;

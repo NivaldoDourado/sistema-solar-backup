@@ -79,12 +79,13 @@ export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
   "CARROS DIVERSOS": "OUTROS SERVIÇOS",
   "FAZENDA": "OUTROS SERVIÇOS",
   "MATERIAL DE CONSUMO": "ADMINISTRAÇÃO",
-  "MATERIAL EPI": "OFICINA",
+  "MATERIAL EPI": "OUTROS SERVIÇOS",
   "OBRA ALMOXARIFADO": "ALMOXARIFADO",
   "OFICINA": "OFICINA",
   "OFICINABRITAGEM": "BRITAGEM SECUNDÁRIA",
   "SIST. DESPOEIRAMENTO": "BRITAGEM SECUNDÁRIA",
   "SUBSTAÇÃO": "BRITAGEM SECUNDÁRIA",
+  "TORNEARIA": "OUTROS SERVIÇOS",
 };
 
 // ===== TAGS A EXCLUIR (não importar, não lançar) =====
@@ -92,9 +93,7 @@ export const TAGS_EXCLUIR: string[] = [
   "CD MURIBECA", "CD SERRA DO MACHADO", "ENSACADEIRA SOLOMIN",
   "ITABLOQUE INSTALAÇÃO", "MISTURADOR SOLO BRIT",
   "QMD 4977", "SOLOMIN OUTROS", "TC 07 SOLOMIN", "TC02 SOLOMIN",
-  "TC04 SOLOMIN", "TOA1F53", "TORNEARIA",
-  // BALANÇA rejeitada sem obs - excluir
-  "BALANÇA",
+  "TC04 SOLOMIN", "TOA1F53",
 ];
 
 // ===== MAPEAMENTO ESPECIAL: tag → correspondência com equipamento existente =====
@@ -103,6 +102,7 @@ export const CORRESPONDENCIAS_FORCADAS: Record<string, { equipamentoId: number; 
   "ALIMENTADOR AVS01": { equipamentoId: 84, motivo: "ALIMENTADOR VIBRATORIO AV400 120 (já existente)" },
   "PERFURATRIZ HIDR. 01": { equipamentoId: 48, motivo: "PERFURATRIZ HIDRAULICA WOLF FOX8-20 (já existente)" },
   "PRANCHA 3 EIXOS": { equipamentoId: 120064, motivo: "PRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739 (cadastrado)" },
+  "BALANÇA": { equipamentoId: 120067, motivo: "LIDER BALANÇA (cadastrado - não confundir com Balança Integradora)" },
 };
 
 // ===== NOTA SOBRE TRANSPORTADORA =====

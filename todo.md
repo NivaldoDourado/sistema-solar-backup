@@ -650,3 +650,11 @@
 - [x] Criar/verificar conta de custo "Combustível" no banco (já existia ID 14)
 - [x] Atualizar confirmarImportacao para lançar despesas de combustível
 - [x] Atualizar frontend para exibir classificação Combustível nos cards
+
+## Correções de Correspondências v3 (Mai/2026)
+- [x] Cadastrar equipamento LIDER BALANÇA (ID 120067) e remover BALANÇA da exclusão
+- [x] MATERIAL EPI → Outras Desp. Setor / OUTROS SERVIÇOS (corrigido)
+- [x] OBRA ALMOXARIFADO → Outras Desp. Setor / ALMOXARIFADO (já estava correto)
+- [x] OUTROS → Outras Desp. Setor / OUTROS SERVIÇOS (já estava correto)
+- [x] TORNEARIA → Outras Desp. Setor / OUTROS SERVIÇOS (adicionado)
+- [x] Atualizar deveExcluirEquipamento() para não excluir itens com correspondência forçada ou desp. setor

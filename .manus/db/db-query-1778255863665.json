@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, nome FROM grupos_de_equipamentos WHERE nome LIKE '%BRIT%' OR nome LIKE '%BALAN%' ORDER BY id; SELECT id, nome FROM setores WHERE nome LIKE '%BRIT%' OR nome LIKE '%CARGA%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM grupos_de_equipamentos WHERE nome LIKE '%BRIT%' OR nome LIKE '%BALAN%' ORDER BY id; SELECT id, nome FROM setores WHERE nome LIKE '%BRIT%' OR nome LIKE '%CARGA%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "2",
+      "nome": "BRITADORES"
+    },
+    {
+      "id": "30002",
+      "nome": "BALANÇAS INTEGRADORAS"
+    },
+    {
+      "id": "id",
+      "nome": "nome"
+    },
+    {
+      "id": "3",
+      "nome": "BRITAGEM PRIMÁRIA"
+    },
+    {
+      "id": "4",
+      "nome": "BRITAGEM QUARTENÁRIA"
+    },
+    {
+      "id": "5",
+      "nome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "6",
+      "nome": "BRITAGEM TERCEÁRIA"
+    },
+    {
+      "id": "7",
+      "nome": "CARGA E TRANSPORTE DE PEDRA DA MINA"
+    },
+    {
+      "id": "30002",
+      "nome": "BRITAGEM MÓVEL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n2\tBRITADORES\n30002\tBALANÇAS INTEGRADORAS\nid\tnome\n3\tBRITAGEM PRIMÁRIA\n4\tBRITAGEM QUARTENÁRIA\n5\tBRITAGEM SECUNDÁRIA\n6\tBRITAGEM TERCEÁRIA\n7\tCARGA E TRANSPORTE DE PEDRA DA MINA\n30002\tBRITAGEM MÓVEL\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

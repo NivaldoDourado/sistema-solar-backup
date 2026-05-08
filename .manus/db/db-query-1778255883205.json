@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, nomeDoEquipamento, grupoId, setorId FROM equipamentos WHERE nomeDoEquipamento LIKE '%BALAN%' ORDER BY id; SELECT MAX(id) as maxId FROM equipamentos; SELECT id, nome FROM setores WHERE nome LIKE '%BRIT%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nomeDoEquipamento, grupoId, setorId FROM equipamentos WHERE nomeDoEquipamento LIKE '%BALAN%' ORDER BY id; SELECT MAX(id) as maxId FROM equipamentos; SELECT id, nome FROM setores WHERE nome LIKE '%BRIT%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "60001",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA PRIMÁRIO",
+      "grupoId": "30002",
+      "setorId": "NULL"
+    },
+    {
+      "id": "60002",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA SECUNDÁRIO",
+      "grupoId": "30002",
+      "setorId": "NULL"
+    }
+  ],
+  "messages": [
+    "maxId",
+    "120066",
+    "id\tnome",
+    "3\tBRITAGEM PRIMÁRIA",
+    "4\tBRITAGEM QUARTENÁRIA",
+    "5\tBRITAGEM SECUNDÁRIA",
+    "6\tBRITAGEM TERCEÁRIA",
+    "30002\tBRITAGEM MÓVEL"
+  ],
+  "stdout": "id\tnomeDoEquipamento\tgrupoId\tsetorId\n60001\tBALANÇA INTEGRADORA PRIMÁRIO\t30002\tNULL\n60002\tBALANÇA INTEGRADORA SECUNDÁRIO\t30002\tNULL\nmaxId\n120066\nid\tnome\n3\tBRITAGEM PRIMÁRIA\n4\tBRITAGEM QUARTENÁRIA\n5\tBRITAGEM SECUNDÁRIA\n6\tBRITAGEM TERCEÁRIA\n30002\tBRITAGEM MÓVEL\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}
