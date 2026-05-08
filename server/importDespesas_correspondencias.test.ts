@@ -29,12 +29,16 @@ describe("importDespesas_correspondencias", () => {
     expect(CORRESPONDENCIAS_FORCADAS["ALIMENTADOR AVS01"].equipamentoId).toBe(84);
     expect(CORRESPONDENCIAS_FORCADAS["PERFURATRIZ HIDR. 01"]).toBeDefined();
     expect(CORRESPONDENCIAS_FORCADAS["PERFURATRIZ HIDR. 01"].equipamentoId).toBe(48);
+    expect(CORRESPONDENCIAS_FORCADAS["PRANCHA 3 EIXOS"]).toBeDefined();
+    expect(CORRESPONDENCIAS_FORCADAS["PRANCHA 3 EIXOS"].equipamentoId).toBe(120064);
   });
 
   it("deve ter tags para não lançar", () => {
     expect(TAGS_NAO_LANCAR).toContain("HL760 7A 02");
     expect(TAGS_NAO_LANCAR).toContain("PENEIRA 05 OM100");
     expect(TAGS_NAO_LANCAR).toContain("OBRAS");
+    // OBRA ALMOXARIFADO foi movida para TAGS_OUTRAS_DESP_SETOR
+    expect(TAGS_NAO_LANCAR).not.toContain("OBRA ALMOXARIFADO");
   });
 
   it("deve ter tags para lançar como Outras Desp. Setor", () => {
@@ -42,13 +46,17 @@ describe("importDespesas_correspondencias", () => {
     expect(TAGS_OUTRAS_DESP_SETOR["SETOR RH"]).toBe("ADMINISTRAÇÃO");
     expect(TAGS_OUTRAS_DESP_SETOR["OFICINA"]).toBe("OFICINA");
     expect(TAGS_OUTRAS_DESP_SETOR["CANTINA"]).toBe("REFEITÓRIO");
+    expect(TAGS_OUTRAS_DESP_SETOR["MATERIAL EPI"]).toBe("OFICINA");
+    expect(TAGS_OUTRAS_DESP_SETOR["OBRA ALMOXARIFADO"]).toBe("ALMOXARIFADO");
   });
 
   it("deve ter tags para excluir", () => {
     expect(TAGS_EXCLUIR).toContain("CD MURIBECA");
     expect(TAGS_EXCLUIR).toContain("SOLOMIN OUTROS");
     expect(TAGS_EXCLUIR).toContain("BALANÇA");
-    expect(TAGS_EXCLUIR.length).toBeGreaterThanOrEqual(13);
+    // PRANCHA 3 EIXOS foi removida da lista de excluir (agora é correspondência forçada)
+    expect(TAGS_EXCLUIR).not.toContain("PRANCHA 3 EIXOS");
+    expect(TAGS_EXCLUIR.length).toBeGreaterThanOrEqual(12);
   });
 
   it("deve ter valor de correção da TRANSPORTADORA", () => {

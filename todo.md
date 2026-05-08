@@ -634,3 +634,12 @@
 - [x] Adicionar lógica para lançar itens de setor na conta "Outras Despesas de Setores"
 - [x] Adicionar correção de valor da TRANSPORTADORA (R$ 596,89)
 - [x] Testes unitários passando (102 testes, 10 arquivos)
+
+## Correções de Correspondências - Revisão 2 (Mai/2026)
+- [x] MATERIAL EPI → Outras Desp. Setor no setor "OFICINA" (já estava correto)
+- [x] NVH6212 e NVJ7902 → Remover grupo "FROTA" dos GRUPOS_EXCLUIR_DEFAULT (são caminhões internos)
+- [x] OBRA ALMOXARIFADO → Mover de TAGS_NAO_LANCAR para TAGS_OUTRAS_DESP_SETOR setor "ALMOXARIFADO"
+- [x] OUTROS → Confirmar como Outras Desp. Setor no setor "OUTROS SERVIÇOS" (já estava correto)
+- [x] PRANCHA 3 EIXOS → Cadastrar equipamento (ID 120064) e remover de TAGS_EXCLUIR
+- [x] Remover PRANCHA 3 EIXOS e OBRA ALMOXARIFADO de EQUIPAMENTOS_EXCLUIR_KEYWORDS
+- [x] Testes passando (102 testes, 10 arquivos)

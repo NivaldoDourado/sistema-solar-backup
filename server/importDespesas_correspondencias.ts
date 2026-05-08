@@ -65,7 +65,6 @@ export const TAGS_NAO_LANCAR: string[] = [
   "HL760 7A 02",          // CD Muribeca - não faz parte do custo
   "PENEIRA 05 OM100",     // Cadastrar equipamento mas não lançar despesa
   "GEORGE MACHADO",       // Não lançar
-  "OBRA ALMOXARIFADO",    // Investimento futuro
   "OBRAS",                // Não lançar
   "TC04 (H3800 01 RM)",   // Não lançar
   "TRANSPORTADOR RM",     // Não lançar
@@ -81,6 +80,7 @@ export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
   "FAZENDA": "OUTROS SERVIÇOS",
   "MATERIAL DE CONSUMO": "ADMINISTRAÇÃO",
   "MATERIAL EPI": "OFICINA",
+  "OBRA ALMOXARIFADO": "ALMOXARIFADO",
   "OFICINA": "OFICINA",
   "OFICINABRITAGEM": "BRITAGEM SECUNDÁRIA",
   "SIST. DESPOEIRAMENTO": "BRITAGEM SECUNDÁRIA",
@@ -90,7 +90,7 @@ export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
 // ===== TAGS A EXCLUIR (não importar, não lançar) =====
 export const TAGS_EXCLUIR: string[] = [
   "CD MURIBECA", "CD SERRA DO MACHADO", "ENSACADEIRA SOLOMIN",
-  "ITABLOQUE INSTALAÇÃO", "MISTURADOR SOLO BRIT", "PRANCHA 3 EIXOS",
+  "ITABLOQUE INSTALAÇÃO", "MISTURADOR SOLO BRIT",
   "QMD 4977", "SOLOMIN OUTROS", "TC 07 SOLOMIN", "TC02 SOLOMIN",
   "TC04 SOLOMIN", "TOA1F53", "TORNEARIA",
   // BALANÇA rejeitada sem obs - excluir
@@ -102,6 +102,7 @@ export const TAGS_EXCLUIR: string[] = [
 export const CORRESPONDENCIAS_FORCADAS: Record<string, { equipamentoId: number; motivo: string }> = {
   "ALIMENTADOR AVS01": { equipamentoId: 84, motivo: "ALIMENTADOR VIBRATORIO AV400 120 (já existente)" },
   "PERFURATRIZ HIDR. 01": { equipamentoId: 48, motivo: "PERFURATRIZ HIDRAULICA WOLF FOX8-20 (já existente)" },
+  "PRANCHA 3 EIXOS": { equipamentoId: 120064, motivo: "PRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739 (cadastrado)" },
 };
 
 // ===== NOTA SOBRE TRANSPORTADORA =====

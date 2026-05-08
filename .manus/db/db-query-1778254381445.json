@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO equipamentos (codigoTag, nomeDoEquipamento, modelo, grupoId, setorId, ativo) VALUES ('HZK8739', 'PRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739', 'REBOQUE CARRIAL', 5, 7, 'sim');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute INSERT INTO equipamentos (codigoTag, nomeDoEquipamento, modelo, grupoId, setorId, ativo) VALUES ('HZK8739', 'PRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739', 'REBOQUE CARRIAL', 5, 7, 'sim');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 276
+}
