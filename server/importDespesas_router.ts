@@ -317,12 +317,15 @@ export const importDespesasRouter = router({
         .select({ id: equipamentos.id, codigoTag: equipamentos.codigoTag, nomeDoEquipamento: equipamentos.nomeDoEquipamento, grupoId: equipamentos.grupoId })
         .from(equipamentos);
 
+
       const gruposSistema = await db2
         .select({ id: gruposDeEquipamentos.id, nome: gruposDeEquipamentos.nome })
         .from(gruposDeEquipamentos);
 
       const equipamentosComCorrespondencia = parsed.equipamentos.map(ep => {
-        const match = encontrarCorrespondencia(ep.codigoTag, ep.descricao, equipSistema);
+        // Se é item de Outras Desp. Setor, não buscar correspondência com equipamento
+        const setorDesp = TAGS_OUTRAS_DESP_SETOR[ep.codigoTag];
+        const match = setorDesp ? { id: -1, nome: `Outras Desp. Setor → ${setorDesp}`, score: 100 } : encontrarCorrespondencia(ep.codigoTag, ep.descricao, equipSistema);
         return {
           ...ep,
           correspondencia: match,

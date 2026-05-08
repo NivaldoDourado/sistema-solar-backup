@@ -658,3 +658,7 @@
 - [x] OUTROS → Outras Desp. Setor / OUTROS SERVIÇOS (já estava correto)
 - [x] TORNEARIA → Outras Desp. Setor / OUTROS SERVIÇOS (adicionado)
 - [x] Atualizar deveExcluirEquipamento() para não excluir itens com correspondência forçada ou desp. setor
+
+## Correções de Correspondências v4 (Mai/2026)
+- [x] OBRA ALMOXARIFADO e OUTROS não devem buscar correspondência com equipamentos (são despesas de setor)
+- [x] Exibir na UI "Outras Desp. Setor → [SETOR]" em vez de correspondência parcial com equipamento
