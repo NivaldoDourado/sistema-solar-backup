@@ -662,3 +662,8 @@
 ## Correções de Correspondências v4 (Mai/2026)
 - [x] OBRA ALMOXARIFADO e OUTROS não devem buscar correspondência com equipamentos (são despesas de setor)
 - [x] Exibir na UI "Outras Desp. Setor → [SETOR]" em vez de correspondência parcial com equipamento
+
+## Bug Fix: Espaços duplos no codigoTag da planilha
+- [x] Bug: OBRA ALMOXARIFADO mostrava "Correspondência parcial: SALÁRIO DIRETORIA" - causa: planilha tem "OBRA  ALMOXARIFADO" (2 espaços) mas mapa usa "OBRA ALMOXARIFADO" (1 espaço)
+- [x] Correção: Normalizar espaços múltiplos com .replace(/\s+/g, " ").trim() no codigoTag extraído
+- [x] Correção: Passar codigoTag normalizado para deveExcluirEquipamento (antes passava col0 completo)

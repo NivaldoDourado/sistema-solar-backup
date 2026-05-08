@@ -180,7 +180,7 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
       const grupoPlanilha = grupoMatch ? grupoMatch[1].trim() : "";
       const beforeGrupo = col0.replace(/\s*-\s*Grupo:.*$/, "");
       const parts = beforeGrupo.split("-").map((p: string) => p.trim());
-      const codigoTag = parts[0] || "";
+      const codigoTag = (parts[0] || "").replace(/\s+/g, " ").trim();
       const descricao = parts.slice(1).join(" - ").trim();
 
       currentEquip = {
@@ -195,7 +195,7 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
         totalOutrasDespesas: 0,
         totalPecasReposicao: 0,
         totalCombustivel: 0,
-        excluirDefault: deveExcluirEquipamento(col0, grupoPlanilha),
+        excluirDefault: deveExcluirEquipamento(codigoTag, grupoPlanilha),
       };
       skipNextHeader = true;
       continue;
