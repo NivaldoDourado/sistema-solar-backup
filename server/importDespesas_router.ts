@@ -433,4 +433,34 @@ export const importDespesasRouter = router({
         resumo: { lubrificantes: totalLubrificantes, pecasDesgaste: totalPecasDesgaste, pecasReposicao: totalPecasReposicao, outrasDespesas: totalOutrasDespesas },
       };
     }),
+
+  salvarRevisaoCorrespondencias: protectedProcedure
+    .input(z.object({
+      correspondencias: z.array(z.object({
+        id: z.number(),
+        tag: z.string(),
+        matchId: z.number(),
+        matchNome: z.string(),
+        status: z.string(),
+        observacao: z.string(),
+      })),
+      semMatch: z.array(z.object({
+        id: z.number(),
+        tag: z.string(),
+        desc: z.string(),
+        acao: z.string(),
+        observacao: z.string(),
+      })),
+    }))
+    .mutation(async ({ input }) => {
+      return {
+        sucesso: true,
+        totalCorrespondencias: input.correspondencias.length,
+        aprovadas: input.correspondencias.filter((c: any) => c.status === 'aprovado').length,
+        rejeitadas: input.correspondencias.filter((c: any) => c.status === 'rejeitado').length,
+        totalSemMatch: input.semMatch.length,
+        cadastrar: input.semMatch.filter((s: any) => s.acao === 'CADASTRAR').length,
+        excluir: input.semMatch.filter((s: any) => s.acao === 'EXCLUIR').length,
+      };
+    }),
 });

@@ -1,0 +1,102 @@
+{
+  "query": "SELECT id, nome FROM conta_custo ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM conta_custo ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos"
+    },
+    {
+      "id": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas"
+    },
+    {
+      "id": "3",
+      "nome": "Encargos de Movimentação Financeira"
+    },
+    {
+      "id": "4",
+      "nome": "Despesas Administrativas"
+    },
+    {
+      "id": "5",
+      "nome": "Energia Elétrica"
+    },
+    {
+      "id": "6",
+      "nome": "Explosivos e Acessórios"
+    },
+    {
+      "id": "7",
+      "nome": "Outras Despesas de Setores"
+    },
+    {
+      "id": "8",
+      "nome": "Equipamentos de Apoio"
+    },
+    {
+      "id": "9",
+      "nome": "Despesas Indiretas"
+    },
+    {
+      "id": "10",
+      "nome": "Consultorias Especializadas"
+    },
+    {
+      "id": "11",
+      "nome": "Entrega de Material"
+    },
+    {
+      "id": "12",
+      "nome": "Salários da Diretoria"
+    },
+    {
+      "id": "13",
+      "nome": "RH - Salários da Operação"
+    },
+    {
+      "id": "14",
+      "nome": "Combustível"
+    },
+    {
+      "id": "15",
+      "nome": "Lubrificantes"
+    },
+    {
+      "id": "16",
+      "nome": "Peças de Desgaste"
+    },
+    {
+      "id": "17",
+      "nome": "Peças de Reposição / Itens de Consumo"
+    },
+    {
+      "id": "18",
+      "nome": "Pneus"
+    },
+    {
+      "id": "19",
+      "nome": "Outras Despesas dos Equipamentos"
+    },
+    {
+      "id": "20",
+      "nome": "Depreciação"
+    },
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out."
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper."
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\n2\tImpostos, CEFEM e Outras Taxas\n3\tEncargos de Movimentação Financeira\n4\tDespesas Administrativas\n5\tEnergia Elétrica\n6\tExplosivos e Acessórios\n7\tOutras Despesas de Setores\n8\tEquipamentos de Apoio\n9\tDespesas Indiretas\n10\tConsultorias Especializadas\n11\tEntrega de Material\n12\tSalários da Diretoria\n13\tRH - Salários da Operação\n14\tCombustível\n15\tLubrificantes\n16\tPeças de Desgaste\n17\tPeças de Reposição / Itens de Consumo\n18\tPneus\n19\tOutras Despesas dos Equipamentos\n20\tDepreciação\n30002\tFrota/Man.Pat./Seg./Out.\n30003\tComissão de Vendas\n30004\tSal.Oper./Enc. Oper.\n",
+  "stderr": "",
+  "execution_time_ms": 330
+}

@@ -600,3 +600,25 @@
 - [x] Frontend: seleção de quais equipamentos importar (checkbox com exclusão dos não-pedreira)
 - [x] Frontend: resumo da classificação automática por equipamento antes de confirmar importação
 - [ ] Persistir despesas importadas na tabela lancamentoCusto com classificação correta (pendente: testar confirmação)
+
+## Passo 1: Testar Confirmação de Importação (Mai/2026)
+- [x] Testar botão "Confirmar Importação" com planilha de abril/26
+- [x] Verificar gravação correta no banco (tabela lancamentoCusto) - 216 lançamentos, R$ 898.584,15
+- [ ] Verificar se despesas aparecem no Custo por Setor de abril/26 (pendente revisão)
+
+## Passo 2: Cadastrar Equipamentos Sem Correspondência (Mai/2026)
+- [x] Identificar todos os equipamentos da planilha sem correspondência no sistema (80 identificados)
+- [ ] Cadastrar equipamentos faltantes no sistema (pendente revisão do usuário)
+- [ ] Verificar que a correspondência funciona após cadastro
+
+## Refinamento da Importação de Despesas (Mai/2026)
+- [x] Gerar lista de correspondências para revisão do usuário
+- [ ] Ajustar schema lancamentoCusto: adicionar campos descrição item, código, quantidade, observações/OS
+- [ ] Refinar parser para extrair cada item individual (não apenas totais por equipamento)
+- [ ] Cadastrar equipamentos faltantes no sistema (TC01-TC20, veículos, etc.)
+- [ ] Implementar regras de setores para centros de custo genéricos (ALMOXARIFADO, OFICINA, etc.)
+- [ ] Corrigir correspondências incorretas (BRITADOR CS440, CAMINHÃO AU5073, etc.)
+- [x] Criar tela de revisão de correspondências para validação do usuário
+- [ ] Excluir: CD MURIBECA, ENSACADEIRA SOLOMIN, TOA1F53, CD SERRA DO MACHADO, OBRAS
+- [ ] HZH3J61 → CAMINHÃO PIPA HZH 3961 (correspondência manual)
+- [ ] Lançar centros de custo genéricos como "Outras Despesas de Setor" nos setores corretos
