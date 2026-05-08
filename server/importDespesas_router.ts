@@ -11,6 +11,14 @@ import {
   contaCusto,
 } from "../drizzle/schema";
 import * as XLSX from "xlsx";
+import {
+  CORRESPONDENCIAS_APROVADAS,
+  TAGS_NAO_LANCAR,
+  TAGS_OUTRAS_DESP_SETOR,
+  TAGS_EXCLUIR,
+  CORRESPONDENCIAS_FORCADAS,
+  VALOR_CORRECAO_TRANSPORTADORA,
+} from "./importDespesas_correspondencias";
 
 // ===== REGRAS DE CLASSIFICAÇÃO =====
 
@@ -65,7 +73,9 @@ const GRUPOS_EXCLUIR_DEFAULT = ["SOLOMIN", "FROTA"];
 const EQUIPAMENTOS_EXCLUIR_KEYWORDS = [
   "CD MURIBECA", "CD. UMBAUBA", "CD UMBAUBA", "ENSACADEIRA SOLOMIN",
   "ITABLOQUE", "ITABLOCK", "MISTURADOR SOLO", "OBRA ALMOXARIFADO",
-  "SOLOMIN", "PENEIRA RESERVA", "TRANSPORTADOR RM", "PENEIRA 06 OM100VSI"
+  "SOLOMIN", "PENEIRA RESERVA", "TRANSPORTADOR RM",
+  "CD SERRA DO MACHADO", "PRANCHA 3 EIXOS", "QMD 4977",
+  "TOA1F53", "TORNEARIA", "BALANÇA"
 ];
 
 function norm(s: string): string {
@@ -236,6 +246,21 @@ function encontrarCorrespondencia(
   descricao: string,
   equipamentosSistema: EquipSistema[]
 ): { id: number; nome: string; score: number } | null {
+  // 1. Verificar correspondências forçadas (validadas pelo usuário)
+  if (CORRESPONDENCIAS_FORCADAS[codigoTag]) {
+    const forcada = CORRESPONDENCIAS_FORCADAS[codigoTag];
+    const equip = equipamentosSistema.find(e => e.id === forcada.equipamentoId);
+    if (equip) return { id: equip.id, nome: equip.nomeDoEquipamento, score: 100 };
+  }
+
+  // 2. Verificar correspondências aprovadas na revisão
+  if (CORRESPONDENCIAS_APROVADAS[codigoTag]) {
+    const equipId = CORRESPONDENCIAS_APROVADAS[codigoTag];
+    const equip = equipamentosSistema.find(e => e.id === equipId);
+    if (equip) return { id: equip.id, nome: equip.nomeDoEquipamento, score: 100 };
+  }
+
+  // 3. Matching automático (fallback)
   const tagNorm = codigoTag.toUpperCase().replace(/[\s\-_]/g, "");
   const descNorm = descricao.toUpperCase().replace(/[\s\-_]/g, "");
 
@@ -372,9 +397,17 @@ export const importDespesasRouter = router({
         throw new Error("Contas de custo não encontradas. Verifique: Lubrificantes, Peças de Desgaste, Peças de Reposição / Itens de Consumo, Outras Despesas dos Equipamentos");
       }
 
+      // Buscar conta "Outras Despesas de Setores" para lançamentos de setor
+      const contaOutrasDesp = contas.find(c => c.nome.toLowerCase().includes("outras despesas de setores") || c.nome.toLowerCase().includes("outras despesas de setor"));
+
       // Filtrar equipamentos selecionados
       const selecionadosTags = new Set(input.equipamentosSelecionados.map(e => e.codigoTag));
-      const equipamentosParaImportar = parsed.equipamentos.filter(e => selecionadosTags.has(e.codigoTag));
+      const equipamentosParaImportar = parsed.equipamentos.filter(e => {
+        // Excluir tags marcadas como EXCLUIR ou NÃO LANÇAR
+        if (TAGS_EXCLUIR.some(t => e.codigoTag.toUpperCase().includes(t.toUpperCase()))) return false;
+        if (TAGS_NAO_LANCAR.some(t => e.codigoTag.toUpperCase() === t.toUpperCase())) return false;
+        return selecionadosTags.has(e.codigoTag);
+      });
 
       const lancamentos: Array<{
         periodoCustoId: number;
@@ -391,9 +424,35 @@ export const importDespesasRouter = router({
       let totalOutrasDespesas = 0;
 
       for (const equip of equipamentosParaImportar) {
+        // Verificar se é item de "Outras Desp. Setor"
+        const setorDestino = TAGS_OUTRAS_DESP_SETOR[equip.codigoTag];
+        if (setorDestino && contaOutrasDesp) {
+          // Lançar como Outras Despesas de Setor
+          const totalEquip = equip.despesas.reduce((sum, d) => sum + d.custo, 0);
+          if (totalEquip > 0) {
+            lancamentos.push({
+              periodoCustoId: periodoId,
+              contaCustoId: contaOutrasDesp.id,
+              valor: totalEquip.toFixed(2),
+              observacoes: `[Import] ${equip.codigoTag} - ${equip.descricao} | Outras Desp. Setor → ${setorDestino}`,
+              userId: ctx.user.id,
+            });
+            totalImportado += totalEquip;
+            totalOutrasDespesas += totalEquip;
+          }
+          continue;
+        }
+
+        // Correção de valor da TRANSPORTADORA
+        let fatorCorrecao = 1;
+        if (equip.codigoTag === "TRANSPORTADORA" && equip.totalGeral > 10000) {
+          // Valor correto informado pelo usuário: R$ 596,89
+          fatorCorrecao = VALOR_CORRECAO_TRANSPORTADORA / equip.totalGeral;
+        }
+
         const porClassificacao = { lubrificantes: 0, pecas_desgaste: 0, pecas_reposicao: 0, outras_despesas: 0 };
         for (const desp of equip.despesas) {
-          porClassificacao[desp.classificacao] += desp.custo;
+          porClassificacao[desp.classificacao] += desp.custo * fatorCorrecao;
         }
 
         if (porClassificacao.lubrificantes > 0) {
@@ -413,7 +472,7 @@ export const importDespesasRouter = router({
           totalOutrasDespesas += porClassificacao.outras_despesas;
         }
 
-        totalImportado += equip.totalGeral;
+        totalImportado += equip.totalGeral * fatorCorrecao;
       }
 
       // Inserir lançamentos em batch

@@ -615,14 +615,22 @@
 - [x] Gerar lista de correspondências para revisão do usuário
 - [ ] Ajustar schema lancamentoCusto: adicionar campos descrição item, código, quantidade, observações/OS
 - [ ] Refinar parser para extrair cada item individual (não apenas totais por equipamento)
-- [ ] Cadastrar equipamentos faltantes no sistema (TC01-TC20, veículos, etc.)
-- [ ] Implementar regras de setores para centros de custo genéricos (ALMOXARIFADO, OFICINA, etc.)
-- [ ] Corrigir correspondências incorretas (BRITADOR CS440, CAMINHÃO AU5073, etc.)
+- [x] Cadastrar equipamentos faltantes no sistema (TC01-TC20, veículos, etc.)
+- [x] Implementar regras de setores para centros de custo genéricos (ALMOXARIFADO, OFICINA, etc.)
+- [x] Corrigir correspondências incorretas (BRITADOR CS440, CAMINHÃO AU5073, etc.)
 - [x] Criar tela de revisão de correspondências para validação do usuário
-- [ ] Excluir: CD MURIBECA, ENSACADEIRA SOLOMIN, TOA1F53, CD SERRA DO MACHADO, OBRAS
-- [ ] HZH3J61 → CAMINHÃO PIPA HZH 3961 (correspondência manual)
-- [ ] Lançar centros de custo genéricos como "Outras Despesas de Setor" nos setores corretos
+- [x] Excluir: CD MURIBECA, ENSACADEIRA SOLOMIN, TOA1F53, CD SERRA DO MACHADO, OBRAS
+- [x] HZH3J61 → CAMINHÃO PIPA HZH 3961 (correspondência manual)
+- [x] Lançar centros de custo genéricos como "Outras Despesas de Setor" nos setores corretos
 
 ## Correções de Interface (Mai/2026)
 - [x] Adicionar link "Revisão Correspondências" no menu lateral (submenu Apropriação de Custo)
 - [x] Limpar cache do Vite (erro antigo de use-toast já corrigido no código)
+- [x] Cadastrar 62 novos equipamentos aprovados na revisão (TC01-TC20, veículos, britadores móveis, etc.)
+- [x] Limpar 216 lançamentos de teste do período Abril/2026
+- [x] Atualizar importador com correspondências validadas (mapa definitivo)
+- [x] Criar importDespesas_correspondencias.ts com regras de mapeamento
+- [x] Atualizar encontrarCorrespondencia() para priorizar correspondências validadas
+- [x] Adicionar lógica para lançar itens de setor na conta "Outras Despesas de Setores"
+- [x] Adicionar correção de valor da TRANSPORTADORA (R$ 596,89)
+- [x] Testes unitários passando (102 testes, 10 arquivos)

@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE nomeDoEquipamento LIKE '%R938%' OR nomeDoEquipamento LIKE '%HL760%' OR nomeDoEquipamento LIKE '%WOLF%' OR nomeDoEquipamento LIKE '%AV400%' OR nomeDoEquipamento LIKE '%ALIMENTADOR%' ORDER BY nomeDoEquipamento;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE nomeDoEquipamento LIKE '%R938%' OR nomeDoEquipamento LIKE '%HL760%' OR nomeDoEquipamento LIKE '%WOLF%' OR nomeDoEquipamento LIKE '%AV400%' OR nomeDoEquipamento LIKE '%ALIMENTADOR%' ORDER BY nomeDoEquipamento;",
+  "rows": [
+    {
+      "id": "84",
+      "codigoTag": "AV400 120",
+      "nomeDoEquipamento": "ALIMENTADOR VIBRATORIO AV400 120"
+    },
+    {
+      "id": "51",
+      "codigoTag": "R938 - 01",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01"
+    },
+    {
+      "id": "93",
+      "codigoTag": "R938-02",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02"
+    },
+    {
+      "id": "82",
+      "codigoTag": "HL760-9",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03"
+    },
+    {
+      "id": "23",
+      "codigoTag": "HL760-01",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA HYUNDAI HL760 01"
+    },
+    {
+      "id": "24",
+      "codigoTag": "HL760-02",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA HYUNDAI HL760 02"
+    },
+    {
+      "id": "48",
+      "codigoTag": "FOX 8-20",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20"
+    },
+    {
+      "id": "90001",
+      "codigoTag": "ROCK 01",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01"
+    },
+    {
+      "id": "2",
+      "codigoTag": "ROCK 02",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 02"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n84\tAV400 120\tALIMENTADOR VIBRATORIO AV400 120\n51\tR938 - 01\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\n93\tR938-02\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\n82\tHL760-9\tPÁ CARREGADEIRA HYUNDAI HL760 03\n23\tHL760-01\tPÁ CARREGAGEIRA HYUNDAI HL760 01\n24\tHL760-02\tPÁ CARREGAGEIRA HYUNDAI HL760 02\n48\tFOX 8-20\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\n90001\tROCK 01\tPERFURATRIZ WOLF PW5000 - 01\n2\tROCK 02\tPERFURATRIZ WOLF PW5000 - 02\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

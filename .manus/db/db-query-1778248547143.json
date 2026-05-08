@@ -1,0 +1,112 @@
+{
+  "query": "SELECT lc.contaCustoId, cc.nome, COUNT(*) as qtd, SUM(lc.valor) as total FROM lancamento_custo lc JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.periodoCustoId != 60001 GROUP BY lc.contaCustoId, cc.nome ORDER BY cc.nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.contaCustoId, cc.nome, COUNT(*) as qtd, SUM(lc.valor) as total FROM lancamento_custo lc JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.periodoCustoId != 60001 GROUP BY lc.contaCustoId, cc.nome ORDER BY cc.nome;",
+  "rows": [
+    {
+      "contaCustoId": "14",
+      "nome": "Combustível",
+      "qtd": "3",
+      "total": "797549.85"
+    },
+    {
+      "contaCustoId": "30003",
+      "nome": "Comissão de Vendas",
+      "qtd": "3",
+      "total": "109840.00"
+    },
+    {
+      "contaCustoId": "10",
+      "nome": "Consultorias Especializadas",
+      "qtd": "3",
+      "total": "303455.02"
+    },
+    {
+      "contaCustoId": "4",
+      "nome": "Despesas Administrativas",
+      "qtd": "3",
+      "total": "316706.12"
+    },
+    {
+      "contaCustoId": "9",
+      "nome": "Despesas Indiretas",
+      "qtd": "3",
+      "total": "465765.66"
+    },
+    {
+      "contaCustoId": "5",
+      "nome": "Energia Elétrica",
+      "qtd": "3",
+      "total": "322519.60"
+    },
+    {
+      "contaCustoId": "8",
+      "nome": "Equipamentos de Apoio",
+      "qtd": "3",
+      "total": "99566.06"
+    },
+    {
+      "contaCustoId": "6",
+      "nome": "Explosivos e Acessórios",
+      "qtd": "3",
+      "total": "394178.06"
+    },
+    {
+      "contaCustoId": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "qtd": "3",
+      "total": "136376.79"
+    },
+    {
+      "contaCustoId": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "qtd": "3",
+      "total": "1029754.75"
+    },
+    {
+      "contaCustoId": "15",
+      "nome": "Lubrificantes",
+      "qtd": "3",
+      "total": "139050.63"
+    },
+    {
+      "contaCustoId": "7",
+      "nome": "Outras Despesas de Setores",
+      "qtd": "3",
+      "total": "95448.62"
+    },
+    {
+      "contaCustoId": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "qtd": "3",
+      "total": "125933.67"
+    },
+    {
+      "contaCustoId": "16",
+      "nome": "Peças de Desgaste",
+      "qtd": "3",
+      "total": "468556.20"
+    },
+    {
+      "contaCustoId": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "qtd": "3",
+      "total": "496324.11"
+    },
+    {
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "qtd": "3",
+      "total": "2139623.09"
+    },
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "qtd": "3",
+      "total": "476222.22"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tnome\tqtd\ttotal\n14\tCombustível\t3\t797549.85\n30003\tComissão de Vendas\t3\t109840.00\n10\tConsultorias Especializadas\t3\t303455.02\n4\tDespesas Administrativas\t3\t316706.12\n9\tDespesas Indiretas\t3\t465765.66\n5\tEnergia Elétrica\t3\t322519.60\n8\tEquipamentos de Apoio\t3\t99566.06\n6\tExplosivos e Acessórios\t3\t394178.06\n30002\tFrota/Man.Pat./Seg./Out.\t3\t136376.79\n2\tImpostos, CEFEM e Outras Taxas\t3\t1029754.75\n15\tLubrificantes\t3\t139050.63\n7\tOutras Despesas de Setores\t3\t95448.62\n19\tOutras Despesas dos Equipamentos\t3\t125933.67\n16\tPeças de Desgaste\t3\t468556.20\n17\tPeças de Reposição / Itens de Consumo\t3\t496324.11\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\t3\t2139623.09\n30004\tSal.Oper./Enc. Oper.\t3\t476222.22\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}
