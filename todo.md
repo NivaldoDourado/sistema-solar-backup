@@ -676,3 +676,12 @@
 - [x] Criar página frontend ItensDespesa.tsx com drill-down hierárquico: Equipamento → Classificação → Itens
 - [x] Adicionar rota /itens-despesa e item no menu lateral (Apropriação de Custo → Itens Detalhados)
 - [x] Escrever testes unitários (111 testes passando)
+
+## Cálculo Automático de Consumo de Combustível (lt/hr)
+- [x] Analisar dados de combustível importados (horímetro, quantidade, intervalo, litrosPorHora)
+- [x] Implementar função calcularConsumoCombustivel com cálculo lt/hr entre abastecimentos
+- [x] Criar procedures tRPC: consumoPorEquipamento e rankingConsumo
+- [x] Criar aba "Consumo Combustível" na página ItensDespesa com ranking e drill-down por equipamento
+- [x] Cards de resumo: total litros, custo, horas trabalhadas, média lt/hr, R$/hr, R$/litro
+- [x] Identificação de anomalias de consumo (> 2x ou < 0.3x da média, destacadas em vermelho)
+- [x] Escrever 8 testes unitários para calcularConsumoCombustivel (119 testes total passando)

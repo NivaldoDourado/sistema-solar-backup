@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, asc } from "drizzle-orm";
 import { router, protectedProcedure } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -9,9 +9,137 @@ import {
   periodoCusto,
 } from "../drizzle/schema";
 
+const CLASSIFICACAO_LABELS: Record<string, string> = {
+  combustivel: "Combustível",
+  lubrificantes: "Lubrificantes",
+  pecas_desgaste: "Peças de Desgaste",
+  pecas_reposicao: "Peças de Reposição / Itens de Consumo",
+  outras_despesas: "Outras Despesas dos Equipamentos",
+};
+
+/**
+ * Calcula consumo lt/hr entre abastecimentos consecutivos de um equipamento.
+ * Ordena por horímetro crescente e calcula:
+ *   consumo = litros / (horímetro_atual - horímetro_anterior)
+ * Retorna array com consumo calculado por item + resumo.
+ */
+function calcularConsumoCombustivel(itens: {
+  id: number;
+  data: string | null;
+  produto: string;
+  quantidade: number;
+  custo: number;
+  hodometro: number | null;
+  intervalo: number | null;
+  litrosPorHora: string | null;
+  horaPorLitro: string | null;
+}[]) {
+  // Ordenar por horímetro crescente (itens sem horímetro vão ao final)
+  const ordenados = [...itens].sort((a, b) => {
+    if (a.hodometro === null && b.hodometro === null) return 0;
+    if (a.hodometro === null) return 1;
+    if (b.hodometro === null) return -1;
+    return a.hodometro - b.hodometro;
+  });
+
+  let totalLitros = 0;
+  let totalCusto = 0;
+  let totalHorasCalculadas = 0;
+  let abastecimentosComConsumo = 0;
+  let consumoMin = Infinity;
+  let consumoMax = 0;
+  let horimetroMin: number | null = null;
+  let horimetroMax: number | null = null;
+
+  const itensComConsumo = ordenados.map((item, index) => {
+    totalLitros += item.quantidade;
+    totalCusto += item.custo;
+
+    let consumoCalculado: number | null = null;
+    let horasCalculadas: number | null = null;
+
+    if (item.hodometro !== null) {
+      if (horimetroMin === null || item.hodometro < horimetroMin) horimetroMin = item.hodometro;
+      if (horimetroMax === null || item.hodometro > horimetroMax) horimetroMax = item.hodometro;
+    }
+
+    // Usar o campo intervalo da planilha se disponível
+    if (item.intervalo && item.intervalo > 0 && item.quantidade > 0) {
+      horasCalculadas = item.intervalo;
+      consumoCalculado = item.quantidade / item.intervalo;
+    }
+    // Senão, calcular a partir dos horímetros consecutivos
+    else if (index > 0 && item.hodometro !== null) {
+      const anterior = ordenados[index - 1];
+      if (anterior.hodometro !== null && item.hodometro > anterior.hodometro) {
+        horasCalculadas = item.hodometro - anterior.hodometro;
+        if (horasCalculadas > 0 && item.quantidade > 0) {
+          consumoCalculado = item.quantidade / horasCalculadas;
+        }
+      }
+    }
+
+    if (consumoCalculado !== null && consumoCalculado > 0 && consumoCalculado < 200) {
+      // Filtrar valores absurdos (> 200 lt/hr indica erro de leitura)
+      abastecimentosComConsumo++;
+      totalHorasCalculadas += horasCalculadas!;
+      if (consumoCalculado < consumoMin) consumoMin = consumoCalculado;
+      if (consumoCalculado > consumoMax) consumoMax = consumoCalculado;
+    } else {
+      consumoCalculado = null; // Marcar como indisponível se absurdo
+    }
+
+    // Também usar o litrosPorHora da planilha como referência
+    const ltHrPlanilha = item.litrosPorHora ? parseFloat(item.litrosPorHora.replace(",", ".")) : null;
+
+    return {
+      ...item,
+      consumoCalculado: consumoCalculado ? Math.round(consumoCalculado * 100) / 100 : null,
+      horasCalculadas,
+      ltHrPlanilha: ltHrPlanilha && ltHrPlanilha > 0 ? Math.round(ltHrPlanilha * 100) / 100 : null,
+    };
+  });
+
+  // Média geral do período: total litros / total horas trabalhadas
+  const mediaGeral = totalHorasCalculadas > 0
+    ? Math.round((totalLitros / (horimetroMax! - horimetroMin! || 1)) * 100) / 100
+    : null;
+
+  // Média ponderada: soma(litros) / soma(horas) dos abastecimentos com consumo válido
+  const mediaPonderada = totalHorasCalculadas > 0
+    ? Math.round((itensComConsumo
+        .filter(i => i.consumoCalculado !== null)
+        .reduce((sum, i) => sum + i.quantidade, 0) / totalHorasCalculadas) * 100) / 100
+    : null;
+
+  return {
+    itens: itensComConsumo,
+    resumo: {
+      totalAbastecimentos: itens.length,
+      abastecimentosComConsumo,
+      totalLitros: Math.round(totalLitros * 100) / 100,
+      totalCusto: Math.round(totalCusto * 100) / 100,
+      horimetroInicial: horimetroMin,
+      horimetroFinal: horimetroMax,
+      totalHorasTrabalhadas: horimetroMin !== null && horimetroMax !== null
+        ? Math.round((horimetroMax - horimetroMin) * 100) / 100
+        : null,
+      mediaGeral,
+      mediaPonderada,
+      consumoMinimo: consumoMin !== Infinity ? Math.round(consumoMin * 100) / 100 : null,
+      consumoMaximo: consumoMax > 0 ? Math.round(consumoMax * 100) / 100 : null,
+      custoMedioPorLitro: totalLitros > 0 ? Math.round((totalCusto / totalLitros) * 100) / 100 : null,
+      custoMedioPorHora: totalHorasCalculadas > 0
+        ? Math.round((totalCusto / (horimetroMax! - horimetroMin! || 1)) * 100) / 100
+        : null,
+    },
+  };
+}
+
+export { calcularConsumoCombustivel };
+
 export const itensDespesaRouter = router({
   // Listar equipamentos com itens importados para um período
-  // Retorna: equipamentoTag, equipamentoDescricao, equipamentoSistemaId, totalItens, totalCusto
   listarEquipamentosPorPeriodo: protectedProcedure
     .input(z.object({
       periodoCustoId: z.number(),
@@ -47,7 +175,6 @@ export const itensDespesaRouter = router({
     }),
 
   // Listar classificações de um equipamento num período
-  // Retorna: classificacao, totalItens, totalCusto
   listarClassificacoesPorEquipamento: protectedProcedure
     .input(z.object({
       periodoCustoId: z.number(),
@@ -70,14 +197,6 @@ export const itensDespesaRouter = router({
         ))
         .groupBy(itemDespesaImportado.classificacao)
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
-
-      const CLASSIFICACAO_LABELS: Record<string, string> = {
-        combustivel: "Combustível",
-        lubrificantes: "Lubrificantes",
-        pecas_desgaste: "Peças de Desgaste",
-        pecas_reposicao: "Peças de Reposição / Itens de Consumo",
-        outras_despesas: "Outras Despesas dos Equipamentos",
-      };
 
       return result.map(r => ({
         classificacao: r.classificacao,
@@ -165,14 +284,6 @@ export const itensDespesaRouter = router({
         .groupBy(itemDespesaImportado.classificacao)
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
 
-      const CLASSIFICACAO_LABELS: Record<string, string> = {
-        combustivel: "Combustível",
-        lubrificantes: "Lubrificantes",
-        pecas_desgaste: "Peças de Desgaste",
-        pecas_reposicao: "Peças de Reposição / Itens de Consumo",
-        outras_despesas: "Outras Despesas dos Equipamentos",
-      };
-
       return result.map(r => ({
         classificacao: r.classificacao,
         classificacaoLabel: CLASSIFICACAO_LABELS[r.classificacao] || r.classificacao,
@@ -180,6 +291,135 @@ export const itensDespesaRouter = router({
         totalCusto: Number(r.totalCusto) || 0,
         totalEquipamentos: Number(r.totalEquipamentos),
       }));
+    }),
+
+  // =============================================
+  // CONSUMO DE COMBUSTÍVEL (lt/hr)
+  // =============================================
+
+  // Análise de consumo de combustível por equipamento num período
+  // Retorna itens ordenados por horímetro com consumo calculado + resumo
+  consumoPorEquipamento: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+      equipamentoTag: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const result = await db2
+        .select()
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          eq(itemDespesaImportado.equipamentoTag, input.equipamentoTag),
+          eq(itemDespesaImportado.classificacao, "combustivel"),
+        ))
+        .orderBy(asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`));
+
+      const itens = result.map(r => ({
+        id: r.id,
+        data: r.data,
+        produto: r.produto,
+        quantidade: Number(r.quantidade) || 0,
+        custo: Number(r.custo) || 0,
+        hodometro: r.hodometro ? Number(r.hodometro) : null,
+        intervalo: r.intervalo ? Number(r.intervalo) : null,
+        litrosPorHora: r.litrosPorHora,
+        horaPorLitro: r.horaPorLitro,
+      }));
+
+      return calcularConsumoCombustivel(itens);
+    }),
+
+  // Ranking de consumo de combustível de todos os equipamentos num período
+  // Retorna lista de equipamentos com média de consumo lt/hr, ordenado por custo total
+  rankingConsumo: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Buscar todos os itens de combustível do período
+      const result = await db2
+        .select()
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          eq(itemDespesaImportado.classificacao, "combustivel"),
+        ))
+        .orderBy(
+          asc(itemDespesaImportado.equipamentoTag),
+          asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`),
+        );
+
+      // Agrupar por equipamento
+      const porEquipamento = new Map<string, {
+        tag: string;
+        descricao: string | null;
+        sistemaId: number | null;
+        itens: typeof result;
+      }>();
+
+      for (const row of result) {
+        const tag = row.equipamentoTag;
+        if (!porEquipamento.has(tag)) {
+          porEquipamento.set(tag, {
+            tag,
+            descricao: row.equipamentoDescricao,
+            sistemaId: row.equipamentoSistemaId,
+            itens: [],
+          });
+        }
+        porEquipamento.get(tag)!.itens.push(row);
+      }
+
+      // Calcular consumo para cada equipamento
+      const ranking = Array.from(porEquipamento.values()).map(equip => {
+        const itens = equip.itens.map(r => ({
+          id: r.id,
+          data: r.data,
+          produto: r.produto,
+          quantidade: Number(r.quantidade) || 0,
+          custo: Number(r.custo) || 0,
+          hodometro: r.hodometro ? Number(r.hodometro) : null,
+          intervalo: r.intervalo ? Number(r.intervalo) : null,
+          litrosPorHora: r.litrosPorHora,
+          horaPorLitro: r.horaPorLitro,
+        }));
+
+        const analise = calcularConsumoCombustivel(itens);
+
+        return {
+          equipamentoTag: equip.tag,
+          equipamentoDescricao: equip.descricao,
+          equipamentoSistemaId: equip.sistemaId,
+          ...analise.resumo,
+        };
+      });
+
+      // Ordenar por custo total decrescente
+      ranking.sort((a, b) => b.totalCusto - a.totalCusto);
+
+      // Calcular totais gerais
+      const totais = {
+        totalEquipamentos: ranking.length,
+        totalLitros: Math.round(ranking.reduce((s, r) => s + r.totalLitros, 0) * 100) / 100,
+        totalCusto: Math.round(ranking.reduce((s, r) => s + r.totalCusto, 0) * 100) / 100,
+        totalAbastecimentos: ranking.reduce((s, r) => s + r.totalAbastecimentos, 0),
+        mediaGeralGlobal: null as number | null,
+      };
+
+      // Média geral global = total litros / total horas trabalhadas de todos os equipamentos
+      const totalHoras = ranking.reduce((s, r) => s + (r.totalHorasTrabalhadas || 0), 0);
+      if (totalHoras > 0) {
+        totais.mediaGeralGlobal = Math.round((totais.totalLitros / totalHoras) * 100) / 100;
+      }
+
+      return { ranking, totais };
     }),
 
   // Excluir itens detalhados de um período (para reimportação)

@@ -1,0 +1,8 @@
+{
+  "query": "SELECT equipamento_tag, equipamento_descricao, data, produto, quantidade, custo, hodometro, intervalo, hora_por_litro, litros_por_hora \nFROM item_despesa_importado \nWHERE classificacao = 'combustivel' \nORDER BY equipamento_tag, data \nLIMIT 40;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamento_tag, equipamento_descricao, data, produto, quantidade, custo, hodometro, intervalo, hora_por_litro, litros_por_hora \nFROM item_despesa_importado \nWHERE classificacao = 'combustivel' \nORDER BY equipamento_tag, data \nLIMIT 40;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'equipamento_tag' in 'field list'"
+  ]
+}
