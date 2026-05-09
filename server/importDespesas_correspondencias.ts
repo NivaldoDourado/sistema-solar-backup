@@ -65,7 +65,7 @@ export const TAGS_NAO_LANCAR: string[] = [
   "HL760 7A 02",          // CD Muribeca - não faz parte do custo
   "PENEIRA 05 OM100",     // Cadastrar equipamento mas não lançar despesa
   "GEORGE MACHADO",       // Não lançar
-  "OBRAS",                // Não lançar
+  // "OBRAS" removido - agora é Outras Desp. Setor / OUTROS SERVIÇOS
   "TC04 (H3800 01 RM)",   // Não lançar
   "TRANSPORTADOR RM",     // Não lançar
 ];
@@ -81,6 +81,7 @@ export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
   "MATERIAL DE CONSUMO": "ADMINISTRAÇÃO",
   "MATERIAL EPI": "OUTROS SERVIÇOS",
   "OBRA ALMOXARIFADO": "ALMOXARIFADO",
+  "OBRAS": "OUTROS SERVIÇOS",
   "OFICINA": "OFICINA",
   "OFICINABRITAGEM": "BRITAGEM SECUNDÁRIA",
   "SIST. DESPOEIRAMENTO": "BRITAGEM SECUNDÁRIA",

@@ -36,8 +36,8 @@ describe("importDespesas_correspondencias", () => {
   it("deve ter tags para não lançar", () => {
     expect(TAGS_NAO_LANCAR).toContain("HL760 7A 02");
     expect(TAGS_NAO_LANCAR).toContain("PENEIRA 05 OM100");
-    expect(TAGS_NAO_LANCAR).toContain("OBRAS");
-    // OBRA ALMOXARIFADO foi movida para TAGS_OUTRAS_DESP_SETOR
+    // OBRAS e OBRA ALMOXARIFADO foram movidos para TAGS_OUTRAS_DESP_SETOR
+    expect(TAGS_NAO_LANCAR).not.toContain("OBRAS");
     expect(TAGS_NAO_LANCAR).not.toContain("OBRA ALMOXARIFADO");
   });
 
@@ -49,6 +49,7 @@ describe("importDespesas_correspondencias", () => {
     expect(TAGS_OUTRAS_DESP_SETOR["MATERIAL EPI"]).toBe("OUTROS SERVIÇOS");
     expect(TAGS_OUTRAS_DESP_SETOR["TORNEARIA"]).toBe("OUTROS SERVIÇOS");
     expect(TAGS_OUTRAS_DESP_SETOR["OBRA ALMOXARIFADO"]).toBe("ALMOXARIFADO");
+    expect(TAGS_OUTRAS_DESP_SETOR["OBRAS"]).toBe("OUTROS SERVI\u00c7OS");
   });
 
   it("deve ter tags para excluir", () => {
