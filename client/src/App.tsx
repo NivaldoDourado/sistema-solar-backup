@@ -49,6 +49,7 @@ import MobileDashboard from "./pages/MobileDashboard";
 import MetasAlertas from "./pages/MetasAlertas";
 import OutrasParadas from "./pages/OutrasParadas";
 import Rotinas from "./pages/Rotinas";
+import ItensDespesa from "./pages/ItensDespesa";
 
 function Router() {
   return (
@@ -198,6 +199,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <ImportDespesas />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/itens-despesa"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <ItensDespesa />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

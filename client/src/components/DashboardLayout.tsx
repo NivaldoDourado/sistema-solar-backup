@@ -56,6 +56,7 @@ import {
   PieChart,
   TrendingUp,
   Activity,
+  List,
 } from "lucide-react";
 import React, { CSSProperties, useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -95,6 +96,7 @@ export default function DashboardLayout({
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
     { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
     { icon: FileUp, label: "Import. Despesas Equip.", path: "/import-despesas", module: "custos" as const },
+    { icon: List, label: "Itens Detalhados", path: "/itens-despesa", module: "custos" as const },
     { icon: BarChart3, label: "Avaliação Global", path: "/avaliacao-global", module: "custos" as const },
     { icon: TrendingUp, label: "Comparativos Históricos", path: "/comparativos-historicos", module: "custos" as const },
     { icon: Activity, label: "Simulação de Custos", path: "/simulacao-custo", module: "custos" as const },

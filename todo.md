@@ -667,3 +667,12 @@
 - [x] Bug: OBRA ALMOXARIFADO mostrava "Correspondência parcial: SALÁRIO DIRETORIA" - causa: planilha tem "OBRA  ALMOXARIFADO" (2 espaços) mas mapa usa "OBRA ALMOXARIFADO" (1 espaço)
 - [x] Correção: Normalizar espaços múltiplos com .replace(/\s+/g, " ").trim() no codigoTag extraído
 - [x] Correção: Passar codigoTag normalizado para deveExcluirEquipamento (antes passava col0 completo)
+
+## Importação Detalhada de Itens de Despesa (Nível Analítico)
+- [x] Criar tabela item_despesa_importado no banco (schema Drizzle) com campos: data, produto, grupoProduto, quantidade, custo, hodometro, classificacao, equipamentoTag, periodoCustoId, centroCusto, intervalo, horaPorLitro, litrosPorHora
+- [x] Atualizar parsePlanilhaDespesas para capturar hodômetro, centro de custo, intervalo, hora/litro, litros/hora
+- [x] Atualizar confirmarImportacao para gravar itens detalhados na tabela item_despesa_importado
+- [x] Criar router tRPC itensDespesa com 6 procedures: listarEquipamentosPorPeriodo, listarClassificacoesPorEquipamento, listarItensDetalhados, temItensDetalhados, resumoPorClassificacao, excluirPorPeriodo
+- [x] Criar página frontend ItensDespesa.tsx com drill-down hierárquico: Equipamento → Classificação → Itens
+- [x] Adicionar rota /itens-despesa e item no menu lateral (Apropriação de Custo → Itens Detalhados)
+- [x] Escrever testes unitários (111 testes passando)

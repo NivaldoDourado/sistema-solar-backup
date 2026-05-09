@@ -215,6 +215,34 @@ export const lancamentoCusto = mysqlTable("lancamento_custo", {
 export type LancamentoCusto = typeof lancamentoCusto.$inferSelect;
 export type InsertLancamentoCusto = typeof lancamentoCusto.$inferInsert;
 
+// Item individual de despesa importado da planilha DataGold
+export const itemDespesaImportado = mysqlTable("item_despesa_importado", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(),
+  lancamentoCustoId: int("lancamentoCustoId"),       // FK para lancamento_custo (agregado)
+  equipamentoTag: varchar("equipamentoTag", { length: 100 }).notNull(), // Tag do equipamento na planilha
+  equipamentoDescricao: varchar("equipamentoDescricao", { length: 255 }), // Descrição do equipamento
+  equipamentoSistemaId: int("equipamentoSistemaId"),  // FK para equipamentos (se houver correspondência)
+  classificacao: varchar("classificacao", { length: 50 }).notNull(), // lubrificantes, pecas_desgaste, pecas_reposicao, outras_despesas, combustivel
+  sequencia: varchar("sequencia", { length: 20 }),     // Número sequencial da planilha
+  data: varchar("data", { length: 20 }),               // Data do item (dd/mm/aa)
+  produto: varchar("produto", { length: 500 }).notNull(), // Nome do produto/serviço
+  grupoProduto: varchar("grupoProduto", { length: 255 }), // Grupo do produto na planilha
+  quantidade: decimal("quantidade", { precision: 12, scale: 3 }).default("0"),
+  custo: decimal("custo", { precision: 12, scale: 2 }).notNull().default("0"),
+  centroCusto: varchar("centroCusto", { length: 20 }),  // Código do centro de custo
+  hodometro: decimal("hodometro", { precision: 12, scale: 2 }), // Hodômetro/Horímetro
+  intervalo: decimal("intervalo", { precision: 12, scale: 2 }), // Intervalo entre abastecimentos
+  horaPorLitro: varchar("horaPorLitro", { length: 20 }), // Hora por litro (formato HH:MM:SS)
+  litrosPorHora: varchar("litrosPorHora", { length: 20 }), // Litros por hora
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ItemDespesaImportado = typeof itemDespesaImportado.$inferSelect;
+export type InsertItemDespesaImportado = typeof itemDespesaImportado.$inferInsert;
+
 // Lançamento de Custo por Setor (Custo Sintético por Setor)
 export const custoSetor = mysqlTable("custo_setor", {
   id: int("id").autoincrement().primaryKey(),

@@ -9,6 +9,7 @@ import {
   lancamentoCusto,
   periodoCusto,
   contaCusto,
+  itemDespesaImportado,
 } from "../drizzle/schema";
 import * as XLSX from "xlsx";
 import {
@@ -141,6 +142,11 @@ interface DespesaParsed {
   grupoProduto: string;
   quantidade: number;
   custo: number;
+  centroCusto: string;
+  hodometro: number | null;
+  intervalo: number | null;
+  horaPorLitro: string;
+  litrosPorHora: string;
   observacoes: string;
   classificacao: "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao" | "combustivel";
 }
@@ -216,13 +222,17 @@ function parsePlanilhaDespesas(buffer: Buffer): { equipamentos: EquipamentoParse
       const grupoProduto = String(row[15] || "").trim();
       const quantidade = Number(row[19]) || 0;
       const custo = Number(row[23]) || 0;
+       const centroCusto = String(row[26] || "").trim();
+      const hodometroRaw = row[27];
+      const hodometro = (hodometroRaw !== "" && hodometroRaw !== undefined && hodometroRaw !== null) ? Number(hodometroRaw) || null : null;
+      const intervaloRaw = row[29];
+      const intervalo = (intervaloRaw !== "" && intervaloRaw !== undefined && intervaloRaw !== null) ? Number(intervaloRaw) || null : null;
+      const horaPorLitro = String(row[33] || "").trim();
+      const litrosPorHora = String(row[36] || "").trim();
       const observacoes = String(row[38] || "").trim();
-
       // Combustível agora é classificado normalmente (não mais ignorado)
-
       const classificacao = classificarDespesa(produto, grupoProduto, currentEquip.descricao);
-
-      currentEquip.despesas.push({ sequencia: col0, data: dataStr, produto, grupoProduto, quantidade, custo, observacoes, classificacao });
+      currentEquip.despesas.push({ sequencia: col0, data: dataStr, produto, grupoProduto, quantidade, custo, centroCusto, hodometro, intervalo, horaPorLitro, litrosPorHora, observacoes, classificacao });
       currentEquip.totalGeral += custo;
 
       switch (classificacao) {
@@ -497,14 +507,81 @@ export const importDespesasRouter = router({
         }
       }
 
+      // ===== GRAVAR ITENS DETALHADOS =====
+      // Mapear equipamentosSelecionados para obter o equipamentoSistemaId
+      const tagToSistemaId = new Map<string, number | undefined>();
+      for (const sel of input.equipamentosSelecionados) {
+        tagToSistemaId.set(sel.codigoTag, sel.equipamentoSistemaId);
+      }
+
+      const itensDetalhados: Array<{
+        periodoCustoId: number;
+        equipamentoTag: string;
+        equipamentoDescricao: string | null;
+        equipamentoSistemaId: number | null;
+        classificacao: string;
+        sequencia: string | null;
+        data: string | null;
+        produto: string;
+        grupoProduto: string | null;
+        quantidade: string;
+        custo: string;
+        centroCusto: string | null;
+        hodometro: string | null;
+        intervalo: string | null;
+        horaPorLitro: string | null;
+        litrosPorHora: string | null;
+        observacoes: string | null;
+        userId: number;
+      }> = [];
+
+      for (const equip of equipamentosParaImportar) {
+        const sistemaId = tagToSistemaId.get(equip.codigoTag) || null;
+        let fator = 1;
+        if (equip.codigoTag === "TRANSPORTADORA" && equip.totalGeral > 10000) {
+          fator = VALOR_CORRECAO_TRANSPORTADORA / equip.totalGeral;
+        }
+        for (const desp of equip.despesas) {
+          itensDetalhados.push({
+            periodoCustoId: periodoId,
+            equipamentoTag: equip.codigoTag,
+            equipamentoDescricao: equip.descricao || null,
+            equipamentoSistemaId: sistemaId && sistemaId > 0 ? sistemaId : null,
+            classificacao: desp.classificacao,
+            sequencia: desp.sequencia || null,
+            data: desp.data || null,
+            produto: desp.produto,
+            grupoProduto: desp.grupoProduto || null,
+            quantidade: desp.quantidade.toString(),
+            custo: (desp.custo * fator).toFixed(2),
+            centroCusto: desp.centroCusto || null,
+            hodometro: desp.hodometro != null ? desp.hodometro.toString() : null,
+            intervalo: desp.intervalo != null ? desp.intervalo.toString() : null,
+            horaPorLitro: desp.horaPorLitro || null,
+            litrosPorHora: desp.litrosPorHora || null,
+            observacoes: desp.observacoes || null,
+            userId: ctx.user.id,
+          });
+        }
+      }
+
+      // Inserir itens detalhados em batch
+      if (itensDetalhados.length > 0) {
+        for (let i = 0; i < itensDetalhados.length; i += 100) {
+          const batch = itensDetalhados.slice(i, i + 100);
+          await db2.insert(itemDespesaImportado).values(batch);
+        }
+      }
+
       return {
         sucesso: true,
         periodoId,
         totalEquipamentos: equipamentosParaImportar.length,
         totalLancamentos: lancamentos.length,
+        totalItensDetalhados: itensDetalhados.length,
         totalImportado,
         resumo: { lubrificantes: totalLubrificantes, pecasDesgaste: totalPecasDesgaste, pecasReposicao: totalPecasReposicao, outrasDespesas: totalOutrasDespesas },
-      };
+      };;
     }),
 
   salvarRevisaoCorrespondencias: protectedProcedure
