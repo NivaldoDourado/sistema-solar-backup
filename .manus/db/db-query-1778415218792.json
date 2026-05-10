@@ -1,0 +1,95 @@
+{
+  "query": "SELECT contaSistema, contaAgrupadaNome, valor FROM lancamento_fluxo WHERE contaSistema IN ('Consultorias Especializadas', 'Despesas Indiretas') ORDER BY contaSistema, valor DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT contaSistema, contaAgrupadaNome, valor FROM lancamento_fluxo WHERE contaSistema IN ('Consultorias Especializadas', 'Despesas Indiretas') ORDER BY contaSistema, valor DESC",
+  "rows": [
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "CONSULTORIA JURIDICA , CONTÁBIL, ORGANIZACIONAL",
+      "valor": "19700.00"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "HAMMER CONSULTORIA",
+      "valor": "16010.00"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "NIVALDO DOURADO",
+      "valor": "13767.51"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "HONORÁRIOS ADVOCATÍCIOS",
+      "valor": "8431.50"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "SEG. DO TRABALHO,  ENG MECÂNICO, BLASTER",
+      "valor": "3785.00"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "DESPESAS VIAGEM E ALIMENTAÇÃO",
+      "valor": "2964.61"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "contaAgrupadaNome": "EXATOS PROJETOS",
+      "valor": "1621.00"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "CONFRATERNIZAÇÃO FAMILIA FIGUEIREDO",
+      "valor": "15106.74"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "SALÁRIO FUNC. FAZENDA",
+      "valor": "8404.32"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "DESPESAS DOC FAZENDA - TERRENO - APT E OUTROS",
+      "valor": "8090.00"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "ENERGIA FAZENDA",
+      "valor": "6917.51"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "EMPRESTIMO FAZ GADO",
+      "valor": "6910.00"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "DESPESAS COM FAZENDA",
+      "valor": "5011.00"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "OUTROS",
+      "valor": "5000.00"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "PARC. DNPM PEDREIRA",
+      "valor": "1973.15"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "FAZENDA EVENTOS",
+      "valor": "1735.46"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "contaAgrupadaNome": "DOAÇAO D.INDIRETAS",
+      "valor": "1514.91"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaSistema\tcontaAgrupadaNome\tvalor\nConsultorias Especializadas\tCONSULTORIA JURIDICA , CONTÁBIL, ORGANIZACIONAL\t19700.00\nConsultorias Especializadas\tHAMMER CONSULTORIA\t16010.00\nConsultorias Especializadas\tNIVALDO DOURADO\t13767.51\nConsultorias Especializadas\tHONORÁRIOS ADVOCATÍCIOS\t8431.50\nConsultorias Especializadas\tSEG. DO TRABALHO,  ENG MECÂNICO, BLASTER\t3785.00\nConsultorias Especializadas\tDESPESAS VIAGEM E ALIMENTAÇÃO\t2964.61\nConsultorias Especializadas\tEXATOS PROJETOS\t1621.00\nDespesas Indiretas\tCONFRATERNIZAÇÃO FAMILIA FIGUEIREDO\t15106.74\nDespesas Indiretas\tSALÁRIO FUNC. FAZENDA\t8404.32\nDespesas Indiretas\tDESPESAS DOC FAZENDA - TERRENO - APT E OUTROS\t8090.00\nDespesas Indiretas\tENERGIA FAZENDA\t6917.51\nDespesas Indiretas\tEMPRESTIMO FAZ GADO\t6910.00\nDespesas Indiretas\tDESPESAS COM FAZENDA\t5011.00\nDespesas Indiretas\tOUTROS\t5000.00\nDespesas Indiretas\tPARC. DNPM PEDREIRA\t1973.15\nDespesas Indiretas\tFAZENDA EVENTOS\t1735.46\nDespesas Indiretas\tDOAÇAO D.INDIRETAS\t1514.91\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

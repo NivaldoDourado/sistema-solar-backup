@@ -161,9 +161,16 @@ export default function ApuracaoCusto() {
 
   // Drill-down nível 2 alternativo: distribuição por setor (para contas do Fluxo)
   const contaFluxoNome = drillDown ? CONTA_PARA_FLUXO[drillDown.contaNome] : undefined;
+  const isOutrasDesp = drillDown?.contaNome === "Outras Despesas de Setores";
   const { data: drillFluxoDetalhe, isLoading: drillFluxoLoading } = trpc.importFluxo.detalhePorConta.useQuery(
     { periodoCustoId: selectedPeriodoId!, contaSistema: contaFluxoNome ?? "" },
-    { enabled: !!selectedPeriodoId && !!contaFluxoNome && !drillDown?.classificacao && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
+    { enabled: !!selectedPeriodoId && !!contaFluxoNome && !drillDown?.classificacao && !isOutrasDesp && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
+  );
+
+  // Drill-down nível 2: subsetores de "Outras Despesas de Setores"
+  const { data: drillSubsetores, isLoading: drillSubsetoresLoading } = trpc.lancamentoCusto.subsetoresOutrasDesp.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId && !!isOutrasDesp && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
   );
 
   // Drill-down nível 2: equipamentos por classificação
@@ -1703,7 +1710,7 @@ export default function ApuracaoCusto() {
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
-                  <span>{drillDown.classificacao ? "Equipamentos" : "Setores"}</span>
+                  <span>{drillDown.classificacao ? "Equipamentos" : isOutrasDesp ? "Subsetores" : "Setores"}</span>
                 </>
               )}
               {drillDown?.nivel === 3 && (
@@ -1769,13 +1776,23 @@ export default function ApuracaoCusto() {
                 </button>
               )}
               {/* Botão para ver distribuição por setor (se for conta do Fluxo sem classificação de equipamento) */}
-              {!drillDown.classificacao && contaFluxoNome && (
+              {!drillDown.classificacao && contaFluxoNome && !isOutrasDesp && (
                 <button
                   onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
                   className="w-full py-3 px-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-sm flex items-center justify-between transition-colors"
                 >
                   <span>🏭 Ver distribuição por Setor</span>
                   <span className="text-green-500">→</span>
+                </button>
+              )}
+              {/* Botão para ver subsetores de Outras Despesas de Setores */}
+              {isOutrasDesp && (
+                <button
+                  onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
+                  className="w-full py-3 px-4 rounded-lg border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium text-sm flex items-center justify-between transition-colors"
+                >
+                  <span>🏢 Ver detalhamento por Subsetor</span>
+                  <span className="text-purple-500">→</span>
                 </button>
               )}
             </div>
@@ -1842,68 +1859,135 @@ export default function ApuracaoCusto() {
                   )}
                 </>
               )}
-              {/* Caso 2: Conta de setor (Fluxo) - mostra distribuição por setor */}
+              {/* Caso 2: Conta de setor (Fluxo) - mostra subcontas individuais com valores */}
               {!drillDown.classificacao && contaFluxoNome && (
                 <>
                   {drillFluxoLoading ? (
                     <div className="py-8 text-center text-muted-foreground text-sm">Carregando distribuição por setor...</div>
                   ) : drillFluxoDetalhe && drillFluxoDetalhe.setores.length > 0 ? (
                     <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-muted-foreground">Distribuição por Setor</h4>
+                      {/* Se há apenas 1 setor, mostrar subcontas diretamente */}
+                      {(() => {
+                        // Flatten: extrair todas as subcontas com setor de origem
+                        const todasSubcontas = drillFluxoDetalhe.setores.flatMap(s =>
+                          s.subcontas.map(sc => ({ nome: sc.nome, valor: sc.valor, setor: s.setor, isRateio: s.isRateio, percentualRateio: s.percentualRateio }))
+                        ).sort((a, b) => b.valor - a.valor);
+                        const totalGeral = drillFluxoDetalhe.total;
+                        const multiSetores = drillFluxoDetalhe.setores.length > 1;
+                        return (
+                          <>
+                            <h4 className="text-sm font-semibold text-muted-foreground">
+                              {multiSetores ? "Subcontas por Setor" : `Subcontas — ${drillFluxoDetalhe.setores[0].setor}`}
+                            </h4>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-8">#</TableHead>
+                                  <TableHead>Subconta</TableHead>
+                                  {multiSetores && <TableHead>Setor</TableHead>}
+                                  <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                                  <TableHead className="text-right w-24">%</TableHead>
+                                  {multiSetores && <TableHead className="text-right w-24">Rateio</TableHead>}
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {todasSubcontas.map((sc, idx) => (
+                                  <TableRow key={`${sc.setor}-${sc.nome}-${idx}`}>
+                                    <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                                    <TableCell className="font-medium">{sc.nome}</TableCell>
+                                    {multiSetores && (
+                                      <TableCell>
+                                        <span className="text-xs text-muted-foreground">{sc.setor}</span>
+                                      </TableCell>
+                                    )}
+                                    <TableCell className="text-right font-mono font-medium">{fmt(sc.valor)}</TableCell>
+                                    <TableCell className="text-right font-mono text-muted-foreground">
+                                      {totalGeral > 0 ? fmtPct((sc.valor / totalGeral) * 100) : "—"}
+                                    </TableCell>
+                                    {multiSetores && (
+                                      <TableCell className="text-right">
+                                        {sc.isRateio ? (
+                                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                            {sc.percentualRateio ? `${(sc.percentualRateio * 100).toFixed(0)}%` : "Sim"}
+                                          </Badge>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground">—</span>
+                                        )}
+                                      </TableCell>
+                                    )}
+                                  </TableRow>
+                                ))}
+                                <TableRow className="font-semibold bg-muted/40">
+                                  <TableCell></TableCell>
+                                  <TableCell>Total ({todasSubcontas.length} subcontas)</TableCell>
+                                  {multiSetores && <TableCell></TableCell>}
+                                  <TableCell className="text-right font-mono">{fmt(totalGeral)}</TableCell>
+                                  <TableCell className="text-right font-mono">100,0%</TableCell>
+                                  {multiSetores && <TableCell></TableCell>}
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground text-sm">
+                      Nenhum dado de Fluxo Realizado importado para esta conta neste período.<br/>
+                      <span className="text-xs">Importe a planilha de Fluxo Realizado para ver a distribuição por setor.</span>
+                    </div>
+                  )}
+                </>
+              )}
+              {/* Caso 3: Outras Despesas de Setores - mostra subsetores */}
+              {isOutrasDesp && (
+                <>
+                  {drillSubsetoresLoading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Carregando subsetores...</div>
+                  ) : drillSubsetores && drillSubsetores.subsetores.length > 0 ? (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-muted-foreground">Distribuição por Subsetor</h4>
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-8">#</TableHead>
-                            <TableHead>Setor</TableHead>
+                            <TableHead>Subsetor</TableHead>
+                            <TableHead className="text-right w-16">Itens</TableHead>
                             <TableHead className="text-right w-40">Valor (R$)</TableHead>
                             <TableHead className="text-right w-24">%</TableHead>
-                            <TableHead className="text-right w-24">Rateio</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {drillFluxoDetalhe.setores.map((s, idx) => (
+                          {drillSubsetores.subsetores.map((s, idx) => (
                             <TableRow key={s.setor}>
                               <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
                               <TableCell>
                                 <div className="font-medium">{s.setor}</div>
-                                {s.subcontas.length > 1 && (
-                                  <div className="text-xs text-muted-foreground mt-0.5">
-                                    {s.subcontas.map(sc => sc.nome).join(", ")}
-                                  </div>
-                                )}
-                                {s.subcontas.length === 1 && s.subcontas[0].nome !== drillDown.contaNome && (
-                                  <div className="text-xs text-muted-foreground mt-0.5">
-                                    {s.subcontas[0].nome}
-                                  </div>
-                                )}
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  {s.itens.map(i => i.tag).join(", ")}
+                                </div>
                               </TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground">{s.itens.length}</TableCell>
                               <TableCell className="text-right font-mono font-medium">{fmt(s.valor)}</TableCell>
-                              <TableCell className="text-right font-mono text-muted-foreground">{fmtPct(s.percentual)}</TableCell>
-                              <TableCell className="text-right">
-                                {s.isRateio ? (
-                                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
-                                    {s.percentualRateio ? `${(s.percentualRateio * 100).toFixed(0)}%` : "Sim"}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">—</span>
-                                )}
+                              <TableCell className="text-right font-mono text-muted-foreground">
+                                {drillSubsetores.total > 0 ? fmtPct((s.valor / drillSubsetores.total) * 100) : "—"}
                               </TableCell>
                             </TableRow>
                           ))}
                           <TableRow className="font-semibold bg-muted/40">
                             <TableCell></TableCell>
-                            <TableCell>Total ({drillFluxoDetalhe.setores.length} setores)</TableCell>
-                            <TableCell className="text-right font-mono">{fmt(drillFluxoDetalhe.total)}</TableCell>
+                            <TableCell>Total ({drillSubsetores.subsetores.length} subsetores)</TableCell>
+                            <TableCell className="text-right font-mono">{drillSubsetores.subsetores.reduce((s, r) => s + r.itens.length, 0)}</TableCell>
+                            <TableCell className="text-right font-mono">{fmt(drillSubsetores.total)}</TableCell>
                             <TableCell className="text-right font-mono">100,0%</TableCell>
-                            <TableCell></TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>
                     </div>
                   ) : (
                     <div className="py-8 text-center text-muted-foreground text-sm">
-                      Nenhum dado de Fluxo Realizado importado para esta conta neste período.<br/>
-                      <span className="text-xs">Importe a planilha de Fluxo Realizado para ver a distribuição por setor.</span>
+                      Nenhum dado de Outras Despesas de Setores importado para este período.<br/>
+                      <span className="text-xs">Importe a planilha de despesas de equipamentos para ver o detalhamento.</span>
                     </div>
                   )}
                 </>

@@ -1,0 +1,118 @@
+{
+  "query": "SELECT equipamentoTag, classificacao, COUNT(*) as qtd, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM', 'MATERIAL EPI', 'MATERIAL DE CONSUMO', 'CARROS DIVERSOS', 'FAZENDA', 'TORNEARIA', 'SUBSTAÇÃO', 'SIST. DESPOEIRAMENTO', 'OBRA ALMOXARIFADO', 'OBRAS') GROUP BY equipamentoTag, classificacao ORDER BY total DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, classificacao, COUNT(*) as qtd, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM', 'MATERIAL EPI', 'MATERIAL DE CONSUMO', 'CARROS DIVERSOS', 'FAZENDA', 'TORNEARIA', 'SUBSTAÇÃO', 'SIST. DESPOEIRAMENTO', 'OBRA ALMOXARIFADO', 'OBRAS') GROUP BY equipamentoTag, classificacao ORDER BY total DESC",
+  "rows": [
+    {
+      "equipamentoTag": "OUTROS",
+      "classificacao": "outras_despesas",
+      "qtd": "8",
+      "total": "18975.96"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI",
+      "classificacao": "pecas_reposicao",
+      "qtd": "198",
+      "total": "8550.34"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "classificacao": "pecas_reposicao",
+      "qtd": "12",
+      "total": "4345.83"
+    },
+    {
+      "equipamentoTag": "SETOR RH",
+      "classificacao": "outras_despesas",
+      "qtd": "9",
+      "total": "3760.00"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "classificacao": "outras_despesas",
+      "qtd": "1",
+      "total": "2300.00"
+    },
+    {
+      "equipamentoTag": "SIST. DESPOEIRAMENTO",
+      "classificacao": "pecas_reposicao",
+      "qtd": "11",
+      "total": "2163.40"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "classificacao": "pecas_reposicao",
+      "qtd": "38",
+      "total": "1458.11"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "classificacao": "outras_despesas",
+      "qtd": "1",
+      "total": "1150.00"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "classificacao": "combustivel",
+      "qtd": "3",
+      "total": "1086.92"
+    },
+    {
+      "equipamentoTag": "SETOR RH",
+      "classificacao": "pecas_reposicao",
+      "qtd": "22",
+      "total": "765.79"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS",
+      "classificacao": "combustivel",
+      "qtd": "2",
+      "total": "526.15"
+    },
+    {
+      "equipamentoTag": "TORNEARIA",
+      "classificacao": "pecas_reposicao",
+      "qtd": "10",
+      "total": "388.93"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "classificacao": "pecas_reposicao",
+      "qtd": "11",
+      "total": "386.32"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO",
+      "classificacao": "pecas_reposicao",
+      "qtd": "7",
+      "total": "221.58"
+    },
+    {
+      "equipamentoTag": "FAZENDA",
+      "classificacao": "pecas_reposicao",
+      "qtd": "2",
+      "total": "134.32"
+    },
+    {
+      "equipamentoTag": "TORNEARIA",
+      "classificacao": "lubrificantes",
+      "qtd": "1",
+      "total": "28.00"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "classificacao": "pecas_reposicao",
+      "qtd": "1",
+      "total": "9.00"
+    },
+    {
+      "equipamentoTag": "SUBSTAÇÃO",
+      "classificacao": "pecas_reposicao",
+      "qtd": "1",
+      "total": "3.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tclassificacao\tqtd\ttotal\nOUTROS\toutras_despesas\t8\t18975.96\nMATERIAL EPI\tpecas_reposicao\t198\t8550.34\nOUTROS\tpecas_reposicao\t12\t4345.83\nSETOR RH\toutras_despesas\t9\t3760.00\nOFICINABRITAGEM\toutras_despesas\t1\t2300.00\nSIST. DESPOEIRAMENTO\tpecas_reposicao\t11\t2163.40\nOFICINABRITAGEM\tpecas_reposicao\t38\t1458.11\nCANTINA\toutras_despesas\t1\t1150.00\nOUTROS\tcombustivel\t3\t1086.92\nSETOR RH\tpecas_reposicao\t22\t765.79\nCARROS DIVERSOS\tcombustivel\t2\t526.15\nTORNEARIA\tpecas_reposicao\t10\t388.93\nALMOXARIFADO\tpecas_reposicao\t11\t386.32\nMATERIAL DE CONSUMO\tpecas_reposicao\t7\t221.58\nFAZENDA\tpecas_reposicao\t2\t134.32\nTORNEARIA\tlubrificantes\t1\t28.00\nCANTINA\tpecas_reposicao\t1\t9.00\nSUBSTAÇÃO\tpecas_reposicao\t1\t3.00\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

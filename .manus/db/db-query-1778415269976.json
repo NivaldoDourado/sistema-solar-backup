@@ -1,0 +1,9 @@
+{
+  "query": "SELECT i.classificacao, i.equipamentoTag, i.equipamentoDescricao, l.contaCustoId, COUNT(*) as qtd FROM item_despesa_importado i JOIN lancamento_custo l ON i.lancamentoCustoId = l.id WHERE i.equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM') GROUP BY i.classificacao, i.equipamentoTag, i.equipamentoDescricao, l.contaCustoId ORDER BY i.equipamentoTag",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT i.classificacao, i.equipamentoTag, i.equipamentoDescricao, l.contaCustoId, COUNT(*) as qtd FROM item_despesa_importado i JOIN lancamento_custo l ON i.lancamentoCustoId = l.id WHERE i.equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM') GROUP BY i.classificacao, i.equipamentoTag, i.equipamentoDescricao, l.contaCustoId ORDER BY i.equipamentoTag",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 264
+}

@@ -1,0 +1,80 @@
+{
+  "query": "SELECT equipamentoTag, equipamentoDescricao, classificacao, lancamentoCustoId, COUNT(*) as qtd FROM item_despesa_importado WHERE equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM') GROUP BY equipamentoTag, equipamentoDescricao, classificacao, lancamentoCustoId",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, equipamentoDescricao, classificacao, lancamentoCustoId, COUNT(*) as qtd FROM item_despesa_importado WHERE equipamentoTag IN ('SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OUTROS', 'OFICINA', 'OFICINABRITAGEM') GROUP BY equipamentoTag, equipamentoDescricao, classificacao, lancamentoCustoId",
+  "rows": [
+    {
+      "equipamentoTag": "SETOR RH",
+      "equipamentoDescricao": "SETOR RECURSOS HUMANOS",
+      "classificacao": "outras_despesas",
+      "lancamentoCustoId": "NULL",
+      "qtd": "9"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "equipamentoDescricao": "OFICINA - BRITAGEM",
+      "classificacao": "pecas_reposicao",
+      "lancamentoCustoId": "NULL",
+      "qtd": "38"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "equipamentoDescricao": "OUTROS",
+      "classificacao": "pecas_reposicao",
+      "lancamentoCustoId": "NULL",
+      "qtd": "12"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "equipamentoDescricao": "OUTROS",
+      "classificacao": "combustivel",
+      "lancamentoCustoId": "NULL",
+      "qtd": "3"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "equipamentoDescricao": "CANTINA",
+      "classificacao": "pecas_reposicao",
+      "lancamentoCustoId": "NULL",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "equipamentoDescricao": "OFICINA - BRITAGEM",
+      "classificacao": "outras_despesas",
+      "lancamentoCustoId": "NULL",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "equipamentoDescricao": "ALMOXARIFADO",
+      "classificacao": "pecas_reposicao",
+      "lancamentoCustoId": "NULL",
+      "qtd": "11"
+    },
+    {
+      "equipamentoTag": "SETOR RH",
+      "equipamentoDescricao": "SETOR RECURSOS HUMANOS",
+      "classificacao": "pecas_reposicao",
+      "lancamentoCustoId": "NULL",
+      "qtd": "22"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "equipamentoDescricao": "CANTINA",
+      "classificacao": "outras_despesas",
+      "lancamentoCustoId": "NULL",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "equipamentoDescricao": "OUTROS",
+      "classificacao": "outras_despesas",
+      "lancamentoCustoId": "NULL",
+      "qtd": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tclassificacao\tlancamentoCustoId\tqtd\nSETOR RH\tSETOR RECURSOS HUMANOS\toutras_despesas\tNULL\t9\nOFICINABRITAGEM\tOFICINA - BRITAGEM\tpecas_reposicao\tNULL\t38\nOUTROS\tOUTROS\tpecas_reposicao\tNULL\t12\nOUTROS\tOUTROS\tcombustivel\tNULL\t3\nCANTINA\tCANTINA\tpecas_reposicao\tNULL\t1\nOFICINABRITAGEM\tOFICINA - BRITAGEM\toutras_despesas\tNULL\t1\nALMOXARIFADO\tALMOXARIFADO\tpecas_reposicao\tNULL\t11\nSETOR RH\tSETOR RECURSOS HUMANOS\tpecas_reposicao\tNULL\t22\nCANTINA\tCANTINA\toutras_despesas\tNULL\t1\nOUTROS\tOUTROS\toutras_despesas\tNULL\t8\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

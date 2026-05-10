@@ -1,0 +1,85 @@
+{
+  "query": "SELECT id, valor, observacoes FROM lancamento_custo WHERE contaCustoId = 7 ORDER BY CAST(valor AS DECIMAL(12,2)) DESC LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, valor, observacoes FROM lancamento_custo WHERE contaCustoId = 7 ORDER BY CAST(valor AS DECIMAL(12,2)) DESC LIMIT 20",
+  "rows": [
+    {
+      "id": "30014",
+      "valor": "42150.41",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "11",
+      "valor": "37974.11",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "90139",
+      "valor": "24408.71",
+      "observacoes": "[Import] OUTROS - OUTROS | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "30029",
+      "valor": "15324.10",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "90108",
+      "valor": "8550.34",
+      "observacoes": "[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "90222",
+      "valor": "4525.79",
+      "observacoes": "[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "90135",
+      "valor": "3758.09",
+      "observacoes": "[Import] OFICINABRITAGEM - OFICINA - BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "90224",
+      "valor": "2163.41",
+      "observacoes": "[Import] SIST. DESPOEIRAMENTO - SISTEMA DESPOEIRAMENTO DA BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "90045",
+      "valor": "1159.00",
+      "observacoes": "[Import] CANTINA - CANTINA | Outras Desp. Setor → REFEITÓRIO"
+    },
+    {
+      "id": "90046",
+      "valor": "526.15",
+      "observacoes": "[Import] CARROS DIVERSOS - CARROS DIVERSOS | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "90268",
+      "valor": "416.92",
+      "observacoes": "[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "90013",
+      "valor": "386.32",
+      "observacoes": "[Import] ALMOXARIFADO - ALMOXARIFADO | Outras Desp. Setor → ALMOXARIFADO"
+    },
+    {
+      "id": "90107",
+      "valor": "221.58",
+      "observacoes": "[Import] MATERIAL DE CONSUMO - MATERIAL DE CONSUMO | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "90064",
+      "valor": "134.32",
+      "observacoes": "[Import] FAZENDA - FAZENDA BONANZA | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "90225",
+      "valor": "3.00",
+      "observacoes": "[Import] SUBSTAÇÃO - SUBSTAÇÃO | Outras Desp. Setor → BRITAGEM SECUNDÁRIA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tvalor\tobservacoes\n30014\t42150.41\tImportado da planilha CUSTOSOLAR\n11\t37974.11\tImportado da planilha CUSTOSOLAR\n90139\t24408.71\t[Import] OUTROS - OUTROS | Outras Desp. Setor → OUTROS SERVIÇOS\n30029\t15324.10\tImportado da planilha CUSTOSOLAR\n90108\t8550.34\t[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS\n90222\t4525.79\t[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO\n90135\t3758.09\t[Import] OFICINABRITAGEM - OFICINA - BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA\n90224\t2163.41\t[Import] SIST. DESPOEIRAMENTO - SISTEMA DESPOEIRAMENTO DA BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA\n90045\t1159.00\t[Import] CANTINA - CANTINA | Outras Desp. Setor → REFEITÓRIO\n90046\t526.15\t[Import] CARROS DIVERSOS - CARROS DIVERSOS | Outras Desp. Setor → OUTROS SERVIÇOS\n90268\t416.92\t[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS\n90013\t386.32\t[Import] ALMOXARIFADO - ALMOXARIFADO | Outras Desp. Setor → ALMOXARIFADO\n90107\t221.58\t[Import] MATERIAL DE CONSUMO - MATERIAL DE CONSUMO | Outras Desp. Setor → ADMINISTRAÇÃO\n90064\t134.32\t[Import] FAZENDA - FAZENDA BONANZA | Outras Desp. Setor → OUTROS SERVIÇOS\n90225\t3.00\t[Import] SUBSTAÇÃO - SUBSTAÇÃO | Outras Desp. Setor → BRITAGEM SECUNDÁRIA\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

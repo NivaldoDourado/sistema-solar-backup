@@ -723,3 +723,7 @@
 - [x] Implementar Nível 2 alternativo: tabela com setores, valores, percentuais e indicador de rateio
 - [x] Atualizar breadcrumb para mostrar "Setores" em vez de "Equipamentos" quando aplicável
 - [x] 128 testes passando
+
+## Bug: Drill-Down Nível 2 - Subcontas e Outras Desp. Setores
+- [x] Contas de setor do Fluxo (Desp. Administrativas, Consultorias, etc.): mostrar subcontas individuais com valores no Nível 2 (como Energia Elétrica faz)
+- [x] Outras Despesas de Setores (Import Equip.): adicionar drill-down para subsetores (ALMOXARIFADO, OUTROS SERVIÇOS, etc.) com valores

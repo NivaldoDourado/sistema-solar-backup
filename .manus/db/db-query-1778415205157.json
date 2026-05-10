@@ -1,0 +1,220 @@
+{
+  "query": "SELECT setor, contaPrincipalNome, contaAgrupadaNome, contaSubagrupadaNome, valor FROM lancamento_fluxo WHERE contaSistema = 'Despesas Administrativas' ORDER BY setor, valor DESC LIMIT 30",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT setor, contaPrincipalNome, contaAgrupadaNome, contaSubagrupadaNome, valor FROM lancamento_fluxo WHERE contaSistema = 'Despesas Administrativas' ORDER BY setor, valor DESC LIMIT 30",
+  "rows": [
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "DIRETORIA DIST. LUCRO MAX",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "30000.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "LICENÇAS E DOCUMENTOS AMBIENTAIS",
+      "contaAgrupadaNome": "TAXA  E OUTRAS DESPESAS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "15507.68"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "COMPUTADORES / EQUIPAMENTOS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "13035.23"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "USUCAPEÃO CUSTAS LEGAIS E JUDICIAIS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "8844.01"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "ALIMENTOS  P/  PREPARAÇÃO REFEIÇÃO",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "8374.60"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MANUTENÇÃO DE SISTEMAS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "7567.24"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MANUTENÇÃO PREDIAL",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "5239.89"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "REFORMAS PATRIMONIAIS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "4180.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "EPI",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "4052.55"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "ALMOÇO ESC.- CANTINA  AJU",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "3630.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MATERIAL PARA ESCRITORIO",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2977.87"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "AÇÕES DE ENDOMARKETING",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2901.48"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "RETIRADA SÓCIO P. LABORE",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2800.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MATERIALCONSUMO",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2499.60"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "SERVIÇOs PRESTADO TI",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2109.81"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "ALIMENTAÇÃO",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "2102.45"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MANUTENCAO DE ESTRADA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1876.38"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "JOVEM APRENDIZ",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1562.04"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "INMETRO",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1326.20"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "LICENÇAS E DOCUMENTOS AMBIENTAIS",
+      "contaAgrupadaNome": "TAXA IBAMA-DNPM-ADEMA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1159.35"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "SEGURO DE VIDA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1097.09"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "OUTRAS DESPESAS P. CANTINA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1069.80"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "TELEFONE MÓVEL",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "1066.70"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "RECARGA TONNER",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "840.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "INTERNET",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "784.99"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "MATERIAL DE LIMPEZA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "724.10"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "CÓPIA/XEROX",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "544.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "EXTINTORES",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "280.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "CÂMERAS",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "250.00"
+    },
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "contaPrincipalNome": "DESPESAS ADMINISTRATIVAS",
+      "contaAgrupadaNome": "CONSERTO EQUIPAMENTOS INFORMATICA",
+      "contaSubagrupadaNome": "NULL",
+      "valor": "220.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "setor\tcontaPrincipalNome\tcontaAgrupadaNome\tcontaSubagrupadaNome\tvalor\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tDIRETORIA DIST. LUCRO MAX\tNULL\t30000.00\nADMINISTRAÇÃO\tLICENÇAS E DOCUMENTOS AMBIENTAIS\tTAXA  E OUTRAS DESPESAS\tNULL\t15507.68\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tCOMPUTADORES / EQUIPAMENTOS\tNULL\t13035.23\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tUSUCAPEÃO CUSTAS LEGAIS E JUDICIAIS\tNULL\t8844.01\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tALIMENTOS  P/  PREPARAÇÃO REFEIÇÃO\tNULL\t8374.60\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMANUTENÇÃO DE SISTEMAS\tNULL\t7567.24\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMANUTENÇÃO PREDIAL\tNULL\t5239.89\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tREFORMAS PATRIMONIAIS\tNULL\t4180.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tEPI\tNULL\t4052.55\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tALMOÇO ESC.- CANTINA  AJU\tNULL\t3630.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMATERIAL PARA ESCRITORIO\tNULL\t2977.87\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tAÇÕES DE ENDOMARKETING\tNULL\t2901.48\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tRETIRADA SÓCIO P. LABORE\tNULL\t2800.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMATERIALCONSUMO\tNULL\t2499.60\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tSERVIÇOs PRESTADO TI\tNULL\t2109.81\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tALIMENTAÇÃO\tNULL\t2102.45\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMANUTENCAO DE ESTRADA\tNULL\t1876.38\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tJOVEM APRENDIZ\tNULL\t1562.04\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tINMETRO\tNULL\t1326.20\nADMINISTRAÇÃO\tLICENÇAS E DOCUMENTOS AMBIENTAIS\tTAXA IBAMA-DNPM-ADEMA\tNULL\t1159.35\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tSEGURO DE VIDA\tNULL\t1097.09\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tOUTRAS DESPESAS P. CANTINA\tNULL\t1069.80\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tTELEFONE MÓVEL\tNULL\t1066.70\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tRECARGA TONNER\tNULL\t840.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tINTERNET\tNULL\t784.99\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tMATERIAL DE LIMPEZA\tNULL\t724.10\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tCÓPIA/XEROX\tNULL\t544.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tEXTINTORES\tNULL\t280.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tCÂMERAS\tNULL\t250.00\nADMINISTRAÇÃO\tDESPESAS ADMINISTRATIVAS\tCONSERTO EQUIPAMENTOS INFORMATICA\tNULL\t220.00\n",
+  "stderr": "",
+  "execution_time_ms": 300
+}

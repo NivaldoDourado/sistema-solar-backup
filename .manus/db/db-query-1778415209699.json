@@ -1,0 +1,15 @@
+{
+  "query": "SELECT setor, COUNT(*) as qtd, SUM(CAST(valor AS DECIMAL(12,2))) as total FROM lancamento_fluxo WHERE contaSistema = 'Despesas Administrativas' GROUP BY setor ORDER BY total DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT setor, COUNT(*) as qtd, SUM(CAST(valor AS DECIMAL(12,2))) as total FROM lancamento_fluxo WHERE contaSistema = 'Despesas Administrativas' GROUP BY setor ORDER BY total DESC",
+  "rows": [
+    {
+      "setor": "ADMINISTRAÇÃO",
+      "qtd": "35",
+      "total": "129119.93"
+    }
+  ],
+  "messages": [],
+  "stdout": "setor\tqtd\ttotal\nADMINISTRAÇÃO\t35\t129119.93\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

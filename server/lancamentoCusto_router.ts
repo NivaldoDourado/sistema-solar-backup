@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, like } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -210,5 +210,45 @@ export const lancamentoCustoRouter = router({
         grupos[key].total += parseFloat(String(row.valor || "0"));
       }
       return Object.values(grupos);
+    }),
+
+  // Subsetores de "Outras Despesas de Setores" — agrupa lançamentos [Import] por setor destino
+  subsetoresOutrasDesp: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .input(z.object({ periodoCustoId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { subsetores: [], total: 0 };
+      // Buscar conta "Outras Despesas de Setores"
+      const [contaODS] = await db.select({ id: contaCusto.id }).from(contaCusto)
+        .where(like(contaCusto.nome, "%Outras Despesas de Setores%"));
+      if (!contaODS) return { subsetores: [], total: 0 };
+      // Buscar lançamentos [Import] dessa conta no período
+      const rows = await db.select({
+        id: lancamentoCusto.id,
+        valor: lancamentoCusto.valor,
+        observacoes: lancamentoCusto.observacoes,
+      }).from(lancamentoCusto).where(and(
+        eq(lancamentoCusto.periodoCustoId, input.periodoCustoId),
+        eq(lancamentoCusto.contaCustoId, contaODS.id),
+        like(lancamentoCusto.observacoes, "%[Import]%"),
+      )).orderBy(desc(lancamentoCusto.valor));
+      // Extrair setor destino do campo observacoes: "[Import] TAG - DESC | Outras Desp. Setor → SETOR"
+      const porSetor: Record<string, { setor: string; valor: number; itens: { tag: string; descricao: string; valor: number }[] }> = {};
+      for (const row of rows) {
+        const obs = row.observacoes ?? "";
+        const matchSetor = obs.match(/Outras Desp\. Setor → (.+)$/);
+        const matchTag = obs.match(/\[Import\] (.+?) - (.+?) \|/);
+        const setor = matchSetor ? matchSetor[1].trim() : "Outros";
+        const tag = matchTag ? matchTag[1].trim() : "";
+        const descricao = matchTag ? matchTag[2].trim() : "";
+        const valor = parseFloat(String(row.valor || "0"));
+        if (!porSetor[setor]) porSetor[setor] = { setor, valor: 0, itens: [] };
+        porSetor[setor].valor += valor;
+        porSetor[setor].itens.push({ tag, descricao, valor });
+      }
+      const subsetores = Object.values(porSetor).sort((a, b) => b.valor - a.valor);
+      const total = subsetores.reduce((s, r) => s + r.valor, 0);
+      return { subsetores, total };
     }),
 });

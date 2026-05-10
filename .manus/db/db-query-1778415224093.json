@@ -1,0 +1,150 @@
+{
+  "query": "SELECT classificacao, equipamentoTag, equipamentoDescricao, COUNT(*) as qtd, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE classificacao LIKE '%OUTRA%' OR classificacao LIKE '%SETOR%' GROUP BY classificacao, equipamentoTag, equipamentoDescricao ORDER BY total DESC LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT classificacao, equipamentoTag, equipamentoDescricao, COUNT(*) as qtd, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE classificacao LIKE '%OUTRA%' OR classificacao LIKE '%SETOR%' GROUP BY classificacao, equipamentoTag, equipamentoDescricao ORDER BY total DESC LIMIT 20",
+  "rows": [
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "L566 02",
+      "equipamentoDescricao": "PA CARREGADEIRA LIEBHERR",
+      "qtd": "3",
+      "total": "20688.26"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "OUTROS",
+      "equipamentoDescricao": "OUTROS",
+      "qtd": "8",
+      "total": "18975.96"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "ALIMENTADOR AVS01",
+      "equipamentoDescricao": "ALIMENTADOR AVS 4001200 (01) OBS.SERVICO",
+      "qtd": "1",
+      "total": "15000.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoDescricao": "METSO NW 100  (OLC 5612) CARRETA",
+      "qtd": "2",
+      "total": "11600.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "equipamentoDescricao": "PERFURATRIZ HIDRAULICA FOX 8 - 20 01",
+      "qtd": "6",
+      "total": "8962.34"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "IXD6D34",
+      "equipamentoDescricao": "MERCEDES MB ACTOS 4844",
+      "qtd": "4",
+      "total": "8356.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoDescricao": "BRITADOR HYDROCONE S4800",
+      "qtd": "5",
+      "total": "8269.76"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "PIPA ALUGADO KIB9971",
+      "equipamentoDescricao": "MERCEDEZ",
+      "qtd": "1",
+      "total": "8000.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "H380003",
+      "equipamentoDescricao": "CONE CH430",
+      "qtd": "4",
+      "total": "3960.77"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "SETOR RH",
+      "equipamentoDescricao": "SETOR RECURSOS HUMANOS",
+      "qtd": "9",
+      "total": "3760.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "IXE1F44",
+      "equipamentoDescricao": "MERCEDEZ BENZ  ACTROS 4844",
+      "qtd": "4",
+      "total": "3038.29"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "OER1B00",
+      "equipamentoDescricao": "FORD CARGO",
+      "qtd": "2",
+      "total": "2920.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "OFICINABRITAGEM",
+      "equipamentoDescricao": "OFICINA - BRITAGEM",
+      "qtd": "1",
+      "total": "2300.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "RRH 9F10",
+      "equipamentoDescricao": "ford f150 CARRO GUGA",
+      "qtd": "1",
+      "total": "1464.70"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "NVH6212",
+      "equipamentoDescricao": "FORD CARGO TRAÇADO 2628",
+      "qtd": "1",
+      "total": "1460.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "NVJ7902",
+      "equipamentoDescricao": "FORD CARGO TRAÇADO",
+      "qtd": "1",
+      "total": "1460.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "equipamentoDescricao": "ESCAVADEIRA LIEBHER R938",
+      "qtd": "4",
+      "total": "1297.07"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "HL 76003",
+      "equipamentoDescricao": "HYUNDAI HL760 - 9",
+      "qtd": "2",
+      "total": "1183.91"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "CANTINA",
+      "equipamentoDescricao": "CANTINA",
+      "qtd": "1",
+      "total": "1150.00"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "equipamentoTag": "H3800 02",
+      "equipamentoDescricao": "REBRITADOR HYDROCONE",
+      "qtd": "2",
+      "total": "1099.54"
+    }
+  ],
+  "messages": [],
+  "stdout": "classificacao\tequipamentoTag\tequipamentoDescricao\tqtd\ttotal\noutras_despesas\tL566 02\tPA CARREGADEIRA LIEBHERR\t3\t20688.26\noutras_despesas\tOUTROS\tOUTROS\t8\t18975.96\noutras_despesas\tALIMENTADOR AVS01\tALIMENTADOR AVS 4001200 (01) OBS.SERVICO\t1\t15000.00\noutras_despesas\tBRITADOR MOVEL\tMETSO NW 100  (OLC 5612) CARRETA\t2\t11600.00\noutras_despesas\tPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\t6\t8962.34\noutras_despesas\tIXD6D34\tMERCEDES MB ACTOS 4844\t4\t8356.00\noutras_despesas\tBRITADOR CS440\tBRITADOR HYDROCONE S4800\t5\t8269.76\noutras_despesas\tPIPA ALUGADO KIB9971\tMERCEDEZ\t1\t8000.00\noutras_despesas\tH380003\tCONE CH430\t4\t3960.77\noutras_despesas\tSETOR RH\tSETOR RECURSOS HUMANOS\t9\t3760.00\noutras_despesas\tIXE1F44\tMERCEDEZ BENZ  ACTROS 4844\t4\t3038.29\noutras_despesas\tOER1B00\tFORD CARGO\t2\t2920.00\noutras_despesas\tOFICINABRITAGEM\tOFICINA - BRITAGEM\t1\t2300.00\noutras_despesas\tRRH 9F10\tford f150 CARRO GUGA\t1\t1464.70\noutras_despesas\tNVH6212\tFORD CARGO TRAÇADO 2628\t1\t1460.00\noutras_despesas\tNVJ7902\tFORD CARGO TRAÇADO\t1\t1460.00\noutras_despesas\tESCAVADEIRA R938\tESCAVADEIRA LIEBHER R938\t4\t1297.07\noutras_despesas\tHL 76003\tHYUNDAI HL760 - 9\t2\t1183.91\noutras_despesas\tCANTINA\tCANTINA\t1\t1150.00\noutras_despesas\tH3800 02\tREBRITADOR HYDROCONE\t2\t1099.54\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}
