@@ -57,6 +57,7 @@ import {
   TrendingUp,
   Activity,
   List,
+  Receipt,
 } from "lucide-react";
 import React, { CSSProperties, useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -92,6 +93,7 @@ export default function DashboardLayout({
   const custoSubItems = [
     { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
     { icon: Users, label: "Lançamento de Salários", path: "/lancamento-salarios", module: "custos" as const },
+    { icon: Receipt, label: "Lançamento de Impostos", path: "/lancamento-impostos", module: "custos" as const },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },

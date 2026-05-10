@@ -52,6 +52,7 @@ import OutrasParadas from "./pages/OutrasParadas";
 import Rotinas from "./pages/Rotinas";
 import ItensDespesa from "./pages/ItensDespesa";
 import LancamentoSalarios from "./pages/LancamentoSalarios";
+import LancamentoImpostos from "./pages/LancamentoImpostos";
 
 function Router() {
   return (
@@ -152,6 +153,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <LancamentoSalarios />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/lancamento-impostos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <LancamentoImpostos />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

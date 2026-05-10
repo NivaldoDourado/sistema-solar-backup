@@ -768,3 +768,9 @@
 - [x] Criar card frontend "Horas Trabalhadas por Setor" posicionado após card "Km Rodado"
 - [x] Mostrar horas totais por setor e detalhamento por equipamento dentro de cada setor
 - [x] Implementar no Dashboard web e mobile
+
+## Lançamento Manual de Impostos (Passo 5)
+- [x] Criar router backend com CRUD para lançamentos de impostos (usa tabela lancamento_custo existente com obs [Impostos Manual])
+- [x] Criar página frontend para lançamento manual de impostos (formulário com período, valor, descrição da composição)
+- [x] Integrar impostos manuais na Apuração de Custo (automático - mesma tabela lancamento_custo, conta ID 2)
+- [x] Adicionar menu de navegação para a nova página (Apropriação de Custo → Lançamento de Impostos)

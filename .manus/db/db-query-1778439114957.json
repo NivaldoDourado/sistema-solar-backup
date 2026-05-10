@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, contaCustoId, periodoCustoId, valor, observacoes FROM lancamento_custo WHERE contaCustoId = 2 ORDER BY periodoCustoId DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaCustoId, periodoCustoId, valor, observacoes FROM lancamento_custo WHERE contaCustoId = 2 ORDER BY periodoCustoId DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "90003",
+      "contaCustoId": "2",
+      "periodoCustoId": "60001",
+      "valor": "8033.24",
+      "observacoes": "[Fluxo] 5540-DESPESAS FINANCEIRAS"
+    },
+    {
+      "id": "30025",
+      "contaCustoId": "2",
+      "periodoCustoId": "30002",
+      "valor": "400545.99",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "30008",
+      "contaCustoId": "2",
+      "periodoCustoId": "30001",
+      "valor": "268531.29",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "9",
+      "contaCustoId": "2",
+      "periodoCustoId": "1",
+      "valor": "360677.47",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tperiodoCustoId\tvalor\tobservacoes\n90003\t2\t60001\t8033.24\t[Fluxo] 5540-DESPESAS FINANCEIRAS\n30025\t2\t30002\t400545.99\tImportado da planilha CUSTOSOLAR\n30008\t2\t30001\t268531.29\tImportado da planilha CUSTOSOLAR\n9\t2\t1\t360677.47\tImportado da planilha CUSTOSOLAR\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}
