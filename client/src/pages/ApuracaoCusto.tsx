@@ -195,23 +195,38 @@ export default function ApuracaoCusto() {
     { enabled: !!selectedPeriodoId && !!drillDown?.subsetorTag && isOutrasDesp && drillDown?.nivel === 4 }
   );
 
+  // Identificar contas de salário para drill-down específico
+  const CONTAS_SALARIO = new Set(["Sal.Oper./Enc. Oper.", "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos", "Sal. Diretoria"]);
+  const isSalario = drillDown ? CONTAS_SALARIO.has(drillDown.contaNome) : false;
+  const contaSalarioId = drillDown?.contaNome === "Sal.Oper./Enc. Oper." ? 30004
+    : drillDown?.contaNome === "Sal. Diretoria" ? 12
+    : drillDown?.contaNome?.includes("Sal.Adm.") ? 1 : 0;
+
+  // Drill-down salários: detalhe por destino (equipamento ou setor)
+  const { data: drillSalarios, isLoading: drillSalariosLoading } = trpc.salarios.detalhePorDestino.useQuery(
+    { periodoCustoId: selectedPeriodoId!, contaCustoId: contaSalarioId },
+    { enabled: !!selectedPeriodoId && isSalario && contaSalarioId > 0 && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
+  );
+
   // Composição por origem para drill-down nível 1
   const composicaoConta = useMemo(() => {
     if (!drillDown || !lancamentos) return null;
     const origens: { origem: string; valor: number }[] = [];
-    let totalImport = 0, totalFluxo = 0, totalManual = 0;
+    let totalImport = 0, totalFluxo = 0, totalManual = 0, totalSalarios = 0;
     for (const l of lancamentos) {
       const contaNome = l.contaNome ?? "";
       if (contaNome !== drillDown.contaNome) continue;
       const valor = parseFloat(String(l.valor || "0"));
       const obs = l.observacoes ?? "";
-      if (obs.includes("[Import]")) totalImport += valor;
+      if (obs.includes("[Salários]")) totalSalarios += valor;
+      else if (obs.includes("[Import]")) totalImport += valor;
       else if (obs.includes("[Fluxo]")) totalFluxo += valor;
       else totalManual += valor;
     }
     if (totalImport > 0) origens.push({ origem: "Import. Despesas Equip.", valor: totalImport });
     if (totalFluxo > 0) origens.push({ origem: "Import. Fluxo Realizado", valor: totalFluxo });
     if (totalManual > 0) origens.push({ origem: "Lançamento Manual", valor: totalManual });
+    if (totalSalarios > 0) origens.push({ origem: "Lanç. Salários", valor: totalSalarios });
     origens.sort((a, b) => b.valor - a.valor);
     return origens;
   }, [drillDown, lancamentos]);
@@ -1720,7 +1735,7 @@ export default function ApuracaoCusto() {
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
-                  <span>{drillDown.classificacao ? "Equipamentos" : isOutrasDesp ? "Subsetores" : "Setores"}</span>
+                  <span>{drillDown.classificacao ? "Equipamentos" : isOutrasDesp ? "Subsetores" : isSalario ? (contaSalarioId === 30004 ? "Equipamentos" : "Setores") : "Setores"}</span>
                 </>
               )}
               {drillDown?.nivel === 3 && !isOutrasDesp && (
@@ -1823,6 +1838,16 @@ export default function ApuracaoCusto() {
                 >
                   <span>🏢 Ver detalhamento por Subsetor</span>
                   <span className="text-purple-500">→</span>
+                </button>
+              )}
+              {/* Botão para ver distribuição de salários por equipamento/setor */}
+              {isSalario && (drillSalarios && drillSalarios.length > 0) && (
+                <button
+                  onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
+                  className="w-full py-3 px-4 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium text-sm flex items-center justify-between transition-colors"
+                >
+                  <span>💰 Ver distribuição por {contaSalarioId === 30004 ? "Equipamento" : "Setor"}</span>
+                  <span className="text-amber-500">→</span>
                 </button>
               )}
             </div>
@@ -1970,6 +1995,59 @@ export default function ApuracaoCusto() {
                 </>
               )}
               {/* Caso 3: Outras Despesas de Setores - mostra subsetores */}
+              {/* Caso 4: Salários - mostra distribuição por equipamento/setor */}
+              {isSalario && (
+                <>
+                  {drillSalariosLoading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Carregando distribuição de salários...</div>
+                  ) : drillSalarios && drillSalarios.length > 0 ? (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-muted-foreground">
+                        Distribuição por {contaSalarioId === 30004 ? "Equipamento" : "Setor"}
+                      </h4>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-8">#</TableHead>
+                            <TableHead>{contaSalarioId === 30004 ? "Equipamento" : "Setor"}</TableHead>
+                            <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                            <TableHead className="text-right w-24">%</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(() => {
+                            const totalSal = drillSalarios.reduce((s, r) => s + r.valor, 0);
+                            return drillSalarios.map((item, idx) => (
+                              <TableRow key={item.id}>
+                                <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{item.destino}</div>
+                                  {item.descricao && <div className="text-xs text-muted-foreground">{item.descricao}</div>}
+                                </TableCell>
+                                <TableCell className="text-right font-mono font-medium">{fmt(item.valor)}</TableCell>
+                                <TableCell className="text-right font-mono text-muted-foreground">
+                                  {totalSal > 0 ? fmtPct((item.valor / totalSal) * 100) : "—"}
+                                </TableCell>
+                              </TableRow>
+                            ));
+                          })()}
+                          <TableRow className="font-semibold bg-muted/40">
+                            <TableCell></TableCell>
+                            <TableCell>Total ({drillSalarios.length} lançamentos)</TableCell>
+                            <TableCell className="text-right font-mono">{fmt(drillSalarios.reduce((s, r) => s + r.valor, 0))}</TableCell>
+                            <TableCell className="text-right font-mono">100,0%</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground text-sm">
+                      Nenhum lançamento manual de salário encontrado para esta conta neste período.<br/>
+                      <span className="text-xs">Acesse <strong>Lançamento de Salários</strong> para cadastrar.</span>
+                    </div>
+                  )}
+                </>
+              )}
               {isOutrasDesp && (
                 <>
                   {drillSubsetoresLoading ? (

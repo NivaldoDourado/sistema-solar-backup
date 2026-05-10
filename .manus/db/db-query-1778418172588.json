@@ -1,0 +1,52 @@
+{
+  "query": "SELECT lc.id, lc.contaCustoId, cc.nome, lc.valor, lc.observacoes FROM lancamento_custo lc INNER JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.contaCustoId IN (1, 12, 30004) LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.id, lc.contaCustoId, cc.nome, lc.valor, lc.observacoes FROM lancamento_custo lc INNER JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.contaCustoId IN (1, 12, 30004) LIMIT 10;",
+  "rows": [
+    {
+      "id": "6",
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "valor": "814756.44",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "16",
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "valor": "159521.58",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "30001",
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "valor": "699918.07",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "30002",
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "valor": "141186.31",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "30018",
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "valor": "624948.58",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    },
+    {
+      "id": "30019",
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "valor": "175514.33",
+      "observacoes": "Importado da planilha CUSTOSOLAR"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tnome\tvalor\tobservacoes\n6\t1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\t814756.44\tImportado da planilha CUSTOSOLAR\n16\t30004\tSal.Oper./Enc. Oper.\t159521.58\tImportado da planilha CUSTOSOLAR\n30001\t1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\t699918.07\tImportado da planilha CUSTOSOLAR\n30002\t30004\tSal.Oper./Enc. Oper.\t141186.31\tImportado da planilha CUSTOSOLAR\n30018\t1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\t624948.58\tImportado da planilha CUSTOSOLAR\n30019\t30004\tSal.Oper./Enc. Oper.\t175514.33\tImportado da planilha CUSTOSOLAR\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

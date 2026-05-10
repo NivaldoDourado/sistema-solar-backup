@@ -746,3 +746,9 @@
 - [x] Substituir Select de equipamento por Combobox com busca por digitação
 - [x] Substituir Select de setor por Combobox com busca por digitação
 - [x] Garantir que o período está claramente selecionável no formulário de lançamento
+
+## Integração Salários na Apuração de Custo
+- [x] Incluir Sal.Oper. nos custos por equipamento (relatório sintético e analítico)
+- [x] Incluir Sal.Adm./Encargos e Sal.Diretoria nos custos por setor (relatório sintético e analítico)
+- [x] Garantir que os salários apareçam como linha separada na composição de custo
+- [x] Verificar drill-down: clicar na conta de salário deve mostrar a lista de lançamentos

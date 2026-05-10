@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -199,6 +199,71 @@ export const salariosRouter = router({
 
       await db.delete(lancamentoSalario).where(eq(lancamentoSalario.id, input.id));
       return { success: true };
+    }),
+
+  // Detalhe de salários por destino (equipamento ou setor) para drill-down analítico
+  detalhePorDestino: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .input(z.object({
+      periodoCustoId: z.number(),
+      contaCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      const rows = await db
+        .select({
+          id: lancamentoSalario.id,
+          valor: lancamentoSalario.valor,
+          equipamentoId: lancamentoSalario.equipamentoId,
+          setorId: lancamentoSalario.setorId,
+          descricao: lancamentoSalario.descricao,
+          observacoes: lancamentoSalario.observacoes,
+        })
+        .from(lancamentoSalario)
+        .where(
+          and(
+            eq(lancamentoSalario.periodoCustoId, input.periodoCustoId),
+            eq(lancamentoSalario.contaCustoId, input.contaCustoId)
+          )
+        )
+        .orderBy(desc(lancamentoSalario.valor));
+
+      // Enriquecer com nomes de equipamento/setor
+      if (rows.length === 0) return [];
+
+      const equipIds = rows.filter(r => r.equipamentoId).map(r => r.equipamentoId!);
+      const setorIds = rows.filter(r => r.setorId).map(r => r.setorId!);
+
+      let equipMap = new Map<number, string>();
+      let setorMap = new Map<number, string>();
+
+      if (equipIds.length > 0) {
+        const equips = await db.select({ id: equipamentos.id, codigoTag: equipamentos.codigoTag, nome: equipamentos.nomeDoEquipamento }).from(equipamentos);
+        for (const e of equips) {
+          equipMap.set(e.id, `${e.codigoTag} - ${e.nome}`);
+        }
+      }
+      if (setorIds.length > 0) {
+        const secs = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+        for (const s of secs) {
+          setorMap.set(s.id, s.nome ?? `Setor ${s.id}`);
+        }
+      }
+
+      return rows.map(r => ({
+        id: r.id,
+        valor: parseFloat(String(r.valor ?? "0")),
+        destino: r.equipamentoId
+          ? equipMap.get(r.equipamentoId) ?? `Equip. #${r.equipamentoId}`
+          : r.setorId
+            ? setorMap.get(r.setorId) ?? `Setor #${r.setorId}`
+            : "Sem destino",
+        tipoDestino: r.equipamentoId ? "equipamento" as const : "setor" as const,
+        descricao: r.descricao,
+        observacoes: r.observacoes,
+      }));
     }),
 
   // Resumo de salários por período (total por conta)

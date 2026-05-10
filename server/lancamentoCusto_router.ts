@@ -3,17 +3,19 @@ import { eq, and, desc, sql, like } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
-import { lancamentoCusto, contaCusto, periodoCusto } from "../drizzle/schema";
+import { lancamentoCusto, contaCusto, periodoCusto, lancamentoSalario } from "../drizzle/schema";
 
 export const lancamentoCustoRouter = router({
-  // Listar lançamentos de um período específico
+  // Listar lançamentos de um período específico (inclui salários manuais agregados)
   listByPeriodo: protectedProcedure
     .use(requirePermission("custos", "view"))
     .input(z.object({ periodoCustoId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return [];
-      return await db
+
+      // Buscar lançamentos normais (Import + Fluxo + Manual)
+      const lancamentosNormais = await db
         .select({
           id: lancamentoCusto.id,
           periodoCustoId: lancamentoCusto.periodoCustoId,
@@ -29,6 +31,45 @@ export const lancamentoCustoRouter = router({
         .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
         .where(eq(lancamentoCusto.periodoCustoId, input.periodoCustoId))
         .orderBy(contaCusto.classificacao, desc(lancamentoCusto.valor));
+
+      // Buscar salários manuais agregados por conta
+      const salariosAgregados = await db
+        .select({
+          contaCustoId: lancamentoSalario.contaCustoId,
+          contaNome: contaCusto.nome,
+          contaClassificacao: contaCusto.classificacao,
+          contaDivisor: contaCusto.divisor,
+          totalValor: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))`,
+        })
+        .from(lancamentoSalario)
+        .innerJoin(contaCusto, eq(lancamentoSalario.contaCustoId, contaCusto.id))
+        .where(eq(lancamentoSalario.periodoCustoId, input.periodoCustoId))
+        .groupBy(lancamentoSalario.contaCustoId, contaCusto.nome, contaCusto.classificacao, contaCusto.divisor);
+
+      // Converter salários em formato compatível com lancamentos normais
+      const lancamentosSalario = salariosAgregados
+        .filter(s => parseFloat(s.totalValor ?? "0") > 0)
+        .map((s, idx) => ({
+          id: -1000 - idx, // IDs negativos para distinguir
+          periodoCustoId: input.periodoCustoId,
+          contaCustoId: s.contaCustoId,
+          contaNome: s.contaNome,
+          contaClassificacao: s.contaClassificacao,
+          contaDivisor: s.contaDivisor,
+          valor: s.totalValor,
+          observacoes: "[Salários]",
+          createdAt: new Date(),
+        }));
+
+      // Combinar e ordenar
+      const todos = [...lancamentosNormais, ...lancamentosSalario];
+      todos.sort((a, b) => {
+        const classA = a.contaClassificacao ?? "";
+        const classB = b.contaClassificacao ?? "";
+        if (classA !== classB) return classA.localeCompare(classB);
+        return parseFloat(String(b.valor ?? "0")) - parseFloat(String(a.valor ?? "0"));
+      });
+      return todos;
     }),
 
   // Criar ou atualizar lançamento (upsert por periodoCustoId + contaCustoId)
