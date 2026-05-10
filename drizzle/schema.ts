@@ -1029,3 +1029,24 @@ export const metaCustoTonelada = mysqlTable("meta_custo_tonelada", {
 });
 export type MetaCustoTonelada = typeof metaCustoTonelada.$inferSelect;
 export type InsertMetaCustoTonelada = typeof metaCustoTonelada.$inferInsert;
+
+
+// ============================================================================
+// LANÇAMENTO MANUAL DE SALÁRIOS (alocação em equipamentos ou setores)
+// ============================================================================
+export const lancamentoSalario = mysqlTable("lancamento_salario", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(), // FK para periodo_custo
+  contaCustoId: int("contaCustoId").notNull(),     // FK para conta_custo (Sal.Oper., Sal.Adm., Sal. Diretoria)
+  valor: decimal("valor", { precision: 12, scale: 2 }).notNull().default("0"),
+  // Destino: equipamento OU setor (um dos dois será preenchido)
+  equipamentoId: int("equipamentoId"),             // FK para equipamentos (quando conta = Sal.Oper.)
+  setorId: int("setorId"),                         // FK para setores (quando conta = Sal.Adm. ou Sal. Diretoria)
+  descricao: varchar("descricao", { length: 255 }), // Descrição opcional (ex: "Operador João - Escavadeira")
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LancamentoSalario = typeof lancamentoSalario.$inferSelect;
+export type InsertLancamentoSalario = typeof lancamentoSalario.$inferInsert;

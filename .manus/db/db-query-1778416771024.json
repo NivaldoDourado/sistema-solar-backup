@@ -1,0 +1,125 @@
+{
+  "query": "SELECT id, nome, classificacao FROM conta_custo ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome, classificacao FROM conta_custo ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "3",
+      "nome": "Encargos de Movimentação Financeira",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "4",
+      "nome": "Despesas Administrativas",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "5",
+      "nome": "Energia Elétrica",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "6",
+      "nome": "Explosivos e Acessórios",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "7",
+      "nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "8",
+      "nome": "Equipamentos de Apoio",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "9",
+      "nome": "Despesas Indiretas",
+      "classificacao": "despesa_variavel"
+    },
+    {
+      "id": "10",
+      "nome": "Consultorias Especializadas",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "11",
+      "nome": "Entrega de Material",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "12",
+      "nome": "Salários da Diretoria",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "13",
+      "nome": "RH - Salários da Operação",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "14",
+      "nome": "Combustível",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "15",
+      "nome": "Lubrificantes",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "16",
+      "nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "18",
+      "nome": "Pneus",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "20",
+      "nome": "Depreciação",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "classificacao": "custo_variavel"
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas",
+      "classificacao": "despesa_variavel"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "classificacao": "custo_variavel"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tclassificacao\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tcusto_variavel\n2\tImpostos, CEFEM e Outras Taxas\tcusto_variavel\n3\tEncargos de Movimentação Financeira\tcusto_variavel\n4\tDespesas Administrativas\tcusto_variavel\n5\tEnergia Elétrica\tcusto_variavel\n6\tExplosivos e Acessórios\tcusto_variavel\n7\tOutras Despesas de Setores\tcusto_variavel\n8\tEquipamentos de Apoio\tcusto_variavel\n9\tDespesas Indiretas\tdespesa_variavel\n10\tConsultorias Especializadas\tcusto_variavel\n11\tEntrega de Material\tcusto_variavel\n12\tSalários da Diretoria\tcusto_variavel\n13\tRH - Salários da Operação\tcusto_variavel\n14\tCombustível\tcusto_variavel\n15\tLubrificantes\tcusto_variavel\n16\tPeças de Desgaste\tcusto_variavel\n17\tPeças de Reposição / Itens de Consumo\tcusto_variavel\n18\tPneus\tcusto_variavel\n19\tOutras Despesas dos Equipamentos\tcusto_variavel\n20\tDepreciação\tcusto_variavel\n30002\tFrota/Man.Pat./Seg./Out.\tcusto_variavel\n30003\tComissão de Vendas\tdespesa_variavel\n30004\tSal.Oper./Enc. Oper.\tcusto_variavel\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

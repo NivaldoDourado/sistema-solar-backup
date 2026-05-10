@@ -733,3 +733,11 @@
 - [x] Adicionar clique no subsetor (Nível 2) para abrir Nível 3 com tags individuais e valores
 - [x] Adicionar clique na tag (Nível 3) para abrir Nível 4 com lista de itens detalhados (produto, data, valor)
 - [x] Atualizar breadcrumb para navegação completa: Conta > Subsetores > Tags > Itens
+
+## Lançamento Manual de Salários
+- [x] Criar nova conta "Sal. Diretoria" no banco de dados
+- [x] Criar procedure backend para lançamento manual de salários (CRUD)
+- [x] Criar procedure para listar lançamentos de salários existentes por período
+- [x] Criar formulário frontend para lançar salários: selecionar conta, valor, destino (equipamento ou setor)
+- [x] Regras de alocação: Sal.Oper. → equipamentos; Sal.Adm./Diretoria/Pró-Labore/Encargos → setores; Sal. Diretoria → setores
+- [x] Listar lançamentos existentes com opção de editar/excluir

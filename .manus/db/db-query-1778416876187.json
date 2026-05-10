@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, nome, observacao, classificacao FROM conta_custo WHERE id = 30004;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome, observacao, classificacao FROM conta_custo WHERE id = 30004;",
+  "rows": [
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "observacao": "Salários e encargos dos operadores",
+      "classificacao": "custo_variavel"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tobservacao\tclassificacao\n30004\tSal.Oper./Enc. Oper.\tSalários e encargos dos operadores\tcusto_variavel\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

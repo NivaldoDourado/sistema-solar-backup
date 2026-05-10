@@ -17,6 +17,7 @@ import { simulacaoCustoRouter } from "./simulacaoCusto_router";
 import { importDespesasRouter } from "./importDespesas_router";
 import { importFluxoRouter } from "./importFluxo_router";
 import { itensDespesaRouter } from "./itensDespesa_router";
+import { salariosRouter } from "./salarios_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3232,6 +3233,7 @@ export const appRouter = router({
   importDespesas: importDespesasRouter,
   importFluxo: importFluxoRouter,
   itensDespesa: itensDespesaRouter,
+  salarios: salariosRouter,
   authLocal: authLocalRouter,
 
   // ============================================================================

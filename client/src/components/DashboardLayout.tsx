@@ -91,6 +91,7 @@ export default function DashboardLayout({
   // Itens de custo agrupados sob "Apropriação de Custo"
   const custoSubItems = [
     { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
+    { icon: Users, label: "Lançamento de Salários", path: "/lancamento-salarios", module: "custos" as const },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
