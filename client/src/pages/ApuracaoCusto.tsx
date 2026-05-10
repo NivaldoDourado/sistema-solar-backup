@@ -131,6 +131,16 @@ export default function ApuracaoCusto() {
     "Peças de Reposição / Itens de Consumo": "pecas_reposicao",
     "Outras Despesas dos Equipamentos": "outras_despesas",
   };
+  // Mapa: nome da conta → contaSistema no Fluxo (para contas de setor sem classificação de equipamento)
+  const CONTA_PARA_FLUXO: Record<string, string> = {
+    "Energia Elétrica": "Energia Elétrica",
+    "Consultorias Especializadas": "Consultorias Especializadas",
+    "Despesas Administrativas": "Despesas Administrativas",
+    "Impostos, CEFEM e Outras Taxas": "Impostos, CEFEM e Outras Taxas",
+    "Despesas Indiretas": "Despesas Indiretas",
+    "Frota/Man.Pat./Seg./Out.": "Frota/Man.Pat./Seg./Out.",
+    "Comissão de Vendas": "Comissão de Vendas",
+  };
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: lancamentos } = trpc.lancamentoCusto.listByPeriodo.useQuery(
@@ -147,6 +157,13 @@ export default function ApuracaoCusto() {
   const { data: despesaSetorData, isLoading: despesaSetorLoading } = trpc.custoSetorRas.despesasPorDescricao.useQuery(
     { periodoCustoId: selectedPeriodoId!, descricao: despesaModal?.descricao ?? "" },
     { enabled: !!selectedPeriodoId && !!despesaModal }
+  );
+
+  // Drill-down nível 2 alternativo: distribuição por setor (para contas do Fluxo)
+  const contaFluxoNome = drillDown ? CONTA_PARA_FLUXO[drillDown.contaNome] : undefined;
+  const { data: drillFluxoDetalhe, isLoading: drillFluxoLoading } = trpc.importFluxo.detalhePorConta.useQuery(
+    { periodoCustoId: selectedPeriodoId!, contaSistema: contaFluxoNome ?? "" },
+    { enabled: !!selectedPeriodoId && !!contaFluxoNome && !drillDown?.classificacao && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
   );
 
   // Drill-down nível 2: equipamentos por classificação
@@ -1686,7 +1703,7 @@ export default function ApuracaoCusto() {
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
-                  <span>Equipamentos</span>
+                  <span>{drillDown.classificacao ? "Equipamentos" : "Setores"}</span>
                 </>
               )}
               {drillDown?.nivel === 3 && (
@@ -1751,64 +1768,145 @@ export default function ApuracaoCusto() {
                   <span className="text-blue-500">→</span>
                 </button>
               )}
+              {/* Botão para ver distribuição por setor (se for conta do Fluxo sem classificação de equipamento) */}
+              {!drillDown.classificacao && contaFluxoNome && (
+                <button
+                  onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
+                  className="w-full py-3 px-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-sm flex items-center justify-between transition-colors"
+                >
+                  <span>🏭 Ver distribuição por Setor</span>
+                  <span className="text-green-500">→</span>
+                </button>
+              )}
             </div>
           )}
 
-          {/* Nível 2: Equipamentos por classificação */}
+          {/* Nível 2: Equipamentos por classificação OU Distribuição por Setor */}
           {drillDown?.nivel === 2 && (
             <div>
-              {drillEquipLoading ? (
-                <div className="py-8 text-center text-muted-foreground text-sm">Carregando equipamentos...</div>
-              ) : drillEquipamentos && drillEquipamentos.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-8">#</TableHead>
-                      <TableHead>Equipamento</TableHead>
-                      <TableHead className="text-right w-20">Itens</TableHead>
-                      <TableHead className="text-right w-40">Valor (R$)</TableHead>
-                      <TableHead className="text-right w-24">%</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {drillEquipamentos.map((eq, idx) => {
-                      const totalEquips = drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0);
-                      return (
-                        <TableRow
-                          key={eq.equipamentoTag}
-                          className="hover:bg-blue-50 cursor-pointer"
-                          onClick={() => setDrillDown(d => d ? { ...d, nivel: 3, equipamentoTag: eq.equipamentoTag, equipamentoDescricao: eq.equipamentoDescricao ?? eq.equipamentoTag } : null)}
-                        >
-                          <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 font-medium group">
-                              {eq.equipamentoDescricao || eq.equipamentoTag}
-                              <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">→</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">{eq.equipamentoTag}</span>
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">{eq.totalItens}</TableCell>
-                          <TableCell className="text-right font-mono font-medium">{fmt(eq.totalCusto)}</TableCell>
-                          <TableCell className="text-right font-mono text-muted-foreground">
-                            {totalEquips > 0 ? fmtPct((eq.totalCusto / totalEquips) * 100) : "—"}
-                          </TableCell>
+              {/* Caso 1: Conta de equipamento - mostra equipamentos */}
+              {drillDown.classificacao && (
+                <>
+                  {drillEquipLoading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Carregando equipamentos...</div>
+                  ) : drillEquipamentos && drillEquipamentos.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-8">#</TableHead>
+                          <TableHead>Equipamento</TableHead>
+                          <TableHead className="text-right w-20">Itens</TableHead>
+                          <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                          <TableHead className="text-right w-24">%</TableHead>
                         </TableRow>
-                      );
-                    })}
-                    <TableRow className="font-semibold bg-muted/40">
-                      <TableCell></TableCell>
-                      <TableCell>Total ({drillEquipamentos.length} equip.)</TableCell>
-                      <TableCell className="text-right font-mono">{drillEquipamentos.reduce((s, e) => s + e.totalItens, 0)}</TableCell>
-                      <TableCell className="text-right font-mono">{fmt(drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0))}</TableCell>
-                      <TableCell className="text-right font-mono">100,0%</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="py-8 text-center text-muted-foreground text-sm">
-                  Nenhum item detalhado importado para esta conta neste período.<br/>
-                  <span className="text-xs">Importe a planilha de despesas de equipamentos para ver o detalhamento.</span>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {drillEquipamentos.map((eq, idx) => {
+                          const totalEquips = drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0);
+                          return (
+                            <TableRow
+                              key={eq.equipamentoTag}
+                              className="hover:bg-blue-50 cursor-pointer"
+                              onClick={() => setDrillDown(d => d ? { ...d, nivel: 3, equipamentoTag: eq.equipamentoTag, equipamentoDescricao: eq.equipamentoDescricao ?? eq.equipamentoTag } : null)}
+                            >
+                              <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 font-medium group">
+                                  {eq.equipamentoDescricao || eq.equipamentoTag}
+                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">→</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground">{eq.equipamentoTag}</span>
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground">{eq.totalItens}</TableCell>
+                              <TableCell className="text-right font-mono font-medium">{fmt(eq.totalCusto)}</TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground">
+                                {totalEquips > 0 ? fmtPct((eq.totalCusto / totalEquips) * 100) : "—"}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        <TableRow className="font-semibold bg-muted/40">
+                          <TableCell></TableCell>
+                          <TableCell>Total ({drillEquipamentos.length} equip.)</TableCell>
+                          <TableCell className="text-right font-mono">{drillEquipamentos.reduce((s, e) => s + e.totalItens, 0)}</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0))}</TableCell>
+                          <TableCell className="text-right font-mono">100,0%</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground text-sm">
+                      Nenhum item detalhado importado para esta conta neste período.<br/>
+                      <span className="text-xs">Importe a planilha de despesas de equipamentos para ver o detalhamento.</span>
+                    </div>
+                  )}
+                </>
+              )}
+              {/* Caso 2: Conta de setor (Fluxo) - mostra distribuição por setor */}
+              {!drillDown.classificacao && contaFluxoNome && (
+                <>
+                  {drillFluxoLoading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Carregando distribuição por setor...</div>
+                  ) : drillFluxoDetalhe && drillFluxoDetalhe.setores.length > 0 ? (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-muted-foreground">Distribuição por Setor</h4>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-8">#</TableHead>
+                            <TableHead>Setor</TableHead>
+                            <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                            <TableHead className="text-right w-24">%</TableHead>
+                            <TableHead className="text-right w-24">Rateio</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {drillFluxoDetalhe.setores.map((s, idx) => (
+                            <TableRow key={s.setor}>
+                              <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{s.setor}</div>
+                                {s.subcontas.length > 1 && (
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    {s.subcontas.map(sc => sc.nome).join(", ")}
+                                  </div>
+                                )}
+                                {s.subcontas.length === 1 && s.subcontas[0].nome !== drillDown.contaNome && (
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    {s.subcontas[0].nome}
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right font-mono font-medium">{fmt(s.valor)}</TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground">{fmtPct(s.percentual)}</TableCell>
+                              <TableCell className="text-right">
+                                {s.isRateio ? (
+                                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                    {s.percentualRateio ? `${(s.percentualRateio * 100).toFixed(0)}%` : "Sim"}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow className="font-semibold bg-muted/40">
+                            <TableCell></TableCell>
+                            <TableCell>Total ({drillFluxoDetalhe.setores.length} setores)</TableCell>
+                            <TableCell className="text-right font-mono">{fmt(drillFluxoDetalhe.total)}</TableCell>
+                            <TableCell className="text-right font-mono">100,0%</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground text-sm">
+                      Nenhum dado de Fluxo Realizado importado para esta conta neste período.<br/>
+                      <span className="text-xs">Importe a planilha de Fluxo Realizado para ver a distribuição por setor.</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

@@ -715,3 +715,11 @@
 - [x] Ordenação decrescente em todos os níveis
 - [x] Todas as 3 tabelas (Custo Variável, Despesa Variável, Despesas Indiretas) com drill-down
 - [x] 128 testes passando
+
+## Bug: Drill-Down contas de setor sem detalhamento
+- [x] Para contas de setor (Energia Elétrica, Consultorias, Frota, etc.) o drill-down mostra apenas composição por origem sem opção de ver distribuição por setor
+- [x] Criar procedure detalhePorConta no importFluxo_router (distribuição por setor)
+- [x] Adicionar botão "Ver distribuição por Setor" no nível 1 (para contas sem classificação de equipamento)
+- [x] Implementar Nível 2 alternativo: tabela com setores, valores, percentuais e indicador de rateio
+- [x] Atualizar breadcrumb para mostrar "Setores" em vez de "Equipamentos" quando aplicável
+- [x] 128 testes passando

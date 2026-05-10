@@ -578,4 +578,54 @@ export const importFluxoRouter = router({
         }))
         .sort((a, b) => b.total - a.total);
     }),
+
+  /**
+   * Detalhe de uma conta específica do Fluxo: distribuição por setor com subcontas
+   */
+  detalhePorConta: protectedProcedure
+    .input(z.object({ periodoCustoId: z.number(), contaSistema: z.string() }))
+    .query(async ({ input }) => {
+      const db = (await getDb())!;
+      const lancamentos = await db
+        .select()
+        .from(lancamentoFluxo)
+        .where(and(
+          eq(lancamentoFluxo.periodoCustoId, input.periodoCustoId),
+          eq(lancamentoFluxo.contaSistema, input.contaSistema),
+        ));
+      // Agrupar por setor
+      const porSetor: Record<string, {
+        setor: string;
+        valor: number;
+        isRateio: boolean;
+        percentualRateio: number | null;
+        subcontas: { nome: string; valor: number }[];
+      }> = {};
+      for (const l of lancamentos) {
+        if (!porSetor[l.setor]) {
+          porSetor[l.setor] = { setor: l.setor, valor: 0, isRateio: !!l.isRateio, percentualRateio: l.percentualRateio ? Number(l.percentualRateio) : null, subcontas: [] };
+        }
+        const val = Number(l.valor);
+        porSetor[l.setor].valor += val;
+        porSetor[l.setor].subcontas.push({
+          nome: l.contaAgrupadaNome || l.contaPrincipalNome,
+          valor: val,
+        });
+      }
+      const total = Object.values(porSetor).reduce((s, r) => s + r.valor, 0);
+      return {
+        contaSistema: input.contaSistema,
+        total,
+        setores: Object.values(porSetor)
+          .map(s => ({
+            setor: s.setor,
+            valor: s.valor,
+            percentual: total > 0 ? (s.valor / total) * 100 : 0,
+            isRateio: s.isRateio,
+            percentualRateio: s.percentualRateio,
+            subcontas: s.subcontas.sort((a, b) => b.valor - a.valor),
+          }))
+          .sort((a, b) => b.valor - a.valor),
+      };
+    }),
 });
