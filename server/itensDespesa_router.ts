@@ -174,6 +174,43 @@ export const itensDespesaRouter = router({
       }));
     }),
 
+  // Listar equipamentos filtrados por uma classificação específica (para drill-down por conta)
+  equipamentosPorClassificacao: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+      classificacao: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const result = await db2
+        .select({
+          equipamentoTag: itemDespesaImportado.equipamentoTag,
+          equipamentoDescricao: itemDespesaImportado.equipamentoDescricao,
+          equipamentoSistemaId: itemDespesaImportado.equipamentoSistemaId,
+          totalItens: sql<number>`COUNT(*)`.as("totalItens"),
+          totalCusto: sql<string>`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`.as("totalCusto"),
+        })
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          eq(itemDespesaImportado.classificacao, input.classificacao),
+        ))
+        .groupBy(
+          itemDespesaImportado.equipamentoTag,
+          itemDespesaImportado.equipamentoDescricao,
+          itemDespesaImportado.equipamentoSistemaId,
+        )
+        .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
+      return result.map(r => ({
+        equipamentoTag: r.equipamentoTag,
+        equipamentoDescricao: r.equipamentoDescricao,
+        equipamentoSistemaId: r.equipamentoSistemaId,
+        totalItens: Number(r.totalItens),
+        totalCusto: Number(r.totalCusto) || 0,
+      }));
+    }),
+
   // Listar classificações de um equipamento num período
   listarClassificacoesPorEquipamento: protectedProcedure
     .input(z.object({

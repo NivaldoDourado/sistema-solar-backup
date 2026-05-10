@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 
 // Mapeamento: nome da conta → campo do equipamento no Relatório Analítico
@@ -113,6 +112,26 @@ export default function ApuracaoCusto() {
   const [despesaModal, setDespesaModal] = useState<{ descricao: string; total: number } | null>(null);
   const [showVendasDetalhe, setShowVendasDetalhe] = useState(false);
 
+  // Drill-down multi-nível: composição da conta → equipamentos → itens
+  type DrillDownState = {
+    contaNome: string;
+    contaTotal: number;
+    classificacao?: string; // campo da classificação no itemDespesaImportado
+    nivel: 1 | 2 | 3;
+    equipamentoTag?: string;
+    equipamentoDescricao?: string;
+  };
+  const [drillDown, setDrillDown] = useState<DrillDownState | null>(null);
+
+  // Mapa: nome da conta → classificação no itemDespesaImportado
+  const CONTA_PARA_CLASSIFICACAO: Record<string, string> = {
+    "Combustível": "combustivel",
+    "Lubrificantes": "lubrificantes",
+    "Peças de Desgaste": "pecas_desgaste",
+    "Peças de Reposição / Itens de Consumo": "pecas_reposicao",
+    "Outras Despesas dos Equipamentos": "outras_despesas",
+  };
+
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
   const { data: lancamentos } = trpc.lancamentoCusto.listByPeriodo.useQuery(
     { periodoCustoId: selectedPeriodoId! },
@@ -129,6 +148,39 @@ export default function ApuracaoCusto() {
     { periodoCustoId: selectedPeriodoId!, descricao: despesaModal?.descricao ?? "" },
     { enabled: !!selectedPeriodoId && !!despesaModal }
   );
+
+  // Drill-down nível 2: equipamentos por classificação
+  const { data: drillEquipamentos, isLoading: drillEquipLoading } = trpc.itensDespesa.equipamentosPorClassificacao.useQuery(
+    { periodoCustoId: selectedPeriodoId!, classificacao: drillDown?.classificacao ?? "" },
+    { enabled: !!selectedPeriodoId && !!drillDown?.classificacao && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
+  );
+
+  // Drill-down nível 3: itens detalhados por equipamento
+  const { data: drillItens, isLoading: drillItensLoading } = trpc.itensDespesa.listarItensDetalhados.useQuery(
+    { periodoCustoId: selectedPeriodoId!, equipamentoTag: drillDown?.equipamentoTag ?? "", classificacao: drillDown?.classificacao ?? "" },
+    { enabled: !!selectedPeriodoId && !!drillDown?.equipamentoTag && !!drillDown?.classificacao && drillDown?.nivel === 3 }
+  );
+
+  // Composição por origem para drill-down nível 1
+  const composicaoConta = useMemo(() => {
+    if (!drillDown || !lancamentos) return null;
+    const origens: { origem: string; valor: number }[] = [];
+    let totalImport = 0, totalFluxo = 0, totalManual = 0;
+    for (const l of lancamentos) {
+      const contaNome = l.contaNome ?? "";
+      if (contaNome !== drillDown.contaNome) continue;
+      const valor = parseFloat(String(l.valor || "0"));
+      const obs = l.observacoes ?? "";
+      if (obs.includes("[Import]")) totalImport += valor;
+      else if (obs.includes("[Fluxo]")) totalFluxo += valor;
+      else totalManual += valor;
+    }
+    if (totalImport > 0) origens.push({ origem: "Import. Despesas Equip.", valor: totalImport });
+    if (totalFluxo > 0) origens.push({ origem: "Import. Fluxo Realizado", valor: totalFluxo });
+    if (totalManual > 0) origens.push({ origem: "Lançamento Manual", valor: totalManual });
+    origens.sort((a, b) => b.valor - a.valor);
+    return origens;
+  }, [drillDown, lancamentos]);
 
   const periodoAtual = useMemo(
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
@@ -1345,26 +1397,18 @@ export default function ApuracaoCusto() {
                     </TableHeader>
                     <TableBody>
                       {relatorio.custoVariavel.map((conta) => {
-                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
-                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
+                        const classificacao = CONTA_PARA_CLASSIFICACAO[conta.nome];
                         return (
-                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow
+                            key={conta.id}
+                            className="hover:bg-blue-50 cursor-pointer"
+                            onClick={() => setDrillDown({ contaNome: conta.nome, contaTotal: conta.valor, classificacao, nivel: 1 })}
+                          >
                             <TableCell>
-                              {href ? (
-                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
-                                </Link>
-                              ) : hasDespset ? (
-                                <button
-                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
-                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
-                                >
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
-                                </button>
-                              ) : conta.nome}
+                              <button className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group text-left">
+                                {conta.nome}
+                                <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
+                              </button>
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
                             <TableCell className="text-right font-mono">
@@ -1421,26 +1465,18 @@ export default function ApuracaoCusto() {
                     </TableHeader>
                     <TableBody>
                       {relatorio.despesaVariavel.map((conta) => {
-                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
-                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
+                        const classificacao = CONTA_PARA_CLASSIFICACAO[conta.nome];
                         return (
-                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow
+                            key={conta.id}
+                            className="hover:bg-blue-50 cursor-pointer"
+                            onClick={() => setDrillDown({ contaNome: conta.nome, contaTotal: conta.valor, classificacao, nivel: 1 })}
+                          >
                             <TableCell>
-                              {href ? (
-                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
-                                </Link>
-                              ) : hasDespset ? (
-                                <button
-                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
-                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
-                                >
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
-                                </button>
-                              ) : conta.nome}
+                              <button className="flex items-center gap-1.5 text-purple-700 hover:text-purple-900 hover:underline font-medium group text-left">
+                                {conta.nome}
+                                <span className="opacity-0 group-hover:opacity-100 text-xs text-purple-500 transition-opacity">↗</span>
+                              </button>
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
                             <TableCell className="text-right font-mono">
@@ -1497,26 +1533,18 @@ export default function ApuracaoCusto() {
                     </TableHeader>
                     <TableBody>
                       {relatorio.despesasIndiretas.map((conta) => {
-                        const campo = CONTA_NOME_PARA_CAMPO[conta.nome];
-                        const href = campo ? `/custo-setor-analitico?conta=${campo}${selectedPeriodoId ? `&periodo=${selectedPeriodoId}` : ''}` : null;
-                        const hasDespset = !campo && CONTAS_COM_DESPSET.has(conta.nome);
+                        const classificacao = CONTA_PARA_CLASSIFICACAO[conta.nome];
                         return (
-                          <TableRow key={conta.id} className={(href || hasDespset) ? "hover:bg-blue-50 cursor-pointer" : ""}>
+                          <TableRow
+                            key={conta.id}
+                            className="hover:bg-blue-50 cursor-pointer"
+                            onClick={() => setDrillDown({ contaNome: conta.nome, contaTotal: conta.valor, classificacao, nivel: 1 })}
+                          >
                             <TableCell>
-                              {href ? (
-                                <Link href={href} className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 hover:underline font-medium group">
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">↗</span>
-                                </Link>
-                              ) : hasDespset ? (
-                                <button
-                                  onClick={() => setDespesaModal({ descricao: conta.nome, total: conta.valor })}
-                                  className="flex items-center gap-1.5 text-green-700 hover:text-green-900 hover:underline font-medium group text-left"
-                                >
-                                  {conta.nome}
-                                  <span className="opacity-0 group-hover:opacity-100 text-xs text-green-500 transition-opacity">↗</span>
-                                </button>
-                              ) : conta.nome}
+                              <button className="flex items-center gap-1.5 text-orange-700 hover:text-orange-900 hover:underline font-medium group text-left">
+                                {conta.nome}
+                                <span className="opacity-0 group-hover:opacity-100 text-xs text-orange-500 transition-opacity">↗</span>
+                              </button>
                             </TableCell>
                             <TableCell className="text-right font-mono">{fmt(conta.valor)}</TableCell>
                             <TableCell className="text-right font-mono">
@@ -1645,6 +1673,194 @@ export default function ApuracaoCusto() {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Drill-down Multi-nível: Composição → Equipamentos → Itens */}
+      <Dialog open={!!drillDown} onOpenChange={(open) => { if (!open) setDrillDown(null); }}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              {drillDown?.nivel === 1 && (
+                <>{drillDown.contaNome} — Composição</>
+              )}
+              {drillDown?.nivel === 2 && (
+                <>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <span>Equipamentos</span>
+                </>
+              )}
+              {drillDown?.nivel === 3 && (
+                <>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 2, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">Equipamentos</button>
+                  <span className="text-muted-foreground">›</span>
+                  <span className="truncate max-w-[200px]">{drillDown.equipamentoDescricao || drillDown.equipamentoTag}</span>
+                </>
+              )}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              Total da conta: <span className="font-mono font-semibold">R$ {fmt(drillDown?.contaTotal ?? 0)}</span>
+              {periodoAtual && <span className="ml-2">| {periodoAtual.mes}/{periodoAtual.ano}</span>}
+            </p>
+          </DialogHeader>
+
+          {/* Nível 1: Composição por origem */}
+          {drillDown?.nivel === 1 && (
+            <div className="space-y-4">
+              {composicaoConta && composicaoConta.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Origem dos valores</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Origem</TableHead>
+                        <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                        <TableHead className="text-right w-24">%</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {composicaoConta.map((row, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{row.origem}</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(row.valor)}</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            {drillDown.contaTotal > 0 ? fmtPct((row.valor / drillDown.contaTotal) * 100) : "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-muted/40">
+                        <TableCell>Total</TableCell>
+                        <TableCell className="text-right font-mono">{fmt(composicaoConta.reduce((s, r) => s + r.valor, 0))}</TableCell>
+                        <TableCell className="text-right font-mono">100,0%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="py-4 text-center text-muted-foreground text-sm">Nenhum lançamento encontrado.</div>
+              )}
+
+              {/* Botão para ver equipamentos (se for conta de equipamento) */}
+              {drillDown.classificacao && (
+                <button
+                  onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
+                  className="w-full py-3 px-4 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm flex items-center justify-between transition-colors"
+                >
+                  <span>🛠️ Ver detalhamento por Equipamento</span>
+                  <span className="text-blue-500">→</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Nível 2: Equipamentos por classificação */}
+          {drillDown?.nivel === 2 && (
+            <div>
+              {drillEquipLoading ? (
+                <div className="py-8 text-center text-muted-foreground text-sm">Carregando equipamentos...</div>
+              ) : drillEquipamentos && drillEquipamentos.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-8">#</TableHead>
+                      <TableHead>Equipamento</TableHead>
+                      <TableHead className="text-right w-20">Itens</TableHead>
+                      <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                      <TableHead className="text-right w-24">%</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {drillEquipamentos.map((eq, idx) => {
+                      const totalEquips = drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0);
+                      return (
+                        <TableRow
+                          key={eq.equipamentoTag}
+                          className="hover:bg-blue-50 cursor-pointer"
+                          onClick={() => setDrillDown(d => d ? { ...d, nivel: 3, equipamentoTag: eq.equipamentoTag, equipamentoDescricao: eq.equipamentoDescricao ?? eq.equipamentoTag } : null)}
+                        >
+                          <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 font-medium group">
+                              {eq.equipamentoDescricao || eq.equipamentoTag}
+                              <span className="opacity-0 group-hover:opacity-100 text-xs text-blue-500 transition-opacity">→</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">{eq.equipamentoTag}</span>
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">{eq.totalItens}</TableCell>
+                          <TableCell className="text-right font-mono font-medium">{fmt(eq.totalCusto)}</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">
+                            {totalEquips > 0 ? fmtPct((eq.totalCusto / totalEquips) * 100) : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    <TableRow className="font-semibold bg-muted/40">
+                      <TableCell></TableCell>
+                      <TableCell>Total ({drillEquipamentos.length} equip.)</TableCell>
+                      <TableCell className="text-right font-mono">{drillEquipamentos.reduce((s, e) => s + e.totalItens, 0)}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt(drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0))}</TableCell>
+                      <TableCell className="text-right font-mono">100,0%</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground text-sm">
+                  Nenhum item detalhado importado para esta conta neste período.<br/>
+                  <span className="text-xs">Importe a planilha de despesas de equipamentos para ver o detalhamento.</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Nível 3: Itens individuais por equipamento */}
+          {drillDown?.nivel === 3 && (
+            <div>
+              {drillItensLoading ? (
+                <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens...</div>
+              ) : drillItens && drillItens.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{drillItens.length} itens</span>
+                    <span className="font-mono font-semibold">Total: R$ {fmt(drillItens.reduce((s, i) => s + i.custo, 0))}</span>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-20">Data</TableHead>
+                        <TableHead>Produto</TableHead>
+                        <TableHead className="text-right w-16">Qtd</TableHead>
+                        <TableHead className="text-right w-32">Valor (R$)</TableHead>
+                        {drillDown.classificacao === "combustivel" && (
+                          <TableHead className="text-right w-24">Horím.</TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {drillItens.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-xs font-mono">{item.data || "—"}</TableCell>
+                          <TableCell className="text-sm">
+                            <span className="font-medium">{item.produto}</span>
+                            {item.grupoProduto && <span className="text-xs text-muted-foreground ml-1">({item.grupoProduto})</span>}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">{item.quantidade > 0 ? item.quantidade.toLocaleString("pt-BR") : "—"}</TableCell>
+                          <TableCell className="text-right font-mono font-medium">{fmt(item.custo)}</TableCell>
+                          {drillDown.classificacao === "combustivel" && (
+                            <TableCell className="text-right font-mono text-xs">{item.hodometro ?? "—"}</TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground text-sm">Nenhum item encontrado.</div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Drill-down DESPSET */}
       <Dialog open={!!despesaModal} onOpenChange={(open) => { if (!open) setDespesaModal(null); }}>

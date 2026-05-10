@@ -705,3 +705,13 @@
 - [x] Atualizar Lançamento de Custos para somar múltiplos lançamentos da mesma conta
 - [x] Excluir lançamentos [Fluxo] anteriores ao reimportar (evita duplicação)
 - [x] Testes unitários (128 passando)
+
+## Drill-Down nas Telas Sintéticas (Apuração de Custo)
+- [x] Nível 1: Ao clicar em uma conta na Apuração, mostrar composição (Fluxo vs Import Despesas vs Manual)
+- [x] Nível 2: Para contas de equipamentos, listar equipamentos por valor decrescente
+- [x] Nível 3: Ao clicar em equipamento, listar itens individuais por valor decrescente (com horímetro para combustível)
+- [x] Criar procedure equipamentosPorClassificacao no backend
+- [x] Breadcrumb de navegação entre níveis (Conta › Equipamentos › Itens)
+- [x] Ordenação decrescente em todos os níveis
+- [x] Todas as 3 tabelas (Custo Variável, Despesa Variável, Despesas Indiretas) com drill-down
+- [x] 128 testes passando
