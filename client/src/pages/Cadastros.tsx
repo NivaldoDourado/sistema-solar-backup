@@ -104,13 +104,7 @@ export default function Cadastros() {
       cor: "text-violet-500",
       link: "/periodo-custo",
     },
-    {
-      titulo: "Lançamento de Custos",
-      descricao: "Lance valores por conta de custo em cada período mensal",
-      icone: DollarSign,
-      cor: "text-teal-600",
-      link: "/lancamento-custo",
-    },
+
     {
       titulo: "Importação de Planilha",
       descricao: "Importe a planilha CUSTOSOLAR (.xlsx) para registrar lançamentos de custo automaticamente",

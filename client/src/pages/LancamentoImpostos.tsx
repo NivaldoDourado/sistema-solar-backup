@@ -152,7 +152,7 @@ export default function LancamentoImpostos() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Lançamento de Impostos</h1>
+          <h1 className="text-2xl font-bold">Impostos e Tributos</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Previsão de impostos apurados por competência (ICMS, PIS, COFINS, CEFEM, etc.)
           </p>

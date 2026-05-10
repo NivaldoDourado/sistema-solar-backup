@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, nome FROM setor_de_custo WHERE nome LIKE '%ADMINISTRA%'; SELECT id, nome, setorId FROM equipamentos WHERE nome LIKE '%RRG-6B68%' OR codigoTag LIKE '%RRG-6B68%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM setor_de_custo WHERE nome LIKE '%ADMINISTRA%'; SELECT id, nome, setorId FROM equipamentos WHERE nome LIKE '%RRG-6B68%' OR codigoTag LIKE '%RRG-6B68%';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'nome' in 'where clause'"
+  ]
+}

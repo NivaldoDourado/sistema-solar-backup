@@ -1,0 +1,82 @@
+{
+  "query": "SELECT id, nome FROM setor_de_custo;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM setor_de_custo;",
+  "rows": [
+    {
+      "id": "30002",
+      "nome": "Sal.Adm./Diretoria/Pró-Labore/Encargos"
+    },
+    {
+      "id": "30003",
+      "nome": "Imp., Trib., Taxas e CEFEM"
+    },
+    {
+      "id": "30004",
+      "nome": "Desp.Admin.Telef.e Inform."
+    },
+    {
+      "id": "30005",
+      "nome": "Energia Elétrica"
+    },
+    {
+      "id": "30006",
+      "nome": "Explosivos e Acessórios"
+    },
+    {
+      "id": "30007",
+      "nome": "Outras Desp.Setor/Proc."
+    },
+    {
+      "id": "30008",
+      "nome": "Equip.Apoio (Comb./Lub/Peças/Serv.)"
+    },
+    {
+      "id": "30009",
+      "nome": "Frota/Man.Pat./Seg./Out."
+    },
+    {
+      "id": "30010",
+      "nome": "Juridíco/Cons.Esp./Serv.Ter."
+    },
+    {
+      "id": "30011",
+      "nome": "Comissão de Vendas"
+    },
+    {
+      "id": "30012",
+      "nome": "Sal.Oper./Enc. Oper."
+    },
+    {
+      "id": "30013",
+      "nome": "Depreciação"
+    },
+    {
+      "id": "30014",
+      "nome": "Combustível"
+    },
+    {
+      "id": "30015",
+      "nome": "Lubrificantes"
+    },
+    {
+      "id": "30016",
+      "nome": "Peças de Desgaste"
+    },
+    {
+      "id": "30017",
+      "nome": "Peças de Reposição/Item de Consumo"
+    },
+    {
+      "id": "30018",
+      "nome": "Outras Despesas"
+    },
+    {
+      "id": "30019",
+      "nome": "LIVRE"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n30002\tSal.Adm./Diretoria/Pró-Labore/Encargos\n30003\tImp., Trib., Taxas e CEFEM\n30004\tDesp.Admin.Telef.e Inform.\n30005\tEnergia Elétrica\n30006\tExplosivos e Acessórios\n30007\tOutras Desp.Setor/Proc.\n30008\tEquip.Apoio (Comb./Lub/Peças/Serv.)\n30009\tFrota/Man.Pat./Seg./Out.\n30010\tJuridíco/Cons.Esp./Serv.Ter.\n30011\tComissão de Vendas\n30012\tSal.Oper./Enc. Oper.\n30013\tDepreciação\n30014\tCombustível\n30015\tLubrificantes\n30016\tPeças de Desgaste\n30017\tPeças de Reposição/Item de Consumo\n30018\tOutras Despesas\n30019\tLIVRE\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

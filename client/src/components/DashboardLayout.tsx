@@ -91,21 +91,29 @@ export default function DashboardLayout({
 
   // Definir itens do menu com controle de acesso
   // Itens de custo agrupados sob "Apropriação de Custo"
-  const custoSubItems = [
-    { icon: DollarSign, label: "Lançamento de Custos", path: "/lancamento-custo", module: "custos" as const },
-    { icon: Users, label: "Lançamento de Salários", path: "/lancamento-salarios", module: "custos" as const },
-    { icon: Receipt, label: "Lançamento de Impostos", path: "/lancamento-impostos", module: "custos" as const },
+  // Organizados em subgrupos: Lançamentos (abril/26+), Apuração, Relatórios, Legado
+  const custoSubItems: Array<{ icon?: any; label: string; path?: string; module?: "custos"; separator?: boolean }> = [
+    // --- Lançamentos (abril/26 em diante) ---
+    { label: "Lançamentos", separator: true },
+    { icon: FileUp, label: "Despesas de Equipamentos", path: "/import-despesas", module: "custos" as const },
+    { icon: FileUp, label: "Fluxo Realizado", path: "/import-fluxo", module: "custos" as const },
+    { icon: Users, label: "Salários Operacionais", path: "/lancamento-salarios", module: "custos" as const },
+    { icon: Receipt, label: "Impostos e Tributos", path: "/lancamento-impostos", module: "custos" as const },
+    // --- Apuração ---
+    { label: "Apuração", separator: true },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
     { icon: Calculator, label: "Rateio MEM", path: "/rateio-mem", module: "custos" as const },
-    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
-    { icon: FileUp, label: "Import. Despesas Equip.", path: "/import-despesas", module: "custos" as const },
-    { icon: FileUp, label: "Import. Fluxo Realizado", path: "/import-fluxo", module: "custos" as const },
     { icon: List, label: "Itens Detalhados", path: "/itens-despesa", module: "custos" as const },
+    // --- Relatórios e Análises ---
+    { label: "Relatórios e Análises", separator: true },
     { icon: BarChart3, label: "Avaliação Global", path: "/avaliacao-global", module: "custos" as const },
     { icon: TrendingUp, label: "Comparativos Históricos", path: "/comparativos-historicos", module: "custos" as const },
     { icon: Activity, label: "Simulação de Custos", path: "/simulacao-custo", module: "custos" as const },
+    // --- Legado (até março/26) ---
+    { label: "Legado (até mar/26)", separator: true },
+    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
     { icon: ClipboardCheck, label: "Revisão Correspondências", path: "/revisao-correspondencias", module: "custos" as const },
   ];
 
@@ -325,16 +333,25 @@ function DashboardLayoutContent({
                       </SidebarMenuButton>
                       {custoOpen && (
                         <SidebarMenuSub>
-                          {custoSubItems.map(sub => {
+                          {custoSubItems.map((sub, idx) => {
+                            if (sub.separator) {
+                              return (
+                                <li key={`sep-${idx}`} className="px-3 pt-3 pb-1">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                                    {sub.label}
+                                  </span>
+                                </li>
+                              );
+                            }
                             const isSubActive = location === sub.path;
                             return (
                               <SidebarMenuSubItem key={sub.path}>
                                 <SidebarMenuSubButton
                                   isActive={isSubActive}
-                                  onClick={() => setLocation(sub.path)}
+                                  onClick={() => setLocation(sub.path!)}
                                   className="h-9 font-normal"
                                 >
-                                  <sub.icon className={`h-3.5 w-3.5 ${isSubActive ? "text-primary" : ""}`} />
+                                  {sub.icon && <sub.icon className={`h-3.5 w-3.5 ${isSubActive ? "text-primary" : ""}`} />}
                                   <span>{sub.label}</span>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>

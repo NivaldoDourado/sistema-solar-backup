@@ -152,8 +152,8 @@ export default function ImportDespesas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Importar Despesas de Equipamentos</h1>
-          <p className="text-muted-foreground">Upload de relatório de despesas do DataGold para classificação e importação automática</p>
+          <h1 className="text-2xl font-bold">Despesas de Equipamentos</h1>
+          <p className="text-muted-foreground">Importação de relatório de despesas do DataGold para classificação e apropriação automática</p>
         </div>
       </div>
 

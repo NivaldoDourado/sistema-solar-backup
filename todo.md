@@ -797,3 +797,14 @@
 - [x] Integrar resultado do rateio MEM na Apuração de Custo (custoSetor.relatorio fallback)
 - [x] Integrar resultado do rateio MEM no Relatório Analítico (custoSetorRas.relatorioAnalitico fallback)
 - [x] Refatorar lógica de cálculo em módulo compartilhado (rateioMem_calc.ts)
+
+## Reorganização do Menu Apropriação de Custo
+- [x] Separar processos legados (março/26 para trás) dos processos atuais (abril/26 em diante)
+- [x] Agrupar/renomear Import. Despesas Equip. → Despesas de Equipamentos
+- [x] Agrupar/renomear Import. Fluxo Realizado → Fluxo Realizado
+- [x] Agrupar/renomear Lançamento de Salários → Salários Operacionais
+- [x] Separar/renomear Lançamento de Impostos → Impostos e Tributos
+- [x] Remover Lançamento de Custos do menu (manter dados no backend)
+- [x] Manter Importação de Planilha como método legado claramente identificado
+- [x] Atualizar títulos das páginas para consistência com o menu
+- [x] Atualizar referências no código (mensagens de erro, links)

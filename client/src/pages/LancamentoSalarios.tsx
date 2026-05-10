@@ -223,9 +223,9 @@ export default function LancamentoSalarios() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Lançamento de Salários</h1>
+          <h1 className="text-2xl font-bold">Salários Operacionais</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Alocação de salários em equipamentos e setores
+            Alocação de salários operacionais em equipamentos e setores
           </p>
         </div>
         <div className="flex items-center gap-3">

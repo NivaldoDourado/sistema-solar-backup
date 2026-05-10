@@ -1,0 +1,26 @@
+{
+  "query": "SELECT lc.periodoCustoId, COUNT(*) as total FROM lancamento_custo lc GROUP BY lc.periodoCustoId ORDER BY lc.periodoCustoId DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.periodoCustoId, COUNT(*) as total FROM lancamento_custo lc GROUP BY lc.periodoCustoId ORDER BY lc.periodoCustoId DESC LIMIT 10;",
+  "rows": [
+    {
+      "periodoCustoId": "60001",
+      "total": "271"
+    },
+    {
+      "periodoCustoId": "30002",
+      "total": "17"
+    },
+    {
+      "periodoCustoId": "30001",
+      "total": "17"
+    },
+    {
+      "periodoCustoId": "1",
+      "total": "17"
+    }
+  ],
+  "messages": [],
+  "stdout": "periodoCustoId\ttotal\n60001\t271\n30002\t17\n30001\t17\n1\t17\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

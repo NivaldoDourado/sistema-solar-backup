@@ -113,7 +113,7 @@ export async function importarCustoSetor(
 
   if (!periodoExistente) {
     throw new Error(
-      `Período ${mes}/${ano} não encontrado. Crie o período em Lançamento de Custos antes de importar.`
+      `Período ${mes}/${ano} não encontrado. Crie o período em Períodos de Custo antes de importar.`
     );
   }
   const periodoCustoId = periodoExistente.id;

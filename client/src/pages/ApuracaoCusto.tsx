@@ -1709,8 +1709,8 @@ export default function ApuracaoCusto() {
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <Info className="h-8 w-8 mx-auto mb-3 opacity-40" />
-            Nenhum lançamento encontrado para este período. Acesse{" "}
-            <strong>Lançamento de Custos</strong> para registrar os valores.
+            Nenhum lançamento encontrado para este período. Importe os dados via{" "}
+            <strong>Importação de Planilha</strong> ou pelos lançamentos individuais.
           </CardContent>
         </Card>
       )}

@@ -94,9 +94,9 @@ export default function ImportFluxo() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Importar Fluxo Realizado</h1>
+        <h1 className="text-2xl font-bold">Fluxo Realizado</h1>
         <p className="text-muted-foreground">
-          Upload do relatório de Fluxo de Caixa (DataGold) para importação de despesas administrativas e setoriais
+          Importação do relatório de Fluxo de Caixa (DataGold) para apropriação de despesas administrativas e setoriais
         </p>
       </div>
 

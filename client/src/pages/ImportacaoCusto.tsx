@@ -383,9 +383,9 @@ export default function ImportacaoCusto() {
 
             {/* Links de navegação */}
             <div className="flex gap-3">
-              <Link href="/lancamento-custo" className="flex-1">
+              <Link href="/apuracao-custo" className="flex-1">
                 <Button variant="outline" className="w-full">
-                  Ver Lançamentos
+                  Ver Apuração de Custo
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
