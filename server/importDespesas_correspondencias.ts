@@ -47,6 +47,17 @@ export const CORRESPONDENCIAS_APROVADAS: Record<string, number> = {
   // Corrigidas na revisão:
   "ESCAVADEIRA R 938 02": 93,     // ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02
   "PERFURATRIZ 01": 90001,        // PERFURATRIZ WOLF PW5000 - 01
+  // Adicionadas na resolução de tags sem correspondência (Maio/2026):
+  "BRITADOR MOVEL METSO": 120060, // BRITADOR MOVEL METSO NW200 HPS (OUY 9579)
+  "BRITADOR MOVEL": 120059,       // BRITADOR MOVEL METSO NW 100 (OLC 5612)
+  "DRAGA D´ÁGUA A DIESEL": 120006, // DRAGA D'AGUA A DIESEL
+  "DRAGA D'ÁGUA A DIESEL": 120006, // DRAGA D'AGUA A DIESEL (variante)
+  "HP 200 ( METSO)": 90,          // BRITADOR CÔNICO MOVEL METSO NW-200 (com espaço extra)
+  "PÁ CARREG. 966 03": 120017,    // PA CARREGADEIRA CATERPILLER 966C - 03
+  "PÁ CARREG. 966R04": 120018,    // PA CARREGADEIRA CATERPILLAR 966R - 04
+  "QMK3A00 (RRF 4H99)": 120025,   // RANGER MAX (QMK3A00 / RRF 4H99)
+  "TC01 (OM100 RM)": 120036,      // TRANSP CORREIA TC01 (OM-100 RM)
+  "TC05 (B.MOVEL)": 120042,       // TRANSP CORREIA TC-05 (B.MOVEL)
 };
 
 // ===== CORRESPONDÊNCIAS REJEITADAS - AÇÕES ESPECIAIS =====
@@ -54,8 +65,7 @@ export const CORRESPONDENCIAS_APROVADAS: Record<string, number> = {
 // Tags que devem ser mapeadas para equipamentos NOVOS (cadastrados na revisão)
 // O matching automático vai encontrar pelo codigoTag
 export const TAGS_NOVOS_EQUIPAMENTOS: string[] = [
-  "BRITADOR MOVEL",       // → NW100 (novo)
-  "BRITADOR MOVEL METSO", // → NW200 HPS (novo)
+  // "BRITADOR MOVEL" e "BRITADOR MOVEL METSO" movidos para CORRESPONDENCIAS_APROVADAS
   "RRG5I15",              // → FORD F150 LARIAT RRG5I15 (novo)
   "PENEIRA 05 OM100",     // → PENEIRA 05 OM100 (novo) - mas NÃO LANÇAR despesa
 ];

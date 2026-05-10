@@ -1,0 +1,106 @@
+{
+  "query": "SELECT equipamentoTag, classificacao, SUM(custo) as total, COUNT(*) as qtd\nFROM item_despesa_importado\nWHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND equipamentoTag IN ('BRITADOR MOVEL METSO', 'BRITADOR MOVEL', 'DRAGA D´ÁGUA A DIESEL', 'HP 200 ( METSO)', 'PÁ CARREG. 966 03', 'PÁ CARREG. 966R04', 'QMK3A00 (RRF 4H99)', 'TC01 (OM100 RM)', 'TC05 (B.MOVEL)')\nGROUP BY equipamentoTag, classificacao\nORDER BY equipamentoTag, total DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, classificacao, SUM(custo) as total, COUNT(*) as qtd\nFROM item_despesa_importado\nWHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND equipamentoTag IN ('BRITADOR MOVEL METSO', 'BRITADOR MOVEL', 'DRAGA D´ÁGUA A DIESEL', 'HP 200 ( METSO)', 'PÁ CARREG. 966 03', 'PÁ CARREG. 966R04', 'QMK3A00 (RRF 4H99)', 'TC01 (OM100 RM)', 'TC05 (B.MOVEL)')\nGROUP BY equipamentoTag, classificacao\nORDER BY equipamentoTag, total DESC;",
+  "rows": [
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "classificacao": "outras_despesas",
+      "total": "11600.00",
+      "qtd": "2"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "classificacao": "pecas_reposicao",
+      "total": "334.07",
+      "qtd": "18"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "classificacao": "lubrificantes",
+      "total": "403.50",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "classificacao": "pecas_reposicao",
+      "total": "118.10",
+      "qtd": "2"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "classificacao": "pecas_desgaste",
+      "total": "31742.53",
+      "qtd": "2"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "classificacao": "pecas_reposicao",
+      "total": "5608.15",
+      "qtd": "29"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "classificacao": "outras_despesas",
+      "total": "212.16",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "classificacao": "lubrificantes",
+      "total": "104.12",
+      "qtd": "2"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966 03",
+      "classificacao": "pecas_reposicao",
+      "total": "6.56",
+      "qtd": "4"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04",
+      "classificacao": "combustivel",
+      "total": "12322.66",
+      "qtd": "18"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04",
+      "classificacao": "lubrificantes",
+      "total": "2255.76",
+      "qtd": "12"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04",
+      "classificacao": "pecas_reposicao",
+      "total": "1538.68",
+      "qtd": "12"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04",
+      "classificacao": "outras_despesas",
+      "total": "209.24",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "QMK3A00 (RRF 4H99)",
+      "classificacao": "combustivel",
+      "total": "310.04",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "TC01 (OM100 RM)",
+      "classificacao": "lubrificantes",
+      "total": "83.29",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "TC05 (B.MOVEL)",
+      "classificacao": "lubrificantes",
+      "total": "145.76",
+      "qtd": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tclassificacao\ttotal\tqtd\nBRITADOR MOVEL\toutras_despesas\t11600.00\t2\nBRITADOR MOVEL\tpecas_reposicao\t334.07\t18\nBRITADOR MOVEL METSO\tlubrificantes\t403.50\t1\nBRITADOR MOVEL METSO\tpecas_reposicao\t118.10\t2\nHP 200 ( METSO)\tpecas_desgaste\t31742.53\t2\nHP 200 ( METSO)\tpecas_reposicao\t5608.15\t29\nHP 200 ( METSO)\toutras_despesas\t212.16\t1\nHP 200 ( METSO)\tlubrificantes\t104.12\t2\nPÁ CARREG. 966 03\tpecas_reposicao\t6.56\t4\nPÁ CARREG. 966R04\tcombustivel\t12322.66\t18\nPÁ CARREG. 966R04\tlubrificantes\t2255.76\t12\nPÁ CARREG. 966R04\tpecas_reposicao\t1538.68\t12\nPÁ CARREG. 966R04\toutras_despesas\t209.24\t1\nQMK3A00 (RRF 4H99)\tcombustivel\t310.04\t1\nTC01 (OM100 RM)\tlubrificantes\t83.29\t1\nTC05 (B.MOVEL)\tlubrificantes\t145.76\t2\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

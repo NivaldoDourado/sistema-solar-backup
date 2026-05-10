@@ -1,0 +1,9 @@
+{
+  "query": "SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, e.grupoId, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (\n  SELECT DISTINCT i.equipamentoSistemaId \n  FROM item_despesa_importado i\n  WHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\n  AND i.equipamentoSistemaId IS NOT NULL\n)\nAND e.id NOT IN (\n  SELECT DISTINCT pd.equipamentoId \n  FROM parte_diaria pd \n  WHERE pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\n  AND pd.equipamentoId IS NOT NULL\n)\nORDER BY e.nomeDoEquipamento\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, e.grupoId, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (\n  SELECT DISTINCT i.equipamentoSistemaId \n  FROM item_despesa_importado i\n  WHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\n  AND i.equipamentoSistemaId IS NOT NULL\n)\nAND e.id NOT IN (\n  SELECT DISTINCT pd.equipamentoId \n  FROM parte_diaria pd \n  WHERE pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\n  AND pd.equipamentoId IS NOT NULL\n)\nORDER BY e.nomeDoEquipamento\nLIMIT 20;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 333
+}

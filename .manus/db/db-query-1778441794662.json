@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE nomeDoEquipamento LIKE '%BRITADOR%MOVEL%' OR nomeDoEquipamento LIKE '%METSO%' OR nomeDoEquipamento LIKE '%HP 200%' \nOR nomeDoEquipamento LIKE '%966%' OR nomeDoEquipamento LIKE '%QMK%' OR nomeDoEquipamento LIKE '%RRF%' \nOR nomeDoEquipamento LIKE '%OM100%' OR nomeDoEquipamento LIKE '%DRAGA%'\nOR codigoTag LIKE '%QMK%' OR codigoTag LIKE '%RRF%'\nORDER BY nomeDoEquipamento;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE nomeDoEquipamento LIKE '%BRITADOR%MOVEL%' OR nomeDoEquipamento LIKE '%METSO%' OR nomeDoEquipamento LIKE '%HP 200%' \nOR nomeDoEquipamento LIKE '%966%' OR nomeDoEquipamento LIKE '%QMK%' OR nomeDoEquipamento LIKE '%RRF%' \nOR nomeDoEquipamento LIKE '%OM100%' OR nomeDoEquipamento LIKE '%DRAGA%'\nOR codigoTag LIKE '%QMK%' OR codigoTag LIKE '%RRF%'\nORDER BY nomeDoEquipamento;",
+  "rows": [
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "codigoTag": "NW-200"
+    },
+    {
+      "id": "10",
+      "nomeDoEquipamento": "BRITADOR DE IMPACTO FURLAN VSI OM100",
+      "codigoTag": "OM100"
+    },
+    {
+      "id": "120002",
+      "nomeDoEquipamento": "BRITADOR METSO C100 - PRIMARIO",
+      "codigoTag": "C100"
+    },
+    {
+      "id": "120059",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW 100 (OLC 5612)",
+      "codigoTag": "NW100"
+    },
+    {
+      "id": "120060",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW200 HPS (OUY 9579)",
+      "codigoTag": "NW200 HPS"
+    },
+    {
+      "id": "89",
+      "nomeDoEquipamento": "BRITADOR PRIMARIO MOVEL METSO NW-100",
+      "codigoTag": "NW-100"
+    },
+    {
+      "id": "120006",
+      "nomeDoEquipamento": "DRAGA D'AGUA A DIESEL",
+      "codigoTag": "DRAGA D'AGUA A DIESEL"
+    },
+    {
+      "id": "120007",
+      "nomeDoEquipamento": "DRAGA DIESEL 02",
+      "codigoTag": "DRAGA DIESEL 02"
+    },
+    {
+      "id": "73",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04",
+      "codigoTag": "966R 04"
+    },
+    {
+      "id": "120018",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLAR 966R - 04",
+      "codigoTag": "PA CARREG. 966R04"
+    },
+    {
+      "id": "120017",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLER 966C - 03",
+      "codigoTag": "PA CARREG. 966 03"
+    },
+    {
+      "id": "26",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 01",
+      "codigoTag": "966-01"
+    },
+    {
+      "id": "27",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 02",
+      "codigoTag": "966-02"
+    },
+    {
+      "id": "28",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 03",
+      "codigoTag": "966-03"
+    },
+    {
+      "id": "120062",
+      "nomeDoEquipamento": "PENEIRA 05 OM100 - VIBRATORIA 3,00 X 1,50",
+      "codigoTag": "PENEIRA 05 OM100"
+    },
+    {
+      "id": "78",
+      "nomeDoEquipamento": "PENEIRA OM100 - PENEIRA 06",
+      "codigoTag": "PENEIRA 06"
+    },
+    {
+      "id": "120025",
+      "nomeDoEquipamento": "RANGER MAX (QMK3A00 / RRF 4H99)",
+      "codigoTag": "QMK3A00"
+    },
+    {
+      "id": "120058",
+      "nomeDoEquipamento": "TRANSPORTE BRITADOR MOVEL METSO",
+      "codigoTag": "TRANSPORTADORA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\tNW-200\n10\tBRITADOR DE IMPACTO FURLAN VSI OM100\tOM100\n120002\tBRITADOR METSO C100 - PRIMARIO\tC100\n120059\tBRITADOR MOVEL METSO NW 100 (OLC 5612)\tNW100\n120060\tBRITADOR MOVEL METSO NW200 HPS (OUY 9579)\tNW200 HPS\n89\tBRITADOR PRIMARIO MOVEL METSO NW-100\tNW-100\n120006\tDRAGA D'AGUA A DIESEL\tDRAGA D'AGUA A DIESEL\n120007\tDRAGA DIESEL 02\tDRAGA DIESEL 02\n73\tPÁ CARREGADEIRA CARTEPILAR 966R 04\t966R 04\n120018\tPA CARREGADEIRA CATERPILLAR 966R - 04\tPA CARREG. 966R04\n120017\tPA CARREGADEIRA CATERPILLER 966C - 03\tPA CARREG. 966 03\n26\tPÁ CARREGAGEIRA CATERPILLAR 966 01\t966-01\n27\tPÁ CARREGAGEIRA CATERPILLAR 966 02\t966-02\n28\tPÁ CARREGAGEIRA CATERPILLAR 966 03\t966-03\n120062\tPENEIRA 05 OM100 - VIBRATORIA 3,00 X 1,50\tPENEIRA 05 OM100\n78\tPENEIRA OM100 - PENEIRA 06\tPENEIRA 06\n120025\tRANGER MAX (QMK3A00 / RRF 4H99)\tQMK3A00\n120058\tTRANSPORTE BRITADOR MOVEL METSO\tTRANSPORTADORA\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

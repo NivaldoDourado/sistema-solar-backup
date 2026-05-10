@@ -1,0 +1,190 @@
+{
+  "query": "SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, e.grupoId, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, e.grupoId, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "84",
+      "nomeDoEquipamento": "ALIMENTADOR VIBRATORIO AV400 120",
+      "codigoTag": "AV400 120",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "codigoTag": "CS440",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "codigoTag": "NW-200",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "10",
+      "nomeDoEquipamento": "BRITADOR DE IMPACTO FURLAN VSI OM100",
+      "codigoTag": "OM100",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "3",
+      "nomeDoEquipamento": "BRITADOR FURLAN JC1200 - 01",
+      "codigoTag": "JC1200-01",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "8",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 01",
+      "codigoTag": "H3800-01",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "9",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 02",
+      "codigoTag": "H3800-02",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "80",
+      "nomeDoEquipamento": "BRITADOR HIDROCONICO SANDIVIK H3800 03",
+      "codigoTag": "H3800-03",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "120002",
+      "nomeDoEquipamento": "BRITADOR METSO C100 - PRIMARIO",
+      "codigoTag": "C100",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "120059",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW 100 (OLC 5612)",
+      "codigoTag": "NW100",
+      "setorId": "30002",
+      "setorNome": "BRITAGEM MÓVEL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "120060",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW200 HPS (OUY 9579)",
+      "codigoTag": "NW200 HPS",
+      "setorId": "30002",
+      "setorNome": "BRITAGEM MÓVEL",
+      "grupoId": "2",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "120003",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 01 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 01",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoId": "20",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "120004",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 02 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 02",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoId": "20",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "codigoTag": "NVJ7902",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "42",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE HZK-7665",
+      "codigoTag": "HZK7665",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "codigoTag": "RUC 4F80",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "30",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXD-6334",
+      "codigoTag": "IXD6334",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "codigoTag": "IXE1F44",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "codigoTag": "PZE 8D13",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "codigoTag": "NML0188",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\tsetorId\tsetorNome\tgrupoId\tgrupoNome\n84\tALIMENTADOR VIBRATORIO AV400 120\tAV400 120\tNULL\tNULL\t2\tBRITADORES\n92\tBRITADOR CONICO CS440\tCS440\tNULL\tNULL\t2\tBRITADORES\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\tNW-200\tNULL\tNULL\t2\tBRITADORES\n10\tBRITADOR DE IMPACTO FURLAN VSI OM100\tOM100\tNULL\tNULL\t2\tBRITADORES\n3\tBRITADOR FURLAN JC1200 - 01\tJC1200-01\tNULL\tNULL\t2\tBRITADORES\n8\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\tH3800-01\tNULL\tNULL\t2\tBRITADORES\n9\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\tH3800-02\tNULL\tNULL\t2\tBRITADORES\n80\tBRITADOR HIDROCONICO SANDIVIK H3800 03\tH3800-03\tNULL\tNULL\t2\tBRITADORES\n120002\tBRITADOR METSO C100 - PRIMARIO\tC100\t9\tDESMONTE PRIMÁRIO\t2\tBRITADORES\n120059\tBRITADOR MOVEL METSO NW 100 (OLC 5612)\tNW100\t30002\tBRITAGEM MÓVEL\t2\tBRITADORES\n120060\tBRITADOR MOVEL METSO NW200 HPS (OUY 9579)\tNW200 HPS\t30002\tBRITAGEM MÓVEL\t2\tBRITADORES\n120003\tCALHA VIBRATORIA 01 (CS440)\tCALHA VIBRATORIA 01\t9\tDESMONTE PRIMÁRIO\t20\tOUTROS PARA CUSTO\n120004\tCALHA VIBRATORIA 02 (CS440)\tCALHA VIBRATORIA 02\t9\tDESMONTE PRIMÁRIO\t20\tOUTROS PARA CUSTO\n37\tCAMINHÃO BASCULANTE  NVJ-7902\tNVJ7902\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n42\tCAMINHÃO BASCULANTE HZK-7665\tHZK7665\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n88\tCAMINHAO BASCULANTE MB/ RUC 4F80\tRUC 4F80\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n30\tCAMINHÃO BASCULANTE MERC. BENS / IXD-6334\tIXD6334\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\tIXE1F44\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\tPZE 8D13\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n41\tCAMINHÃO BASCULANTE NML-0188\tNML0188\tNULL\tNULL\t5\tCAMINHÕES INTERNOS\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

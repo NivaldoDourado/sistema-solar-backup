@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE codigoTag LIKE '%TC01%' OR codigoTag LIKE '%TC05%' OR nomeDoEquipamento LIKE '%TC-01%' OR nomeDoEquipamento LIKE '%TC-05%'\nORDER BY nomeDoEquipamento;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE codigoTag LIKE '%TC01%' OR codigoTag LIKE '%TC05%' OR nomeDoEquipamento LIKE '%TC-01%' OR nomeDoEquipamento LIKE '%TC-05%'\nORDER BY nomeDoEquipamento;",
+  "rows": [
+    {
+      "id": "120035",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-01 (JC1200)",
+      "codigoTag": "TC01"
+    },
+    {
+      "id": "120037",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-01 (MOVEL)",
+      "codigoTag": "TC01 MOVEL"
+    },
+    {
+      "id": "120042",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-05 (B.MOVEL)",
+      "codigoTag": "TC05 B.MOVEL"
+    },
+    {
+      "id": "120036",
+      "nomeDoEquipamento": "TRANSP CORREIA TC01 (OM-100 RM)",
+      "codigoTag": "TC01 OM100 RM"
+    },
+    {
+      "id": "120041",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-05",
+      "codigoTag": "TC05"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\n120035\tTRANSP CORREIA TC-01 (JC1200)\tTC01\n120037\tTRANSP CORREIA TC-01 (MOVEL)\tTC01 MOVEL\n120042\tTRANSP CORREIA TC-05 (B.MOVEL)\tTC05 B.MOVEL\n120036\tTRANSP CORREIA TC01 (OM-100 RM)\tTC01 OM100 RM\n120041\tTRANSPORTADOR DE CORREIA TC-05\tTC05\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

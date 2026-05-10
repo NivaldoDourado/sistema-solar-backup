@@ -1,0 +1,74 @@
+{
+  "query": "SELECT DISTINCT i.equipamentoTag, i.equipamentoSistemaId\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoTag IN ('BRITADOR CS440', 'H3800 02', 'H380003', '944 C', 'IXE1F44', 'RUC4F80', 'ESCAVADEIRA R 938 02', 'HL 76003', 'NVJ7902', 'NVH6212', 'OER1B00', 'PZE8D13', 'QMN1F10', 'QMO6E54', 'QMD 0H48', 'QMD0H48')\nORDER BY i.equipamentoTag;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT i.equipamentoTag, i.equipamentoSistemaId\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoTag IN ('BRITADOR CS440', 'H3800 02', 'H380003', '944 C', 'IXE1F44', 'RUC4F80', 'ESCAVADEIRA R 938 02', 'HL 76003', 'NVJ7902', 'NVH6212', 'OER1B00', 'PZE8D13', 'QMN1F10', 'QMO6E54', 'QMD 0H48', 'QMD0H48')\nORDER BY i.equipamentoTag;",
+  "rows": [
+    {
+      "equipamentoTag": "944 C",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "H3800 02",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "H380003",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "IXE1F44",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "NVH6212",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "NVJ7902",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "OER1B00",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "PZE8D13",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "QMD 0H48",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "QMD0H48",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "QMN1F10",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "QMO6E54",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "RUC4F80",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoSistemaId\n944 C\tNULL\nBRITADOR CS440\tNULL\nESCAVADEIRA R 938 02\tNULL\nH3800 02\tNULL\nH380003\tNULL\nHL 76003\tNULL\nIXE1F44\tNULL\nNVH6212\tNULL\nNVJ7902\tNULL\nOER1B00\tNULL\nPZE8D13\tNULL\nQMD 0H48\tNULL\nQMD0H48\tNULL\nQMN1F10\tNULL\nQMO6E54\tNULL\nRUC4F80\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

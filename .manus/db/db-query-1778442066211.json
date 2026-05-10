@@ -1,0 +1,70 @@
+{
+  "query": "SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 40;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 40;",
+  "rows": [
+    {
+      "equipamentoTag": "NNT 5E41"
+    },
+    {
+      "equipamentoTag": "NNT5E41"
+    },
+    {
+      "equipamentoTag": "NVH6212"
+    },
+    {
+      "equipamentoTag": "NVJ7902"
+    },
+    {
+      "equipamentoTag": "OER1B00"
+    },
+    {
+      "equipamentoTag": "OM100"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966 03"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04"
+    },
+    {
+      "equipamentoTag": "PATROL 120 B"
+    },
+    {
+      "equipamentoTag": "PC300"
+    },
+    {
+      "equipamentoTag": "PENEIRA 01 CS440"
+    },
+    {
+      "equipamentoTag": "PENEIRA 02 NOVA H 01"
+    },
+    {
+      "equipamentoTag": "PENEIRA 03 H3800 02"
+    },
+    {
+      "equipamentoTag": "PENEIRA 06 OM100VSI"
+    },
+    {
+      "equipamentoTag": "PENEIRA NOVA"
+    },
+    {
+      "equipamentoTag": "PENEIRA NW200"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ 01"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01"
+    },
+    {
+      "equipamentoTag": "PIPA ALUGADO KIB9971"
+    },
+    {
+      "equipamentoTag": "PIPA HZH 3961"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\nNNT 5E41\nNNT5E41\nNVH6212\nNVJ7902\nOER1B00\nOM100\nPÁ CARREG. 966 03\nPÁ CARREG. 966R04\nPATROL 120 B\nPC300\nPENEIRA 01 CS440\nPENEIRA 02 NOVA H 01\nPENEIRA 03 H3800 02\nPENEIRA 06 OM100VSI\nPENEIRA NOVA\nPENEIRA NW200\nPERFURATRIZ 01\nPERFURATRIZ HIDR. 01\nPIPA ALUGADO KIB9971\nPIPA HZH 3961\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

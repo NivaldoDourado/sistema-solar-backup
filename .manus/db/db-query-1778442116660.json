@@ -1,0 +1,214 @@
+{
+  "query": "SELECT e.id, e.nomeDoEquipamento, e.codigoTag, COUNT(pd.id) as totalPD\nFROM equipamentos e\nINNER JOIN parte_diaria pd ON pd.equipamentoId = e.id AND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag\nORDER BY totalPD DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.nomeDoEquipamento, e.codigoTag, COUNT(pd.id) as totalPD\nFROM equipamentos e\nINNER JOIN parte_diaria pd ON pd.equipamentoId = e.id AND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag\nORDER BY totalPD DESC;",
+  "rows": [
+    {
+      "id": "9",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 02",
+      "codigoTag": "H3800-02",
+      "totalPD": "24"
+    },
+    {
+      "id": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "codigoTag": "RUC 4F80",
+      "totalPD": "24"
+    },
+    {
+      "id": "19",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "codigoTag": "944C",
+      "totalPD": "24"
+    },
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "codigoTag": "IXE1F44",
+      "totalPD": "24"
+    },
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "codigoTag": "NW-200",
+      "totalPD": "24"
+    },
+    {
+      "id": "93",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02",
+      "codigoTag": "R938-02",
+      "totalPD": "24"
+    },
+    {
+      "id": "80",
+      "nomeDoEquipamento": "BRITADOR HIDROCONICO SANDIVIK H3800 03",
+      "codigoTag": "H3800-03",
+      "totalPD": "24"
+    },
+    {
+      "id": "84",
+      "nomeDoEquipamento": "ALIMENTADOR VIBRATORIO AV400 120",
+      "codigoTag": "AV400 120",
+      "totalPD": "24"
+    },
+    {
+      "id": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "codigoTag": "CS440",
+      "totalPD": "24"
+    },
+    {
+      "id": "22",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 01",
+      "codigoTag": "L566 - 01",
+      "totalPD": "24"
+    },
+    {
+      "id": "45",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 02",
+      "codigoTag": "L566 - 02",
+      "totalPD": "24"
+    },
+    {
+      "id": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "codigoTag": "PZE 8D13",
+      "totalPD": "23"
+    },
+    {
+      "id": "82",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03",
+      "codigoTag": "HL760-9",
+      "totalPD": "23"
+    },
+    {
+      "id": "79",
+      "nomeDoEquipamento": "CAMINHAO NNT-5E41 (MELOZA)",
+      "codigoTag": "NNT-5E41",
+      "totalPD": "23"
+    },
+    {
+      "id": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "codigoTag": "PENEIRA NW200",
+      "totalPD": "23"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "codigoTag": "QMN1F10",
+      "totalPD": "22"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "codigoTag": "QMO6E54",
+      "totalPD": "22"
+    },
+    {
+      "id": "39",
+      "nomeDoEquipamento": "CAMINHÃO PIPA HZT-0105",
+      "codigoTag": "PIPA HZT-0105",
+      "totalPD": "22"
+    },
+    {
+      "id": "42",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE HZK-7665",
+      "codigoTag": "HZK7665",
+      "totalPD": "21"
+    },
+    {
+      "id": "10",
+      "nomeDoEquipamento": "BRITADOR DE IMPACTO FURLAN VSI OM100",
+      "codigoTag": "OM100",
+      "totalPD": "21"
+    },
+    {
+      "id": "78",
+      "nomeDoEquipamento": "PENEIRA OM100 - PENEIRA 06",
+      "codigoTag": "PENEIRA 06",
+      "totalPD": "21"
+    },
+    {
+      "id": "97",
+      "nomeDoEquipamento": "CAMINHÃO MUCK MB ACTROS 2426",
+      "codigoTag": "QMD-0H48",
+      "totalPD": "21"
+    },
+    {
+      "id": "8",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 01",
+      "codigoTag": "H3800-01",
+      "totalPD": "21"
+    },
+    {
+      "id": "51",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01",
+      "codigoTag": "R938 - 01",
+      "totalPD": "21"
+    },
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "codigoTag": "NVH6212",
+      "totalPD": "21"
+    },
+    {
+      "id": "48",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "codigoTag": "FOX 8-20",
+      "totalPD": "21"
+    },
+    {
+      "id": "43",
+      "nomeDoEquipamento": "CAMINHÃO PIPA AUS-5073",
+      "codigoTag": "PIPA AUS-5073",
+      "totalPD": "20"
+    },
+    {
+      "id": "90001",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01",
+      "codigoTag": "ROCK 01",
+      "totalPD": "20"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "codigoTag": "NVJ7902",
+      "totalPD": "19"
+    },
+    {
+      "id": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "codigoTag": "NML0188",
+      "totalPD": "19"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "codigoTag": "OER1B00",
+      "totalPD": "17"
+    },
+    {
+      "id": "6",
+      "nomeDoEquipamento": "COMPRESSOR ELÉTRICO ATLAS COPCO GA160",
+      "codigoTag": "GA160",
+      "totalPD": "17"
+    },
+    {
+      "id": "30",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXD-6334",
+      "codigoTag": "IXD6334",
+      "totalPD": "14"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "codigoTag": "PIPA HZH 3961",
+      "totalPD": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\ttotalPD\n9\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\tH3800-02\t24\n88\tCAMINHAO BASCULANTE MB/ RUC 4F80\tRUC 4F80\t24\n19\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t944C\t24\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\tIXE1F44\t24\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\tNW-200\t24\n93\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\tR938-02\t24\n80\tBRITADOR HIDROCONICO SANDIVIK H3800 03\tH3800-03\t24\n84\tALIMENTADOR VIBRATORIO AV400 120\tAV400 120\t24\n92\tBRITADOR CONICO CS440\tCS440\t24\n22\tPÁ CARREGADEIRA LIEBHERR L566 - 01\tL566 - 01\t24\n45\tPÁ CARREGADEIRA LIEBHERR L566 - 02\tL566 - 02\t24\n52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\tPZE 8D13\t23\n82\tPÁ CARREGADEIRA HYUNDAI HL760 03\tHL760-9\t23\n79\tCAMINHAO NNT-5E41 (MELOZA)\tNNT-5E41\t23\n91\tPENEIRA NW200\tPENEIRA NW200\t23\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\tQMN1F10\t22\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\tQMO6E54\t22\n39\tCAMINHÃO PIPA HZT-0105\tPIPA HZT-0105\t22\n42\tCAMINHÃO BASCULANTE HZK-7665\tHZK7665\t21\n10\tBRITADOR DE IMPACTO FURLAN VSI OM100\tOM100\t21\n78\tPENEIRA OM100 - PENEIRA 06\tPENEIRA 06\t21\n97\tCAMINHÃO MUCK MB ACTROS 2426\tQMD-0H48\t21\n8\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\tH3800-01\t21\n51\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\tR938 - 01\t21\n38\tCAMINHÃO BASCULANTE NVH-6212\tNVH6212\t21\n48\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\tFOX 8-20\t21\n43\tCAMINHÃO PIPA AUS-5073\tPIPA AUS-5073\t20\n90001\tPERFURATRIZ WOLF PW5000 - 01\tROCK 01\t20\n37\tCAMINHÃO BASCULANTE  NVJ-7902\tNVJ7902\t19\n41\tCAMINHÃO BASCULANTE NML-0188\tNML0188\t19\n40\tCAMINHÃO BASCULANTE OER1B00\tOER1B00\t17\n6\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\tGA160\t17\n30\tCAMINHÃO BASCULANTE MERC. BENS / IXD-6334\tIXD6334\t14\n50\tCAMINHÃO PIPA  HZH 3961\tPIPA HZH 3961\t3\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

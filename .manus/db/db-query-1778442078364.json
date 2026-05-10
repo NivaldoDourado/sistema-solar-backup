@@ -1,0 +1,70 @@
+{
+  "query": "SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 80;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 80;",
+  "rows": [
+    {
+      "equipamentoTag": "TC01 (OM100 RM)"
+    },
+    {
+      "equipamentoTag": "TC01 MOVEL"
+    },
+    {
+      "equipamentoTag": "TC02"
+    },
+    {
+      "equipamentoTag": "TC03"
+    },
+    {
+      "equipamentoTag": "TC04"
+    },
+    {
+      "equipamentoTag": "TC05"
+    },
+    {
+      "equipamentoTag": "TC05 (B.MOVEL)"
+    },
+    {
+      "equipamentoTag": "TC06"
+    },
+    {
+      "equipamentoTag": "TC07"
+    },
+    {
+      "equipamentoTag": "TC08"
+    },
+    {
+      "equipamentoTag": "TC09"
+    },
+    {
+      "equipamentoTag": "TC10"
+    },
+    {
+      "equipamentoTag": "TC11"
+    },
+    {
+      "equipamentoTag": "TC14"
+    },
+    {
+      "equipamentoTag": "TC15"
+    },
+    {
+      "equipamentoTag": "TC16"
+    },
+    {
+      "equipamentoTag": "TC17"
+    },
+    {
+      "equipamentoTag": "TC20"
+    },
+    {
+      "equipamentoTag": "TNQ 1G00"
+    },
+    {
+      "equipamentoTag": "TNV1F49"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\nTC01 (OM100 RM)\nTC01 MOVEL\nTC02\nTC03\nTC04\nTC05\nTC05 (B.MOVEL)\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC14\nTC15\nTC16\nTC17\nTC20\nTNQ 1G00\nTNV1F49\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

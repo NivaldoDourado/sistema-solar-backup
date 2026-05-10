@@ -1,0 +1,90 @@
+{
+  "query": "SELECT pd.id, pd.data, pd.horaKmTrabalhados, pdi.setorId, pdi.quantidade, s.nome as setorNome\nFROM parte_diaria pd\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.equipamentoId = 92 AND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nORDER BY pd.data\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pd.id, pd.data, pd.horaKmTrabalhados, pdi.setorId, pdi.quantidade, s.nome as setorNome\nFROM parte_diaria pd\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.equipamentoId = 92 AND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nORDER BY pd.data\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "150021",
+      "data": "2026-04-01",
+      "horaKmTrabalhados": "13.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "150022",
+      "data": "2026-04-02",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "150023",
+      "data": "2026-04-06",
+      "horaKmTrabalhados": "13.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "150110",
+      "data": "2026-04-07",
+      "horaKmTrabalhados": "13.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "180008",
+      "data": "2026-04-08",
+      "horaKmTrabalhados": "12.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "240029",
+      "data": "2026-04-09",
+      "horaKmTrabalhados": "12.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "360037",
+      "data": "2026-04-10",
+      "horaKmTrabalhados": "12.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "360039",
+      "data": "2026-04-11",
+      "horaKmTrabalhados": "5.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "420001",
+      "data": "2026-04-13",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "480001",
+      "data": "2026-04-14",
+      "horaKmTrabalhados": "14.00",
+      "setorId": "5",
+      "quantidade": "0.00",
+      "setorNome": "BRITAGEM SECUNDÁRIA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdata\thoraKmTrabalhados\tsetorId\tquantidade\tsetorNome\n150021\t2026-04-01\t13.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n150022\t2026-04-02\t10.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n150023\t2026-04-06\t13.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n150110\t2026-04-07\t13.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n180008\t2026-04-08\t12.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n240029\t2026-04-09\t12.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n360037\t2026-04-10\t12.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n360039\t2026-04-11\t5.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n420001\t2026-04-13\t10.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n480001\t2026-04-14\t14.00\t5\t0.00\tBRITAGEM SECUNDÁRIA\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

@@ -3,6 +3,91 @@ import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { custoSetor } from "../drizzle/schema";
 import { eq, and, asc } from "drizzle-orm";
+import { calcularRateioMem } from "./rateioMem_calc";
+
+/**
+ * Converte o resultado do rateio MEM para o formato sintético da Apuração de Custo.
+ * Gera dados equivalentes aos importados da planilha RSSET.
+ */
+function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: number }) {
+  type Grupo = {
+    grupoNome: string;
+    subsetores: any[];
+    subtotalCusto: number;
+    subtotalDespesa: number;
+    subtotalGeral: number;
+    subtotalCustoTon: number;
+  };
+
+  const gruposMap: Record<string, Grupo> = {};
+
+  for (const sub of rateio.subsetores) {
+    if (!gruposMap[sub.grupoNome]) {
+      gruposMap[sub.grupoNome] = {
+        grupoNome: sub.grupoNome,
+        subsetores: [],
+        subtotalCusto: 0,
+        subtotalDespesa: 0,
+        subtotalGeral: 0,
+        subtotalCustoTon: 0,
+      };
+    }
+
+    const lancVirtual = {
+      id: 0,
+      periodoCustoId: 0,
+      grupoNome: sub.grupoNome,
+      subsetorNome: sub.subsetorNome,
+      setorId: null,
+      custoFixo: "0",
+      custoVariavel: sub.totalSubsetor.toFixed(2),
+      totalCusto: sub.totalSubsetor.toFixed(2),
+      despesaFixa: "0",
+      despesaVariavel: "0",
+      totalDespesa: "0",
+      totalGeral: sub.totalSubsetor.toFixed(2),
+      custoTon: "0",
+      percentualTotal: rateio.totalGeral > 0
+        ? ((sub.totalSubsetor / rateio.totalGeral) * 100).toFixed(4)
+        : "0",
+      ordemExibicao: 0,
+      userId: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    gruposMap[sub.grupoNome].subsetores.push(lancVirtual);
+    gruposMap[sub.grupoNome].subtotalCusto += sub.totalSubsetor;
+    gruposMap[sub.grupoNome].subtotalDespesa += 0;
+    gruposMap[sub.grupoNome].subtotalGeral += sub.totalSubsetor;
+  }
+
+  const ORDEM_GRUPOS: Record<string, number> = {
+    "DESMONTE DE ROCHA": 1,
+    "PEDRA PARA BRITADOR": 2,
+    "BRITAGEM": 3,
+    "EXPEDI\u00c7\u00c3O": 4,
+    "SERVI\u00c7OS AUXILIARES": 5,
+    "ADMINISTRA\u00c7\u00c3O": 6,
+  };
+
+  const gruposOrdenados = Object.values(gruposMap)
+    .sort((a, b) => (ORDEM_GRUPOS[a.grupoNome] ?? 99) - (ORDEM_GRUPOS[b.grupoNome] ?? 99))
+    .map(g => ({
+      ...g,
+      subsetores: [...g.subsetores].sort(
+        (a: any, b: any) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0")
+      ),
+    }));
+
+  return {
+    grupos: gruposOrdenados,
+    totalGeral: rateio.totalGeral,
+    totalCustoTon: 0,
+    lancamentos: gruposOrdenados.flatMap(g => g.subsetores),
+    fonte: "rateio_mem" as const,
+  };
+}
 
 export const custoSetorRouter = router({
   // Listar todos os lançamentos de custo por setor de um período
@@ -103,6 +188,14 @@ export const custoSetorRouter = router({
         .from(custoSetor)
         .where(eq(custoSetor.periodoCustoId, input.periodoCustoId))
         .orderBy(asc(custoSetor.ordemExibicao), asc(custoSetor.grupoNome), asc(custoSetor.subsetorNome));
+
+      // ─── FALLBACK: Se não há dados importados, gerar sintético a partir do rateio MEM ───
+      if (lancamentos.length === 0) {
+        const rateioResult = await calcularRateioMem(input.periodoCustoId);
+        if (rateioResult.subsetores.length > 0) {
+          return convertRateioMemToSintetico(rateioResult);
+        }
+      }
 
       // Agrupar por grupoNome
       type LancItem = typeof lancamentos[0];

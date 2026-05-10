@@ -789,4 +789,11 @@
 - [x] Criar procedure para retornar rateio consolidado por setor MEM
 - [x] Criar procedure para retornar rateio detalhado por equipamento dentro de cada setor
 - [x] Implementar frontend (tela de visualização do rateio MEM)
-- [ ] Integrar rateio na Apuração de Custo e relatório analítico (próximo passo)
+- [x] Integrar rateio na Apuração de Custo e relatório analítico (implementado via fallback MEM)
+
+## Rateio MEM - Melhorias (Passo 3 continuação)
+- [x] Resolver 9 tags sem correspondência no mapeamento de despesas
+- [x] Definir setor padrão para equipamentos sem rateio (fallback via setorId do cadastro)
+- [x] Integrar resultado do rateio MEM na Apuração de Custo (custoSetor.relatorio fallback)
+- [x] Integrar resultado do rateio MEM no Relatório Analítico (custoSetorRas.relatorioAnalitico fallback)
+- [x] Refatorar lógica de cálculo em módulo compartilhado (rateioMem_calc.ts)

@@ -1,0 +1,70 @@
+{
+  "query": "SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 60;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT i.equipamentoTag\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1)\nAND i.equipamentoSistemaId IS NULL\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')\nAND i.equipamentoTag NOT IN ('CD MURIBECA', 'CD SERRA DO MACHADO', 'ENSACADEIRA SOLOMIN', 'ITABLOQUE INSTALAÇÃO', 'MISTURADOR SOLO BRIT', 'QMD 4977', 'SOLOMIN OUTROS', 'TC 07 SOLOMIN', 'TC02 SOLOMIN', 'TC04 SOLOMIN', 'TOA1F53')\nAND i.equipamentoTag NOT IN ('HL760 7A 02', 'PENEIRA 05 OM100', 'GEORGE MACHADO', 'TC04 (H3800 01 RM)', 'TRANSPORTADOR RM')\nORDER BY i.equipamentoTag\nLIMIT 20 OFFSET 60;",
+  "rows": [
+    {
+      "equipamentoTag": "PRANCHA 3 EIXOS"
+    },
+    {
+      "equipamentoTag": "PZE8D13"
+    },
+    {
+      "equipamentoTag": "QMD 0H48"
+    },
+    {
+      "equipamentoTag": "QMD0H48"
+    },
+    {
+      "equipamentoTag": "QMK3A00 (RRF 4H99)"
+    },
+    {
+      "equipamentoTag": "QMN1F10"
+    },
+    {
+      "equipamentoTag": "QMO6E54"
+    },
+    {
+      "equipamentoTag": "QUADRICICLO"
+    },
+    {
+      "equipamentoTag": "QUADRICICLO HONDA"
+    },
+    {
+      "equipamentoTag": "RCR 9H24"
+    },
+    {
+      "equipamentoTag": "REDUTORAS"
+    },
+    {
+      "equipamentoTag": "RMF 4A64"
+    },
+    {
+      "equipamentoTag": "RRE2C34"
+    },
+    {
+      "equipamentoTag": "RRG 5L15"
+    },
+    {
+      "equipamentoTag": "RRG 6B68"
+    },
+    {
+      "equipamentoTag": "RRG5I15"
+    },
+    {
+      "equipamentoTag": "RRH 9F10"
+    },
+    {
+      "equipamentoTag": "RUC4F80"
+    },
+    {
+      "equipamentoTag": "SHV 6A57"
+    },
+    {
+      "equipamentoTag": "TC01"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\nPRANCHA 3 EIXOS\nPZE8D13\nQMD 0H48\nQMD0H48\nQMK3A00 (RRF 4H99)\nQMN1F10\nQMO6E54\nQUADRICICLO\nQUADRICICLO HONDA\nRCR 9H24\nREDUTORAS\nRMF 4A64\nRRE2C34\nRRG 5L15\nRRG 6B68\nRRG5I15\nRRH 9F10\nRUC4F80\nSHV 6A57\nTC01\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

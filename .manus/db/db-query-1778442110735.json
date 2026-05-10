@@ -1,0 +1,106 @@
+{
+  "query": "SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20 OFFSET 40;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20 OFFSET 40;",
+  "rows": [
+    {
+      "id": "22",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 01",
+      "codigoTag": "L566 - 01",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "45",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 02",
+      "codigoTag": "L566 - 02",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "codigoTag": "PENEIRA NW200",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "PENEIRAS VIBRATÓRIAS"
+    },
+    {
+      "id": "78",
+      "nomeDoEquipamento": "PENEIRA OM100 - PENEIRA 06",
+      "codigoTag": "PENEIRA 06",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "PENEIRAS VIBRATÓRIAS"
+    },
+    {
+      "id": "48",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "codigoTag": "FOX 8-20",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "PERFURATRIZES HIDRAULICAS"
+    },
+    {
+      "id": "90001",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01",
+      "codigoTag": "ROCK 01",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "PERFURATRIZES PNEUMÁTICAS"
+    },
+    {
+      "id": "120064",
+      "nomeDoEquipamento": "PRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739",
+      "codigoTag": "HZK8739",
+      "setorId": "7",
+      "setorNome": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "120025",
+      "nomeDoEquipamento": "RANGER MAX (QMK3A00 / RRF 4H99)",
+      "codigoTag": "QMK3A00",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO",
+      "grupoNome": "CARROS PEQUENOS"
+    },
+    {
+      "id": "94",
+      "nomeDoEquipamento": "RRG-6B68",
+      "codigoTag": "RRG-6B68",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "120042",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-05 (B.MOVEL)",
+      "codigoTag": "TC05 B.MOVEL",
+      "setorId": "30002",
+      "setorNome": "BRITAGEM MÓVEL",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "120036",
+      "nomeDoEquipamento": "TRANSP CORREIA TC01 (OM-100 RM)",
+      "codigoTag": "TC01 OM100 RM",
+      "setorId": "3",
+      "setorNome": "BRITAGEM PRIMÁRIA",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "120058",
+      "nomeDoEquipamento": "TRANSPORTE BRITADOR MOVEL METSO",
+      "codigoTag": "TRANSPORTADORA",
+      "setorId": "30002",
+      "setorNome": "BRITAGEM MÓVEL",
+      "grupoNome": "OUTROS PARA CUSTO"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\tsetorId\tsetorNome\tgrupoNome\n22\tPÁ CARREGADEIRA LIEBHERR L566 - 01\tL566 - 01\tNULL\tNULL\tCAMINHÕES INTERNOS\n45\tPÁ CARREGADEIRA LIEBHERR L566 - 02\tL566 - 02\tNULL\tNULL\tCAMINHÕES INTERNOS\n91\tPENEIRA NW200\tPENEIRA NW200\tNULL\tNULL\tPENEIRAS VIBRATÓRIAS\n78\tPENEIRA OM100 - PENEIRA 06\tPENEIRA 06\tNULL\tNULL\tPENEIRAS VIBRATÓRIAS\n48\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\tFOX 8-20\tNULL\tNULL\tPERFURATRIZES HIDRAULICAS\n90001\tPERFURATRIZ WOLF PW5000 - 01\tROCK 01\tNULL\tNULL\tPERFURATRIZES PNEUMÁTICAS\n120064\tPRANCHA 3 EIXOS REBOQUE CARRIAL HZK8739\tHZK8739\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\tCAMINHÕES INTERNOS\n120025\tRANGER MAX (QMK3A00 / RRF 4H99)\tQMK3A00\t1\tADMINISTRACAO\tCARROS PEQUENOS\n94\tRRG-6B68\tRRG-6B68\tNULL\tNULL\tOUTROS PARA CUSTO\n120042\tTRANSP CORREIA TC-05 (B.MOVEL)\tTC05 B.MOVEL\t30002\tBRITAGEM MÓVEL\tOUTROS PARA CUSTO\n120036\tTRANSP CORREIA TC01 (OM-100 RM)\tTC01 OM100 RM\t3\tBRITAGEM PRIMÁRIA\tOUTROS PARA CUSTO\n120058\tTRANSPORTE BRITADOR MOVEL METSO\tTRANSPORTADORA\t30002\tBRITAGEM MÓVEL\tOUTROS PARA CUSTO\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

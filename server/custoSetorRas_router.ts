@@ -3,11 +3,210 @@ import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { custoSetorEquipamento, custoSetorDespesa, lancamentoSalario, equipamentos, setores } from "../drizzle/schema";
 import { eq, and, asc, inArray } from "drizzle-orm";
+import { calcularRateioMem, SETOR_PARA_SUBSETOR_MEM } from "./rateioMem_calc";
 
 // IDs das contas de salário (espelha salarios_router.ts)
 const CONTA_SAL_ADM_ID = 1;
 const CONTA_SAL_DIRETORIA_ID = 12;
 const CONTA_SAL_OPER_ID = 30004;
+
+import type { RateioMemResult } from "./rateioMem_calc";
+
+/**
+ * Converte o resultado do rateio MEM on-the-fly para o formato esperado
+ * pelo Relatório Analítico (mesmo shape dos dados importados da planilha MEM).
+ */
+async function convertRateioMemToAnalitico(
+  rateio: RateioMemResult,
+  salarioRows: { id: number; contaCustoId: number; valor: string; equipamentoId: number | null; setorId: number | null; descricao: string | null }[],
+  db: any,
+) {
+  // Buscar nomes de equipamentos e setores para salários manuais
+  const salEquipIds = salarioRows.filter(r => r.equipamentoId).map(r => r.equipamentoId!);
+  const salSetorIds = salarioRows.filter(r => r.setorId).map(r => r.setorId!);
+
+  let equipNomeMap = new Map<number, string>();
+  let setorNomeMap = new Map<number, string>();
+
+  if (salEquipIds.length > 0) {
+    const eqs = await db.select({ id: equipamentos.id, nomeDoEquipamento: equipamentos.nomeDoEquipamento, codigoTag: equipamentos.codigoTag }).from(equipamentos);
+    for (const e of eqs) {
+      equipNomeMap.set(e.id, e.codigoTag ? `${e.codigoTag} - ${e.nomeDoEquipamento}` : e.nomeDoEquipamento);
+    }
+  }
+
+  if (salSetorIds.length > 0) {
+    const secs = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+    for (const s of secs) {
+      setorNomeMap.set(s.id, s.nome);
+    }
+  }
+
+  // Processar salários Adm/Diretoria como despesas específicas por subsetor
+  const salDespPorSubsetor = new Map<string, { subsetor: string; grupo: string; valor: number; descricao: string }[]>();
+  for (const sal of salarioRows) {
+    if ((sal.contaCustoId === CONTA_SAL_ADM_ID || sal.contaCustoId === CONTA_SAL_DIRETORIA_ID) && sal.setorId) {
+      const setorNome = setorNomeMap.get(sal.setorId);
+      if (!setorNome) continue;
+      const mapping = SETOR_PARA_SUBSETOR[setorNome.toUpperCase()];
+      if (!mapping) continue;
+      const key = `${mapping.grupo}||${mapping.subsetor}`;
+      if (!salDespPorSubsetor.has(key)) salDespPorSubsetor.set(key, []);
+      salDespPorSubsetor.get(key)!.push({
+        subsetor: mapping.subsetor,
+        grupo: mapping.grupo,
+        valor: parseFloat(sal.valor),
+        descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
+          ? "Sal.Adm./Diretoria/Pró-Labore/Encargos [Manual]"
+          : "Sal. Diretoria [Manual]",
+      });
+    }
+  }
+
+  // Montar estrutura de grupos/subsetores a partir do rateio MEM
+  type SubsetorData = {
+    subsetorNome: string;
+    grupoNome: string;
+    equipamentos: any[];
+    despesasEspecificas: any[];
+    totalEquipamentos: number;
+    totalDespesasEspecificas: number;
+    totalSubsetor: number;
+  };
+
+  type GrupoData = {
+    grupoNome: string;
+    subsetores: SubsetorData[];
+    totalGrupo: number;
+  };
+
+  const subsetoresMap: Record<string, SubsetorData> = {};
+
+  for (const sub of rateio.subsetores) {
+    const key = `${sub.grupoNome}||${sub.subsetorNome}`;
+    if (!subsetoresMap[key]) {
+      subsetoresMap[key] = {
+        subsetorNome: sub.subsetorNome,
+        grupoNome: sub.grupoNome,
+        equipamentos: [],
+        despesasEspecificas: [],
+        totalEquipamentos: 0,
+        totalDespesasEspecificas: 0,
+        totalSubsetor: 0,
+      };
+    }
+
+    for (const equip of sub.equipamentos) {
+      // Converter para o formato esperado pelo frontend (mesmo shape de custo_setor_equipamento)
+      const equipRow = {
+        id: equip.equipamentoId,
+        periodoCustoId: 0,
+        subsetorNome: sub.subsetorNome,
+        grupoNome: sub.grupoNome,
+        equipamentoNome: equip.equipamentoTag
+          ? `${equip.equipamentoTag} - ${equip.equipamentoNome}`
+          : equip.equipamentoNome,
+        salOperEncOper: equip.despesas.salOperEncOper.toFixed(2),
+        depreciacao: "0",
+        combustivel: equip.despesas.combustivel.toFixed(2),
+        lubrificantes: equip.despesas.lubrificantes.toFixed(2),
+        pecasDesgaste: equip.despesas.pecasDesgaste.toFixed(2),
+        pecasReposicao: equip.despesas.pecasReposicao.toFixed(2),
+        outrasDespesas: equip.despesas.outrasDespesas.toFixed(2),
+        totalDespesasEquipamento: equip.despesas.total.toFixed(2),
+        horasTrabalhadas: equip.horasNoSetor.toFixed(2),
+        qtdCombustivelLitros: "0",
+        producaoTotal: "0",
+        unidadeProducao: null,
+        ordemExibicao: 0,
+        userId: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      subsetoresMap[key].equipamentos.push(equipRow);
+      subsetoresMap[key].totalEquipamentos += equip.despesas.total;
+    }
+  }
+
+  // Adicionar salários Adm/Diretoria como despesas específicas
+  for (const [key, salItems] of Array.from(salDespPorSubsetor.entries())) {
+    const porDescricao = new Map<string, number>();
+    for (const item of salItems) {
+      porDescricao.set(item.descricao, (porDescricao.get(item.descricao) ?? 0) + item.valor);
+    }
+
+    const firstItem = salItems[0];
+    if (!subsetoresMap[key]) {
+      subsetoresMap[key] = {
+        subsetorNome: firstItem.subsetor,
+        grupoNome: firstItem.grupo,
+        equipamentos: [],
+        despesasEspecificas: [],
+        totalEquipamentos: 0,
+        totalDespesasEspecificas: 0,
+        totalSubsetor: 0,
+      };
+    }
+
+    for (const [descricao, valor] of Array.from(porDescricao.entries())) {
+      const virtualDesp = {
+        id: -(subsetoresMap[key].despesasEspecificas.length + 1000),
+        periodoCustoId: 0,
+        subsetorNome: firstItem.subsetor,
+        grupoNome: firstItem.grupo,
+        descricao,
+        valor: valor.toFixed(2),
+        ordemExibicao: 999,
+        userId: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      subsetoresMap[key].despesasEspecificas.push(virtualDesp);
+      subsetoresMap[key].totalDespesasEspecificas += valor;
+    }
+  }
+
+  // Calcular totais e agrupar
+  const gruposMap: Record<string, GrupoData> = {};
+
+  for (const subsetor of Object.values(subsetoresMap)) {
+    subsetor.totalSubsetor = subsetor.totalEquipamentos + subsetor.totalDespesasEspecificas;
+
+    subsetor.equipamentos.sort(
+      (a: any, b: any) => parseFloat(b.totalDespesasEquipamento ?? "0") - parseFloat(a.totalDespesasEquipamento ?? "0")
+    );
+    subsetor.despesasEspecificas.sort(
+      (a: any, b: any) => parseFloat(b.valor ?? "0") - parseFloat(a.valor ?? "0")
+    );
+
+    if (!gruposMap[subsetor.grupoNome]) {
+      gruposMap[subsetor.grupoNome] = {
+        grupoNome: subsetor.grupoNome,
+        subsetores: [],
+        totalGrupo: 0,
+      };
+    }
+    gruposMap[subsetor.grupoNome].subsetores.push(subsetor);
+    gruposMap[subsetor.grupoNome].totalGrupo += subsetor.totalSubsetor;
+  }
+
+  const totalGeral = Object.values(gruposMap).reduce((s, g) => s + g.totalGrupo, 0);
+
+  const ORDEM_GRUPOS: Record<string, number> = {
+    "DESMONTE DE ROCHA": 1,
+    "PEDRA PARA BRITADOR": 2,
+    "BRITAGEM": 3,
+    "EXPEDIÇÃO": 4,
+    "SERVIÇOS AUXILIARES": 5,
+    "ADMINISTRAÇÃO": 6,
+  };
+
+  const grupos = Object.values(gruposMap).sort(
+    (a, b) => (ORDEM_GRUPOS[a.grupoNome] ?? 99) - (ORDEM_GRUPOS[b.grupoNome] ?? 99)
+  );
+
+  return { grupos, totalGeral, fonte: "rateio_mem" as const };
+}
 
 // Mapeamento setor operacional (tabela setores) → subsetor do relatório analítico
 const SETOR_PARA_SUBSETOR: Record<string, { subsetor: string; grupo: string }> = {
@@ -154,6 +353,15 @@ export const custoSetorRasRouter = router({
           .from(lancamentoSalario)
           .where(eq(lancamentoSalario.periodoCustoId, input.periodoCustoId)),
       ]);
+
+      // ─── FALLBACK: Se não há dados importados (MEM), usar cálculo on-the-fly ───
+      if (equipRows.length === 0) {
+        const rateioResult = await calcularRateioMem(input.periodoCustoId);
+        if (rateioResult.subsetores.length > 0) {
+          // Converter resultado do rateio MEM para o formato do relatório analítico
+          return convertRateioMemToAnalitico(rateioResult, salarioRows, db);
+        }
+      }
 
       // --- Processar salários manuais ---
       // Buscar nomes de equipamentos e setores referenciados

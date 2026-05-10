@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE nomeDoEquipamento LIKE '%HP%' OR nomeDoEquipamento LIKE '%CS440%' OR nomeDoEquipamento LIKE '%CONICO%'\nORDER BY nomeDoEquipamento;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos \nWHERE nomeDoEquipamento LIKE '%HP%' OR nomeDoEquipamento LIKE '%CS440%' OR nomeDoEquipamento LIKE '%CONICO%'\nORDER BY nomeDoEquipamento;",
+  "rows": [
+    {
+      "id": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "codigoTag": "CS440"
+    },
+    {
+      "id": "7",
+      "nomeDoEquipamento": "BRITADOR CÔNICO FURLAN CC1200",
+      "codigoTag": "CC1200"
+    },
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "codigoTag": "NW-200"
+    },
+    {
+      "id": "8",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 01",
+      "codigoTag": "H3800-01"
+    },
+    {
+      "id": "9",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 02",
+      "codigoTag": "H3800-02"
+    },
+    {
+      "id": "80",
+      "nomeDoEquipamento": "BRITADOR HIDROCONICO SANDIVIK H3800 03",
+      "codigoTag": "H3800-03"
+    },
+    {
+      "id": "120060",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW200 HPS (OUY 9579)",
+      "codigoTag": "NW200 HPS"
+    },
+    {
+      "id": "120003",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 01 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 01"
+    },
+    {
+      "id": "120004",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 02 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 02"
+    },
+    {
+      "id": "120020",
+      "nomeDoEquipamento": "PENEIRA VIBRATORIA 3,00 X 1,50 (CS440)",
+      "codigoTag": "PENEIRA 01 CS440"
+    },
+    {
+      "id": "120039",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-03 (PEN.01 CS440)",
+      "codigoTag": "TC03"
+    },
+    {
+      "id": "120040",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-04 (PEN.01 CS440)",
+      "codigoTag": "TC04"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\n92\tBRITADOR CONICO CS440\tCS440\n7\tBRITADOR CÔNICO FURLAN CC1200\tCC1200\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\tNW-200\n8\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\tH3800-01\n9\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\tH3800-02\n80\tBRITADOR HIDROCONICO SANDIVIK H3800 03\tH3800-03\n120060\tBRITADOR MOVEL METSO NW200 HPS (OUY 9579)\tNW200 HPS\n120003\tCALHA VIBRATORIA 01 (CS440)\tCALHA VIBRATORIA 01\n120004\tCALHA VIBRATORIA 02 (CS440)\tCALHA VIBRATORIA 02\n120020\tPENEIRA VIBRATORIA 3,00 X 1,50 (CS440)\tPENEIRA 01 CS440\n120039\tTRANSP CORREIA TC-03 (PEN.01 CS440)\tTC03\n120040\tTRANSP CORREIA TC-04 (PEN.01 CS440)\tTC04\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

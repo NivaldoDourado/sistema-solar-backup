@@ -1,0 +1,170 @@
+{
+  "query": "SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20 OFFSET 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome, g.nome as grupoNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nWHERE e.id IN (19, 92, 43, 42, 39, 41, 6, 51, 58, 8, 9, 80, 82, 90, 50, 30, 29, 3, 22, 45, 79, 38, 37, 40, 10, 78, 91, 48, 52, 97, 87, 86, 94, 88, 93, 90001, 120060, 120059, 120006, 120017, 120018, 120025, 120036, 120042, 84, 120064, 120067, 120002, 120003, 120004, 120007, 120058)\nORDER BY e.nomeDoEquipamento\nLIMIT 20 OFFSET 20;",
+  "rows": [
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "codigoTag": "NVH6212",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "codigoTag": "OER1B00",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "codigoTag": "QMN1F10",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES DA ENTREGA DE MATERIAL"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "codigoTag": "QMO6E54",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES DA ENTREGA DE MATERIAL"
+    },
+    {
+      "id": "97",
+      "nomeDoEquipamento": "CAMINHÃO MUCK MB ACTROS 2426",
+      "codigoTag": "QMD-0H48",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES DA ENTREGA DE MATERIAL"
+    },
+    {
+      "id": "79",
+      "nomeDoEquipamento": "CAMINHAO NNT-5E41 (MELOZA)",
+      "codigoTag": "NNT-5E41",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES MELOSA"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "codigoTag": "PIPA HZH 3961",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES PIPA"
+    },
+    {
+      "id": "43",
+      "nomeDoEquipamento": "CAMINHÃO PIPA AUS-5073",
+      "codigoTag": "PIPA AUS-5073",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES PIPA"
+    },
+    {
+      "id": "39",
+      "nomeDoEquipamento": "CAMINHÃO PIPA HZT-0105",
+      "codigoTag": "PIPA HZT-0105",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES PIPA"
+    },
+    {
+      "id": "6",
+      "nomeDoEquipamento": "COMPRESSOR ELÉTRICO ATLAS COPCO GA160",
+      "codigoTag": "GA160",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "COMPRESSORES DE AR DIESEL"
+    },
+    {
+      "id": "120006",
+      "nomeDoEquipamento": "DRAGA D'AGUA A DIESEL",
+      "codigoTag": "DRAGA D'AGUA A DIESEL",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL"
+    },
+    {
+      "id": "120007",
+      "nomeDoEquipamento": "DRAGA DIESEL 02",
+      "codigoTag": "DRAGA DIESEL 02",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL"
+    },
+    {
+      "id": "19",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "codigoTag": "944C",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "ESCAVADEIRAS HIDRÁULICAS"
+    },
+    {
+      "id": "51",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01",
+      "codigoTag": "R938 - 01",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "ESCAVADEIRAS HIDRÁULICAS"
+    },
+    {
+      "id": "93",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02",
+      "codigoTag": "R938-02",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "ESCAVADEIRAS HIDRÁULICAS"
+    },
+    {
+      "id": "58",
+      "nomeDoEquipamento": "EXPLOSIVOS E ACESSÓRIOS",
+      "codigoTag": "C006",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "OUTROS PARA CUSTO"
+    },
+    {
+      "id": "120067",
+      "nomeDoEquipamento": "LIDER BALANÇA",
+      "codigoTag": "BALANÇA",
+      "setorId": "3",
+      "setorNome": "BRITAGEM PRIMÁRIA",
+      "grupoNome": "BRITADORES"
+    },
+    {
+      "id": "120018",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLAR 966R - 04",
+      "codigoTag": "PA CARREG. 966R04",
+      "setorId": "7",
+      "setorNome": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "grupoNome": "PÁS CARREGADEIRAS"
+    },
+    {
+      "id": "120017",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLER 966C - 03",
+      "codigoTag": "PA CARREG. 966 03",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "PÁS CARREGADEIRAS"
+    },
+    {
+      "id": "82",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03",
+      "codigoTag": "HL760-9",
+      "setorId": "NULL",
+      "setorNome": "NULL",
+      "grupoNome": "CAMINHÕES INTERNOS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\tsetorId\tsetorNome\tgrupoNome\n38\tCAMINHÃO BASCULANTE NVH-6212\tNVH6212\tNULL\tNULL\tCAMINHÕES INTERNOS\n40\tCAMINHÃO BASCULANTE OER1B00\tOER1B00\tNULL\tNULL\tCAMINHÕES INTERNOS\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\tQMN1F10\tNULL\tNULL\tCAMINHÕES DA ENTREGA DE MATERIAL\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\tQMO6E54\tNULL\tNULL\tCAMINHÕES DA ENTREGA DE MATERIAL\n97\tCAMINHÃO MUCK MB ACTROS 2426\tQMD-0H48\tNULL\tNULL\tCAMINHÕES DA ENTREGA DE MATERIAL\n79\tCAMINHAO NNT-5E41 (MELOZA)\tNNT-5E41\tNULL\tNULL\tCAMINHÕES MELOSA\n50\tCAMINHÃO PIPA  HZH 3961\tPIPA HZH 3961\tNULL\tNULL\tCAMINHÕES PIPA\n43\tCAMINHÃO PIPA AUS-5073\tPIPA AUS-5073\tNULL\tNULL\tCAMINHÕES PIPA\n39\tCAMINHÃO PIPA HZT-0105\tPIPA HZT-0105\tNULL\tNULL\tCAMINHÕES PIPA\n6\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\tGA160\tNULL\tNULL\tCOMPRESSORES DE AR DIESEL\n120006\tDRAGA D'AGUA A DIESEL\tDRAGA D'AGUA A DIESEL\t9\tDESMONTE PRIMÁRIO\tDRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL\n120007\tDRAGA DIESEL 02\tDRAGA DIESEL 02\t9\tDESMONTE PRIMÁRIO\tDRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL\n19\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t944C\tNULL\tNULL\tESCAVADEIRAS HIDRÁULICAS\n51\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\tR938 - 01\tNULL\tNULL\tESCAVADEIRAS HIDRÁULICAS\n93\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\tR938-02\tNULL\tNULL\tESCAVADEIRAS HIDRÁULICAS\n58\tEXPLOSIVOS E ACESSÓRIOS\tC006\tNULL\tNULL\tOUTROS PARA CUSTO\n120067\tLIDER BALANÇA\tBALANÇA\t3\tBRITAGEM PRIMÁRIA\tBRITADORES\n120018\tPA CARREGADEIRA CATERPILLAR 966R - 04\tPA CARREG. 966R04\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\tPÁS CARREGADEIRAS\n120017\tPA CARREGADEIRA CATERPILLER 966C - 03\tPA CARREG. 966 03\t9\tDESMONTE PRIMÁRIO\tPÁS CARREGADEIRAS\n82\tPÁ CARREGADEIRA HYUNDAI HL760 03\tHL760-9\tNULL\tNULL\tCAMINHÕES INTERNOS\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

@@ -31,7 +31,7 @@ describe("rateioMem_router", () => {
     });
 
     const result = await caller.calcularRateio({ periodoCustoId: 60001 });
-    expect(result).toEqual({ subsetores: [], totalGeral: 0, equipamentosSemRateio: [] });
+    expect(result).toEqual({ subsetores: [], totalGeral: 0, equipamentosSemRateio: [], equipamentosSemCorrespondencia: [] });
   });
 
   it("should return empty result when period not found", async () => {
@@ -50,7 +50,7 @@ describe("rateioMem_router", () => {
     });
 
     const result = await caller.calcularRateio({ periodoCustoId: 99999 });
-    expect(result).toEqual({ subsetores: [], totalGeral: 0, equipamentosSemRateio: [] });
+    expect(result).toEqual({ subsetores: [], totalGeral: 0, equipamentosSemRateio: [], equipamentosSemCorrespondencia: [] });
   });
 
   it("should have correct SETOR_PARA_SUBSETOR_MEM mappings", async () => {
