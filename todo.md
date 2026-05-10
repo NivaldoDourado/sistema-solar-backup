@@ -727,3 +727,9 @@
 ## Bug: Drill-Down Nível 2 - Subcontas e Outras Desp. Setores
 - [x] Contas de setor do Fluxo (Desp. Administrativas, Consultorias, etc.): mostrar subcontas individuais com valores no Nível 2 (como Energia Elétrica faz)
 - [x] Outras Despesas de Setores (Import Equip.): adicionar drill-down para subsetores (ALMOXARIFADO, OUTROS SERVIÇOS, etc.) com valores
+
+## Drill-Down Nível 3 - Outras Despesas de Setores (Subsetor → Tags → Itens)
+- [x] Criar procedure backend para listar itens detalhados por tag de Outras Desp. Setores
+- [x] Adicionar clique no subsetor (Nível 2) para abrir Nível 3 com tags individuais e valores
+- [x] Adicionar clique na tag (Nível 3) para abrir Nível 4 com lista de itens detalhados (produto, data, valor)
+- [x] Atualizar breadcrumb para navegação completa: Conta > Subsetores > Tags > Itens

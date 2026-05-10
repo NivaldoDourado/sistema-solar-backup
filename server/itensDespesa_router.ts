@@ -459,6 +459,38 @@ export const itensDespesaRouter = router({
       return { ranking, totais };
     }),
 
+  // Listar itens detalhados de uma tag de Outras Desp. Setores (todas classificações)
+  listarItensPorTagOutrasDesp: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+      equipamentoTag: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const result = await db2
+        .select()
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          eq(itemDespesaImportado.equipamentoTag, input.equipamentoTag),
+        ))
+        .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+      return result.map(r => ({
+        id: r.id,
+        sequencia: r.sequencia,
+        data: r.data,
+        produto: r.produto,
+        grupoProduto: r.grupoProduto,
+        classificacao: r.classificacao,
+        quantidade: Number(r.quantidade) || 0,
+        custo: Number(r.custo) || 0,
+        centroCusto: r.centroCusto,
+        hodometro: r.hodometro ? Number(r.hodometro) : null,
+        observacoes: r.observacoes,
+      }));
+    }),
+
   // Excluir itens detalhados de um período (para reimportação)
   excluirPorPeriodo: protectedProcedure
     .input(z.object({

@@ -117,9 +117,13 @@ export default function ApuracaoCusto() {
     contaNome: string;
     contaTotal: number;
     classificacao?: string; // campo da classificação no itemDespesaImportado
-    nivel: 1 | 2 | 3;
+    nivel: 1 | 2 | 3 | 4 | 5;
     equipamentoTag?: string;
     equipamentoDescricao?: string;
+    // Campos para drill-down de Outras Desp. Setores
+    subsetor?: string; // nome do subsetor selecionado (Nível 3)
+    subsetorTag?: string; // tag selecionada dentro do subsetor (Nível 4)
+    subsetorTagDescricao?: string;
   };
   const [drillDown, setDrillDown] = useState<DrillDownState | null>(null);
 
@@ -183,6 +187,12 @@ export default function ApuracaoCusto() {
   const { data: drillItens, isLoading: drillItensLoading } = trpc.itensDespesa.listarItensDetalhados.useQuery(
     { periodoCustoId: selectedPeriodoId!, equipamentoTag: drillDown?.equipamentoTag ?? "", classificacao: drillDown?.classificacao ?? "" },
     { enabled: !!selectedPeriodoId && !!drillDown?.equipamentoTag && !!drillDown?.classificacao && drillDown?.nivel === 3 }
+  );
+
+  // Drill-down nível 4 (Outras Desp. Setores): itens detalhados por tag
+  const { data: drillItensTag, isLoading: drillItensTagLoading } = trpc.itensDespesa.listarItensPorTagOutrasDesp.useQuery(
+    { periodoCustoId: selectedPeriodoId!, equipamentoTag: drillDown?.subsetorTag ?? "" },
+    { enabled: !!selectedPeriodoId && !!drillDown?.subsetorTag && isOutrasDesp && drillDown?.nivel === 4 }
   );
 
   // Composição por origem para drill-down nível 1
@@ -1713,13 +1723,33 @@ export default function ApuracaoCusto() {
                   <span>{drillDown.classificacao ? "Equipamentos" : isOutrasDesp ? "Subsetores" : "Setores"}</span>
                 </>
               )}
-              {drillDown?.nivel === 3 && (
+              {drillDown?.nivel === 3 && !isOutrasDesp && (
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 2, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">Equipamentos</button>
                   <span className="text-muted-foreground">›</span>
                   <span className="truncate max-w-[200px]">{drillDown.equipamentoDescricao || drillDown.equipamentoTag}</span>
+                </>
+              )}
+              {drillDown?.nivel === 3 && isOutrasDesp && (
+                <>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, subsetor: undefined, subsetorTag: undefined, subsetorTagDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 2, subsetor: undefined, subsetorTag: undefined, subsetorTagDescricao: undefined } : null)} className="text-blue-600 hover:underline">Subsetores</button>
+                  <span className="text-muted-foreground">›</span>
+                  <span>{drillDown.subsetor}</span>
+                </>
+              )}
+              {drillDown?.nivel === 4 && isOutrasDesp && (
+                <>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, subsetor: undefined, subsetorTag: undefined, subsetorTagDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 2, subsetor: undefined, subsetorTag: undefined, subsetorTagDescricao: undefined } : null)} className="text-blue-600 hover:underline">Subsetores</button>
+                  <span className="text-muted-foreground">›</span>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 3, subsetorTag: undefined, subsetorTagDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.subsetor}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <span className="truncate max-w-[200px]">{drillDown.subsetorTagDescricao || drillDown.subsetorTag}</span>
                 </>
               )}
             </DialogTitle>
@@ -1959,10 +1989,14 @@ export default function ApuracaoCusto() {
                         </TableHeader>
                         <TableBody>
                           {drillSubsetores.subsetores.map((s, idx) => (
-                            <TableRow key={s.setor}>
+                            <TableRow
+                              key={s.setor}
+                              className="cursor-pointer hover:bg-muted/60 transition-colors"
+                              onClick={() => setDrillDown(d => d ? { ...d, nivel: 3, subsetor: s.setor } : null)}
+                            >
                               <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
                               <TableCell>
-                                <div className="font-medium">{s.setor}</div>
+                                <div className="font-medium text-blue-700 hover:underline">{s.setor}</div>
                                 <div className="text-xs text-muted-foreground mt-0.5">
                                   {s.itens.map(i => i.tag).join(", ")}
                                 </div>
@@ -1995,8 +2029,8 @@ export default function ApuracaoCusto() {
             </div>
           )}
 
-          {/* Nível 3: Itens individuais por equipamento */}
-          {drillDown?.nivel === 3 && (
+          {/* Nível 3: Itens individuais por equipamento (contas de equipamento) */}
+          {drillDown?.nivel === 3 && !isOutrasDesp && (
             <div>
               {drillItensLoading ? (
                 <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens...</div>
@@ -2038,6 +2072,99 @@ export default function ApuracaoCusto() {
                 </div>
               ) : (
                 <div className="py-8 text-center text-muted-foreground text-sm">Nenhum item encontrado.</div>
+              )}
+            </div>
+          )}
+
+          {/* Nível 3 (Outras Desp. Setores): Tags do subsetor selecionado */}
+          {drillDown?.nivel === 3 && isOutrasDesp && drillDown.subsetor && (
+            <div>
+              {drillSubsetores && (() => {
+                const subsetorData = drillSubsetores.subsetores.find(s => s.setor === drillDown.subsetor);
+                if (!subsetorData) return <div className="py-8 text-center text-muted-foreground text-sm">Subsetor não encontrado.</div>;
+                const tags = subsetorData.itens.sort((a, b) => b.valor - a.valor);
+                return (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-muted-foreground">
+                      Tags do subsetor {drillDown.subsetor} — <span className="font-mono">R$ {fmt(subsetorData.valor)}</span>
+                    </h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-8">#</TableHead>
+                          <TableHead>Tag</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                          <TableHead className="text-right w-24">%</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tags.map((t, idx) => (
+                          <TableRow
+                            key={t.tag}
+                            className="cursor-pointer hover:bg-muted/60 transition-colors"
+                            onClick={() => setDrillDown(d => d ? { ...d, nivel: 4, subsetorTag: t.tag, subsetorTagDescricao: t.descricao } : null)}
+                          >
+                            <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                            <TableCell className="font-medium text-blue-700 hover:underline">{t.tag}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{t.descricao}</TableCell>
+                            <TableCell className="text-right font-mono font-medium">{fmt(t.valor)}</TableCell>
+                            <TableCell className="text-right font-mono text-muted-foreground">
+                              {subsetorData.valor > 0 ? fmtPct((t.valor / subsetorData.valor) * 100) : "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow className="font-semibold bg-muted/40">
+                          <TableCell></TableCell>
+                          <TableCell colSpan={2}>Total ({tags.length} tags)</TableCell>
+                          <TableCell className="text-right font-mono">{fmt(subsetorData.valor)}</TableCell>
+                          <TableCell className="text-right font-mono">100,0%</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Nível 4 (Outras Desp. Setores): Itens detalhados da tag */}
+          {drillDown?.nivel === 4 && isOutrasDesp && drillDown.subsetorTag && (
+            <div>
+              {drillItensTagLoading ? (
+                <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens...</div>
+              ) : drillItensTag && drillItensTag.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{drillItensTag.length} itens</span>
+                    <span className="font-mono font-semibold">Total: R$ {fmt(drillItensTag.reduce((s, i) => s + i.custo, 0))}</span>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-20">Data</TableHead>
+                        <TableHead>Produto</TableHead>
+                        <TableHead className="text-right w-16">Qtd</TableHead>
+                        <TableHead className="text-right w-32">Valor (R$)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {drillItensTag.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-xs font-mono">{item.data || "—"}</TableCell>
+                          <TableCell className="text-sm">
+                            <span className="font-medium">{item.produto}</span>
+                            {item.grupoProduto && <span className="text-xs text-muted-foreground ml-1">({item.grupoProduto})</span>}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">{item.quantidade > 0 ? item.quantidade.toLocaleString("pt-BR") : "—"}</TableCell>
+                          <TableCell className="text-right font-mono font-medium">{fmt(item.custo)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground text-sm">Nenhum item encontrado para esta tag.</div>
               )}
             </div>
           )}
