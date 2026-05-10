@@ -1,0 +1,21 @@
+CREATE TABLE `lancamento_fluxo` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`periodoCustoId` int NOT NULL,
+	`contaPrincipalCodigo` varchar(20) NOT NULL,
+	`contaPrincipalNome` varchar(255) NOT NULL,
+	`contaSistema` varchar(255) NOT NULL,
+	`setor` varchar(100) NOT NULL,
+	`contaAgrupadaCodigo` varchar(20),
+	`contaAgrupadaNome` varchar(255),
+	`contaSubagrupadaCodigo` varchar(20),
+	`contaSubagrupadaNome` varchar(255),
+	`nivel` int NOT NULL DEFAULT 2,
+	`valor` decimal(14,2) NOT NULL DEFAULT '0',
+	`observacoes` text,
+	`isRateio` boolean DEFAULT false,
+	`percentualRateio` decimal(5,4),
+	`userId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `lancamento_fluxo_id` PRIMARY KEY(`id`)
+);

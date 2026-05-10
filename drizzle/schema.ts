@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, date } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, date, boolean } from "drizzle-orm/mysql-core";
 
 /**
  * Sistema de Gestão de Frotas e Operações
@@ -242,6 +242,40 @@ export const itemDespesaImportado = mysqlTable("item_despesa_importado", {
 });
 export type ItemDespesaImportado = typeof itemDespesaImportado.$inferSelect;
 export type InsertItemDespesaImportado = typeof itemDespesaImportado.$inferInsert;
+
+// Lançamento de Fluxo Realizado (importação da planilha Fluxo de Caixa DataGold)
+export const lancamentoFluxo = mysqlTable("lancamento_fluxo", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(),
+  // Conta principal (nível 1)
+  contaPrincipalCodigo: varchar("contaPrincipalCodigo", { length: 20 }).notNull(),
+  contaPrincipalNome: varchar("contaPrincipalNome", { length: 255 }).notNull(),
+  // Conta do sistema SOLAR correspondente
+  contaSistema: varchar("contaSistema", { length: 255 }).notNull(),
+  // Setor destino
+  setor: varchar("setor", { length: 100 }).notNull(),
+  // Conta agrupada (nível 2) - pode ser a própria principal se não tem subcontas
+  contaAgrupadaCodigo: varchar("contaAgrupadaCodigo", { length: 20 }),
+  contaAgrupadaNome: varchar("contaAgrupadaNome", { length: 255 }),
+  // Conta subagrupada (nível 3)
+  contaSubagrupadaCodigo: varchar("contaSubagrupadaCodigo", { length: 20 }),
+  contaSubagrupadaNome: varchar("contaSubagrupadaNome", { length: 255 }),
+  // Nível hierárquico do lançamento (1=principal, 2=agrupada, 3=subagrupada, 4=sub-sub)
+  nivel: int("nivel").notNull().default(2),
+  // Valor do lançamento
+  valor: decimal("valor", { precision: 14, scale: 2 }).notNull().default("0"),
+  // Observações (ex: "compra de areia")
+  observacoes: text("observacoes"),
+  // Se é resultado de rateio (energia produção)
+  isRateio: boolean("isRateio").default(false),
+  percentualRateio: decimal("percentualRateio", { precision: 5, scale: 4 }),
+  // Metadados
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LancamentoFluxo = typeof lancamentoFluxo.$inferSelect;
+export type InsertLancamentoFluxo = typeof lancamentoFluxo.$inferInsert;
 
 // Lançamento de Custo por Setor (Custo Sintético por Setor)
 export const custoSetor = mysqlTable("custo_setor", {

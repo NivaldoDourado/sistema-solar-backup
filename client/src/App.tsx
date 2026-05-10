@@ -32,6 +32,7 @@ import AvaliacaoGlobal from "./pages/AvaliacaoGlobal";
 import ComparativosHistoricos from "./pages/ComparativosHistoricos";
 import SimulacaoCusto from "./pages/SimulacaoCusto";
 import ImportDespesas from "./pages/ImportDespesas";
+import ImportFluxo from "./pages/ImportFluxo";
 import RevisaoCorrespondencias from "./pages/RevisaoCorrespondencias";
 import Manutencao from "./pages/Manutencao";
 import Usuarios from "./pages/Usuarios";
@@ -206,6 +207,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <ItensDespesa />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/import-fluxo"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <ImportFluxo />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

@@ -685,3 +685,14 @@
 - [x] Cards de resumo: total litros, custo, horas trabalhadas, média lt/hr, R$/hr, R$/litro
 - [x] Identificação de anomalias de consumo (> 2x ou < 0.3x da média, destacadas em vermelho)
 - [x] Escrever 8 testes unitários para calcularConsumoCombustivel (119 testes total passando)
+
+## Passo 1: Importar Planilha Fluxo Realizado (Abril/26+)
+- [x] Analisar estrutura da planilha 04 ABRIL FLUXO REALIZADO (hierarquia de contas nível 1/2/3)
+- [x] Criar mapa de correspondências: contas a importar com setor destino e conta do sistema (importFluxo_correspondencias.ts)
+- [x] Criar mapa de exclusões: contas que não serão importadas (receitas, salários, fretes, investimentos, impostos)
+- [x] Criar schema DB lancamento_fluxo com hierarquia completa + rateio
+- [x] Implementar parser parsePlanilhaFluxo com detecção de hierarquia (4 níveis)
+- [x] Implementar lógica de rateio especial (Energia: 6% Desmonte, 23% Brit.Primária, 71% Brit.Sec/Terc/Quart)
+- [x] Criar tela frontend ImportFluxo.tsx com 3 steps (upload, revisão, resultado)
+- [x] Registrar rota /import-fluxo e item no menu lateral
+- [x] Testes unitários (9 testes, 128 total passando)
