@@ -741,3 +741,8 @@
 - [x] Criar formulário frontend para lançar salários: selecionar conta, valor, destino (equipamento ou setor)
 - [x] Regras de alocação: Sal.Oper. → equipamentos; Sal.Adm./Diretoria/Pró-Labore/Encargos → setores; Sal. Diretoria → setores
 - [x] Listar lançamentos existentes com opção de editar/excluir
+
+## Melhoria Formulário de Salários
+- [x] Substituir Select de equipamento por Combobox com busca por digitação
+- [x] Substituir Select de setor por Combobox com busca por digitação
+- [x] Garantir que o período está claramente selecionável no formulário de lançamento

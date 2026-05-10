@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
 import { Trash2, Edit2, Plus, DollarSign, Users, Building2, Truck } from "lucide-react";
 import {
@@ -13,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -29,11 +29,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// IDs das contas de salário (devem corresponder ao backend)
-const CONTA_SAL_ADM_ID = 1;
-const CONTA_SAL_DIRETORIA_ID = 12;
-const CONTA_SAL_OPER_ID = 30004;
-
 function formatCurrency(value: number | string): string {
   const num = typeof value === "string" ? parseFloat(value) : value;
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -45,12 +40,13 @@ export default function LancamentoSalarios() {
   const [editingId, setEditingId] = useState<number | null>(null);
 
   // Form state
-  const [formContaCustoId, setFormContaCustoId] = useState<number | null>(null);
+  const [formContaCustoId, setFormContaCustoId] = useState<string>("");
   const [formValor, setFormValor] = useState("");
-  const [formEquipamentoId, setFormEquipamentoId] = useState<number | null>(null);
-  const [formSetorId, setFormSetorId] = useState<number | null>(null);
+  const [formEquipamentoId, setFormEquipamentoId] = useState<string>("");
+  const [formSetorId, setFormSetorId] = useState<string>("");
   const [formDescricao, setFormDescricao] = useState("");
   const [formObservacoes, setFormObservacoes] = useState("");
+  const [formPeriodoId, setFormPeriodoId] = useState<string>("");
 
   // Queries
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
@@ -97,22 +93,41 @@ export default function LancamentoSalarios() {
 
   // Derived state
   const selectedConta = useMemo(
-    () => contasSalario?.find(c => c.id === formContaCustoId),
+    () => contasSalario?.find(c => c.id === Number(formContaCustoId)),
     [contasSalario, formContaCustoId]
   );
   const tipoDestino = selectedConta?.tipoDestino;
 
-  // Período selecionado
+  // Período selecionado (para exibição na tabela)
   const periodoSelecionado = useMemo(
     () => periodos?.find(p => p.id === periodoId),
     [periodos, periodoId]
   );
 
-  // Equipamentos e setores para lookup de nomes
+  // Options para SearchableSelect
+  const equipamentosOptions = useMemo(() => {
+    if (!equipamentosList) return [];
+    return equipamentosList
+      .filter((e: any) => e.ativo === "sim")
+      .map((e: any) => ({
+        value: String(e.id),
+        label: e.codigoTag ? `${e.codigoTag} - ${e.nomeDoEquipamento}` : e.nomeDoEquipamento,
+      }));
+  }, [equipamentosList]);
+
+  const setoresOptions = useMemo(() => {
+    if (!setoresList) return [];
+    return setoresList.map((s: any) => ({
+      value: String(s.id),
+      label: s.nome,
+    }));
+  }, [setoresList]);
+
+  // Equipamentos e setores para lookup de nomes (tabela)
   const equipamentosMap = useMemo(() => {
     const map: Record<number, string> = {};
     if (equipamentosList) {
-      for (const e of equipamentosList) {
+      for (const e of equipamentosList as any[]) {
         map[e.id] = e.codigoTag ? `${e.codigoTag} - ${e.nomeDoEquipamento}` : e.nomeDoEquipamento;
       }
     }
@@ -122,7 +137,7 @@ export default function LancamentoSalarios() {
   const setoresMap = useMemo(() => {
     const map: Record<number, string> = {};
     if (setoresList) {
-      for (const s of setoresList) {
+      for (const s of setoresList as any[]) {
         map[s.id] = s.nome;
       }
     }
@@ -130,34 +145,49 @@ export default function LancamentoSalarios() {
   }, [setoresList]);
 
   function resetForm() {
-    setFormContaCustoId(null);
+    setFormContaCustoId("");
     setFormValor("");
-    setFormEquipamentoId(null);
-    setFormSetorId(null);
+    setFormEquipamentoId("");
+    setFormSetorId("");
     setFormDescricao("");
     setFormObservacoes("");
+    setFormPeriodoId("");
     setEditingId(null);
   }
 
   function openCreateDialog() {
     resetForm();
+    // Pré-selecionar o período da página
+    if (periodoId) setFormPeriodoId(String(periodoId));
     setDialogOpen(true);
   }
 
   function openEditDialog(lanc: any) {
     setEditingId(lanc.id);
-    setFormContaCustoId(lanc.contaCustoId);
+    setFormContaCustoId(String(lanc.contaCustoId));
     setFormValor(String(lanc.valor));
-    setFormEquipamentoId(lanc.equipamentoId);
-    setFormSetorId(lanc.setorId);
+    setFormEquipamentoId(lanc.equipamentoId ? String(lanc.equipamentoId) : "");
+    setFormSetorId(lanc.setorId ? String(lanc.setorId) : "");
     setFormDescricao(lanc.descricao || "");
     setFormObservacoes(lanc.observacoes || "");
+    if (periodoId) setFormPeriodoId(String(periodoId));
     setDialogOpen(true);
   }
 
   function handleSubmit() {
-    if (!formContaCustoId || !formValor || !periodoId) {
-      toast.error("Preencha todos os campos obrigatórios.");
+    if (!formContaCustoId || !formValor || !formPeriodoId) {
+      toast.error("Preencha todos os campos obrigatórios (conta, período e valor).");
+      return;
+    }
+
+    const contaId = Number(formContaCustoId);
+    const conta = contasSalario?.find(c => c.id === contaId);
+    if (conta?.tipoDestino === "equipamento" && !formEquipamentoId) {
+      toast.error("Selecione o equipamento de destino.");
+      return;
+    }
+    if (conta?.tipoDestino === "setor" && !formSetorId) {
+      toast.error("Selecione o setor de destino.");
       return;
     }
 
@@ -165,18 +195,18 @@ export default function LancamentoSalarios() {
       updateMutation.mutate({
         id: editingId,
         valor: formValor,
-        equipamentoId: formEquipamentoId ?? undefined,
-        setorId: formSetorId ?? undefined,
+        equipamentoId: formEquipamentoId ? Number(formEquipamentoId) : undefined,
+        setorId: formSetorId ? Number(formSetorId) : undefined,
         descricao: formDescricao || undefined,
         observacoes: formObservacoes || undefined,
       });
     } else {
       createMutation.mutate({
-        periodoCustoId: periodoId,
-        contaCustoId: formContaCustoId,
+        periodoCustoId: Number(formPeriodoId),
+        contaCustoId: contaId,
         valor: formValor,
-        equipamentoId: formEquipamentoId ?? undefined,
-        setorId: formSetorId ?? undefined,
+        equipamentoId: formEquipamentoId ? Number(formEquipamentoId) : undefined,
+        setorId: formSetorId ? Number(formSetorId) : undefined,
         descricao: formDescricao || undefined,
         observacoes: formObservacoes || undefined,
       });
@@ -390,24 +420,47 @@ export default function LancamentoSalarios() {
 
       {/* Dialog de criação/edição */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); setDialogOpen(open); }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
             <DialogTitle>
               {editingId ? "Editar Lançamento de Salário" : "Novo Lançamento de Salário"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {/* Período */}
+            <div className="space-y-2">
+              <Label>Período de Apropriação *</Label>
+              <Select
+                value={formPeriodoId}
+                onValueChange={setFormPeriodoId}
+                disabled={!!editingId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent>
+                  {periodos?.map((p) => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.mes}/{p.ano}{p.fechado ? " (Fechado)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                O salário será apropriado neste período de custo
+              </p>
+            </div>
+
             {/* Conta de Salário */}
             <div className="space-y-2">
               <Label>Conta de Salário *</Label>
               <Select
-                value={formContaCustoId?.toString() ?? ""}
+                value={formContaCustoId}
                 onValueChange={(v) => {
-                  const id = Number(v);
-                  setFormContaCustoId(id);
+                  setFormContaCustoId(v);
                   // Limpar destino ao trocar conta
-                  setFormEquipamentoId(null);
-                  setFormSetorId(null);
+                  setFormEquipamentoId("");
+                  setFormSetorId("");
                 }}
                 disabled={!!editingId}
               >
@@ -444,49 +497,33 @@ export default function LancamentoSalarios() {
               />
             </div>
 
-            {/* Destino: Equipamento */}
+            {/* Destino: Equipamento com busca */}
             {tipoDestino === "equipamento" && (
               <div className="space-y-2">
                 <Label>Equipamento *</Label>
-                <Select
-                  value={formEquipamentoId?.toString() ?? ""}
-                  onValueChange={(v) => setFormEquipamentoId(Number(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o equipamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {equipamentosList
-                      ?.filter(e => e.ativo === "sim")
-                      .map(e => (
-                        <SelectItem key={e.id} value={e.id.toString()}>
-                          {e.codigoTag ? `${e.codigoTag} - ` : ""}{e.nomeDoEquipamento}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  options={equipamentosOptions}
+                  value={formEquipamentoId}
+                  onValueChange={setFormEquipamentoId}
+                  placeholder="Selecione o equipamento"
+                  searchPlaceholder="Buscar equipamento (código ou nome)..."
+                  emptyMessage="Nenhum equipamento encontrado."
+                />
               </div>
             )}
 
-            {/* Destino: Setor */}
+            {/* Destino: Setor com busca */}
             {tipoDestino === "setor" && (
               <div className="space-y-2">
                 <Label>Setor *</Label>
-                <Select
-                  value={formSetorId?.toString() ?? ""}
-                  onValueChange={(v) => setFormSetorId(Number(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o setor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {setoresList?.map(s => (
-                      <SelectItem key={s.id} value={s.id.toString()}>
-                        {s.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  options={setoresOptions}
+                  value={formSetorId}
+                  onValueChange={setFormSetorId}
+                  placeholder="Selecione o setor"
+                  searchPlaceholder="Buscar setor..."
+                  emptyMessage="Nenhum setor encontrado."
+                />
               </div>
             )}
 
