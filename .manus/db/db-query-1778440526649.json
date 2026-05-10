@@ -1,0 +1,150 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       MIN(s.nome) as setor_unico,\n       SUM(pd.horaKmTrabalhados) as horas_totais\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos <= 1\nORDER BY horas_totais DESC\nLIMIT 20 OFFSET 19;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       MIN(s.nome) as setor_unico,\n       SUM(pd.horaKmTrabalhados) as horas_totais\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos <= 1\nORDER BY horas_totais DESC\nLIMIT 20 OFFSET 19;\n",
+  "rows": [
+    {
+      "id": "48",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "195.00"
+    },
+    {
+      "id": "93",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "horas_totais": "176.97"
+    },
+    {
+      "id": "51",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01",
+      "setores_distintos": "1",
+      "setor_unico": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "horas_totais": "171.99"
+    },
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "166.98"
+    },
+    {
+      "id": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "161.98"
+    },
+    {
+      "id": "10",
+      "nomeDoEquipamento": "BRITADOR DE IMPACTO FURLAN VSI OM100",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "144.00"
+    },
+    {
+      "id": "78",
+      "nomeDoEquipamento": "PENEIRA OM100 - PENEIRA 06",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "144.00"
+    },
+    {
+      "id": "95",
+      "nomeDoEquipamento": "EMPILHADEIRA EP-01",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "143.99"
+    },
+    {
+      "id": "90001",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "141.00"
+    },
+    {
+      "id": "8",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 01",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "141.00"
+    },
+    {
+      "id": "6",
+      "nomeDoEquipamento": "COMPRESSOR ELÉTRICO ATLAS COPCO GA160",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "129.00"
+    },
+    {
+      "id": "89",
+      "nomeDoEquipamento": "BRITADOR PRIMARIO MOVEL METSO NW-100",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM PRIMÁRIA",
+      "horas_totais": "128.00"
+    },
+    {
+      "id": "79",
+      "nomeDoEquipamento": "CAMINHAO NNT-5E41 (MELOZA)",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "126.00"
+    },
+    {
+      "id": "39",
+      "nomeDoEquipamento": "CAMINHÃO PIPA HZT-0105",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "120.00"
+    },
+    {
+      "id": "75",
+      "nomeDoEquipamento": "MARTELO PERFURATRIZ FOX 8-20",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "109.00"
+    },
+    {
+      "id": "96",
+      "nomeDoEquipamento": "EMPILHADEIRA EP-02",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "70.98"
+    },
+    {
+      "id": "43",
+      "nomeDoEquipamento": "CAMINHÃO PIPA AUS-5073",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "66.99"
+    },
+    {
+      "id": "81",
+      "nomeDoEquipamento": "PA CARREGADEIRA HYUNDAI HL757-9",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "63.97"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "18.00"
+    },
+    {
+      "id": "2",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "4.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tsetores_distintos\tsetor_unico\thoras_totais\n48\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\t1\tDESMONTE PRIMÁRIO\t195.00\n93\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\t1\tCARGA E TRANSPORTE DE PEDRA DA MINA\t176.97\n51\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\t1\tCARGA E TRANSPORTE DE PEDRA DA MINA\t171.99\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\t1\tBRITAGEM SECUNDÁRIA\t166.98\n91\tPENEIRA NW200\t1\tBRITAGEM SECUNDÁRIA\t161.98\n10\tBRITADOR DE IMPACTO FURLAN VSI OM100\t1\tBRITAGEM QUARTENÁRIA\t144.00\n78\tPENEIRA OM100 - PENEIRA 06\t1\tBRITAGEM QUARTENÁRIA\t144.00\n95\tEMPILHADEIRA EP-01\t1\tOUTROS SERVIÇOS AUXILIARES\t143.99\n90001\tPERFURATRIZ WOLF PW5000 - 01\t1\tDESMONTE PRIMÁRIO\t141.00\n8\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\t1\tBRITAGEM QUARTENÁRIA\t141.00\n6\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\t1\tDESMONTE PRIMÁRIO\t129.00\n89\tBRITADOR PRIMARIO MOVEL METSO NW-100\t1\tBRITAGEM PRIMÁRIA\t128.00\n79\tCAMINHAO NNT-5E41 (MELOZA)\t1\tOUTROS SERVIÇOS AUXILIARES\t126.00\n39\tCAMINHÃO PIPA HZT-0105\t1\tOUTROS SERVIÇOS AUXILIARES\t120.00\n75\tMARTELO PERFURATRIZ FOX 8-20\t1\tDESMONTE PRIMÁRIO\t109.00\n96\tEMPILHADEIRA EP-02\t1\tOUTROS SERVIÇOS AUXILIARES\t70.98\n43\tCAMINHÃO PIPA AUS-5073\t1\tOUTROS SERVIÇOS AUXILIARES\t66.99\n81\tPA CARREGADEIRA HYUNDAI HL757-9\t1\tEXPEDIÇÃO\t63.97\n50\tCAMINHÃO PIPA  HZH 3961\t1\tOUTROS SERVIÇOS AUXILIARES\t18.00\n2\tPERFURATRIZ WOLF PW5000 - 02\t1\tDESMONTE PRIMÁRIO\t4.00\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

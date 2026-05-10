@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT e.nomeDoEquipamento, cc.nome as conta, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nLEFT JOIN equipamentos e ON lc.equipamentoId = e.id\nWHERE lc.periodoCustoId = 60001 AND lc.equipamentoId IS NOT NULL\nGROUP BY e.id, e.nomeDoEquipamento, cc.nome\nORDER BY total DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.nomeDoEquipamento, cc.nome as conta, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nLEFT JOIN equipamentos e ON lc.equipamentoId = e.id\nWHERE lc.periodoCustoId = 60001 AND lc.equipamentoId IS NOT NULL\nGROUP BY e.id, e.nomeDoEquipamento, cc.nome\nORDER BY total DESC\nLIMIT 20;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'lc.equipamentoid' in 'on clause'"
+  ]
+}

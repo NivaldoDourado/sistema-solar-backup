@@ -1,0 +1,35 @@
+{
+  "query": "\nSELECT classificacao, COUNT(*) as qtd, SUM(custo) as total\nFROM item_despesa_importado\nWHERE periodoCustoId = 60001\nGROUP BY classificacao\nORDER BY total DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT classificacao, COUNT(*) as qtd, SUM(custo) as total\nFROM item_despesa_importado\nWHERE periodoCustoId = 60001\nGROUP BY classificacao\nORDER BY total DESC;\n",
+  "rows": [
+    {
+      "classificacao": "pecas_reposicao",
+      "qtd": "1239",
+      "total": "409034.61"
+    },
+    {
+      "classificacao": "combustivel",
+      "qtd": "308",
+      "total": "350207.70"
+    },
+    {
+      "classificacao": "pecas_desgaste",
+      "qtd": "89",
+      "total": "224538.85"
+    },
+    {
+      "classificacao": "outras_despesas",
+      "qtd": "102",
+      "total": "137981.64"
+    },
+    {
+      "classificacao": "lubrificantes",
+      "qtd": "234",
+      "total": "58791.42"
+    }
+  ],
+  "messages": [],
+  "stdout": "classificacao\tqtd\ttotal\npecas_reposicao\t1239\t409034.61\ncombustivel\t308\t350207.70\npecas_desgaste\t89\t224538.85\noutras_despesas\t102\t137981.64\nlubrificantes\t234\t58791.42\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

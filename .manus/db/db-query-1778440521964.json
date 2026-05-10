@@ -1,0 +1,322 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       MIN(s.nome) as setor_unico,\n       SUM(pd.horaKmTrabalhados) as horas_totais,\n       COUNT(DISTINCT pd.id) as partes_diarias\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos <= 1\nORDER BY horas_totais DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       MIN(s.nome) as setor_unico,\n       SUM(pd.horaKmTrabalhados) as horas_totais,\n       COUNT(DISTINCT pd.id) as partes_diarias\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nLEFT JOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos <= 1\nORDER BY horas_totais DESC;\n",
+  "rows": [
+    {
+      "id": "60001",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA PRIMÁRIO",
+      "setores_distintos": "0",
+      "setor_unico": "NULL",
+      "horas_totais": "76161.02",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "83",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO QMD-4J77",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "6901.00",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "77",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "6583.98",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "6580.96",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "6042.99",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "97",
+      "nomeDoEquipamento": "CAMINHÃO MUCK MB ACTROS 2426",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "5026.00",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "49",
+      "nomeDoEquipamento": "CARRETA MERCEDES-BENZ HMQ 6155",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "3712.99",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "19",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "430.00",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "12",
+      "nomeDoEquipamento": "PENEIRA UNIVERSO - PENEIRA 02",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM TERCEÁRIA",
+      "horas_totais": "306.99",
+      "partes_diarias": "25"
+    },
+    {
+      "id": "80",
+      "nomeDoEquipamento": "BRITADOR HIDROCONICO SANDIVIK H3800 03",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM TERCEÁRIA",
+      "horas_totais": "296.00",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "15",
+      "nomeDoEquipamento": "PENEIRA FAÇO - PENEIRA 05",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM TERCEÁRIA",
+      "horas_totais": "293.99",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "9",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 02",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM TERCEÁRIA",
+      "horas_totais": "292.99",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "13",
+      "nomeDoEquipamento": "PENEIRA SANDIVIK - PENEIRA 03",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM TERCEÁRIA",
+      "horas_totais": "292.99",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "253.00",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "11",
+      "nomeDoEquipamento": "PENEIRA FURLAN - PENEIRA 01",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "253.00",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "4",
+      "nomeDoEquipamento": "BRITADOR FURLAN JC1200 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM PRIMÁRIA",
+      "horas_totais": "250.99",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "82",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "240.00",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "45",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "225.00",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "22",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 01",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "210.01",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "48",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "195.00",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "93",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "horas_totais": "176.97",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "51",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01",
+      "setores_distintos": "1",
+      "setor_unico": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "horas_totais": "171.99",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "166.98",
+      "partes_diarias": "24"
+    },
+    {
+      "id": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM SECUNDÁRIA",
+      "horas_totais": "161.98",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "10",
+      "nomeDoEquipamento": "BRITADOR DE IMPACTO FURLAN VSI OM100",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "144.00",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "78",
+      "nomeDoEquipamento": "PENEIRA OM100 - PENEIRA 06",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "144.00",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "95",
+      "nomeDoEquipamento": "EMPILHADEIRA EP-01",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "143.99",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "8",
+      "nomeDoEquipamento": "BRITADOR HIDROCÔNICO SANDIVIK H3800 01",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM QUARTENÁRIA",
+      "horas_totais": "141.00",
+      "partes_diarias": "21"
+    },
+    {
+      "id": "90001",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "141.00",
+      "partes_diarias": "20"
+    },
+    {
+      "id": "6",
+      "nomeDoEquipamento": "COMPRESSOR ELÉTRICO ATLAS COPCO GA160",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "129.00",
+      "partes_diarias": "17"
+    },
+    {
+      "id": "89",
+      "nomeDoEquipamento": "BRITADOR PRIMARIO MOVEL METSO NW-100",
+      "setores_distintos": "1",
+      "setor_unico": "BRITAGEM PRIMÁRIA",
+      "horas_totais": "128.00",
+      "partes_diarias": "20"
+    },
+    {
+      "id": "79",
+      "nomeDoEquipamento": "CAMINHAO NNT-5E41 (MELOZA)",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "126.00",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "39",
+      "nomeDoEquipamento": "CAMINHÃO PIPA HZT-0105",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "120.00",
+      "partes_diarias": "22"
+    },
+    {
+      "id": "75",
+      "nomeDoEquipamento": "MARTELO PERFURATRIZ FOX 8-20",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "109.00",
+      "partes_diarias": "20"
+    },
+    {
+      "id": "96",
+      "nomeDoEquipamento": "EMPILHADEIRA EP-02",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "70.98",
+      "partes_diarias": "23"
+    },
+    {
+      "id": "43",
+      "nomeDoEquipamento": "CAMINHÃO PIPA AUS-5073",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "66.99",
+      "partes_diarias": "20"
+    },
+    {
+      "id": "81",
+      "nomeDoEquipamento": "PA CARREGADEIRA HYUNDAI HL757-9",
+      "setores_distintos": "1",
+      "setor_unico": "EXPEDIÇÃO",
+      "horas_totais": "63.97",
+      "partes_diarias": "20"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "setores_distintos": "1",
+      "setor_unico": "OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "18.00",
+      "partes_diarias": "3"
+    },
+    {
+      "id": "2",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 02",
+      "setores_distintos": "1",
+      "setor_unico": "DESMONTE PRIMÁRIO",
+      "horas_totais": "4.00",
+      "partes_diarias": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tsetores_distintos\tsetor_unico\thoras_totais\tpartes_diarias\n60001\tBALANÇA INTEGRADORA PRIMÁRIO\t0\tNULL\t76161.02\t24\n83\tCAMINHAO CAVALINHO QMD-4J77\t1\tEXPEDIÇÃO\t6901.00\t22\n77\tCAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39\t1\tEXPEDIÇÃO\t6583.98\t22\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\t1\tEXPEDIÇÃO\t6580.96\t22\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\t1\tEXPEDIÇÃO\t6042.99\t22\n97\tCAMINHÃO MUCK MB ACTROS 2426\t1\tOUTROS SERVIÇOS AUXILIARES\t5026.00\t21\n49\tCARRETA MERCEDES-BENZ HMQ 6155\t1\tEXPEDIÇÃO\t3712.99\t23\n19\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t1\tOUTROS SERVIÇOS AUXILIARES\t430.00\t24\n12\tPENEIRA UNIVERSO - PENEIRA 02\t1\tBRITAGEM TERCEÁRIA\t306.99\t25\n80\tBRITADOR HIDROCONICO SANDIVIK H3800 03\t1\tBRITAGEM TERCEÁRIA\t296.00\t24\n15\tPENEIRA FAÇO - PENEIRA 05\t1\tBRITAGEM TERCEÁRIA\t293.99\t23\n9\tBRITADOR HIDROCÔNICO SANDIVIK H3800 02\t1\tBRITAGEM TERCEÁRIA\t292.99\t24\n13\tPENEIRA SANDIVIK - PENEIRA 03\t1\tBRITAGEM TERCEÁRIA\t292.99\t23\n92\tBRITADOR CONICO CS440\t1\tBRITAGEM SECUNDÁRIA\t253.00\t24\n11\tPENEIRA FURLAN - PENEIRA 01\t1\tBRITAGEM SECUNDÁRIA\t253.00\t24\n4\tBRITADOR FURLAN JC1200 - 02\t1\tBRITAGEM PRIMÁRIA\t250.99\t24\n82\tPÁ CARREGADEIRA HYUNDAI HL760 03\t1\tEXPEDIÇÃO\t240.00\t23\n45\tPÁ CARREGADEIRA LIEBHERR L566 - 02\t1\tEXPEDIÇÃO\t225.00\t24\n22\tPÁ CARREGADEIRA LIEBHERR L566 - 01\t1\tEXPEDIÇÃO\t210.01\t24\n48\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\t1\tDESMONTE PRIMÁRIO\t195.00\t21\n93\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\t1\tCARGA E TRANSPORTE DE PEDRA DA MINA\t176.97\t24\n51\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\t1\tCARGA E TRANSPORTE DE PEDRA DA MINA\t171.99\t21\n90\tBRITADOR CÔNICO MOVEL METSO NW-200\t1\tBRITAGEM SECUNDÁRIA\t166.98\t24\n91\tPENEIRA NW200\t1\tBRITAGEM SECUNDÁRIA\t161.98\t23\n10\tBRITADOR DE IMPACTO FURLAN VSI OM100\t1\tBRITAGEM QUARTENÁRIA\t144.00\t21\n78\tPENEIRA OM100 - PENEIRA 06\t1\tBRITAGEM QUARTENÁRIA\t144.00\t21\n95\tEMPILHADEIRA EP-01\t1\tOUTROS SERVIÇOS AUXILIARES\t143.99\t22\n8\tBRITADOR HIDROCÔNICO SANDIVIK H3800 01\t1\tBRITAGEM QUARTENÁRIA\t141.00\t21\n90001\tPERFURATRIZ WOLF PW5000 - 01\t1\tDESMONTE PRIMÁRIO\t141.00\t20\n6\tCOMPRESSOR ELÉTRICO ATLAS COPCO GA160\t1\tDESMONTE PRIMÁRIO\t129.00\t17\n89\tBRITADOR PRIMARIO MOVEL METSO NW-100\t1\tBRITAGEM PRIMÁRIA\t128.00\t20\n79\tCAMINHAO NNT-5E41 (MELOZA)\t1\tOUTROS SERVIÇOS AUXILIARES\t126.00\t23\n39\tCAMINHÃO PIPA HZT-0105\t1\tOUTROS SERVIÇOS AUXILIARES\t120.00\t22\n75\tMARTELO PERFURATRIZ FOX 8-20\t1\tDESMONTE PRIMÁRIO\t109.00\t20\n96\tEMPILHADEIRA EP-02\t1\tOUTROS SERVIÇOS AUXILIARES\t70.98\t23\n43\tCAMINHÃO PIPA AUS-5073\t1\tOUTROS SERVIÇOS AUXILIARES\t66.99\t20\n81\tPA CARREGADEIRA HYUNDAI HL757-9\t1\tEXPEDIÇÃO\t63.97\t20\n50\tCAMINHÃO PIPA  HZH 3961\t1\tOUTROS SERVIÇOS AUXILIARES\t18.00\t3\n2\tPERFURATRIZ WOLF PW5000 - 02\t1\tDESMONTE PRIMÁRIO\t4.00\t1\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

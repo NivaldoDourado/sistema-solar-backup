@@ -1,0 +1,355 @@
+{
+  "query": "\nSELECT DISTINCT idi.equipamentoTag\nFROM item_despesa_importado idi\nWHERE idi.periodoCustoId = 60001\nORDER BY idi.equipamentoTag;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT DISTINCT idi.equipamentoTag\nFROM item_despesa_importado idi\nWHERE idi.periodoCustoId = 60001\nORDER BY idi.equipamentoTag;\n",
+  "rows": [
+    {
+      "equipamentoTag": "944 C"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO"
+    },
+    {
+      "equipamentoTag": "AVS 4001200"
+    },
+    {
+      "equipamentoTag": "BALANÇA"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO"
+    },
+    {
+      "equipamentoTag": "C100"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 01"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 02"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 03"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZT0105"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188"
+    },
+    {
+      "equipamentoTag": "CANTINA"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS"
+    },
+    {
+      "equipamentoTag": "COMPRESSOR GA160"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE"
+    },
+    {
+      "equipamentoTag": "DRAGA DIESEL 02"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938"
+    },
+    {
+      "equipamentoTag": "EXPLOSIVOS"
+    },
+    {
+      "equipamentoTag": "FAZENDA"
+    },
+    {
+      "equipamentoTag": "H3800 02"
+    },
+    {
+      "equipamentoTag": "H380003"
+    },
+    {
+      "equipamentoTag": "HL 76003"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)"
+    },
+    {
+      "equipamentoTag": "HZC4975"
+    },
+    {
+      "equipamentoTag": "HZH3J61"
+    },
+    {
+      "equipamentoTag": "HZU7750"
+    },
+    {
+      "equipamentoTag": "IAD8995"
+    },
+    {
+      "equipamentoTag": "IXD6D34"
+    },
+    {
+      "equipamentoTag": "IXE1F44"
+    },
+    {
+      "equipamentoTag": "JC1200 01"
+    },
+    {
+      "equipamentoTag": "L 566"
+    },
+    {
+      "equipamentoTag": "L566 02"
+    },
+    {
+      "equipamentoTag": "MAQUINA MIG"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI"
+    },
+    {
+      "equipamentoTag": "MELOSA 01 / DIK"
+    },
+    {
+      "equipamentoTag": "MELOSA 02 BRIT.NOVA"
+    },
+    {
+      "equipamentoTag": "MOTO 02 (2003)"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA 02"
+    },
+    {
+      "equipamentoTag": "NNT 5E41"
+    },
+    {
+      "equipamentoTag": "NNT5E41"
+    },
+    {
+      "equipamentoTag": "NVH6212"
+    },
+    {
+      "equipamentoTag": "NVJ7902"
+    },
+    {
+      "equipamentoTag": "OER1B00"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM"
+    },
+    {
+      "equipamentoTag": "OM100"
+    },
+    {
+      "equipamentoTag": "OUTROS"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966 03"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04"
+    },
+    {
+      "equipamentoTag": "PATROL 120 B"
+    },
+    {
+      "equipamentoTag": "PC300"
+    },
+    {
+      "equipamentoTag": "PENEIRA 01 CS440"
+    },
+    {
+      "equipamentoTag": "PENEIRA 02 NOVA H 01"
+    },
+    {
+      "equipamentoTag": "PENEIRA 03 H3800 02"
+    },
+    {
+      "equipamentoTag": "PENEIRA 06 OM100VSI"
+    },
+    {
+      "equipamentoTag": "PENEIRA NOVA"
+    },
+    {
+      "equipamentoTag": "PENEIRA NW200"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ 01"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01"
+    },
+    {
+      "equipamentoTag": "PIPA ALUGADO KIB9971"
+    },
+    {
+      "equipamentoTag": "PIPA HZH 3961"
+    },
+    {
+      "equipamentoTag": "PRANCHA 3 EIXOS"
+    },
+    {
+      "equipamentoTag": "PZE8D13"
+    },
+    {
+      "equipamentoTag": "QMD 0H48"
+    },
+    {
+      "equipamentoTag": "QMD0H48"
+    },
+    {
+      "equipamentoTag": "QMK3A00 (RRF 4H99)"
+    },
+    {
+      "equipamentoTag": "QMN1F10"
+    },
+    {
+      "equipamentoTag": "QMO6E54"
+    },
+    {
+      "equipamentoTag": "QUADRICICLO"
+    },
+    {
+      "equipamentoTag": "QUADRICICLO HONDA"
+    },
+    {
+      "equipamentoTag": "RCR 9H24"
+    },
+    {
+      "equipamentoTag": "REDUTORAS"
+    },
+    {
+      "equipamentoTag": "RMF 4A64"
+    },
+    {
+      "equipamentoTag": "RRE2C34"
+    },
+    {
+      "equipamentoTag": "RRG 5L15"
+    },
+    {
+      "equipamentoTag": "RRG 6B68"
+    },
+    {
+      "equipamentoTag": "RRG5I15"
+    },
+    {
+      "equipamentoTag": "RRH 9F10"
+    },
+    {
+      "equipamentoTag": "RUC4F80"
+    },
+    {
+      "equipamentoTag": "SETOR RH"
+    },
+    {
+      "equipamentoTag": "SHV 6A57"
+    },
+    {
+      "equipamentoTag": "SIST. DESPOEIRAMENTO"
+    },
+    {
+      "equipamentoTag": "SUBSTAÇÃO"
+    },
+    {
+      "equipamentoTag": "TC01"
+    },
+    {
+      "equipamentoTag": "TC01 (OM100 RM)"
+    },
+    {
+      "equipamentoTag": "TC01 MOVEL"
+    },
+    {
+      "equipamentoTag": "TC02"
+    },
+    {
+      "equipamentoTag": "TC03"
+    },
+    {
+      "equipamentoTag": "TC04"
+    },
+    {
+      "equipamentoTag": "TC05"
+    },
+    {
+      "equipamentoTag": "TC05 (B.MOVEL)"
+    },
+    {
+      "equipamentoTag": "TC06"
+    },
+    {
+      "equipamentoTag": "TC07"
+    },
+    {
+      "equipamentoTag": "TC08"
+    },
+    {
+      "equipamentoTag": "TC09"
+    },
+    {
+      "equipamentoTag": "TC10"
+    },
+    {
+      "equipamentoTag": "TC11"
+    },
+    {
+      "equipamentoTag": "TC14"
+    },
+    {
+      "equipamentoTag": "TC15"
+    },
+    {
+      "equipamentoTag": "TC16"
+    },
+    {
+      "equipamentoTag": "TC17"
+    },
+    {
+      "equipamentoTag": "TC20"
+    },
+    {
+      "equipamentoTag": "TNQ 1G00"
+    },
+    {
+      "equipamentoTag": "TNV1F49"
+    },
+    {
+      "equipamentoTag": "TNV9J00"
+    },
+    {
+      "equipamentoTag": "TNW 2I60"
+    },
+    {
+      "equipamentoTag": "TORNEARIA"
+    },
+    {
+      "equipamentoTag": "TRANSPORTADORA"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\n944 C\nALIMENTADOR AVS01\nALMOXARIFADO\nAVS 4001200\nBALANÇA\nBRITADOR CS440\nBRITADOR MOVEL\nBRITADOR MOVEL METSO\nC100\nCALHA VIBRATORIA 01\nCALHA VIBRATORIA 02\nCALHA VIBRATORIA 03\nCAMINHÃO AU5073\nCAMINHÃO HZK7665\nCAMINHÃO HZT0105\nCAMINHÃO NML0188\nCANTINA\nCARROS DIVERSOS\nCOMPRESSOR GA160\nDRAGA D´ÁGUA A DIESE\nDRAGA DIESEL 02\nESCAVADEIRA R 938 02\nESCAVADEIRA R938\nEXPLOSIVOS\nFAZENDA\nH3800 02\nH380003\nHL 76003\nHP 200 ( METSO)\nHZC4975\nHZH3J61\nHZU7750\nIAD8995\nIXD6D34\nIXE1F44\nJC1200 01\nL 566\nL566 02\nMAQUINA MIG\nMATERIAL DE CONSUMO\nMATERIAL EPI\nMELOSA 01 / DIK\nMELOSA 02 BRIT.NOVA\nMOTO 02 (2003)\nMOTOR BOMBA\nMOTOR BOMBA 02\nNNT 5E41\nNNT5E41\nNVH6212\nNVJ7902\nOER1B00\nOFICINABRITAGEM\nOM100\nOUTROS\nPÁ CARREG. 966 03\nPÁ CARREG. 966R04\nPATROL 120 B\nPC300\nPENEIRA 01 CS440\nPENEIRA 02 NOVA H 01\nPENEIRA 03 H3800 02\nPENEIRA 06 OM100VSI\nPENEIRA NOVA\nPENEIRA NW200\nPERFURATRIZ 01\nPERFURATRIZ HIDR. 01\nPIPA ALUGADO KIB9971\nPIPA HZH 3961\nPRANCHA 3 EIXOS\nPZE8D13\nQMD 0H48\nQMD0H48\nQMK3A00 (RRF 4H99)\nQMN1F10\nQMO6E54\nQUADRICICLO\nQUADRICICLO HONDA\nRCR 9H24\nREDUTORAS\nRMF 4A64\nRRE2C34\nRRG 5L15\nRRG 6B68\nRRG5I15\nRRH 9F10\nRUC4F80\nSETOR RH\nSHV 6A57\nSIST. DESPOEIRAMENTO\nSUBSTAÇÃO\nTC01\nTC01 (OM100 RM)\nTC01 MOVEL\nTC02\nTC03\nTC04\nTC05\nTC05 (B.MOVEL)\nTC06\nTC07\nTC08\nTC09\nTC10\nTC11\nTC14\nTC15\nTC16\nTC17\nTC20\nTNQ 1G00\nTNV1F49\nTNV9J00\nTNW 2I60\nTORNEARIA\nTRANSPORTADORA\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

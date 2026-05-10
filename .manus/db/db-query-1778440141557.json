@@ -1,0 +1,100 @@
+{
+  "query": "\nSELECT cc.nome, ls.equipamentoId, ls.setorId, SUM(ls.valor) as total\nFROM lancamento_salario ls\nJOIN conta_custo cc ON ls.contaCustoId = cc.id\nWHERE ls.periodoCustoId = 60001\nGROUP BY cc.nome, ls.equipamentoId, ls.setorId\nORDER BY total DESC\nLIMIT 15;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT cc.nome, ls.equipamentoId, ls.setorId, SUM(ls.valor) as total\nFROM lancamento_salario ls\nJOIN conta_custo cc ON ls.contaCustoId = cc.id\nWHERE ls.periodoCustoId = 60001\nGROUP BY cc.nome, ls.equipamentoId, ls.setorId\nORDER BY total DESC\nLIMIT 15;\n",
+  "rows": [
+    {
+      "nome": "Sal. Diretoria",
+      "equipamentoId": "NULL",
+      "setorId": "120002",
+      "total": "263969.96"
+    },
+    {
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "equipamentoId": "NULL",
+      "setorId": "1",
+      "total": "136236.51"
+    },
+    {
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "equipamentoId": "NULL",
+      "setorId": "60003",
+      "total": "112456.78"
+    },
+    {
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "equipamentoId": "NULL",
+      "setorId": "15",
+      "total": "107117.11"
+    },
+    {
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "equipamentoId": "NULL",
+      "setorId": "60002",
+      "total": "69906.65"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "19",
+      "setorId": "NULL",
+      "total": "8476.03"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "93",
+      "setorId": "NULL",
+      "total": "8200.09"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "51",
+      "setorId": "NULL",
+      "total": "7978.86"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "22",
+      "setorId": "NULL",
+      "total": "7753.66"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "3",
+      "setorId": "NULL",
+      "total": "7625.16"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "48",
+      "setorId": "NULL",
+      "total": "6987.29"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "45",
+      "setorId": "NULL",
+      "total": "6386.49"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "52",
+      "setorId": "NULL",
+      "total": "6123.21"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "82",
+      "setorId": "NULL",
+      "total": "5911.99"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "29",
+      "setorId": "NULL",
+      "total": "5871.62"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\tequipamentoId\tsetorId\ttotal\nSal. Diretoria\tNULL\t120002\t263969.96\nSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tNULL\t1\t136236.51\nSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tNULL\t60003\t112456.78\nSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tNULL\t15\t107117.11\nSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tNULL\t60002\t69906.65\nSal.Oper./Enc. Oper.\t19\tNULL\t8476.03\nSal.Oper./Enc. Oper.\t93\tNULL\t8200.09\nSal.Oper./Enc. Oper.\t51\tNULL\t7978.86\nSal.Oper./Enc. Oper.\t22\tNULL\t7753.66\nSal.Oper./Enc. Oper.\t3\tNULL\t7625.16\nSal.Oper./Enc. Oper.\t48\tNULL\t6987.29\nSal.Oper./Enc. Oper.\t45\tNULL\t6386.49\nSal.Oper./Enc. Oper.\t52\tNULL\t6123.21\nSal.Oper./Enc. Oper.\t82\tNULL\t5911.99\nSal.Oper./Enc. Oper.\t29\tNULL\t5871.62\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

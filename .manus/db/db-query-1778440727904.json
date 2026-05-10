@@ -1,0 +1,110 @@
+{
+  "query": "\nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag IS NOT NULL ORDER BY codigoTag LIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag IS NOT NULL ORDER BY codigoTag LIMIT 20;\n",
+  "rows": [
+    {
+      "id": "25",
+      "codigoTag": "938G",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 938G"
+    },
+    {
+      "id": "19",
+      "codigoTag": "944C",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C"
+    },
+    {
+      "id": "26",
+      "codigoTag": "966-01",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 01"
+    },
+    {
+      "id": "27",
+      "codigoTag": "966-02",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 02"
+    },
+    {
+      "id": "28",
+      "codigoTag": "966-03",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA CATERPILLAR 966 03"
+    },
+    {
+      "id": "73",
+      "codigoTag": "966R 04",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04"
+    },
+    {
+      "id": "84",
+      "codigoTag": "AV400 120",
+      "nomeDoEquipamento": "ALIMENTADOR VIBRATORIO AV400 120"
+    },
+    {
+      "id": "120001",
+      "codigoTag": "AVS 4001200",
+      "nomeDoEquipamento": "ALIMENTADOR AVS4001200 (02)"
+    },
+    {
+      "id": "120067",
+      "codigoTag": "BALANÇA",
+      "nomeDoEquipamento": "LIDER BALANÇA"
+    },
+    {
+      "id": "60001",
+      "codigoTag": "BLÇ001",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA PRIMÁRIO"
+    },
+    {
+      "id": "60002",
+      "codigoTag": "BLÇ002",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA SECUNDÁRIO"
+    },
+    {
+      "id": "47",
+      "codigoTag": "BUD 2B54",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO BUD 2B54"
+    },
+    {
+      "id": "53",
+      "codigoTag": "C001",
+      "nomeDoEquipamento": "RH - ADM / NÃO OPERACIONAIS"
+    },
+    {
+      "id": "54",
+      "codigoTag": "C002",
+      "nomeDoEquipamento": "IMPOSTOS, CEFEM E OUTROS"
+    },
+    {
+      "id": "55",
+      "codigoTag": "C003",
+      "nomeDoEquipamento": "ENCARGOS DE MOVIMENTAÇÃO FINANCEIRA"
+    },
+    {
+      "id": "56",
+      "codigoTag": "C004",
+      "nomeDoEquipamento": "DESPESAS ADMINISTRATIVAS"
+    },
+    {
+      "id": "57",
+      "codigoTag": "C005",
+      "nomeDoEquipamento": "ENERGIA ELÉTRICA"
+    },
+    {
+      "id": "58",
+      "codigoTag": "C006",
+      "nomeDoEquipamento": "EXPLOSIVOS E ACESSÓRIOS"
+    },
+    {
+      "id": "59",
+      "codigoTag": "C007",
+      "nomeDoEquipamento": "OUTRAS DESPESAS DE SETORES"
+    },
+    {
+      "id": "60",
+      "codigoTag": "C008",
+      "nomeDoEquipamento": "EQUIPAMENTOS DE APOIO"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n25\t938G\tPÁ CARREGAGEIRA CATERPILLAR 938G\n19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\n26\t966-01\tPÁ CARREGAGEIRA CATERPILLAR 966 01\n27\t966-02\tPÁ CARREGAGEIRA CATERPILLAR 966 02\n28\t966-03\tPÁ CARREGAGEIRA CATERPILLAR 966 03\n73\t966R 04\tPÁ CARREGADEIRA CARTEPILAR 966R 04\n84\tAV400 120\tALIMENTADOR VIBRATORIO AV400 120\n120001\tAVS 4001200\tALIMENTADOR AVS4001200 (02)\n120067\tBALANÇA\tLIDER BALANÇA\n60001\tBLÇ001\tBALANÇA INTEGRADORA PRIMÁRIO\n60002\tBLÇ002\tBALANÇA INTEGRADORA SECUNDÁRIO\n47\tBUD 2B54\tCAMINHAO CAVALINHO BUD 2B54\n53\tC001\tRH - ADM / NÃO OPERACIONAIS\n54\tC002\tIMPOSTOS, CEFEM E OUTROS\n55\tC003\tENCARGOS DE MOVIMENTAÇÃO FINANCEIRA\n56\tC004\tDESPESAS ADMINISTRATIVAS\n57\tC005\tENERGIA ELÉTRICA\n58\tC006\tEXPLOSIVOS E ACESSÓRIOS\n59\tC007\tOUTRAS DESPESAS DE SETORES\n60\tC008\tEQUIPAMENTOS DE APOIO\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

@@ -1,0 +1,130 @@
+{
+  "query": "\nSELECT DISTINCT idi.equipamentoTag, e.id as equipamentoId, e.nomeDoEquipamento, e.codigoTag\nFROM item_despesa_importado idi\nLEFT JOIN equipamentos e ON (e.codigoTag = idi.equipamentoTag OR e.nomeDoEquipamento LIKE CONCAT('%', idi.equipamentoTag, '%'))\nWHERE idi.periodoCustoId = 60001\nORDER BY idi.equipamentoTag\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT DISTINCT idi.equipamentoTag, e.id as equipamentoId, e.nomeDoEquipamento, e.codigoTag\nFROM item_despesa_importado idi\nLEFT JOIN equipamentos e ON (e.codigoTag = idi.equipamentoTag OR e.nomeDoEquipamento LIKE CONCAT('%', idi.equipamentoTag, '%'))\nWHERE idi.periodoCustoId = 60001\nORDER BY idi.equipamentoTag\nLIMIT 20;\n",
+  "rows": [
+    {
+      "equipamentoTag": "944 C",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    },
+    {
+      "equipamentoTag": "AVS 4001200",
+      "equipamentoId": "120001",
+      "nomeDoEquipamento": "ALIMENTADOR AVS4001200 (02)",
+      "codigoTag": "AVS 4001200"
+    },
+    {
+      "equipamentoTag": "BALANÇA",
+      "equipamentoId": "60001",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA PRIMÁRIO",
+      "codigoTag": "BLÇ001"
+    },
+    {
+      "equipamentoTag": "BALANÇA",
+      "equipamentoId": "60002",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA SECUNDÁRIO",
+      "codigoTag": "BLÇ002"
+    },
+    {
+      "equipamentoTag": "BALANÇA",
+      "equipamentoId": "120067",
+      "nomeDoEquipamento": "LIDER BALANÇA",
+      "codigoTag": "BALANÇA"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoId": "120059",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW 100 (OLC 5612)",
+      "codigoTag": "NW100"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoId": "120058",
+      "nomeDoEquipamento": "TRANSPORTE BRITADOR MOVEL METSO",
+      "codigoTag": "TRANSPORTADORA"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoId": "120060",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW200 HPS (OUY 9579)",
+      "codigoTag": "NW200 HPS"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "equipamentoId": "120058",
+      "nomeDoEquipamento": "TRANSPORTE BRITADOR MOVEL METSO",
+      "codigoTag": "TRANSPORTADORA"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "equipamentoId": "120060",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW200 HPS (OUY 9579)",
+      "codigoTag": "NW200 HPS"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "equipamentoId": "120059",
+      "nomeDoEquipamento": "BRITADOR MOVEL METSO NW 100 (OLC 5612)",
+      "codigoTag": "NW100"
+    },
+    {
+      "equipamentoTag": "C100",
+      "equipamentoId": "120002",
+      "nomeDoEquipamento": "BRITADOR METSO C100 - PRIMARIO",
+      "codigoTag": "C100"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 01",
+      "equipamentoId": "120003",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 01 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 01"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 02",
+      "equipamentoId": "120004",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 02 (CS440)",
+      "codigoTag": "CALHA VIBRATORIA 02"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 03",
+      "equipamentoId": "120005",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 03 (H3800-03)",
+      "codigoTag": "CALHA VIBRATORIA 03"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665",
+      "equipamentoId": "NULL",
+      "nomeDoEquipamento": "NULL",
+      "codigoTag": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoId\tnomeDoEquipamento\tcodigoTag\n944 C\tNULL\tNULL\tNULL\nALIMENTADOR AVS01\tNULL\tNULL\tNULL\nALMOXARIFADO\tNULL\tNULL\tNULL\nAVS 4001200\t120001\tALIMENTADOR AVS4001200 (02)\tAVS 4001200\nBALANÇA\t60001\tBALANÇA INTEGRADORA PRIMÁRIO\tBLÇ001\nBALANÇA\t60002\tBALANÇA INTEGRADORA SECUNDÁRIO\tBLÇ002\nBALANÇA\t120067\tLIDER BALANÇA\tBALANÇA\nBRITADOR CS440\tNULL\tNULL\tNULL\nBRITADOR MOVEL\t120059\tBRITADOR MOVEL METSO NW 100 (OLC 5612)\tNW100\nBRITADOR MOVEL\t120058\tTRANSPORTE BRITADOR MOVEL METSO\tTRANSPORTADORA\nBRITADOR MOVEL\t120060\tBRITADOR MOVEL METSO NW200 HPS (OUY 9579)\tNW200 HPS\nBRITADOR MOVEL METSO\t120058\tTRANSPORTE BRITADOR MOVEL METSO\tTRANSPORTADORA\nBRITADOR MOVEL METSO\t120060\tBRITADOR MOVEL METSO NW200 HPS (OUY 9579)\tNW200 HPS\nBRITADOR MOVEL METSO\t120059\tBRITADOR MOVEL METSO NW 100 (OLC 5612)\tNW100\nC100\t120002\tBRITADOR METSO C100 - PRIMARIO\tC100\nCALHA VIBRATORIA 01\t120003\tCALHA VIBRATORIA 01 (CS440)\tCALHA VIBRATORIA 01\nCALHA VIBRATORIA 02\t120004\tCALHA VIBRATORIA 02 (CS440)\tCALHA VIBRATORIA 02\nCALHA VIBRATORIA 03\t120005\tCALHA VIBRATORIA 03 (H3800-03)\tCALHA VIBRATORIA 03\nCAMINHÃO AU5073\tNULL\tNULL\tNULL\nCAMINHÃO HZK7665\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 726
+}

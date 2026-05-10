@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT periodoCustoId, COUNT(*) as qtd FROM custo_setor_equipamento GROUP BY periodoCustoId;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT periodoCustoId, COUNT(*) as qtd FROM custo_setor_equipamento GROUP BY periodoCustoId;\n",
+  "rows": [
+    {
+      "periodoCustoId": "1",
+      "qtd": "81"
+    },
+    {
+      "periodoCustoId": "30002",
+      "qtd": "69"
+    },
+    {
+      "periodoCustoId": "30001",
+      "qtd": "71"
+    }
+  ],
+  "messages": [],
+  "stdout": "periodoCustoId\tqtd\n1\t81\n30002\t69\n30001\t71\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

@@ -1,0 +1,76 @@
+{
+  "query": "\nSELECT s.nome as setor, \n       COUNT(DISTINCT pdi.parteDiariaId) as partes_com_setor,\n       SUM(pdi.producao) as producao_total,\n       SUM(pdi.quantidade) as qtd_total\nFROM parte_diaria_itens pdi\nJOIN parte_diaria pd ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY s.id, s.nome\nORDER BY producao_total DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT s.nome as setor, \n       COUNT(DISTINCT pdi.parteDiariaId) as partes_com_setor,\n       SUM(pdi.producao) as producao_total,\n       SUM(pdi.quantidade) as qtd_total\nFROM parte_diaria_itens pdi\nJOIN parte_diaria pd ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY s.id, s.nome\nORDER BY producao_total DESC;\n",
+  "rows": [
+    {
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "partes_com_setor": "179",
+      "producao_total": "77962.06",
+      "qtd_total": "2004.00"
+    },
+    {
+      "setor": "OUTROS SERVIÇOS AUXILIARES",
+      "partes_com_setor": "289",
+      "producao_total": "22345.02",
+      "qtd_total": "957.00"
+    },
+    {
+      "setor": "BRITAGEM MÓVEL",
+      "partes_com_setor": "40",
+      "producao_total": "12626.62",
+      "qtd_total": "456.00"
+    },
+    {
+      "setor": "MOVIMENTAÇÃO DE ESTOQUE",
+      "partes_com_setor": "59",
+      "producao_total": "12298.86",
+      "qtd_total": "415.00"
+    },
+    {
+      "setor": "DECAPEAMENTO",
+      "partes_com_setor": "69",
+      "producao_total": "5349.77",
+      "qtd_total": "158.00"
+    },
+    {
+      "setor": "EXPEDIÇÃO",
+      "partes_com_setor": "235",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    },
+    {
+      "setor": "DESMONTE PRIMÁRIO",
+      "partes_com_setor": "79",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    },
+    {
+      "setor": "BRITAGEM PRIMÁRIA",
+      "partes_com_setor": "67",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    },
+    {
+      "setor": "BRITAGEM SECUNDÁRIA",
+      "partes_com_setor": "96",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    },
+    {
+      "setor": "BRITAGEM TERCEÁRIA",
+      "partes_com_setor": "119",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    },
+    {
+      "setor": "BRITAGEM QUARTENÁRIA",
+      "partes_com_setor": "82",
+      "producao_total": "0.00",
+      "qtd_total": "0.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "setor\tpartes_com_setor\tproducao_total\tqtd_total\nCARGA E TRANSPORTE DE PEDRA DA MINA\t179\t77962.06\t2004.00\nOUTROS SERVIÇOS AUXILIARES\t289\t22345.02\t957.00\nBRITAGEM MÓVEL\t40\t12626.62\t456.00\nMOVIMENTAÇÃO DE ESTOQUE\t59\t12298.86\t415.00\nDECAPEAMENTO\t69\t5349.77\t158.00\nEXPEDIÇÃO\t235\t0.00\t0.00\nDESMONTE PRIMÁRIO\t79\t0.00\t0.00\nBRITAGEM PRIMÁRIA\t67\t0.00\t0.00\nBRITAGEM SECUNDÁRIA\t96\t0.00\t0.00\nBRITAGEM TERCEÁRIA\t119\t0.00\t0.00\nBRITAGEM QUARTENÁRIA\t82\t0.00\t0.00\n",
+  "stderr": "",
+  "execution_time_ms": 284
+}

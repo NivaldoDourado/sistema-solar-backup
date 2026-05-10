@@ -53,6 +53,7 @@ import Rotinas from "./pages/Rotinas";
 import ItensDespesa from "./pages/ItensDespesa";
 import LancamentoSalarios from "./pages/LancamentoSalarios";
 import LancamentoImpostos from "./pages/LancamentoImpostos";
+import RateioMem from "./pages/RateioMem";
 
 function Router() {
   return (
@@ -177,6 +178,12 @@ function Router() {
           </ProtectedRoute>
         </DashboardLayout>
       </Route>
+      <Route path={"/rateio-mem"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos"><RateioMem /></ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+
       <Route path={"/custo-setor-analitico"}>
         <DashboardLayout>
           <ProtectedRoute module="custos">

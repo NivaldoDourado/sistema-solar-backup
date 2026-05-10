@@ -774,3 +774,19 @@
 - [x] Criar página frontend para lançamento manual de impostos (formulário com período, valor, descrição da composição)
 - [x] Integrar impostos manuais na Apuração de Custo (automático - mesma tabela lancamento_custo, conta ID 2)
 - [x] Adicionar menu de navegação para a nova página (Apropriação de Custo → Lançamento de Impostos)
+
+## Rateio de Despesas por Setor nos Equipamentos (Passo 3 - MEM)
+- [x] Analisar metodologia MEM da planilha de custos para entender o rateio existente
+- [x] Verificar equipamentos com parte diária lançada em abril/26 (54 equips, 1124 partes)
+- [x] Propor modelo de rateio baseado em horas trabalhadas por setor (aprovado pelo usuário)
+- [x] Mapear setores do sistema para os 12 setores MEM (aprovado)
+- [x] Definir regra para equipamentos com setor único (100% ao setor vinculado)
+- [x] Definir BALANÇA INTEGRADORA PRIMÁRIO → BRITAGEM PRIMÁRIA
+- [x] Criar router backend rateioMem_router.ts com cálculo on-the-fly
+- [x] Implementar lógica de distribuição de horas por setor (proporcional à produção)
+- [x] Implementar agregação de despesas por equipamento (item_despesa_importado + lancamento_salario)
+- [x] Implementar mapeamento de equipamentoTag → equipamentoId para itens importados
+- [x] Criar procedure para retornar rateio consolidado por setor MEM
+- [x] Criar procedure para retornar rateio detalhado por equipamento dentro de cada setor
+- [x] Implementar frontend (tela de visualização do rateio MEM)
+- [ ] Integrar rateio na Apuração de Custo e relatório analítico (próximo passo)

@@ -1,0 +1,150 @@
+{
+  "query": "\nSELECT \n  e.id, e.nomeDoEquipamento,\n  COUNT(DISTINCT pd.id) as partes_diarias,\n  SUM(pd.horaKmTrabalhados) as horas_totais,\n  COUNT(DISTINCT pdi.setorId) as setores_distintos\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nORDER BY horas_totais DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT \n  e.id, e.nomeDoEquipamento,\n  COUNT(DISTINCT pd.id) as partes_diarias,\n  SUM(pd.horaKmTrabalhados) as horas_totais,\n  COUNT(DISTINCT pdi.setorId) as setores_distintos\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nORDER BY horas_totais DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "id": "60001",
+      "nomeDoEquipamento": "BALANÇA INTEGRADORA PRIMÁRIO",
+      "partes_diarias": "24",
+      "horas_totais": "76161.02",
+      "setores_distintos": "0"
+    },
+    {
+      "id": "83",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO QMD-4J77",
+      "partes_diarias": "22",
+      "horas_totais": "6901.00",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "77",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39",
+      "partes_diarias": "22",
+      "horas_totais": "6583.98",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "partes_diarias": "22",
+      "horas_totais": "6580.96",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "partes_diarias": "22",
+      "horas_totais": "6042.99",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "97",
+      "nomeDoEquipamento": "CAMINHÃO MUCK MB ACTROS 2426",
+      "partes_diarias": "21",
+      "horas_totais": "5026.00",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "49",
+      "nomeDoEquipamento": "CARRETA MERCEDES-BENZ HMQ 6155",
+      "partes_diarias": "23",
+      "horas_totais": "3712.99",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "partes_diarias": "24",
+      "horas_totais": "539.98",
+      "setores_distintos": "4"
+    },
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "partes_diarias": "21",
+      "horas_totais": "509.00",
+      "setores_distintos": "5"
+    },
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "partes_diarias": "24",
+      "horas_totais": "431.99",
+      "setores_distintos": "5"
+    },
+    {
+      "id": "19",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "partes_diarias": "24",
+      "horas_totais": "430.00",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "partes_diarias": "19",
+      "horas_totais": "376.99",
+      "setores_distintos": "5"
+    },
+    {
+      "id": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "partes_diarias": "19",
+      "horas_totais": "376.87",
+      "setores_distintos": "5"
+    },
+    {
+      "id": "73",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04",
+      "partes_diarias": "21",
+      "horas_totais": "364.00",
+      "setores_distintos": "2"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "partes_diarias": "17",
+      "horas_totais": "333.92",
+      "setores_distintos": "5"
+    },
+    {
+      "id": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "partes_diarias": "23",
+      "horas_totais": "315.00",
+      "setores_distintos": "4"
+    },
+    {
+      "id": "12",
+      "nomeDoEquipamento": "PENEIRA UNIVERSO - PENEIRA 02",
+      "partes_diarias": "25",
+      "horas_totais": "306.99",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "80",
+      "nomeDoEquipamento": "BRITADOR HIDROCONICO SANDIVIK H3800 03",
+      "partes_diarias": "24",
+      "horas_totais": "296.00",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "15",
+      "nomeDoEquipamento": "PENEIRA FAÇO - PENEIRA 05",
+      "partes_diarias": "23",
+      "horas_totais": "293.99",
+      "setores_distintos": "1"
+    },
+    {
+      "id": "13",
+      "nomeDoEquipamento": "PENEIRA SANDIVIK - PENEIRA 03",
+      "partes_diarias": "23",
+      "horas_totais": "292.99",
+      "setores_distintos": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tpartes_diarias\thoras_totais\tsetores_distintos\n60001\tBALANÇA INTEGRADORA PRIMÁRIO\t24\t76161.02\t0\n83\tCAMINHAO CAVALINHO QMD-4J77\t22\t6901.00\t1\n77\tCAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39\t22\t6583.98\t1\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\t22\t6580.96\t1\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\t22\t6042.99\t1\n97\tCAMINHÃO MUCK MB ACTROS 2426\t21\t5026.00\t1\n49\tCARRETA MERCEDES-BENZ HMQ 6155\t23\t3712.99\t1\n88\tCAMINHAO BASCULANTE MB/ RUC 4F80\t24\t539.98\t4\n38\tCAMINHÃO BASCULANTE NVH-6212\t21\t509.00\t5\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t24\t431.99\t5\n19\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t24\t430.00\t1\n37\tCAMINHÃO BASCULANTE  NVJ-7902\t19\t376.99\t5\n41\tCAMINHÃO BASCULANTE NML-0188\t19\t376.87\t5\n73\tPÁ CARREGADEIRA CARTEPILAR 966R 04\t21\t364.00\t2\n40\tCAMINHÃO BASCULANTE OER1B00\t17\t333.92\t5\n52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\t23\t315.00\t4\n12\tPENEIRA UNIVERSO - PENEIRA 02\t25\t306.99\t1\n80\tBRITADOR HIDROCONICO SANDIVIK H3800 03\t24\t296.00\t1\n15\tPENEIRA FAÇO - PENEIRA 05\t23\t293.99\t1\n13\tPENEIRA SANDIVIK - PENEIRA 03\t23\t292.99\t1\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

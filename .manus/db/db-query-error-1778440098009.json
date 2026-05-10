@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  e.id, e.nomeDoEquipamento,\n  COUNT(DISTINCT pd.id) as partes_diarias,\n  SUM(pd.horaKmTrabalhados) as horas_totais,\n  COUNT(DISTINCT pdi.setorId) as setores_distintos\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.periodoCustoId = (SELECT id FROM periodo_custo WHERE mesAno = '4/2026')\nGROUP BY e.id, e.nomeDoEquipamento\nORDER BY horas_totais DESC\nLIMIT 25;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT \n  e.id, e.nomeDoEquipamento,\n  COUNT(DISTINCT pd.id) as partes_diarias,\n  SUM(pd.horaKmTrabalhados) as horas_totais,\n  COUNT(DISTINCT pdi.setorId) as setores_distintos\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.periodoCustoId = (SELECT id FROM periodo_custo WHERE mesAno = '4/2026')\nGROUP BY e.id, e.nomeDoEquipamento\nORDER BY horas_totais DESC\nLIMIT 25;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'pd.periodocustoid' in 'where clause'"
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "query": "\nSELECT pd.equipamentoId, e.nomeDoEquipamento, pd.horaKmTrabalhados,\n       pdi.setorId, s.nome as setor, pdi.producao, pdi.quantidade\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\n  AND pd.equipamentoId = 29\nORDER BY pd.data\nLIMIT 15;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT pd.equipamentoId, e.nomeDoEquipamento, pd.horaKmTrabalhados,\n       pdi.setorId, s.nome as setor, pdi.producao, pdi.quantidade\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\n  AND pd.equipamentoId = 29\nORDER BY pd.data\nLIMIT 15;\n",
+  "rows": [
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "729.72",
+      "quantidade": "18.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "8",
+      "setor": "DECAPEAMENTO",
+      "producao": "40.54",
+      "quantidade": "1.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "12.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "1094.58",
+      "quantidade": "27.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "14.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "932.42",
+      "quantidade": "23.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "13.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "1297.28",
+      "quantidade": "32.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.99",
+      "setorId": "15",
+      "setor": "OUTROS SERVIÇOS AUXILIARES",
+      "producao": "891.88",
+      "quantidade": "22.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "4.00",
+      "setorId": "8",
+      "setor": "DECAPEAMENTO",
+      "producao": "0.00",
+      "quantidade": "0.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "4.00",
+      "setorId": "15",
+      "setor": "OUTROS SERVIÇOS AUXILIARES",
+      "producao": "162.16",
+      "quantidade": "4.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "4.00",
+      "setorId": "13",
+      "setor": "MOVIMENTAÇÃO DE ESTOQUE",
+      "producao": "40.54",
+      "quantidade": "1.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "11.00",
+      "setorId": "15",
+      "setor": "OUTROS SERVIÇOS AUXILIARES",
+      "producao": "162.16",
+      "quantidade": "4.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "11.00",
+      "setorId": "13",
+      "setor": "MOVIMENTAÇÃO DE ESTOQUE",
+      "producao": "40.54",
+      "quantidade": "1.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "11.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "689.18",
+      "quantidade": "17.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "7",
+      "setor": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "producao": "405.40",
+      "quantidade": "10.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "13",
+      "setor": "MOVIMENTAÇÃO DE ESTOQUE",
+      "producao": "40.54",
+      "quantidade": "1.00"
+    },
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "horaKmTrabalhados": "10.00",
+      "setorId": "8",
+      "setor": "DECAPEAMENTO",
+      "producao": "486.48",
+      "quantidade": "12.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoId\tnomeDoEquipamento\thoraKmTrabalhados\tsetorId\tsetor\tproducao\tquantidade\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t729.72\t18.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.00\t8\tDECAPEAMENTO\t40.54\t1.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t12.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t1094.58\t27.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t14.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t932.42\t23.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t13.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t1297.28\t32.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.99\t15\tOUTROS SERVIÇOS AUXILIARES\t891.88\t22.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t4.00\t8\tDECAPEAMENTO\t0.00\t0.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t4.00\t15\tOUTROS SERVIÇOS AUXILIARES\t162.16\t4.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t4.00\t13\tMOVIMENTAÇÃO DE ESTOQUE\t40.54\t1.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t11.00\t15\tOUTROS SERVIÇOS AUXILIARES\t162.16\t4.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t11.00\t13\tMOVIMENTAÇÃO DE ESTOQUE\t40.54\t1.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t11.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t689.18\t17.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.00\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\t405.40\t10.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.00\t13\tMOVIMENTAÇÃO DE ESTOQUE\t40.54\t1.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t10.00\t8\tDECAPEAMENTO\t486.48\t12.00\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

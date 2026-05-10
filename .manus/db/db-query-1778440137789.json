@@ -1,0 +1,88 @@
+{
+  "query": "\nSELECT cc.id, cc.nome, COUNT(lc.id) as qtd_lancamentos, SUM(lc.valor) as total_valor\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 60001\nGROUP BY cc.id, cc.nome\nORDER BY total_valor DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT cc.id, cc.nome, COUNT(lc.id) as qtd_lancamentos, SUM(lc.valor) as total_valor\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 60001\nGROUP BY cc.id, cc.nome\nORDER BY total_valor DESC;\n",
+  "rows": [
+    {
+      "id": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "qtd_lancamentos": "77",
+      "total_valor": "390607.97"
+    },
+    {
+      "id": "14",
+      "nome": "Combustível",
+      "qtd_lancamentos": "47",
+      "total_valor": "348594.64"
+    },
+    {
+      "id": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "qtd_lancamentos": "2",
+      "total_valor": "317373.31"
+    },
+    {
+      "id": "16",
+      "nome": "Peças de Desgaste",
+      "qtd_lancamentos": "28",
+      "total_valor": "224538.84"
+    },
+    {
+      "id": "4",
+      "nome": "Despesas Administrativas",
+      "qtd_lancamentos": "1",
+      "total_valor": "129119.93"
+    },
+    {
+      "id": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "qtd_lancamentos": "43",
+      "total_valor": "111795.67"
+    },
+    {
+      "id": "5",
+      "nome": "Energia Elétrica",
+      "qtd_lancamentos": "1",
+      "total_valor": "96429.96"
+    },
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "qtd_lancamentos": "1",
+      "total_valor": "74246.37"
+    },
+    {
+      "id": "10",
+      "nome": "Consultorias Especializadas",
+      "qtd_lancamentos": "1",
+      "total_valor": "66279.62"
+    },
+    {
+      "id": "9",
+      "nome": "Despesas Indiretas",
+      "qtd_lancamentos": "1",
+      "total_valor": "60663.09"
+    },
+    {
+      "id": "15",
+      "nome": "Lubrificantes",
+      "qtd_lancamentos": "56",
+      "total_valor": "58763.41"
+    },
+    {
+      "id": "7",
+      "nome": "Outras Despesas de Setores",
+      "qtd_lancamentos": "12",
+      "total_valor": "46253.63"
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas",
+      "qtd_lancamentos": "1",
+      "total_valor": "38728.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tqtd_lancamentos\ttotal_valor\n17\tPeças de Reposição / Itens de Consumo\t77\t390607.97\n14\tCombustível\t47\t348594.64\n2\tImpostos, CEFEM e Outras Taxas\t2\t317373.31\n16\tPeças de Desgaste\t28\t224538.84\n4\tDespesas Administrativas\t1\t129119.93\n19\tOutras Despesas dos Equipamentos\t43\t111795.67\n5\tEnergia Elétrica\t1\t96429.96\n30002\tFrota/Man.Pat./Seg./Out.\t1\t74246.37\n10\tConsultorias Especializadas\t1\t66279.62\n9\tDespesas Indiretas\t1\t60663.09\n15\tLubrificantes\t56\t58763.41\n7\tOutras Despesas de Setores\t12\t46253.63\n30003\tComissão de Vendas\t1\t38728.00\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

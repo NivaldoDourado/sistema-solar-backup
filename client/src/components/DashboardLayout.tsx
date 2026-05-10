@@ -58,6 +58,7 @@ import {
   Activity,
   List,
   Receipt,
+  Calculator,
 } from "lucide-react";
 import React, { CSSProperties, useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -97,6 +98,7 @@ export default function DashboardLayout({
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
+    { icon: Calculator, label: "Rateio MEM", path: "/rateio-mem", module: "custos" as const },
     { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
     { icon: FileUp, label: "Import. Despesas Equip.", path: "/import-despesas", module: "custos" as const },
     { icon: FileUp, label: "Import. Fluxo Realizado", path: "/import-fluxo", module: "custos" as const },

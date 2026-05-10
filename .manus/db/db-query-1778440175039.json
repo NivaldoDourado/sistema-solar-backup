@@ -1,0 +1,85 @@
+{
+  "query": "\nSELECT equipamentoTag, classificacao, SUM(custo) as total\nFROM item_despesa_importado\nWHERE periodoCustoId = 60001\nGROUP BY equipamentoTag, classificacao\nORDER BY total DESC\nLIMIT 15;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT equipamentoTag, classificacao, SUM(custo) as total\nFROM item_despesa_importado\nWHERE periodoCustoId = 60001\nGROUP BY equipamentoTag, classificacao\nORDER BY total DESC\nLIMIT 15;\n",
+  "rows": [
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "classificacao": "pecas_reposicao",
+      "total": "136668.83"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "classificacao": "pecas_desgaste",
+      "total": "44500.00"
+    },
+    {
+      "equipamentoTag": "944 C",
+      "classificacao": "combustivel",
+      "total": "42068.92"
+    },
+    {
+      "equipamentoTag": "C100",
+      "classificacao": "pecas_desgaste",
+      "total": "40047.58"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "classificacao": "pecas_desgaste",
+      "total": "39330.00"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "classificacao": "combustivel",
+      "total": "33405.16"
+    },
+    {
+      "equipamentoTag": "OM100",
+      "classificacao": "pecas_reposicao",
+      "total": "32788.43"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "classificacao": "pecas_desgaste",
+      "total": "31742.53"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "classificacao": "combustivel",
+      "total": "27899.59"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "classificacao": "pecas_desgaste",
+      "total": "26799.35"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "classificacao": "pecas_reposicao",
+      "total": "24975.25"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "classificacao": "combustivel",
+      "total": "21744.26"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "classificacao": "combustivel",
+      "total": "21094.39"
+    },
+    {
+      "equipamentoTag": "L566 02",
+      "classificacao": "outras_despesas",
+      "total": "20688.26"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "classificacao": "combustivel",
+      "total": "20639.77"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tclassificacao\ttotal\nEXPLOSIVOS\tpecas_reposicao\t136668.83\nBRITADOR CS440\tpecas_desgaste\t44500.00\n944 C\tcombustivel\t42068.92\nC100\tpecas_desgaste\t40047.58\nJC1200 01\tpecas_desgaste\t39330.00\nESCAVADEIRA R938\tcombustivel\t33405.16\nOM100\tpecas_reposicao\t32788.43\nHP 200 ( METSO)\tpecas_desgaste\t31742.53\nESCAVADEIRA R 938 02\tcombustivel\t27899.59\nPERFURATRIZ HIDR. 01\tpecas_desgaste\t26799.35\nESCAVADEIRA R938\tpecas_reposicao\t24975.25\nHL 76003\tcombustivel\t21744.26\nL 566\tcombustivel\t21094.39\nL566 02\toutras_despesas\t20688.26\nPERFURATRIZ HIDR. 01\tcombustivel\t20639.77\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

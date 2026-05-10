@@ -1,0 +1,115 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ', ') as setores,\n       SUM(pd.horaKmTrabalhados) as horas_totais\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos > 1\nORDER BY horas_totais DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, \n       COUNT(DISTINCT pdi.setorId) as setores_distintos,\n       GROUP_CONCAT(DISTINCT s.nome ORDER BY s.nome SEPARATOR ', ') as setores,\n       SUM(pd.horaKmTrabalhados) as horas_totais\nFROM parte_diaria pd\nJOIN equipamentos e ON pd.equipamentoId = e.id\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data >= '2026-04-01' AND pd.data < '2026-05-01'\nGROUP BY e.id, e.nomeDoEquipamento\nHAVING setores_distintos > 1\nORDER BY horas_totais DESC;\n",
+  "rows": [
+    {
+      "id": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "setores_distintos": "4",
+      "setores": "CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "539.98"
+    },
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "setores_distintos": "5",
+      "setores": "BRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "509.00"
+    },
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "setores_distintos": "5",
+      "setores": "BRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "431.99"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "setores_distintos": "5",
+      "setores": "BRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "376.99"
+    },
+    {
+      "id": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "setores_distintos": "5",
+      "setores": "BRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "376.87"
+    },
+    {
+      "id": "73",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04",
+      "setores_distintos": "2",
+      "setores": "DECAPEAMENTO, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "364.00"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "setores_distintos": "5",
+      "setores": "BRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "333.92"
+    },
+    {
+      "id": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "setores_distintos": "4",
+      "setores": "CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "315.00"
+    },
+    {
+      "id": "30",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXD-6334",
+      "setores_distintos": "3",
+      "setores": "CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE",
+      "horas_totais": "228.00"
+    },
+    {
+      "id": "20",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA KOMATSU PC300",
+      "setores_distintos": "2",
+      "setores": "CARGA E TRANSPORTE DE PEDRA DA MINA, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "182.00"
+    },
+    {
+      "id": "42",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE HZK-7665",
+      "setores_distintos": "2",
+      "setores": "MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "168.00"
+    },
+    {
+      "id": "85",
+      "nomeDoEquipamento": "PENEIRA FAÇO - PENEIRA 07",
+      "setores_distintos": "2",
+      "setores": "BRITAGEM QUARTENÁRIA, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "148.00"
+    },
+    {
+      "id": "84",
+      "nomeDoEquipamento": "ALIMENTADOR VIBRATORIO AV400 120",
+      "setores_distintos": "2",
+      "setores": "BRITAGEM PRIMÁRIA, BRITAGEM SECUNDÁRIA",
+      "horas_totais": "145.00"
+    },
+    {
+      "id": "24",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA HYUNDAI HL760 02",
+      "setores_distintos": "2",
+      "setores": "EXPEDIÇÃO, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "100.00"
+    },
+    {
+      "id": "23",
+      "nomeDoEquipamento": "PÁ CARREGAGEIRA HYUNDAI HL760 01",
+      "setores_distintos": "2",
+      "setores": "EXPEDIÇÃO, OUTROS SERVIÇOS AUXILIARES",
+      "horas_totais": "72.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tsetores_distintos\tsetores\thoras_totais\n88\tCAMINHAO BASCULANTE MB/ RUC 4F80\t4\tCARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t539.98\n38\tCAMINHÃO BASCULANTE NVH-6212\t5\tBRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t509.00\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t5\tBRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t431.99\n37\tCAMINHÃO BASCULANTE  NVJ-7902\t5\tBRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t376.99\n41\tCAMINHÃO BASCULANTE NML-0188\t5\tBRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t376.87\n73\tPÁ CARREGADEIRA CARTEPILAR 966R 04\t2\tDECAPEAMENTO, OUTROS SERVIÇOS AUXILIARES\t364.00\n40\tCAMINHÃO BASCULANTE OER1B00\t5\tBRITAGEM MÓVEL, CARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t333.92\n52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\t4\tCARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t315.00\n30\tCAMINHÃO BASCULANTE MERC. BENS / IXD-6334\t3\tCARGA E TRANSPORTE DE PEDRA DA MINA, DECAPEAMENTO, MOVIMENTAÇÃO DE ESTOQUE\t228.00\n20\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\t2\tCARGA E TRANSPORTE DE PEDRA DA MINA, OUTROS SERVIÇOS AUXILIARES\t182.00\n42\tCAMINHÃO BASCULANTE HZK-7665\t2\tMOVIMENTAÇÃO DE ESTOQUE, OUTROS SERVIÇOS AUXILIARES\t168.00\n85\tPENEIRA FAÇO - PENEIRA 07\t2\tBRITAGEM QUARTENÁRIA, OUTROS SERVIÇOS AUXILIARES\t148.00\n84\tALIMENTADOR VIBRATORIO AV400 120\t2\tBRITAGEM PRIMÁRIA, BRITAGEM SECUNDÁRIA\t145.00\n24\tPÁ CARREGAGEIRA HYUNDAI HL760 02\t2\tEXPEDIÇÃO, OUTROS SERVIÇOS AUXILIARES\t100.00\n23\tPÁ CARREGAGEIRA HYUNDAI HL760 01\t2\tEXPEDIÇÃO, OUTROS SERVIÇOS AUXILIARES\t72.00\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}
