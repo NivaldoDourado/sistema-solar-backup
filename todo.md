@@ -762,3 +762,9 @@
 - [x] Modificar backend para retornar produção por equipamento discriminada por setor
 - [x] Atualizar frontend do card para exibir produção por setor dentro de cada equipamento
 - [x] Garantir que o total por equipamento continua visível com o detalhamento por setor
+
+## Card Horas Trabalhadas por Setor
+- [x] Criar procedure backend para horas trabalhadas por setor (agrupando por setor e equipamento)
+- [x] Criar card frontend "Horas Trabalhadas por Setor" posicionado após card "Km Rodado"
+- [x] Mostrar horas totais por setor e detalhamento por equipamento dentro de cada setor
+- [x] Implementar no Dashboard web e mobile

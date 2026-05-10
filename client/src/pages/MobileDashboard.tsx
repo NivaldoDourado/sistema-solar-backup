@@ -256,6 +256,8 @@ export default function MobileDashboard() {
   const [expandEquipamento, setExpandEquipamento] = useState(false);
   const [expandHorasTrabalhadasMobile, setExpandHorasTrabalhadasMobile] = useState(false);
   const [expandKmRodadoMobile, setExpandKmRodadoMobile] = useState(false);
+  const [expandHorasPorSetorMobile, setExpandHorasPorSetorMobile] = useState(false);
+  const [expandedSetorHorasMobile, setExpandedSetorHorasMobile] = useState<number | null>(null);
 
   const { dataInicio, dataFim, label: periodoLabel } = useMemo(
     () => getPeriodoDates(periodo, appliedInicio, appliedFim),
@@ -284,6 +286,7 @@ export default function MobileDashboard() {
   const producaoPorEquipamento = trpc.parteDiaria.producaoPorEquipamento.useQuery(filtroParams);
   const horasTrabalhadasMobile = trpc.parteDiaria.horasTrabalhadas.useQuery(filtroParams);
   const kmRodadoMobile = trpc.parteDiaria.kmRodado.useQuery(filtroParams);
+  const horasPorSetorMobile = trpc.parteDiaria.horasTrabalhadasPorSetor.useQuery(filtroParams);
   const metaCaminhoesConfig = trpc.configuracoes.get.useQuery({ chave: "meta_producao_caminhoes" });
   const metaDiariaConfig = trpc.configuracoes.get.useQuery({ chave: "meta_diaria_caminhoes" });
   const metasList = trpc.metas.list.useQuery();
@@ -1554,6 +1557,79 @@ export default function MobileDashboard() {
               {kmRodadoMobile.data.equipamentos.length > 8 && (
                 <button onClick={() => setExpandKmRodadoMobile(!expandKmRodadoMobile)} className="flex items-center justify-center gap-1 w-full text-xs text-blue-400 pt-1">
                   {expandKmRodadoMobile ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {kmRodadoMobile.data.equipamentos.length - 8} equipamentos</>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ============================================================ */}
+      {/* Horas Trabalhadas por Setor */}
+      {/* ============================================================ */}
+      {horasPorSetorMobile.isLoading ? (
+        <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl p-4 animate-pulse"><div className="h-4 bg-slate-700 rounded w-1/3 mb-3" /><div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-8 bg-slate-700 rounded-xl" />)}</div></div></div>
+      ) : (horasPorSetorMobile.data?.setores && horasPorSetorMobile.data.setores.length > 0) ? (
+        <div className="px-4 mt-4">
+          <div className="bg-purple-900/40 rounded-2xl p-4 border border-purple-700/40">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-purple-400" />
+                <p className="text-purple-300 text-sm font-semibold">Horas Trabalhadas por Setor</p>
+              </div>
+              <DashboardExportMenu
+                title="Horas Trabalhadas por Setor"
+                subtitle={`Período: ${dataInicio || 'início'} a ${dataFim || 'hoje'}`}
+                filename="horas-por-setor"
+                exportOptions={{
+                  columns: [
+                    { header: 'Setor', key: 'setor', width: 25 },
+                    { header: 'Horas', key: 'horas', width: 15, format: formatters.decimal },
+                  ],
+                  data: (horasPorSetorMobile.data?.setores || []).map((s: any) => ({ setor: s.setorNome, horas: s.totalHoras })),
+                }}
+                whatsappMessage={`⏱️ *Horas Trabalhadas por Setor*\nTotal: ${formatNumber(horasPorSetorMobile.data?.totalHoras || 0, 2)} h\n${(horasPorSetorMobile.data?.setores || []).map((s: any) => `  ${s.setorNome}: ${formatNumber(s.totalHoras, 2)} h`).join('\n')}`}
+                whatsappDestinatarios={(destinatariosWpp.data || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
+            </div>
+            <p className="text-white text-xl font-bold">{formatNumber(horasPorSetorMobile.data.totalHoras || 0, 2)} <span className="text-purple-400/70 text-sm font-normal">h</span></p>
+            <p className="text-purple-400/70 text-xs mb-3">{horasPorSetorMobile.data.setores.length} setor(es) no período</p>
+            <div className="space-y-2">
+              {(horasPorSetorMobile.data.setores.length <= 8 ? horasPorSetorMobile.data.setores : expandHorasPorSetorMobile ? horasPorSetorMobile.data.setores : horasPorSetorMobile.data.setores.slice(0, 8)).map((setor: any) => (
+                <div key={setor.setorId}>
+                  <div
+                    className="bg-purple-800/40 rounded-xl p-3 border border-purple-700/50 cursor-pointer"
+                    onClick={() => setExpandedSetorHorasMobile(expandedSetorHorasMobile === setor.setorId ? null : setor.setorId)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-white text-xs font-semibold truncate max-w-[60%] flex items-center gap-1">
+                        <ChevronDown className={`w-3 h-3 transition-transform ${expandedSetorHorasMobile === setor.setorId ? 'rotate-180' : ''}`} />
+                        {setor.setorNome}
+                      </span>
+                      <span className="text-purple-300 text-xs font-bold">{formatNumber(setor.totalHoras, 2)} h</span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 bg-purple-900/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-purple-500 rounded-full"
+                        style={{ width: `${(setor.totalHoras / Math.max(...(horasPorSetorMobile.data?.setores?.map((s: any) => s.totalHoras) || [1]))) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  {expandedSetorHorasMobile === setor.setorId && setor.equipamentos && setor.equipamentos.length > 0 && (
+                    <div className="pl-4 pt-1 space-y-1 border-l-2 border-purple-700/50 ml-3 mt-1">
+                      {setor.equipamentos.map((eq: any) => (
+                        <div key={eq.equipamentoId} className="flex items-center justify-between text-[11px] text-purple-300/80">
+                          <span className="truncate mr-2">{eq.equipamentoTag || eq.equipamentoNome}</span>
+                          <span className="shrink-0 tabular-nums">{formatNumber(eq.horas, 2)} h</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {horasPorSetorMobile.data.setores.length > 8 && (
+                <button onClick={() => setExpandHorasPorSetorMobile(!expandHorasPorSetorMobile)} className="flex items-center justify-center gap-1 w-full text-xs text-purple-400 pt-1">
+                  {expandHorasPorSetorMobile ? <><ChevronUp className="w-3 h-3" /> Recolher</> : <><ChevronDown className="w-3 h-3" /> Ver mais {horasPorSetorMobile.data.setores.length - 8} setores</>}
                 </button>
               )}
             </div>

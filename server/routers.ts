@@ -1606,6 +1606,146 @@ export const appRouter = router({
         return { totalKm, equipamentos: equipamentosResult };
       }),
 
+    // Horas Trabalhadas por Setor — distribui proporcionalmente as horas de cada equipamento pelos setores
+    horasTrabalhadasPorSetor: protectedProcedure
+      .use(requirePermission("parteDiaria", "view"))
+      .input(z.object({
+        dataInicio: z.string().optional(),
+        dataFim: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return { totalHoras: 0, setores: [] };
+
+        // Buscar grupos excluídos
+        const gruposExcluidos = await db
+          .select({ id: gruposDeEquipamentos.id })
+          .from(gruposDeEquipamentos)
+          .where(or(
+            like(gruposDeEquipamentos.nome, '%ENTREGA DE MATERIAL%'),
+            like(gruposDeEquipamentos.nome, '%BALANÇA%'),
+            like(gruposDeEquipamentos.nome, '%BALANCA%'),
+          ));
+        const idsGruposExcluidos = gruposExcluidos.map(g => g.id);
+
+        // Buscar partes diárias com horas
+        const registros = await db
+          .select({
+            id: parteDiaria.id,
+            equipamentoId: parteDiaria.equipamentoId,
+            horaKmTrabalhados: parteDiaria.horaKmTrabalhados,
+            data: parteDiaria.data,
+          })
+          .from(parteDiaria)
+          .where(isNotNull(parteDiaria.horaKmTrabalhados));
+
+        // Filtrar por data
+        let registrosFiltrados = registros;
+        if (input?.dataInicio || input?.dataFim) {
+          registrosFiltrados = registros.filter(r => {
+            const dateStr = extractDateStr(r.data);
+            if (input?.dataInicio && dateStr < input.dataInicio) return false;
+            if (input?.dataFim && dateStr > input.dataFim) return false;
+            return true;
+          });
+        }
+
+        // Buscar equipamentos permitidos
+        const equipIdsSet = new Set(registrosFiltrados.map(r => r.equipamentoId).filter(Boolean) as number[]);
+        const equipIds = Array.from(equipIdsSet);
+        if (equipIds.length === 0) return { totalHoras: 0, setores: [] };
+
+        const equipsList = await db
+          .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag, grupoId: equipamentos.grupoId })
+          .from(equipamentos)
+          .where(inArray(equipamentos.id, equipIds));
+        const equipsPermitidos = idsGruposExcluidos.length > 0
+          ? equipsList.filter(e => !e.grupoId || !idsGruposExcluidos.includes(e.grupoId))
+          : equipsList;
+        const equipIdsPermitidosSet = new Set(equipsPermitidos.map(e => e.id));
+        const equipMap = new Map(equipsPermitidos.map(e => [e.id, { nome: e.nome, tag: e.tag }]));
+
+        // Filtrar registros para equipamentos permitidos
+        const registrosPermitidos = registrosFiltrados.filter(r => r.equipamentoId && equipIdsPermitidosSet.has(r.equipamentoId));
+        const pdIds = registrosPermitidos.map(r => r.id);
+        if (pdIds.length === 0) return { totalHoras: 0, setores: [] };
+
+        // Buscar itens para distribuir horas proporcionalmente por setor
+        const itens = await db
+          .select({
+            parteDiariaId: parteDiariaItens.parteDiariaId,
+            setorId: parteDiariaItens.setorId,
+            quantidade: parteDiariaItens.quantidade,
+          })
+          .from(parteDiariaItens)
+          .where(inArray(parteDiariaItens.parteDiariaId, pdIds));
+
+        // Buscar nomes dos setores
+        const setoresRows = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+        const setoresMap = new Map(setoresRows.map(s => [s.id, s.nome]));
+
+        // Agrupar itens por parteDiariaId para calcular proporção
+        const itensPorPD = new Map<number, { setorId: number; quantidade: number }[]>();
+        itens.forEach(item => {
+          if (!itensPorPD.has(item.parteDiariaId)) itensPorPD.set(item.parteDiariaId, []);
+          itensPorPD.get(item.parteDiariaId)!.push({ setorId: item.setorId, quantidade: parseFloat(item.quantidade || '0') });
+        });
+
+        // Distribuir horas proporcionalmente por setor e equipamento
+        // Estrutura: setor → equipamento → horas
+        const horasPorSetorEquip = new Map<number, Map<number, number>>();
+
+        registrosPermitidos.forEach(r => {
+          const horas = parseFloat(r.horaKmTrabalhados || '0');
+          if (horas <= 0 || !r.equipamentoId) return;
+
+          const itensDoRegistro = itensPorPD.get(r.id);
+          if (!itensDoRegistro || itensDoRegistro.length === 0) return;
+
+          // Calcular total de quantidade para proporção
+          const totalQtd = itensDoRegistro.reduce((sum, i) => sum + i.quantidade, 0);
+          if (totalQtd <= 0) return;
+
+          // Distribuir horas proporcionalmente
+          itensDoRegistro.forEach(item => {
+            const proporcao = item.quantidade / totalQtd;
+            const horasSetor = horas * proporcao;
+
+            if (!horasPorSetorEquip.has(item.setorId)) horasPorSetorEquip.set(item.setorId, new Map());
+            const equipMapSetor = horasPorSetorEquip.get(item.setorId)!;
+            equipMapSetor.set(r.equipamentoId!, (equipMapSetor.get(r.equipamentoId!) || 0) + horasSetor);
+          });
+        });
+
+        // Montar resultado
+        const setoresResult = Array.from(horasPorSetorEquip.entries())
+          .map(([setorId, equipMapSetor]) => {
+            const equipamentosDoSetor = Array.from(equipMapSetor.entries())
+              .map(([equipamentoId, horas]) => {
+                const eq = equipMap.get(equipamentoId);
+                return {
+                  equipamentoId,
+                  equipamentoNome: eq?.nome || 'Desconhecido',
+                  equipamentoTag: eq?.tag || '',
+                  horas,
+                };
+              })
+              .sort((a, b) => b.horas - a.horas);
+
+            const totalHorasSetor = equipamentosDoSetor.reduce((sum, e) => sum + e.horas, 0);
+            return {
+              setorId,
+              setorNome: setoresMap.get(setorId) || 'Desconhecido',
+              totalHoras: totalHorasSetor,
+              equipamentos: equipamentosDoSetor,
+            };
+          })
+          .sort((a, b) => b.totalHoras - a.totalHoras);
+
+        const totalHoras = setoresResult.reduce((sum, s) => sum + s.totalHoras, 0);
+        return { totalHoras, setores: setoresResult };
+      }),
+
     // Produção total geral
     producaoTotal: protectedProcedure
       .use(requirePermission("parteDiaria", "view"))
