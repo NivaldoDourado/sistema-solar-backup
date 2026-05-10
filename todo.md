@@ -752,3 +752,8 @@
 - [x] Incluir Sal.Adm./Encargos e Sal.Diretoria nos custos por setor (relatório sintético e analítico)
 - [x] Garantir que os salários apareçam como linha separada na composição de custo
 - [x] Verificar drill-down: clicar na conta de salário deve mostrar a lista de lançamentos
+
+## Integração Salários no Relatório Analítico (custoSetorRas)
+- [x] Incluir Sal.Oper. no campo salOperEncOper dos equipamentos no relatório analítico
+- [x] Incluir Sal.Adm./Encargos e Sal.Diretoria como despesas específicas nos setores no relatório analítico
+- [x] Verificar que os valores aparecem corretamente na tela CustoSetorAnalitico

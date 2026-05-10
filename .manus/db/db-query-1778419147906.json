@@ -1,0 +1,105 @@
+{
+  "query": "SELECT s.id, s.nome, cse.subsetorNome FROM setores s LEFT JOIN (SELECT DISTINCT subsetorNome FROM custo_setor_despesa) cse ON UPPER(s.nome) LIKE CONCAT('%', UPPER(cse.subsetorNome), '%') OR UPPER(cse.subsetorNome) LIKE CONCAT('%', UPPER(s.nome), '%') ORDER BY s.nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT s.id, s.nome, cse.subsetorNome FROM setores s LEFT JOIN (SELECT DISTINCT subsetorNome FROM custo_setor_despesa) cse ON UPPER(s.nome) LIKE CONCAT('%', UPPER(cse.subsetorNome), '%') OR UPPER(cse.subsetorNome) LIKE CONCAT('%', UPPER(s.nome), '%') ORDER BY s.nome;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "ADMINISTRACAO",
+      "subsetorNome": "ADMINISTRAÇÃO"
+    },
+    {
+      "id": "2",
+      "nome": "ALIMENTAÇÃO",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "60002",
+      "nome": "ALMOXARIFADO",
+      "subsetorNome": "OFICINA E ALMOXARIFADO"
+    },
+    {
+      "id": "30002",
+      "nome": "BRITAGEM MÓVEL",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "3",
+      "nome": "BRITAGEM PRIMÁRIA",
+      "subsetorNome": "BRITAGEM PRIMÁRIA"
+    },
+    {
+      "id": "4",
+      "nome": "BRITAGEM QUARTENÁRIA",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "5",
+      "nome": "BRITAGEM SECUNDÁRIA",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "6",
+      "nome": "BRITAGEM TERCEÁRIA",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "7",
+      "nome": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "8",
+      "nome": "DECAPEAMENTO",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "9",
+      "nome": "DESMONTE PRIMÁRIO",
+      "subsetorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "10",
+      "nome": "DESMONTE SECUNDÁRIO",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "11",
+      "nome": "EXPEDIÇÃO",
+      "subsetorNome": "EXPEDIÇÃO"
+    },
+    {
+      "id": "90002",
+      "nome": "INDIRETAS",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "12",
+      "nome": "LIMPEZA",
+      "subsetorNome": "REFEITÓRIO E LIMPEZA"
+    },
+    {
+      "id": "13",
+      "nome": "MOVIMENTAÇÃO DE ESTOQUE",
+      "subsetorNome": "NULL"
+    },
+    {
+      "id": "60003",
+      "nome": "OFICINA",
+      "subsetorNome": "OFICINA E ALMOXARIFADO"
+    },
+    {
+      "id": "15",
+      "nome": "OUTROS SERVIÇOS AUXILIARES",
+      "subsetorNome": "OUTROS SERVIÇOS"
+    },
+    {
+      "id": "14",
+      "nome": "REFEITÓRIO",
+      "subsetorNome": "REFEITÓRIO E LIMPEZA"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tsubsetorNome\n1\tADMINISTRACAO\tADMINISTRAÇÃO\n2\tALIMENTAÇÃO\tNULL\n60002\tALMOXARIFADO\tOFICINA E ALMOXARIFADO\n30002\tBRITAGEM MÓVEL\tNULL\n3\tBRITAGEM PRIMÁRIA\tBRITAGEM PRIMÁRIA\n4\tBRITAGEM QUARTENÁRIA\tNULL\n5\tBRITAGEM SECUNDÁRIA\tNULL\n6\tBRITAGEM TERCEÁRIA\tNULL\n7\tCARGA E TRANSPORTE DE PEDRA DA MINA\tNULL\n8\tDECAPEAMENTO\tNULL\n9\tDESMONTE PRIMÁRIO\tDESMONTE PRIMÁRIO\n10\tDESMONTE SECUNDÁRIO\tNULL\n11\tEXPEDIÇÃO\tEXPEDIÇÃO\n90002\tINDIRETAS\tNULL\n12\tLIMPEZA\tREFEITÓRIO E LIMPEZA\n13\tMOVIMENTAÇÃO DE ESTOQUE\tNULL\n60003\tOFICINA\tOFICINA E ALMOXARIFADO\n15\tOUTROS SERVIÇOS AUXILIARES\tOUTROS SERVIÇOS\n14\tREFEITÓRIO\tREFEITÓRIO E LIMPEZA\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

@@ -1,0 +1,40 @@
+{
+  "query": "SELECT DISTINCT subsetorNome FROM custo_setor_equipamento LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT subsetorNome FROM custo_setor_equipamento LIMIT 20;",
+  "rows": [
+    {
+      "subsetorNome": "PEDRA PARA BRITADOR"
+    },
+    {
+      "subsetorNome": "BRITAGEM PRIMÁRIA"
+    },
+    {
+      "subsetorNome": "BRITAGEM SEC./TERC./QUART."
+    },
+    {
+      "subsetorNome": "DESMONTE SECUNDÁRIO"
+    },
+    {
+      "subsetorNome": "MOV. DE ESTOQUE"
+    },
+    {
+      "subsetorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "subsetorNome": "EXPEDIÇÃO"
+    },
+    {
+      "subsetorNome": "OUTROS SERVIÇOS"
+    },
+    {
+      "subsetorNome": "DECAPEAMENTO"
+    },
+    {
+      "subsetorNome": "OFICINA E ALMOXARIFADO"
+    }
+  ],
+  "messages": [],
+  "stdout": "subsetorNome\nPEDRA PARA BRITADOR\nBRITAGEM PRIMÁRIA\nBRITAGEM SEC./TERC./QUART.\nDESMONTE SECUNDÁRIO\nMOV. DE ESTOQUE\nDESMONTE PRIMÁRIO\nEXPEDIÇÃO\nOUTROS SERVIÇOS\nDECAPEAMENTO\nOFICINA E ALMOXARIFADO\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

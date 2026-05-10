@@ -1,8 +1,37 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
-import { custoSetorEquipamento, custoSetorDespesa } from "../drizzle/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { custoSetorEquipamento, custoSetorDespesa, lancamentoSalario, equipamentos, setores } from "../drizzle/schema";
+import { eq, and, asc, inArray } from "drizzle-orm";
+
+// IDs das contas de salário (espelha salarios_router.ts)
+const CONTA_SAL_ADM_ID = 1;
+const CONTA_SAL_DIRETORIA_ID = 12;
+const CONTA_SAL_OPER_ID = 30004;
+
+// Mapeamento setor operacional (tabela setores) → subsetor do relatório analítico
+const SETOR_PARA_SUBSETOR: Record<string, { subsetor: string; grupo: string }> = {
+  "ADMINISTRACAO": { subsetor: "ADMINISTRAÇÃO", grupo: "ADMINISTRAÇÃO" },
+  "ADMINISTRAÇÃO": { subsetor: "ADMINISTRAÇÃO", grupo: "ADMINISTRAÇÃO" },
+  "BRITAGEM PRIMÁRIA": { subsetor: "BRITAGEM PRIMÁRIA", grupo: "BRITAGEM" },
+  "BRITAGEM SECUNDÁRIA": { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM" },
+  "BRITAGEM TERCEÁRIA": { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM" },
+  "BRITAGEM QUARTENÁRIA": { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM" },
+  "BRITAGEM MÓVEL": { subsetor: "BRITAGEM SEC./TERC./QUART.", grupo: "BRITAGEM" },
+  "DESMONTE PRIMÁRIO": { subsetor: "DESMONTE PRIMÁRIO", grupo: "DESMONTE DE ROCHA" },
+  "DESMONTE SECUNDÁRIO": { subsetor: "DESMONTE SECUNDÁRIO", grupo: "DESMONTE DE ROCHA" },
+  "DECAPEAMENTO": { subsetor: "DECAPEAMENTO", grupo: "DESMONTE DE ROCHA" },
+  "CARGA E TRANSPORTE DE PEDRA DA MINA": { subsetor: "PEDRA PARA BRITADOR", grupo: "PEDRA PARA BRITADOR" },
+  "EXPEDIÇÃO": { subsetor: "EXPEDIÇÃO", grupo: "EXPEDIÇÃO" },
+  "MOVIMENTAÇÃO DE ESTOQUE": { subsetor: "MOV. DE ESTOQUE", grupo: "EXPEDIÇÃO" },
+  "OFICINA": { subsetor: "OFICINA E ALMOXARIFADO", grupo: "SERVIÇOS AUXILIARES" },
+  "ALMOXARIFADO": { subsetor: "OFICINA E ALMOXARIFADO", grupo: "SERVIÇOS AUXILIARES" },
+  "OUTROS SERVIÇOS AUXILIARES": { subsetor: "OUTROS SERVIÇOS", grupo: "SERVIÇOS AUXILIARES" },
+  "REFEITÓRIO": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
+  "LIMPEZA": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
+  "ALIMENTAÇÃO": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
+  "INDIRETAS": { subsetor: "ADMINISTRAÇÃO", grupo: "ADMINISTRAÇÃO" },
+};
 
 export const custoSetorRasRouter = router({
   // Listar equipamentos de um período e subsetor específico
@@ -93,7 +122,7 @@ export const custoSetorRasRouter = router({
       const db = await getDb();
       if (!db) return { grupos: [], totalGeral: 0 };
 
-      const [equipamentos, despesas] = await Promise.all([
+      const [equipRows, despesas, salarioRows] = await Promise.all([
         db
           .select()
           .from(custoSetorEquipamento)
@@ -112,10 +141,78 @@ export const custoSetorRasRouter = router({
             asc(custoSetorDespesa.subsetorNome),
             asc(custoSetorDespesa.ordemExibicao)
           ),
+        // Buscar lançamentos manuais de salário do período
+        db
+          .select({
+            id: lancamentoSalario.id,
+            contaCustoId: lancamentoSalario.contaCustoId,
+            valor: lancamentoSalario.valor,
+            equipamentoId: lancamentoSalario.equipamentoId,
+            setorId: lancamentoSalario.setorId,
+            descricao: lancamentoSalario.descricao,
+          })
+          .from(lancamentoSalario)
+          .where(eq(lancamentoSalario.periodoCustoId, input.periodoCustoId)),
       ]);
 
+      // --- Processar salários manuais ---
+      // Buscar nomes de equipamentos e setores referenciados
+      const salEquipIds = salarioRows.filter(r => r.equipamentoId).map(r => r.equipamentoId!);
+      const salSetorIds = salarioRows.filter(r => r.setorId).map(r => r.setorId!);
+
+      let equipNomeMap = new Map<number, string>();
+      let setorNomeMap = new Map<number, string>();
+
+      if (salEquipIds.length > 0) {
+        const eqs = await db.select({ id: equipamentos.id, nomeDoEquipamento: equipamentos.nomeDoEquipamento, codigoTag: equipamentos.codigoTag }).from(equipamentos);
+        for (const e of eqs) {
+          equipNomeMap.set(e.id, e.codigoTag ? `${e.codigoTag} - ${e.nomeDoEquipamento}` : e.nomeDoEquipamento);
+        }
+      }
+
+      if (salSetorIds.length > 0) {
+        const secs = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+        for (const s of secs) {
+          setorNomeMap.set(s.id, s.nome);
+        }
+      }
+
+      // Sal.Oper. → somar ao salOperEncOper do equipamento no relatório
+      // Criar mapa equipamentoNome → valor adicional de salário
+      const salOperPorEquipNome = new Map<string, number>();
+      for (const sal of salarioRows) {
+        if (sal.contaCustoId === CONTA_SAL_OPER_ID && sal.equipamentoId) {
+          const nomeEquip = equipNomeMap.get(sal.equipamentoId) ?? "";
+          if (nomeEquip) {
+            salOperPorEquipNome.set(nomeEquip, (salOperPorEquipNome.get(nomeEquip) ?? 0) + parseFloat(sal.valor));
+          }
+        }
+      }
+
+      // Sal.Adm./Sal.Diretoria → adicionar como despesas específicas virtuais
+      // Agrupar por subsetor
+      const salDespPorSubsetor = new Map<string, { subsetor: string; grupo: string; valor: number; descricao: string }[]>();
+      for (const sal of salarioRows) {
+        if ((sal.contaCustoId === CONTA_SAL_ADM_ID || sal.contaCustoId === CONTA_SAL_DIRETORIA_ID) && sal.setorId) {
+          const setorNome = setorNomeMap.get(sal.setorId);
+          if (!setorNome) continue;
+          const mapping = SETOR_PARA_SUBSETOR[setorNome.toUpperCase()];
+          if (!mapping) continue;
+          const key = `${mapping.grupo}||${mapping.subsetor}`;
+          if (!salDespPorSubsetor.has(key)) salDespPorSubsetor.set(key, []);
+          salDespPorSubsetor.get(key)!.push({
+            subsetor: mapping.subsetor,
+            grupo: mapping.grupo,
+            valor: parseFloat(sal.valor),
+            descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
+              ? "Sal.Adm./Diretoria/Pró-Labore/Encargos [Manual]"
+              : "Sal. Diretoria [Manual]",
+          });
+        }
+      }
+
       // Agrupar por grupo → subsetor
-      type EquipItem = typeof equipamentos[0];
+      type EquipItem = typeof equipRows[0];
       type DespItem = typeof despesas[0];
 
       type SubsetorData = {
@@ -137,8 +234,8 @@ export const custoSetorRasRouter = router({
       const gruposMap: Record<string, GrupoData> = {};
       const subsetoresMap: Record<string, SubsetorData> = {};
 
-      // Processar equipamentos
-      for (const equip of equipamentos) {
+      // Processar equipamentos (com salários manuais somados ao salOperEncOper)
+      for (const equip of equipRows) {
         const key = `${equip.grupoNome}||${equip.subsetorNome}`;
 
         if (!subsetoresMap[key]) {
@@ -153,9 +250,22 @@ export const custoSetorRasRouter = router({
           };
         }
 
-        subsetoresMap[key].equipamentos.push(equip);
+        // Somar salário manual ao salOperEncOper se houver
+        const salExtra = salOperPorEquipNome.get(equip.equipamentoNome) ?? 0;
+        let equipAjustado = equip;
+        if (salExtra > 0) {
+          const novoSal = parseFloat(equip.salOperEncOper ?? "0") + salExtra;
+          const novoTotal = parseFloat(equip.totalDespesasEquipamento ?? "0") + salExtra;
+          equipAjustado = {
+            ...equip,
+            salOperEncOper: novoSal.toFixed(2),
+            totalDespesasEquipamento: novoTotal.toFixed(2),
+          };
+        }
+
+        subsetoresMap[key].equipamentos.push(equipAjustado);
         subsetoresMap[key].totalEquipamentos += parseFloat(
-          equip.totalDespesasEquipamento ?? "0"
+          equipAjustado.totalDespesasEquipamento ?? "0"
         );
       }
 
@@ -177,6 +287,47 @@ export const custoSetorRasRouter = router({
 
         subsetoresMap[key].despesasEspecificas.push(desp);
         subsetoresMap[key].totalDespesasEspecificas += parseFloat(desp.valor ?? "0");
+      }
+
+      // Adicionar salários manuais (Sal.Adm./Sal.Diretoria) como despesas específicas virtuais
+      for (const [key, salItems] of Array.from(salDespPorSubsetor.entries())) {
+        // Agrupar por descrição (conta) para somar valores
+        const porDescricao = new Map<string, number>();
+        for (const item of salItems) {
+          porDescricao.set(item.descricao, (porDescricao.get(item.descricao) ?? 0) + item.valor);
+        }
+
+        const firstItem = salItems[0];
+        if (!subsetoresMap[key]) {
+          subsetoresMap[key] = {
+            subsetorNome: firstItem.subsetor,
+            grupoNome: firstItem.grupo,
+            equipamentos: [],
+            despesasEspecificas: [],
+            totalEquipamentos: 0,
+            totalDespesasEspecificas: 0,
+            totalSubsetor: 0,
+          };
+        }
+
+        for (const [descricao, valor] of Array.from(porDescricao.entries())) {
+          // Criar uma despesa virtual com ID negativo para não conflitar
+          const virtualDesp = {
+            id: -(subsetoresMap[key].despesasEspecificas.length + 1000),
+            periodoCustoId: input.periodoCustoId,
+            subsetorNome: firstItem.subsetor,
+            grupoNome: firstItem.grupo,
+            descricao,
+            valor: valor.toFixed(2),
+            ordemExibicao: 999,
+            userId: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as DespItem;
+
+          subsetoresMap[key].despesasEspecificas.push(virtualDesp);
+          subsetoresMap[key].totalDespesasEspecificas += valor;
+        }
       }
 
       // Calcular totais dos subsetores e agrupar por grupo

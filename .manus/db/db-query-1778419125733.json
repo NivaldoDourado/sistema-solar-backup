@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, equipamentoNome, subsetorNome, grupoNome, salOperEncOper, totalDespesasEquipamento FROM custo_setor_equipamento LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, equipamentoNome, subsetorNome, grupoNome, salOperEncOper, totalDespesasEquipamento FROM custo_setor_equipamento LIMIT 5;",
+  "rows": [
+    {
+      "id": "30159",
+      "equipamentoNome": "CARRETA PERFURATRIZ - ROCK 01",
+      "subsetorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "salOperEncOper": "726.78",
+      "totalDespesasEquipamento": "6968.16"
+    },
+    {
+      "id": "30160",
+      "equipamentoNome": "CARRETA PERFURATRIZ - ROCK 02",
+      "subsetorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "salOperEncOper": "0.00",
+      "totalDespesasEquipamento": "4209.27"
+    },
+    {
+      "id": "30161",
+      "equipamentoNome": "PERFURATRIZ HIDRÁULICA WOLF FOX 8-20",
+      "subsetorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "salOperEncOper": "8220.34",
+      "totalDespesasEquipamento": "61897.81"
+    },
+    {
+      "id": "30162",
+      "equipamentoNome": "COMPRESSOR GA160",
+      "subsetorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "salOperEncOper": "0.00",
+      "totalDespesasEquipamento": "650.00"
+    },
+    {
+      "id": "30163",
+      "equipamentoNome": "- COMPRESSOR DE AR XAS420 - ATLAS COPCO",
+      "subsetorNome": "DESMONTE PRIMÁRIO",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "salOperEncOper": "0.00",
+      "totalDespesasEquipamento": "849.80"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tequipamentoNome\tsubsetorNome\tgrupoNome\tsalOperEncOper\ttotalDespesasEquipamento\n30159\tCARRETA PERFURATRIZ - ROCK 01\tDESMONTE PRIMÁRIO\tDESMONTE DE ROCHA\t726.78\t6968.16\n30160\tCARRETA PERFURATRIZ - ROCK 02\tDESMONTE PRIMÁRIO\tDESMONTE DE ROCHA\t0.00\t4209.27\n30161\tPERFURATRIZ HIDRÁULICA WOLF FOX 8-20\tDESMONTE PRIMÁRIO\tDESMONTE DE ROCHA\t8220.34\t61897.81\n30162\tCOMPRESSOR GA160\tDESMONTE PRIMÁRIO\tDESMONTE DE ROCHA\t0.00\t650.00\n30163\t- COMPRESSOR DE AR XAS420 - ATLAS COPCO\tDESMONTE PRIMÁRIO\tDESMONTE DE ROCHA\t0.00\t849.80\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

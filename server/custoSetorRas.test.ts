@@ -1,17 +1,32 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
 // Mock do módulo db para evitar conexão real com banco
+// O mock suporta múltiplas chamadas select() retornando arrays vazios
+// Chains: select().from().where().orderBy() → []
+//         select().from().where() → [] (thenable)
+//         select().from() → [] (thenable)
+function createMockChain() {
+  const emptyResult: any[] = [];
+  // Make objects thenable so Promise.all works on chains without orderBy
+  const whereResult: any = {
+    orderBy: vi.fn().mockResolvedValue(emptyResult),
+    then: (resolve: any, reject?: any) => Promise.resolve(emptyResult).then(resolve, reject),
+  };
+  const fromResult: any = {
+    where: vi.fn().mockReturnValue(whereResult),
+    orderBy: vi.fn().mockResolvedValue(emptyResult),
+    then: (resolve: any, reject?: any) => Promise.resolve(emptyResult).then(resolve, reject),
+  };
+  return {
+    from: vi.fn().mockReturnValue(fromResult),
+  };
+}
+
 vi.mock("./db", () => ({
   getDb: vi.fn().mockResolvedValue({
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          orderBy: vi.fn().mockResolvedValue([]),
-        }),
-      }),
-    }),
+    select: vi.fn().mockImplementation(() => createMockChain()),
     delete: vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue({ rowsAffected: 0 }),
     }),
@@ -58,6 +73,7 @@ describe("custoSetorRas router", () => {
     });
 
     expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(0);
   });
 
   it("listarEquipamentosPorPeriodo retorna array vazio quando não há dados", async () => {
@@ -69,6 +85,7 @@ describe("custoSetorRas router", () => {
     });
 
     expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(0);
   });
 
   it("listarDespesasPorSubsetor retorna array vazio quando não há dados", async () => {
@@ -81,6 +98,7 @@ describe("custoSetorRas router", () => {
     });
 
     expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(0);
   });
 
   it("listarDespesasPorPeriodo retorna array vazio quando não há dados", async () => {
@@ -92,9 +110,10 @@ describe("custoSetorRas router", () => {
     });
 
     expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(0);
   });
 
-  it("relatorioAnalitico retorna estrutura correta com grupos e totalGeral", async () => {
+  it("relatorioAnalitico retorna estrutura correta", async () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
