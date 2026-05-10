@@ -2293,7 +2293,7 @@ export default function Home() {
                 {(producaoPorEquipamento.length <= 10 ? producaoPorEquipamento : expandEquipamento ? producaoPorEquipamento : producaoPorEquipamento.slice(0, 10)).map((item) => (
                   <div key={item.equipamentoId} className="space-y-1">
                     <div className="flex items-start justify-between text-sm gap-2">
-                      <span className="break-words leading-tight" title={item.equipamentoNome}>
+                      <span className="break-words leading-tight font-medium" title={item.equipamentoNome}>
                         {item.equipamentoNome}
                       </span>
                       <span className="font-semibold text-green-600 dark:text-green-400 shrink-0 whitespace-nowrap">
@@ -2306,6 +2306,16 @@ export default function Home() {
                         style={{ width: `${(item.producaoTotal / maxProducaoEquipamento) * 100}%` }}
                       />
                     </div>
+                    {item.producaoPorSetor && item.producaoPorSetor.length > 1 && (
+                      <div className="pl-4 pt-1 space-y-0.5">
+                        {item.producaoPorSetor.map((s: any) => (
+                          <div key={s.setorId} className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="truncate mr-2">{s.setorNome}</span>
+                            <span className="shrink-0 tabular-nums">{fmtNum(s.producao, 0)} <span className="text-[10px]">({((s.producao / item.producaoTotal) * 100).toFixed(0)}%)</span></span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {producaoPorEquipamento.length > 10 && (

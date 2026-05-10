@@ -1428,6 +1428,16 @@ export default function MobileDashboard() {
                   <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-green-500 rounded-full" style={{ width: `${(item.producaoTotal / maxProducaoEquipamento) * 100}%` }} />
                   </div>
+                  {item.producaoPorSetor && item.producaoPorSetor.length > 1 && (
+                    <div className="pl-3 pt-0.5 space-y-0.5">
+                      {item.producaoPorSetor.map((s: any) => (
+                        <div key={s.setorId} className="flex justify-between text-[10px] text-white/50">
+                          <span className="truncate mr-2">{s.setorNome}</span>
+                          <span className="shrink-0 tabular-nums">{formatNumber(s.producao)} ({((s.producao / item.producaoTotal) * 100).toFixed(0)}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               {producaoPorEquipamento.data.length > 8 && (

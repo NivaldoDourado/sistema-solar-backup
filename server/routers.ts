@@ -1386,6 +1386,7 @@ export const appRouter = router({
             equipamentoId: parteDiaria.equipamentoId,
             producao: parteDiariaItens.producao,
             data: parteDiaria.data,
+            setorId: parteDiariaItens.setorId,
           })
           .from(parteDiariaItens)
           .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id))
@@ -1402,21 +1403,42 @@ export const appRouter = router({
           });
         }
         
-        // Agrupar por equipamento
+        // Buscar nomes dos setores
+        const setoresRows = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+        const setoresMap = new Map(setoresRows.map(s => [s.id, s.nome]));
+        
+        // Agrupar por equipamento e por setor
         const porEquipamento = new Map<number, number>();
+        const porEquipamentoSetor = new Map<number, Map<number, number>>();
         itensFiltrados.forEach(item => {
-          const atual = porEquipamento.get(item.equipamentoId) || 0;
-          porEquipamento.set(item.equipamentoId, atual + parseFloat(item.producao || '0'));
+          const prod = parseFloat(item.producao || '0');
+          // Total por equipamento
+          porEquipamento.set(item.equipamentoId, (porEquipamento.get(item.equipamentoId) || 0) + prod);
+          // Por equipamento e setor
+          if (!porEquipamentoSetor.has(item.equipamentoId)) {
+            porEquipamentoSetor.set(item.equipamentoId, new Map());
+          }
+          const setorMap = porEquipamentoSetor.get(item.equipamentoId)!;
+          setorMap.set(item.setorId, (setorMap.get(item.setorId) || 0) + prod);
         });
         
         return Array.from(porEquipamento.entries()).map(([equipamentoId, producaoTotal]) => {
           const eq = equipamentosMap.get(equipamentoId);
+          const setorMap = porEquipamentoSetor.get(equipamentoId) || new Map();
+          const producaoPorSetor = Array.from(setorMap.entries())
+            .map(([setorId, producao]) => ({
+              setorId,
+              setorNome: setoresMap.get(setorId) || 'Desconhecido',
+              producao,
+            }))
+            .sort((a, b) => b.producao - a.producao);
           return {
             equipamentoId,
             equipamentoNome: eq?.nome || 'Desconhecido',
             equipamentoTag: eq?.tag || '',
             capacidade: eq?.capacidade || '0',
             producaoTotal,
+            producaoPorSetor,
           };
         }).sort((a, b) => b.producaoTotal - a.producaoTotal);
       }),

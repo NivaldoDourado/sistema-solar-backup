@@ -757,3 +757,8 @@
 - [x] Incluir Sal.Oper. no campo salOperEncOper dos equipamentos no relatório analítico
 - [x] Incluir Sal.Adm./Encargos e Sal.Diretoria como despesas específicas nos setores no relatório analítico
 - [x] Verificar que os valores aparecem corretamente na tela CustoSetorAnalitico
+
+## Card Produção por Equipamento - Detalhe por Setor
+- [x] Modificar backend para retornar produção por equipamento discriminada por setor
+- [x] Atualizar frontend do card para exibir produção por setor dentro de cada equipamento
+- [x] Garantir que o total por equipamento continua visível com o detalhamento por setor
