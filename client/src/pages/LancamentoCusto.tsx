@@ -87,12 +87,14 @@ export default function LancamentoCusto() {
     }
   }, [periodos, selectedPeriodoId]);
 
-  // Carregar valores dos lançamentos existentes
+  // Carregar valores dos lançamentos existentes (soma múltiplos da mesma conta: Import + Fluxo + manual)
   useEffect(() => {
     if (lancamentos) {
       const novosValores: Record<number, string> = {};
       for (const l of lancamentos) {
-        novosValores[l.contaCustoId] = parseFloat(String(l.valor || "0")).toFixed(2).replace(".", ",");
+        const valorAtual = parseFloat((novosValores[l.contaCustoId] ?? "0").replace(",", "."));
+        const valorLanc = parseFloat(String(l.valor || "0"));
+        novosValores[l.contaCustoId] = (valorAtual + valorLanc).toFixed(2).replace(".", ",");
       }
       setValores(novosValores);
     }

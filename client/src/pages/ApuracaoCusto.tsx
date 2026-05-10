@@ -192,14 +192,28 @@ export default function ApuracaoCusto() {
     let totalDespesasIndiretas = 0;
     let totalGeral = 0;
 
+    // Agrupar lançamentos da mesma conta (soma valores de Import + Fluxo + manual)
+    const agrupado = new Map<number, { nome: string; valor: number; divisor: string; classificacao: string }>();
     for (const l of lancamentos) {
       const valor = parseFloat(String(l.valor || "0"));
       if (valor === 0) continue;
-      const divisor = l.contaDivisor ?? "producao";
-      const classificacao = l.contaClassificacao ?? "custo_variavel";
+      const existing = agrupado.get(l.contaCustoId);
+      if (existing) {
+        existing.valor += valor;
+      } else {
+        agrupado.set(l.contaCustoId, {
+          nome: l.contaNome ?? "—",
+          valor,
+          divisor: l.contaDivisor ?? "producao",
+          classificacao: l.contaClassificacao ?? "custo_variavel",
+        });
+      }
+    }
+
+    for (const [contaId, { nome, valor, divisor, classificacao }] of Array.from(agrupado.entries())) {
       const item: ContaItem = {
-        id: l.contaCustoId,
-        nome: l.contaNome ?? "—",
+        id: contaId,
+        nome,
         valor,
         custoPorTon: 0,
         percentualGrupo: 0,

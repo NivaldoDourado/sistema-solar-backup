@@ -696,3 +696,12 @@
 - [x] Criar tela frontend ImportFluxo.tsx com 3 steps (upload, revisão, resultado)
 - [x] Registrar rota /import-fluxo e item no menu lateral
 - [x] Testes unitários (9 testes, 128 total passando)
+
+## Integração Fluxo Realizado → Apuração de Custo
+- [x] Analisar estrutura atual da Apuração de Custo (lancamento_custo, contas, setores)
+- [x] Implementar vinculação: ao confirmar importação do Fluxo, criar lançamentos em lancamento_custo com tag [Fluxo]
+- [x] Mapear contas do Fluxo para contaCustoId por nome (busca case-insensitive)
+- [x] Atualizar Apuração de Custo para agrupar lançamentos da mesma conta (soma Import + Fluxo + manual)
+- [x] Atualizar Lançamento de Custos para somar múltiplos lançamentos da mesma conta
+- [x] Excluir lançamentos [Fluxo] anteriores ao reimportar (evita duplicação)
+- [x] Testes unitários (128 passando)

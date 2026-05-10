@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, nome, classificacao, divisor FROM conta_custo WHERE ativo = 'sim' ORDER BY nome LIMIT 10 OFFSET 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome, classificacao, divisor FROM conta_custo WHERE ativo = 'sim' ORDER BY nome LIMIT 10 OFFSET 20;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "12",
+      "nome": "Salários da Diretoria",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tclassificacao\tdivisor\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tcusto_variavel\tproducao\n30004\tSal.Oper./Enc. Oper.\tcusto_variavel\tproducao\n12\tSalários da Diretoria\tcusto_variavel\tproducao\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

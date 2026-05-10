@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { lancamentoFluxo, periodoCusto } from "../drizzle/schema";
+import { lancamentoFluxo, periodoCusto, lancamentoCusto, contaCusto } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import {
@@ -427,7 +427,62 @@ export const importFluxoRouter = router({
         }
       }
 
-      return { totalInseridos };
+      // ===== INTEGRAÇÃO COM APURAÇÃO DE CUSTO =====
+      // Buscar todas as contas de custo para mapear contaSistema → contaCustoId
+      const contasCusto = await db.select().from(contaCusto);
+      const contaMap = new Map<string, number>();
+      for (const c of contasCusto) {
+        contaMap.set(c.nome.toLowerCase(), c.id);
+      }
+
+      // Excluir lançamentos de custo anteriores originados do Fluxo para este período
+      const lancamentosFluxoExistentes = await db
+        .select({ id: lancamentoCusto.id })
+        .from(lancamentoCusto)
+        .where(
+          and(
+            eq(lancamentoCusto.periodoCustoId, input.periodoCustoId),
+          )
+        );
+      // Filtrar apenas os que têm observação [Fluxo]
+      for (const lf of lancamentosFluxoExistentes) {
+        // Buscar observação
+        const [full] = await db.select({ observacoes: lancamentoCusto.observacoes }).from(lancamentoCusto).where(eq(lancamentoCusto.id, lf.id)).limit(1);
+        if (full?.observacoes?.startsWith("[Fluxo]")) {
+          await db.delete(lancamentoCusto).where(eq(lancamentoCusto.id, lf.id));
+        }
+      }
+
+      // Agrupar valores por contaSistema para inserir lançamentos agregados
+      const valoresPorConta = new Map<string, { total: number; detalhes: string[] }>();
+      for (const conta of input.contasImportar) {
+        const totalConta = conta.subcontas.reduce((sum, s) => sum + s.valor, 0);
+        if (totalConta === 0) continue;
+        const key = conta.contaSistema.toLowerCase();
+        if (!valoresPorConta.has(key)) {
+          valoresPorConta.set(key, { total: 0, detalhes: [] });
+        }
+        const entry = valoresPorConta.get(key)!;
+        entry.total += totalConta;
+        entry.detalhes.push(`${conta.contaPrincipalCodigo}-${conta.contaPrincipalNome}`);
+      }
+
+      // Inserir lançamentos na tabela lancamento_custo
+      let totalLancamentosCusto = 0;
+      for (const [contaNomeLower, { total, detalhes }] of Array.from(valoresPorConta.entries())) {
+        const contaCustoId = contaMap.get(contaNomeLower);
+        if (!contaCustoId) continue; // Conta não encontrada no sistema
+        await db.insert(lancamentoCusto).values({
+          periodoCustoId: input.periodoCustoId,
+          contaCustoId,
+          valor: total.toFixed(2),
+          observacoes: `[Fluxo] ${detalhes.join("; ")}`,
+          userId,
+        });
+        totalLancamentosCusto++;
+      }
+
+      return { totalInseridos, totalLancamentosCusto };
     }),
 
   /**

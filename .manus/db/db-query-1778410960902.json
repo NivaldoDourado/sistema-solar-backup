@@ -1,0 +1,148 @@
+{
+  "query": "SELECT id, nome, classificacao, divisor FROM conta_custo WHERE ativo = 'sim' ORDER BY nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome, classificacao, divisor FROM conta_custo WHERE ativo = 'sim' ORDER BY nome;",
+  "rows": [
+    {
+      "id": "14",
+      "nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas",
+      "classificacao": "despesa_variavel",
+      "divisor": "vendas"
+    },
+    {
+      "id": "10",
+      "nome": "Consultorias Especializadas",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "20",
+      "nome": "Depreciação",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "4",
+      "nome": "Despesas Administrativas",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "9",
+      "nome": "Despesas Indiretas",
+      "classificacao": "despesa_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "3",
+      "nome": "Encargos de Movimentação Financeira",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "5",
+      "nome": "Energia Elétrica",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "11",
+      "nome": "Entrega de Material",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "8",
+      "nome": "Equipamentos de Apoio",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "6",
+      "nome": "Explosivos e Acessórios",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "classificacao": "custo_variavel",
+      "divisor": "vendas"
+    },
+    {
+      "id": "15",
+      "nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "7",
+      "nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "16",
+      "nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "18",
+      "nome": "Pneus",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "13",
+      "nome": "RH - Salários da Operação",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    },
+    {
+      "id": "12",
+      "nome": "Salários da Diretoria",
+      "classificacao": "custo_variavel",
+      "divisor": "producao"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tclassificacao\tdivisor\n14\tCombustível\tcusto_variavel\tproducao\n30003\tComissão de Vendas\tdespesa_variavel\tvendas\n10\tConsultorias Especializadas\tcusto_variavel\tproducao\n20\tDepreciação\tcusto_variavel\tproducao\n4\tDespesas Administrativas\tcusto_variavel\tproducao\n9\tDespesas Indiretas\tdespesa_variavel\tproducao\n3\tEncargos de Movimentação Financeira\tcusto_variavel\tproducao\n5\tEnergia Elétrica\tcusto_variavel\tproducao\n11\tEntrega de Material\tcusto_variavel\tproducao\n8\tEquipamentos de Apoio\tcusto_variavel\tproducao\n6\tExplosivos e Acessórios\tcusto_variavel\tproducao\n30002\tFrota/Man.Pat./Seg./Out.\tcusto_variavel\tproducao\n2\tImpostos, CEFEM e Outras Taxas\tcusto_variavel\tvendas\n15\tLubrificantes\tcusto_variavel\tproducao\n7\tOutras Despesas de Setores\tcusto_variavel\tproducao\n19\tOutras Despesas dos Equipamentos\tcusto_variavel\tproducao\n16\tPeças de Desgaste\tcusto_variavel\tproducao\n17\tPeças de Reposição / Itens de Consumo\tcusto_variavel\tproducao\n18\tPneus\tcusto_variavel\tproducao\n13\tRH - Salários da Operação\tcusto_variavel\tproducao\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\tcusto_variavel\tproducao\n30004\tSal.Oper./Enc. Oper.\tcusto_variavel\tproducao\n12\tSalários da Diretoria\tcusto_variavel\tproducao\n",
+  "stderr": "",
+  "execution_time_ms": 315
+}
