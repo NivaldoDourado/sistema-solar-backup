@@ -284,7 +284,7 @@ export default function CustoSetor() {
           totalCusto: fmtBRL(sTotalCusto),
           despesaFixa: sDespFixa > 0 ? fmtBRL(sDespFixa) : "",
           despesaVariavel: sDespVar > 0 ? fmtBRL(sDespVar) : "",
-          totalDespesa: sTotalDesp > 0 ? fmtBRL(sTotalDesp) : "",
+          totalDespesa: fmtBRL(sTotalDesp),
           totalGeral: fmtBRL(sTotalGeral),
           custoTon: `R$ ${fmtTon(sCustoTon)}`,
           percentual: fmtPct(pctGrupo),
@@ -295,24 +295,26 @@ export default function CustoSetor() {
         subsetor: "",
         custoFixo: "",
         custoVariavel: "",
-        totalCusto: "",
+        totalCusto: fmtBRL(grupo.subtotalCusto),
         despesaFixa: "",
         despesaVariavel: "",
-        totalDespesa: "",
+        totalDespesa: fmtBRL(grupo.subtotalDespesa),
         totalGeral: fmtBRL(grupo.subtotalGeral),
         custoTon: `R$ ${fmtTon(grupo.subtotalCustoTon)}`,
         percentual: fmtPct(totalGeral > 0 ? (grupo.subtotalGeral / totalGeral) * 100 : 0),
       });
     }
+    const totalCustoSum = relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalCusto, 0);
+    const totalDespesaSum = relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalDespesa, 0);
     rows.push({
       grupo: "TOTAL GERAL",
       subsetor: "",
       custoFixo: "",
       custoVariavel: "",
-      totalCusto: "",
+      totalCusto: fmtBRL(totalCustoSum),
       despesaFixa: "",
       despesaVariavel: "",
-      totalDespesa: "",
+      totalDespesa: fmtBRL(totalDespesaSum),
       totalGeral: fmtBRL(totalGeral),
       custoTon: `R$ ${fmtTon(totalCustoTon)}`,
       percentual: "100,0%",
@@ -765,22 +767,23 @@ export default function CustoSetor() {
                   Resumo Consolidado por Subsetor
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-muted/50 bg-muted/30">
-                      <th className="text-left px-4 py-2 font-medium text-muted-foreground">Setor/Processo</th>
-                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Custo</th>
-                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">Total Geral</th>
-                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">R$/t</th>
-                      <th className="text-right px-4 py-2 font-medium text-muted-foreground">%</th>
+                      <th className="text-left px-3 py-2 font-medium text-muted-foreground">Setor/Processo</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Total Custo</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Total Despesa</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Total Geral</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">R$/t</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">%</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {relatorio.grupos.flatMap((grupo) =>
-                      grupo.subsetores.map((s: any, idx: number) => {
+                    {relatorio.grupos.flatMap((grupo) => {
+                      const corGrupo = GRUPO_PALETA[grupo.grupoNome] ?? "#94a3b8";
+                      const subRows = grupo.subsetores.map((s: any, idx: number) => {
                         const pct = totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0;
-                        const corGrupo = GRUPO_PALETA[grupo.grupoNome] ?? "#94a3b8";
                         return (
                           <tr
                             key={s.id}
@@ -788,7 +791,7 @@ export default function CustoSetor() {
                               idx % 2 === 0 ? "bg-white" : "bg-muted/10"
                             }`}
                           >
-                            <td className="px-4 py-2">
+                            <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: corGrupo }} />
                                 <Link
@@ -801,30 +804,49 @@ export default function CustoSetor() {
                                 </Link>
                               </div>
                             </td>
-                            <td className="px-4 py-2 text-right text-muted-foreground">
+                            <td className="px-3 py-2 text-right text-muted-foreground">
                               {fmtBRL(parseFloat(s.totalCusto ?? "0"))}
                             </td>
-                            <td className="px-4 py-2 text-right font-bold text-foreground">
+                            <td className="px-3 py-2 text-right text-muted-foreground">
+                              {fmtBRL(parseFloat(s.totalDespesa ?? "0"))}
+                            </td>
+                            <td className="px-3 py-2 text-right font-bold text-foreground">
                               {fmtBRL(parseFloat(s.totalGeral ?? "0"))}
                             </td>
-                            <td className="px-4 py-2 text-right font-medium text-primary">
+                            <td className="px-3 py-2 text-right font-medium text-primary">
                               {fmtTon(parseFloat(s.custoTon ?? "0"))}
                             </td>
-                            <td className="px-4 py-2 text-right text-muted-foreground">
+                            <td className="px-3 py-2 text-right text-muted-foreground">
                               {fmtPct(pct)}
                             </td>
                           </tr>
                         );
-                      })
-                    )}
+                      });
+                      // Linha de subtotal do grupo
+                      const pctGrupo = totalGeral > 0 ? (grupo.subtotalGeral / totalGeral) * 100 : 0;
+                      const subtotalRow = (
+                        <tr key={`subtotal-${grupo.grupoNome}`} className="border-b border-muted/40 bg-muted/20 font-semibold">
+                          <td className="px-3 py-1.5 text-xs uppercase tracking-wide" style={{ color: corGrupo }}>
+                            {grupo.grupoNome}
+                          </td>
+                          <td className="px-3 py-1.5 text-right text-xs">{fmtBRL(grupo.subtotalCusto)}</td>
+                          <td className="px-3 py-1.5 text-right text-xs">{fmtBRL(grupo.subtotalDespesa)}</td>
+                          <td className="px-3 py-1.5 text-right text-xs">{fmtBRL(grupo.subtotalGeral)}</td>
+                          <td className="px-3 py-1.5 text-right text-xs">{fmtTon(grupo.subtotalCustoTon)}</td>
+                          <td className="px-3 py-1.5 text-right text-xs">{fmtPct(pctGrupo)}</td>
+                        </tr>
+                      );
+                      return [...subRows, subtotalRow];
+                    })}
                   </tbody>
                   <tfoot>
                     <tr className="font-bold bg-slate-800 text-white">
-                      <td className="px-4 py-2 uppercase tracking-wide">Total dos Desembolsos</td>
-                      <td className="px-4 py-2 text-right"></td>
-                      <td className="px-4 py-2 text-right">{fmtBRL(totalGeral)}</td>
-                      <td className="px-4 py-2 text-right text-green-400">R$ {fmtTon(totalCustoTon)}</td>
-                      <td className="px-4 py-2 text-right text-blue-400">100,0%</td>
+                      <td className="px-3 py-2 uppercase tracking-wide">Total dos Desembolsos</td>
+                      <td className="px-3 py-2 text-right">{fmtBRL(relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalCusto, 0))}</td>
+                      <td className="px-3 py-2 text-right">{fmtBRL(relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalDespesa, 0))}</td>
+                      <td className="px-3 py-2 text-right">{fmtBRL(totalGeral)}</td>
+                      <td className="px-3 py-2 text-right text-green-400">{fmtTon(totalCustoTon)}</td>
+                      <td className="px-3 py-2 text-right text-blue-400">100,0%</td>
                     </tr>
                   </tfoot>
                 </table>

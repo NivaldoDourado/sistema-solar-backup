@@ -942,3 +942,12 @@
 - [x] Substituir cards atuais (Total Geral, Custo Médio, Grupos) pelos 6 KPIs da Apuração de Custo
 - [x] PDF já usa exportRelatorioToPDF em formato retrato com compactação (1 página)
 - [x] Atualizar buildKpis e mensagem WhatsApp com os 6 KPIs
+
+## Bug: Valores incompletos na tela Custo por Setor
+- [x] Investigar por que soma dos subsetores (R$ 1.119.057) ≠ Total Geral (R$ 2.771.022)
+  - Causa: coluna "Total Custo" mostra só MEM (equipamentos), "Total Geral" mostra MEM+MSET
+  - Não é bug de cálculo, é problema de apresentação (faltava coluna "Total Despesa")
+- [x] Adicionar coluna "Total Despesa" na tabela para mostrar a parte MSET
+- [x] Adicionar linhas de subtotal por grupo na tabela
+- [x] Incluir totais de Total Custo e Total Despesa na linha de rodapé
+- [x] Verificar que Total Custo + Total Despesa = Total Geral
