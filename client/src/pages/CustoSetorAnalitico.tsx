@@ -143,7 +143,7 @@ function EquipamentoRow({
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  { label: subsetorNome === "ADMINISTRAÇÃO" ? "Sal.Adm./Diretoria/Pró-Labore/Encargos" : "Salários com Encargos", valor: sal, show: sal > 0, campo: "salOperEncOper" },
+                  { label: subsetorNome === "ADMINISTRAÇÃO" ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" : "Salários com Encargos", valor: sal, show: sal > 0, campo: "salOperEncOper" },
                   { label: "Combustível", valor: comb, show: comb > 0, campo: "combustivel" },
                   { label: "Lubrificantes", valor: lubr, show: lubr > 0, campo: "lubrificantes" },
                   { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0, campo: "pecasDesgaste" },
@@ -329,7 +329,7 @@ function SubsetorCard({
                     {subsetor.despesasEspecificas.map((desp, idx) => {
                       const valor = parseFloat(desp.valor ?? "0");
                       const pct = subsetor.totalSubsetor > 0 ? (valor / subsetor.totalSubsetor) * 100 : 0;
-                      const isSalAdm = desp.descricao === "Sal.Adm./Diretoria/Pr\u00f3-Labore/Encargos";
+                      const isSalAdm = desp.descricao === "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos";
                       const labelExibido = isSalAdm && subsetor.subsetorNome !== "ADMINISTRA\u00c7\u00c3O"
                         ? "Sal\u00e1rios com Encargos"
                         : desp.descricao;

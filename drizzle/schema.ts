@@ -1037,11 +1037,11 @@ export type InsertMetaCustoTonelada = typeof metaCustoTonelada.$inferInsert;
 export const lancamentoSalario = mysqlTable("lancamento_salario", {
   id: int("id").autoincrement().primaryKey(),
   periodoCustoId: int("periodoCustoId").notNull(), // FK para periodo_custo
-  contaCustoId: int("contaCustoId").notNull(),     // FK para conta_custo (Sal.Oper., Sal.Adm., Sal. Diretoria)
+  contaCustoId: int("contaCustoId").notNull(),     // FK para conta_custo (Sal.Oper., Sal.Adm., Sal. Diretoria/Pró-Labore)
   valor: decimal("valor", { precision: 12, scale: 2 }).notNull().default("0"),
   // Destino: equipamento OU setor (um dos dois será preenchido)
   equipamentoId: int("equipamentoId"),             // FK para equipamentos (quando conta = Sal.Oper.)
-  setorId: int("setorId"),                         // FK para setores (quando conta = Sal.Adm. ou Sal. Diretoria)
+  setorId: int("setorId"),                         // FK para setores (quando conta = Sal.Adm. ou Sal. Diretoria/Pró-Labore)
   descricao: varchar("descricao", { length: 255 }), // Descrição opcional (ex: "Operador João - Escavadeira")
   observacoes: text("observacoes"),
   userId: int("userId").notNull(),

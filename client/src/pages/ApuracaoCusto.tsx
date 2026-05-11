@@ -95,7 +95,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Frota/Man.Pat./Seg./Out.",
   "Consultorias Especializadas",   // mapeado para Juridíco/Cons.Esp./Serv.Ter. no servidor
   "Equipamentos de Apoio",         // mapeado para Equip.Apoio (Comb./Lub/Peças/Serv.) no servidor
-  "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",
+  "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
   "Imp., Trib., Taxas e CEFEM",
   "Desp.Admin.Telef.e Inform.",
   "Outras Desp.Setor/Proc.",
@@ -103,7 +103,7 @@ const CONTAS_COM_DESPSET = new Set([
   "Jurídico/Cons.Esp./Serv.Ter.",  // variação de acento tratada no servidor
   "Comissão de Vendas",
   "Outras Despesas de Setores",   // mapeado para Outras Desp.Setor/Proc. no servidor
-  "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos",  // nome atual no banco
+  "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",  // nome atual no banco
   "Impostos, CEFEM e Outras Taxas",           // mapeado para Imp., Trib., Taxas e CEFEM no servidor
 ]);
 
@@ -196,10 +196,10 @@ export default function ApuracaoCusto() {
   );
 
   // Identificar contas de salário para drill-down específico
-  const CONTAS_SALARIO = new Set(["Sal.Oper./Enc. Oper.", "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos", "Sal. Diretoria"]);
+  const CONTAS_SALARIO = new Set(["Sal.Oper./Enc. Oper.", "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos", "Sal. Diretoria/Pró-Labore"]);
   const isSalario = drillDown ? CONTAS_SALARIO.has(drillDown.contaNome) : false;
   const contaSalarioId = drillDown?.contaNome === "Sal.Oper./Enc. Oper." ? 30004
-    : drillDown?.contaNome === "Sal. Diretoria" ? 12
+    : drillDown?.contaNome === "Sal. Diretoria/Pró-Labore" ? 12
     : drillDown?.contaNome?.includes("Sal.Adm.") ? 1 : 0;
 
   // Drill-down salários: detalhe por destino (equipamento ou setor)

@@ -12,8 +12,8 @@ import {
 } from "../drizzle/schema";
 
 // IDs das contas de salário
-const CONTA_SAL_ADM_ID = 1;       // Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos → setores
-const CONTA_SAL_DIRETORIA_ID = 12; // Sal. Diretoria → setores
+const CONTA_SAL_ADM_ID = 1;       // Sal.Adm./Almox./Ofic./Serv.Aux./Encargos → setores
+const CONTA_SAL_DIRETORIA_ID = 12; // Sal. Diretoria/Pró-Labore → setores
 const CONTA_SAL_OPER_ID = 30004;   // Sal.Oper./Enc. Oper. → equipamentos
 
 // Contas que alocam em setores

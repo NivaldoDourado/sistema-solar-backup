@@ -58,8 +58,8 @@ async function convertRateioMemToAnalitico(
         grupo: mapping.grupo,
         valor: parseFloat(sal.valor),
         descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
-          ? "Sal.Adm./Diretoria/Pró-Labore/Encargos [Manual]"
-          : "Sal. Diretoria [Manual]",
+          ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos [Manual]"
+          : "Sal. Diretoria/Pró-Labore [Manual]",
       });
     }
   }
@@ -511,8 +511,8 @@ export const custoSetorRasRouter = router({
             grupo: mapping.grupo,
             valor: parseFloat(sal.valor),
             descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
-              ? "Sal.Adm./Diretoria/Pró-Labore/Encargos [Manual]"
-              : "Sal. Diretoria [Manual]",
+              ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos [Manual]"
+              : "Sal. Diretoria/Pró-Labore [Manual]",
           });
         }
       }
@@ -706,7 +706,7 @@ export const custoSetorRasRouter = router({
         "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
         "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
         "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
-        "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
         "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
         // Corrigir variações de acento
         "Jurídico/Cons.Esp./Serv.Ter.": "Jurídco/Cons.Esp./Serv.Ter.",

@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, nome FROM conta_custo WHERE id IN (1, 12) ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM conta_custo WHERE id IN (1, 12) ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos"
+    },
+    {
+      "id": "12",
+      "nome": "Sal. Diretoria"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n1\tSal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos\n12\tSal. Diretoria\n",
+  "stderr": "",
+  "execution_time_ms": 353
+}

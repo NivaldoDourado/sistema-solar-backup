@@ -838,3 +838,7 @@
 - [x] Integrar MSET no fallback do relatório sintético (custoSetor_router.ts)
 - [x] Integrar MSET no fallback do relatório analítico (custoSetorRas_router.ts)
 - [x] Integrar MSET no drill-down despesasPorDescricao (custoSetorRas_router.ts)
+
+## Renomeação de Contas de Custo
+- [x] Renomear "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos" para "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" (banco + código)
+- [x] Renomear "Sal. Diretoria" para "Sal. Diretoria/Pró-Labore" (banco + código)
