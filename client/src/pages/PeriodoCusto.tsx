@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarRange, Plus, Pencil, Lock, Unlock, Trash2, RefreshCw, TrendingUp, ShoppingCart } from "lucide-react";
+import { CalendarRange, Plus, Pencil, Lock, Unlock, Trash2, RefreshCw, TrendingUp, ShoppingCart, CheckCircle2, XCircle, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -37,6 +37,10 @@ function fmt(val: string | null | undefined, decimals = 2) {
   return n.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
+function fmtBRL(val: number) {
+  return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+}
+
 function getUltimoDia(ano: number, mes: number) {
   return new Date(ano, mes, 0).getDate();
 }
@@ -50,12 +54,135 @@ function getPeriodoDates(ano: number, mes: number) {
   };
 }
 
+// ─── Componente de Checklist de Validação ────────────────────────────────────
+function ChecklistDialog({
+  open,
+  onOpenChange,
+  periodoCustoId,
+  periodoLabel,
+  onConfirmFechar,
+  isPending,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  periodoCustoId: number;
+  periodoLabel: string;
+  onConfirmFechar: () => void;
+  isPending: boolean;
+}) {
+  const { data: checklist, isLoading } = trpc.validacaoFechamento.verificar.useQuery(
+    { periodoCustoId },
+    { enabled: open && !!periodoCustoId }
+  );
+
+  const totalItems = checklist?.items?.length ?? 0;
+  const completoItems = checklist?.items?.filter((i: any) => i.status === "completo").length ?? 0;
+  const todosCompletos = totalItems > 0 && completoItems === totalItems;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ClipboardCheck className="h-5 w-5 text-primary" />
+            Checklist de Fechamento — {periodoLabel}
+          </DialogTitle>
+          <DialogDescription>
+            Verifique se todos os lançamentos foram realizados antes de fechar o período.
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <span className="ml-3 text-muted-foreground text-sm">Verificando lançamentos...</span>
+          </div>
+        ) : (
+          <div className="space-y-3 py-2">
+            {/* Barra de progresso */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${todosCompletos ? "bg-green-500" : "bg-amber-500"}`}
+                  style={{ width: `${totalItems > 0 ? (completoItems / totalItems) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                {completoItems}/{totalItems}
+              </span>
+            </div>
+
+            {/* Lista de itens */}
+            {checklist?.items?.map((item: any) => (
+              <div
+                key={item.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border ${
+                  item.status === "completo"
+                    ? "bg-green-50/50 border-green-200"
+                    : "bg-red-50/50 border-red-200"
+                }`}
+              >
+                {item.status === "completo" ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm">{item.nome}</p>
+                    {item.valor !== undefined && item.valor > 0 && (
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {fmtBRL(item.valor)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.detalhes}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Aviso se não está tudo completo */}
+            {!todosCompletos && (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mt-4">
+                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Itens pendentes</p>
+                  <p className="text-xs text-amber-700 mt-0.5">
+                    Há {totalItems - completoItems} item(ns) pendente(s). Você pode fechar mesmo assim, mas
+                    os relatórios podem ficar incompletos.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={onConfirmFechar}
+            disabled={isPending}
+            variant={todosCompletos ? "default" : "destructive"}
+          >
+            {isPending ? "Fechando..." : todosCompletos ? "Fechar Período" : "Fechar Mesmo Assim"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Página principal ────────────────────────────────────────────────────────
 export default function PeriodoCusto() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState(emptyForm);
   const [loadingProducao, setLoadingProducao] = useState(false);
   const [loadingVendas, setLoadingVendas] = useState(false);
+  const [checklistOpen, setChecklistOpen] = useState(false);
+  const [checklistPeriodo, setChecklistPeriodo] = useState<{ id: number; label: string } | null>(null);
 
   const { canCreate, canEdit, canDelete } = usePermissions();
   const utils = trpc.useUtils();
@@ -76,6 +203,8 @@ export default function PeriodoCusto() {
     onSuccess: (data) => {
       toast.success(data.fechado === "sim" ? "Período fechado!" : "Período reaberto!");
       refetch();
+      setChecklistOpen(false);
+      setChecklistPeriodo(null);
     },
     onError: (error) => toast.error(error.message || "Erro ao alterar status"),
   });
@@ -101,6 +230,20 @@ export default function PeriodoCusto() {
       observacoes: periodo.observacoes ?? "",
     });
     setOpen(true);
+  };
+
+  const handleToggleFechado = (periodo: any) => {
+    if (periodo.fechado === "sim") {
+      // Reabrir: sem checklist, direto
+      toggleMutation.mutate({ id: periodo.id });
+    } else {
+      // Fechar: mostrar checklist primeiro
+      setChecklistPeriodo({
+        id: periodo.id,
+        label: `${MESES[periodo.mes - 1]}/${periodo.ano}`,
+      });
+      setChecklistOpen(true);
+    }
   };
 
   const handleBuscarProducao = async () => {
@@ -165,6 +308,7 @@ export default function PeriodoCusto() {
         )}
       </div>
 
+      {/* Dialog de Formulário */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
@@ -282,6 +426,21 @@ export default function PeriodoCusto() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog de Checklist de Fechamento */}
+      {checklistPeriodo && (
+        <ChecklistDialog
+          open={checklistOpen}
+          onOpenChange={(v) => {
+            setChecklistOpen(v);
+            if (!v) setChecklistPeriodo(null);
+          }}
+          periodoCustoId={checklistPeriodo.id}
+          periodoLabel={checklistPeriodo.label}
+          onConfirmFechar={() => toggleMutation.mutate({ id: checklistPeriodo.id })}
+          isPending={toggleMutation.isPending}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Períodos</CardTitle>
@@ -323,7 +482,12 @@ export default function PeriodoCusto() {
                             </Button>
                           )}
                           {canEdit("custos") && (
-                            <Button variant="outline" size="sm" onClick={() => toggleMutation.mutate({ id: p.id })} title={p.fechado === "sim" ? "Reabrir" : "Fechar"}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleFechado(p)}
+                              title={p.fechado === "sim" ? "Reabrir" : "Fechar"}
+                            >
                               {p.fechado === "sim" ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                             </Button>
                           )}

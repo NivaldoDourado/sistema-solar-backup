@@ -816,3 +816,25 @@
 ## Bug: 39 erros de "duplicate key" na Apuração de Custo
 - [x] Identificar componentes com chaves React duplicadas (key='0') - causa: convertRateioMemToSintetico gerava id:0 para todos
 - [x] Corrigir usando IDs virtuais incrementais (900000+)
+
+## Passo 4 - Indicador de Custo/Tonelada por subsetor no Rateio MEM
+- [x] Buscar dados de produção do período (parte_diaria_itens tem quantidade por setor)
+- [x] Calcular toneladas produzidas por subsetor MEM
+- [x] Adicionar coluna "Custo/t" na tabela de subsetores da página RateioMem.tsx
+- [x] Criar procedure producaoPorSubsetor no rateioMem_router.ts
+
+## Passo 5 - Validação de Fechamento de Período
+- [x] Criar router validacaoFechamento_router.ts com procedure verificar
+- [x] Checklist verifica: despesas equip., fluxo realizado, salários, impostos, vendas, produção
+- [x] Dialog com status visual (✓ completo / ✗ pendente) e barra de progresso
+- [x] Integrar no botão Fechar do PeriodoCusto.tsx (checklist antes de confirmar)
+- [ ] Verificar se cada item tem dados para o período selecionado
+- [ ] Adicionar rota e menu para acesso à validação
+
+## Passo 6 - Rateio MSET (despesas de setores)
+- [x] Analisar estrutura de despesas de setores no banco (fluxo realizado, lancamento_custo)
+- [x] Implementar lógica de rateio MSET (energia, explosivos, administrativas por setor)
+- [x] Criar módulo rateioMset_calc.ts com cálculo on-the-fly
+- [x] Integrar MSET no fallback do relatório sintético (custoSetor_router.ts)
+- [x] Integrar MSET no fallback do relatório analítico (custoSetorRas_router.ts)
+- [x] Integrar MSET no drill-down despesasPorDescricao (custoSetorRas_router.ts)

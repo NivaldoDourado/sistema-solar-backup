@@ -7,7 +7,7 @@
 
 import { z } from "zod";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
-import { calcularRateioMem } from "./rateioMem_calc";
+import { calcularRateioMem, calcularProducaoPorSubsetor } from "./rateioMem_calc";
 
 export const rateioMemRouter = router({
   /**
@@ -41,5 +41,17 @@ export const rateioMemRouter = router({
         })),
         totalGeral: result.totalGeral,
       };
+    }),
+
+  /**
+   * Calcula a produção (toneladas) por subsetor MEM para um período.
+   * Usado para calcular o indicador Custo/Tonelada.
+   */
+  producaoPorSubsetor: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      return await calcularProducaoPorSubsetor(input.periodoCustoId);
     }),
 });

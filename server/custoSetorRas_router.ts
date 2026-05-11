@@ -4,6 +4,7 @@ import { getDb } from "./db";
 import { custoSetorEquipamento, custoSetorDespesa, lancamentoSalario, equipamentos, setores } from "../drizzle/schema";
 import { eq, and, asc, inArray } from "drizzle-orm";
 import { calcularRateioMem, SETOR_PARA_SUBSETOR_MEM } from "./rateioMem_calc";
+import { calcularRateioMset, type RateioMsetResult } from "./rateioMset_calc";
 
 // IDs das contas de salário (espelha salarios_router.ts)
 const CONTA_SAL_ADM_ID = 1;
@@ -232,6 +233,93 @@ const SETOR_PARA_SUBSETOR: Record<string, { subsetor: string; grupo: string }> =
   "INDIRETAS": { subsetor: "ADMINISTRAÇÃO", grupo: "ADMINISTRAÇÃO" },
 };
 
+/**
+ * Injeta despesas MSET calculadas on-the-fly no resultado do relatório analítico.
+ * Adiciona como despesasEspecificas virtuais nos subsetores correspondentes.
+ */
+function injetarDespesasMsetNoAnalitico(
+  analitico: { grupos: any[]; totalGeral: number; fonte: string },
+  mset: RateioMsetResult
+) {
+  // Criar mapa de subsetores existentes no analítico
+  const subsetoresMap = new Map<string, any>();
+  for (const grupo of analitico.grupos) {
+    for (const sub of grupo.subsetores) {
+      subsetoresMap.set(`${sub.grupoNome}||${sub.subsetorNome}`, sub);
+    }
+  }
+
+  let virtualIdCounter = -5000;
+
+  for (const [subsetorNome, subData] of Object.entries(mset.porSubsetor)) {
+    const key = `${subData.grupoNome}||${subData.subsetorNome}`;
+    let subsetor = subsetoresMap.get(key);
+
+    // Se o subsetor não existe no analítico, criar um novo
+    if (!subsetor) {
+      subsetor = {
+        subsetorNome: subData.subsetorNome,
+        grupoNome: subData.grupoNome,
+        equipamentos: [],
+        despesasEspecificas: [],
+        totalEquipamentos: 0,
+        totalDespesasEspecificas: 0,
+        totalSubsetor: 0,
+      };
+      subsetoresMap.set(key, subsetor);
+
+      // Encontrar ou criar o grupo
+      let grupo = analitico.grupos.find((g: any) => g.grupoNome === subData.grupoNome);
+      if (!grupo) {
+        grupo = {
+          grupoNome: subData.grupoNome,
+          subsetores: [],
+          totalGrupo: 0,
+        };
+        analitico.grupos.push(grupo);
+      }
+      grupo.subsetores.push(subsetor);
+    }
+
+    // Adicionar cada despesa MSET como despesa específica virtual
+    for (const desp of subData.despesas) {
+      const virtualDesp = {
+        id: virtualIdCounter--,
+        periodoCustoId: 0,
+        subsetorNome: desp.subsetorNome,
+        grupoNome: desp.grupoNome,
+        descricao: desp.descricao,
+        valor: desp.valor.toFixed(2),
+        ordemExibicao: desp.ordemExibicao,
+        userId: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      subsetor.despesasEspecificas.push(virtualDesp);
+      subsetor.totalDespesasEspecificas += desp.valor;
+    }
+
+    // Recalcular total do subsetor
+    subsetor.totalSubsetor = subsetor.totalEquipamentos + subsetor.totalDespesasEspecificas;
+
+    // Reordenar despesas por valor decrescente
+    subsetor.despesasEspecificas.sort(
+      (a: any, b: any) => parseFloat(b.valor ?? "0") - parseFloat(a.valor ?? "0")
+    );
+  }
+
+  // Recalcular totais dos grupos e total geral
+  let novoTotalGeral = 0;
+  for (const grupo of analitico.grupos) {
+    grupo.totalGrupo = grupo.subsetores.reduce(
+      (s: number, sub: any) => s + sub.totalSubsetor,
+      0
+    );
+    novoTotalGeral += grupo.totalGrupo;
+  }
+  analitico.totalGeral = novoTotalGeral;
+}
+
 export const custoSetorRasRouter = router({
   // Listar equipamentos de um período e subsetor específico
   listarEquipamentosPorSubsetor: protectedProcedure
@@ -359,7 +447,17 @@ export const custoSetorRasRouter = router({
         const rateioResult = await calcularRateioMem(input.periodoCustoId);
         if (rateioResult.subsetores.length > 0) {
           // Converter resultado do rateio MEM para o formato do relatório analítico
-          return convertRateioMemToAnalitico(rateioResult, salarioRows, db);
+          const analitico = await convertRateioMemToAnalitico(rateioResult, salarioRows, db);
+
+          // Injetar despesas MSET on-the-fly (se não há dados importados na custo_setor_despesa)
+          if (despesas.length === 0) {
+            const msetResult = await calcularRateioMset(input.periodoCustoId);
+            if (msetResult.despesas.length > 0) {
+              injetarDespesasMsetNoAnalitico(analitico, msetResult);
+            }
+          }
+
+          return analitico;
         }
       }
 
@@ -625,6 +723,25 @@ export const custoSetorRasRouter = router({
           )
         )
         .orderBy(asc(custoSetorDespesa.ordemExibicao));
+
+      // Se não há dados importados, tentar fallback MSET on-the-fly
+      if (rows.length === 0) {
+        const msetResult = await calcularRateioMset(input.periodoCustoId);
+        // Filtrar despesas que correspondem à descrição buscada
+        const msetRows = msetResult.despesas.filter(d => d.descricao === descricaoBusca);
+        if (msetRows.length > 0) {
+          msetRows.sort((a, b) => b.valor - a.valor);
+          const total = msetRows.reduce((s, r) => s + r.valor, 0);
+          return {
+            subsetores: msetRows.map(r => ({
+              subsetorNome: r.subsetorNome,
+              grupoNome: r.grupoNome,
+              valor: r.valor,
+            })),
+            total,
+          };
+        }
+      }
 
       // Ordenar por valor decrescente
       rows.sort((a, b) => parseFloat(b.valor ?? "0") - parseFloat(a.valor ?? "0"));

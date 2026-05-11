@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Calculator, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { ChevronDown, ChevronRight, Calculator, Clock, AlertTriangle, TrendingUp, Weight } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // ─── Formatadores ────────────────────────────────────────────────────────────
@@ -19,6 +19,10 @@ const fmtPct = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
 const fmtHoras = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " hr";
+const fmtTon = (v: number) =>
+  v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " t";
+const fmtCustoTon = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }) + "/t";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -64,6 +68,12 @@ interface SubsetorMem {
   equipamentos: EquipamentoRateado[];
   totalSubsetor: number;
   totalHoras: number;
+}
+
+interface ProducaoSubsetor {
+  subsetorNome: string;
+  grupoNome: string;
+  toneladas: number;
 }
 
 // ─── Componente de linha de equipamento ─────────────────────────────────────
@@ -158,13 +168,18 @@ function EquipamentoRow({
 function SubsetorCard({
   subsetor,
   totalGeral,
+  producao,
 }: {
   subsetor: SubsetorMem;
   totalGeral: number;
+  producao?: ProducaoSubsetor;
 }) {
   const [expanded, setExpanded] = useState(true);
   const paleta = GRUPO_PALETA[subsetor.grupoNome] || DEFAULT_PALETA;
   const pctDoTotal = totalGeral > 0 ? (subsetor.totalSubsetor / totalGeral) * 100 : 0;
+  const custoTon = producao && producao.toneladas > 0
+    ? subsetor.totalSubsetor / producao.toneladas
+    : null;
 
   return (
     <Card className={`${paleta.border} border overflow-hidden`}>
@@ -187,6 +202,16 @@ function SubsetorCard({
             <Badge variant="outline" className={`${paleta.badge} text-xs`}>
               {fmtHoras(subsetor.totalHoras)}
             </Badge>
+            {producao && producao.toneladas > 0 && (
+              <Badge variant="outline" className={`${paleta.badge} text-xs`}>
+                {fmtTon(producao.toneladas)}
+              </Badge>
+            )}
+            {custoTon !== null && (
+              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs font-bold">
+                {fmtCustoTon(custoTon)}
+              </Badge>
+            )}
             <div className="text-right">
               <p className="font-bold font-mono text-sm">{fmtBRL(subsetor.totalSubsetor)}</p>
               <p className="text-xs opacity-70">{fmtPct(pctDoTotal)} do total</p>
@@ -270,6 +295,10 @@ export default function RateioMem() {
     { periodoCustoId: selectedPeriodoId! },
     { enabled: !!selectedPeriodoId }
   );
+  const { data: producaoSubsetores } = trpc.rateioMem.producaoPorSubsetor.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId }
+  );
 
   const periodoAtual = useMemo(
     () => periodos?.find((p: any) => p.id === selectedPeriodoId) ?? null,
@@ -287,11 +316,36 @@ export default function RateioMem() {
     ? `${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}`
     : "";
 
+  // Mapa de produção por subsetor para lookup rápido
+  const producaoMap = useMemo(() => {
+    const map = new Map<string, ProducaoSubsetor>();
+    if (producaoSubsetores) {
+      for (const p of producaoSubsetores) {
+        map.set(p.subsetorNome, p);
+      }
+    }
+    return map;
+  }, [producaoSubsetores]);
+
+  // Produção total
+  const producaoTotal = useMemo(() => {
+    if (!producaoSubsetores) return 0;
+    return producaoSubsetores.reduce((s, p) => s + p.toneladas, 0);
+  }, [producaoSubsetores]);
+
+  // Custo/t geral
+  const custoTonGeral = useMemo(() => {
+    if (!rateio || producaoTotal <= 0) return null;
+    return rateio.totalGeral / producaoTotal;
+  }, [rateio, producaoTotal]);
+
   // Dados para exportação
   const exportData = useMemo(() => {
     if (!rateio?.subsetores?.length) return null;
     const rows: Record<string, any>[] = [];
     for (const sub of rateio.subsetores) {
+      const prod = producaoMap.get(sub.subsetorNome);
+      const custoT = prod && prod.toneladas > 0 ? (sub.totalSubsetor / prod.toneladas).toFixed(2) : "";
       rows.push({
         grupo: sub.grupoNome,
         subsetor: sub.subsetorNome,
@@ -306,6 +360,8 @@ export default function RateioMem() {
         pecasReposicao: "",
         outrasDespesas: "",
         total: fmtBRL(sub.totalSubsetor),
+        producao: prod ? prod.toneladas.toFixed(0) : "",
+        custoTon: custoT,
       });
       for (const equip of sub.equipamentos) {
         rows.push({
@@ -322,6 +378,8 @@ export default function RateioMem() {
           pecasReposicao: equip.despesas.pecasReposicao.toFixed(2),
           outrasDespesas: equip.despesas.outrasDespesas.toFixed(2),
           total: equip.despesas.total.toFixed(2),
+          producao: "",
+          custoTon: "",
         });
       }
     }
@@ -341,10 +399,12 @@ export default function RateioMem() {
         { key: "pecasReposicao", label: "Peças Reposição" },
         { key: "outrasDespesas", label: "Outras Despesas" },
         { key: "total", label: "Total" },
+        { key: "producao", label: "Produção (t)" },
+        { key: "custoTon", label: "Custo/t (R$)" },
       ],
       rows,
     };
-  }, [rateio, periodoLabel]);
+  }, [rateio, periodoLabel, producaoMap]);
 
   return (
     <div className="space-y-6">
@@ -400,7 +460,7 @@ export default function RateioMem() {
       {rateio && !isLoading && (
         <>
           {/* Cards resumo */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
@@ -433,11 +493,22 @@ export default function RateioMem() {
             <Card>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
-                  Sem Rateio
+                  <Weight className="h-3.5 w-3.5" />
+                  Produção Total
                 </div>
-                <p className="text-xl font-bold text-yellow-600">
-                  {rateio.equipamentosSemRateio?.length ?? 0}
+                <p className="text-xl font-bold font-mono">
+                  {producaoTotal > 0 ? fmtTon(producaoTotal) : "—"}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className={custoTonGeral !== null ? "border-red-200 bg-red-50/30" : ""}>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
+                  <TrendingUp className="h-3.5 w-3.5 text-red-500" />
+                  Custo MEM/t
+                </div>
+                <p className="text-xl font-bold font-mono text-red-700">
+                  {custoTonGeral !== null ? fmtCustoTon(custoTonGeral) : "—"}
                 </p>
               </CardContent>
             </Card>
@@ -450,6 +521,7 @@ export default function RateioMem() {
                 key={sub.subsetorNome}
                 subsetor={sub}
                 totalGeral={rateio.totalGeral}
+                producao={producaoMap.get(sub.subsetorNome)}
               />
             ))}
           </div>

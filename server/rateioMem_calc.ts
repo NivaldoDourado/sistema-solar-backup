@@ -17,6 +17,7 @@ import {
   lancamentoSalario,
   gruposDeEquipamentos,
   periodoCusto,
+  servicos,
 } from "../drizzle/schema";
 import { eq, and, inArray, isNotNull, or, like } from "drizzle-orm";
 import {
@@ -120,11 +121,18 @@ export interface SubsetorMem {
   totalHoras: number;
 }
 
+export interface ProducaoSubsetor {
+  subsetorNome: string;
+  grupoNome: string;
+  toneladas: number;
+}
+
 export interface RateioMemResult {
   subsetores: SubsetorMem[];
   totalGeral: number;
   equipamentosSemRateio: { id: number; nome: string; tag: string; despesaTotal: number }[];
   equipamentosSemCorrespondencia: string[];
+  producaoPorSubsetor?: ProducaoSubsetor[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -577,4 +585,87 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
     equipamentosSemRateio,
     equipamentosSemCorrespondencia,
   };
+}
+
+// ─── Cálculo de Produção por Subsetor ─────────────────────────────────────────
+
+/**
+ * Calcula a produção (toneladas) por subsetor MEM para um período.
+ * Usa a mesma lógica de distribuição proporcional do rateio:
+ * - Busca itens de parte diária com produção > 0
+ * - Agrupa por setor e converte para subsetor MEM
+ */
+export async function calcularProducaoPorSubsetor(periodoCustoId: number): Promise<ProducaoSubsetor[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  // 1. Buscar período
+  const [periodo] = await db
+    .select({ id: periodoCusto.id, mes: periodoCusto.mes, ano: periodoCusto.ano })
+    .from(periodoCusto)
+    .where(eq(periodoCusto.id, periodoCustoId));
+
+  if (!periodo) return [];
+
+  const { dataInicio, dataFim } = getMesDates(periodo.mes, periodo.ano);
+
+  // 2. Buscar setores
+  const setoresRows = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+  const setoresMap = new Map(setoresRows.map(s => [s.id, s.nome]));
+
+  // 3. Buscar todas as partes diárias do período
+  const registros = await db
+    .select({
+      id: parteDiaria.id,
+      data: parteDiaria.data,
+    })
+    .from(parteDiaria);
+
+  const registrosFiltrados = registros.filter(r => {
+    const dateStr = extractDateStr(r.data);
+    return dateStr >= dataInicio && dateStr <= dataFim;
+  });
+
+  const pdIds = registrosFiltrados.map(r => r.id);
+  if (pdIds.length === 0) return [];
+
+  // 4. Buscar itens com produção
+  let itens: { parteDiariaId: number; setorId: number; producao: string | null }[] = [];
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < pdIds.length; i += BATCH_SIZE) {
+    const batch = pdIds.slice(i, i + BATCH_SIZE);
+    const batchItens = await db
+      .select({
+        parteDiariaId: parteDiariaItens.parteDiariaId,
+        setorId: parteDiariaItens.setorId,
+        producao: parteDiariaItens.producao,
+      })
+      .from(parteDiariaItens)
+      .where(inArray(parteDiariaItens.parteDiariaId, batch));
+    itens.push(...batchItens);
+  }
+
+  // 5. Agregar produção por setor → subsetor MEM
+  const producaoPorSubsetor = new Map<string, { subsetorNome: string; grupoNome: string; toneladas: number }>();
+
+  for (const item of itens) {
+    const producaoVal = parseFloat(item.producao || '0');
+    if (producaoVal <= 0) continue;
+
+    const setorNome = setoresMap.get(item.setorId) || 'DESCONHECIDO';
+    const mapping = SETOR_PARA_SUBSETOR_MEM[setorNome.toUpperCase()] || SETOR_PARA_SUBSETOR_MEM[setorNome];
+    if (!mapping) continue;
+
+    const key = `${mapping.grupo}||${mapping.subsetor}`;
+    if (!producaoPorSubsetor.has(key)) {
+      producaoPorSubsetor.set(key, {
+        subsetorNome: mapping.subsetor,
+        grupoNome: mapping.grupo,
+        toneladas: 0,
+      });
+    }
+    producaoPorSubsetor.get(key)!.toneladas += producaoVal;
+  }
+
+  return Array.from(producaoPorSubsetor.values());
 }

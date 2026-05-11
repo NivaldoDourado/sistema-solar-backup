@@ -4,6 +4,7 @@ import { getDb } from "./db";
 import { custoSetor } from "../drizzle/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { calcularRateioMem } from "./rateioMem_calc";
+import { calcularRateioMset, type RateioMsetResult } from "./rateioMset_calc";
 
 /**
  * Converte o resultado do rateio MEM para o formato sintético da Apuração de Custo.
@@ -88,6 +89,131 @@ function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: nu
     lancamentos: gruposOrdenados.flatMap(g => g.subsetores),
     fonte: "rateio_mem" as const,
   };
+}
+
+/**
+ * Injeta despesas MSET calculadas on-the-fly no resultado sintético.
+ * Soma os valores das despesas setoriais ao totalDespesa/totalGeral de cada subsetor.
+ */
+function injetarDespesasMsetNoSintetico(
+  sintetico: {
+    grupos: any[];
+    totalGeral: number;
+    totalCustoTon: number;
+    lancamentos: any[];
+    fonte: string;
+  },
+  mset: RateioMsetResult
+) {
+  const ORDEM_GRUPOS: Record<string, number> = {
+    "DESMONTE DE ROCHA": 1,
+    "PEDRA PARA BRITADOR": 2,
+    "BRITAGEM": 3,
+    "EXPEDI\u00c7\u00c3O": 4,
+    "SERVI\u00c7OS AUXILIARES": 5,
+    "ADMINISTRA\u00c7\u00c3O": 6,
+  };
+
+  // Criar mapa de subsetores existentes no sintético
+  const subsetoresMap = new Map<string, any>();
+  for (const grupo of sintetico.grupos) {
+    for (const sub of grupo.subsetores) {
+      subsetoresMap.set(`${grupo.grupoNome}||${sub.subsetorNome}`, { sub, grupo });
+    }
+  }
+
+  let virtualId = 800000;
+
+  for (const [subsetorNome, subData] of Object.entries(mset.porSubsetor)) {
+    const key = `${subData.grupoNome}||${subData.subsetorNome}`;
+    const existing = subsetoresMap.get(key);
+
+    const despesaTotal = subData.total;
+
+    if (existing) {
+      // Somar ao subsetor existente
+      const sub = existing.sub;
+      const grupo = existing.grupo;
+      const oldDespesa = parseFloat(sub.totalDespesa ?? "0");
+      const oldGeral = parseFloat(sub.totalGeral ?? "0");
+
+      sub.totalDespesa = (oldDespesa + despesaTotal).toFixed(2);
+      sub.despesaVariavel = (parseFloat(sub.despesaVariavel ?? "0") + despesaTotal).toFixed(2);
+      sub.totalGeral = (oldGeral + despesaTotal).toFixed(2);
+
+      grupo.subtotalDespesa += despesaTotal;
+      grupo.subtotalGeral += despesaTotal;
+    } else {
+      // Criar novo subsetor
+      const lancVirtual = {
+        id: virtualId++,
+        periodoCustoId: 0,
+        grupoNome: subData.grupoNome,
+        subsetorNome: subData.subsetorNome,
+        setorId: null,
+        custoFixo: "0",
+        custoVariavel: "0",
+        totalCusto: "0",
+        despesaFixa: "0",
+        despesaVariavel: despesaTotal.toFixed(2),
+        totalDespesa: despesaTotal.toFixed(2),
+        totalGeral: despesaTotal.toFixed(2),
+        custoTon: "0",
+        percentualTotal: "0",
+        ordemExibicao: 0,
+        userId: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Encontrar ou criar o grupo
+      let grupo = sintetico.grupos.find((g: any) => g.grupoNome === subData.grupoNome);
+      if (!grupo) {
+        grupo = {
+          grupoNome: subData.grupoNome,
+          subsetores: [],
+          subtotalCusto: 0,
+          subtotalDespesa: 0,
+          subtotalGeral: 0,
+          subtotalCustoTon: 0,
+        };
+        sintetico.grupos.push(grupo);
+      }
+      grupo.subsetores.push(lancVirtual);
+      grupo.subtotalDespesa += despesaTotal;
+      grupo.subtotalGeral += despesaTotal;
+
+      sintetico.lancamentos.push(lancVirtual);
+    }
+  }
+
+  // Recalcular totalGeral e percentuais
+  sintetico.totalGeral = sintetico.grupos.reduce(
+    (s: number, g: any) => s + g.subtotalGeral,
+    0
+  );
+
+  // Recalcular percentuais de cada subsetor
+  for (const grupo of sintetico.grupos) {
+    for (const sub of grupo.subsetores) {
+      const geral = parseFloat(sub.totalGeral ?? "0");
+      sub.percentualTotal = sintetico.totalGeral > 0
+        ? ((geral / sintetico.totalGeral) * 100).toFixed(4)
+        : "0";
+    }
+    // Reordenar subsetores por totalGeral decrescente
+    grupo.subsetores.sort(
+      (a: any, b: any) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0")
+    );
+  }
+
+  // Reordenar grupos
+  sintetico.grupos.sort(
+    (a: any, b: any) => (ORDEM_GRUPOS[a.grupoNome] ?? 99) - (ORDEM_GRUPOS[b.grupoNome] ?? 99)
+  );
+
+  // Atualizar lancamentos
+  sintetico.lancamentos = sintetico.grupos.flatMap((g: any) => g.subsetores);
 }
 
 export const custoSetorRouter = router({
@@ -190,11 +316,19 @@ export const custoSetorRouter = router({
         .where(eq(custoSetor.periodoCustoId, input.periodoCustoId))
         .orderBy(asc(custoSetor.ordemExibicao), asc(custoSetor.grupoNome), asc(custoSetor.subsetorNome));
 
-      // ─── FALLBACK: Se não há dados importados, gerar sintético a partir do rateio MEM ───
+      // ─── FALLBACK: Se não há dados importados, gerar sintético a partir do rateio MEM + MSET ───
       if (lancamentos.length === 0) {
         const rateioResult = await calcularRateioMem(input.periodoCustoId);
         if (rateioResult.subsetores.length > 0) {
-          return convertRateioMemToSintetico(rateioResult);
+          const sintetico = convertRateioMemToSintetico(rateioResult);
+
+          // Injetar despesas MSET on-the-fly no sintético
+          const msetResult = await calcularRateioMset(input.periodoCustoId);
+          if (msetResult.despesas.length > 0) {
+            injetarDespesasMsetNoSintetico(sintetico, msetResult);
+          }
+
+          return sintetico;
         }
       }
 
