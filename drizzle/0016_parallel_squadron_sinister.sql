@@ -1,0 +1,1 @@
+ALTER TABLE `equipamentos` ADD `excluidoCusto` enum('sim','nao') DEFAULT 'nao' NOT NULL;

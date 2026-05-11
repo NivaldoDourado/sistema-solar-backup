@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { router, protectedProcedure } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -422,12 +422,22 @@ export const importDespesasRouter = router({
       // Buscar conta "Outras Despesas de Setores" para lançamentos de setor
       const contaOutrasDesp = contas.find(c => c.nome.toLowerCase().includes("outras despesas de setores") || c.nome.toLowerCase().includes("outras despesas de setor"));
 
-      // Filtrar equipamentos selecionados
+      // Buscar IDs de equipamentos excluídos do custo
+      const equipExcluidos = await db2
+        .select({ id: equipamentos.id })
+        .from(equipamentos)
+        .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
+      const idsEquipExcluidos = new Set(equipExcluidos.map(e => e.id));
+
+      // Filtrar equipamentos selecionados (excluindo também os marcados como excluidoCusto)
       const selecionadosTags = new Set(input.equipamentosSelecionados.map(e => e.codigoTag));
       const equipamentosParaImportar = parsed.equipamentos.filter(e => {
         // Excluir tags marcadas como EXCLUIR ou NÃO LANÇAR
         if (TAGS_EXCLUIR.some(t => e.codigoTag.toUpperCase().includes(t.toUpperCase()))) return false;
         if (TAGS_NAO_LANCAR.some(t => e.codigoTag.toUpperCase() === t.toUpperCase())) return false;
+        // Excluir equipamentos marcados como excluidoCusto no cadastro
+        const selecionado = input.equipamentosSelecionados.find(s => s.codigoTag === e.codigoTag);
+        if (selecionado?.equipamentoSistemaId && idsEquipExcluidos.has(selecionado.equipamentoSistemaId)) return false;
         return selecionadosTags.has(e.codigoTag);
       });
 

@@ -6,8 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, ChevronDown, ArrowLeft, Fuel, Wrench, Cog, Package, FileText, Search, TrendingUp, AlertTriangle, Gauge } from "lucide-react";
+import { ChevronRight, ChevronDown, ArrowLeft, Fuel, Wrench, Cog, Package, FileText, Search, TrendingUp, AlertTriangle, Gauge, Ban, RotateCcw, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 const CLASSIFICACAO_ICONS: Record<string, any> = {
   combustivel: Fuel,
@@ -216,7 +218,7 @@ function ConsumoCombustivel({ periodoCustoId }: { periodoCustoId: number }) {
                           <TableCell className="text-right text-sm font-medium">
                             {formatNumber(item.quantidade, 0)}
                           </TableCell>
-                          <TableCell className="text-right text-sm">
+                          <TableCell className="text-right text-sm font-semibold">
                             {formatCurrency(item.custo)}
                           </TableCell>
                           <TableCell className="text-right text-sm">
@@ -225,15 +227,17 @@ function ConsumoCombustivel({ periodoCustoId }: { periodoCustoId: number }) {
                           <TableCell className="text-right text-sm">
                             {item.horasCalculadas != null ? formatNumber(item.horasCalculadas, 0) + "h" : "-"}
                           </TableCell>
-                          <TableCell className="text-right text-sm font-bold">
-                            {item.consumoCalculado != null ? (
-                              <span className={isAnomalo ? "text-red-600 dark:text-red-400" : "text-amber-700 dark:text-amber-300"}>
-                                {formatNumber(item.consumoCalculado)}
-                                {isAnomalo && <AlertTriangle className="h-3 w-3 inline ml-1" />}
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
+                          <TableCell className="text-right text-sm">
+                            <div className="flex items-center justify-end gap-1">
+                              {item.consumoCalculado != null ? (
+                                <span className={`font-bold ${isAnomalo ? "text-red-600 dark:text-red-400" : "text-amber-700 dark:text-amber-300"}`}>
+                                  {formatNumber(item.consumoCalculado)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                              {isAnomalo && <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
+                            </div>
                           </TableCell>
                           <TableCell className="text-right text-sm text-muted-foreground">
                             {item.ltHrPlanilha != null ? formatNumber(item.ltHrPlanilha) : "-"}
@@ -247,54 +251,84 @@ function ConsumoCombustivel({ periodoCustoId }: { periodoCustoId: number }) {
             )}
           </CardContent>
         </Card>
+
+        {/* Resumo do ranking */}
+        {rankingData && (
+          <Card className="border-t-2 border-amber-500">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Resumo Geral do Período
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div className="text-muted-foreground">Total Equipamentos</div>
+                  <div className="font-bold text-lg">{rankingData.totais.totalEquipamentos}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Total Litros</div>
+                  <div className="font-bold text-lg">{formatNumber(rankingData.totais.totalLitros, 0)} L</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Total Custo</div>
+                  <div className="font-bold text-lg">{formatCurrency(rankingData.totais.totalCusto)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Média Geral Lt/Hr</div>
+                  <div className="font-bold text-lg text-amber-700 dark:text-amber-300">
+                    {rankingData.totais.mediaGeralGlobal != null ? formatNumber(rankingData.totais.mediaGeralGlobal) : "-"}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
 
-  // Ranking geral
+  // Lista / Ranking
   return (
     <div className="space-y-4">
-      {/* Cards de resumo global */}
-      {rankingData.totais && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="border">
-            <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-xs text-muted-foreground mb-1">Equipamentos</div>
-              <div className="text-xl font-bold">{rankingData.totais.totalEquipamentos}</div>
-            </CardContent>
-          </Card>
-          <Card className="border">
-            <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-xs text-muted-foreground mb-1">Total Litros</div>
-              <div className="text-xl font-bold">{formatNumber(rankingData.totais.totalLitros, 0)} L</div>
-            </CardContent>
-          </Card>
-          <Card className="border">
-            <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-xs text-muted-foreground mb-1">Total Custo</div>
-              <div className="text-xl font-bold">{formatCurrency(rankingData.totais.totalCusto)}</div>
-            </CardContent>
-          </Card>
-          <Card className="border bg-amber-50 dark:bg-amber-950">
-            <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-xs text-muted-foreground mb-1">Média Geral Lt/Hr</div>
-              <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
+      {/* Resumo geral */}
+      <Card className="border-t-2 border-amber-500">
+        <CardContent className="pt-4 pb-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+            <div>
+              <div className="text-muted-foreground">Equipamentos</div>
+              <div className="font-bold text-lg">{rankingData.totais.totalEquipamentos}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Abastecimentos</div>
+              <div className="font-bold text-lg">{rankingData.totais.totalAbastecimentos}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Total Litros</div>
+              <div className="font-bold text-lg">{formatNumber(rankingData.totais.totalLitros, 0)} L</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Total Custo</div>
+              <div className="font-bold text-lg">{formatCurrency(rankingData.totais.totalCusto)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Média Geral Lt/Hr</div>
+              <div className="font-bold text-lg text-amber-700 dark:text-amber-300">
                 {rankingData.totais.mediaGeralGlobal != null ? formatNumber(rankingData.totais.mediaGeralGlobal) : "-"}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Tabela de ranking */}
+      {/* Ranking de equipamentos */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
-              Ranking de Consumo de Combustível
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                ({rankingData.ranking.length} equipamentos)
-              </span>
+              Ranking de Consumo por Equipamento
+              <span className="text-sm font-normal text-muted-foreground ml-2">({filteredRanking.length} equipamentos)</span>
             </CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -378,6 +412,8 @@ export default function ItensDespesa() {
   const [searchEquip, setSearchEquip] = useState("");
   const [searchItem, setSearchItem] = useState("");
   const [activeTab, setActiveTab] = useState("itens");
+  const [excludeDialogEquip, setExcludeDialogEquip] = useState<{ tag: string; descricao: string | null; sistemaId: number | null; excluido: boolean } | null>(null);
+  const utils = trpc.useUtils();
 
   // Buscar períodos de custo
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
@@ -406,6 +442,29 @@ export default function ItensDespesa() {
     { enabled: !!selectedPeriodoId }
   );
 
+  // Mutation para toggle de exclusão
+  const toggleExcluido = trpc.equipamentos.toggleExcluidoCusto.useMutation({
+    onSuccess: (_, variables) => {
+      const novoEstado = variables.excluidoCusto === "sim" ? "excluído dos" : "reincluído nos";
+      toast.success(`Equipamento ${novoEstado} cálculos`, {
+        description: `Todos os relatórios e cálculos serão atualizados.`,
+      });
+      // Invalidar todas as queries relevantes
+      utils.itensDespesa.invalidate();
+      utils.equipamentos.invalidate();
+      utils.rateioMem.invalidate();
+      utils.custoSetor.invalidate();
+      utils.custoSetorRas.invalidate();
+      utils.lancamentoCusto.invalidate();
+      setExcludeDialogEquip(null);
+    },
+    onError: (err) => {
+      toast.error("Erro ao alterar equipamento", {
+        description: err.message,
+      });
+    },
+  });
+
   // Filtrar equipamentos
   const filteredEquipamentos = useMemo(() => {
     if (!equipamentosData) return [];
@@ -416,6 +475,12 @@ export default function ItensDespesa() {
       (e.equipamentoDescricao || "").toLowerCase().includes(s)
     );
   }, [equipamentosData, searchEquip]);
+
+  // Contar excluídos
+  const excluidos = useMemo(() => {
+    if (!equipamentosData) return [];
+    return equipamentosData.filter(e => e.excluidoCusto);
+  }, [equipamentosData]);
 
   // Filtrar itens
   const filteredItens = useMemo(() => {
@@ -457,6 +522,22 @@ export default function ItensDespesa() {
       setSelectedEquipTag(null);
       setSearchEquip("");
     }
+  };
+
+  const handleExcludeClick = (e: React.MouseEvent, equip: { equipamentoTag: string; equipamentoDescricao: string | null; equipamentoSistemaId: number | null; excluidoCusto: boolean }) => {
+    e.stopPropagation();
+    if (!equip.equipamentoSistemaId) {
+      toast.error("Equipamento sem vínculo", {
+        description: "Este equipamento não possui vínculo com o cadastro do sistema. Não é possível excluí-lo.",
+      });
+      return;
+    }
+    setExcludeDialogEquip({
+      tag: equip.equipamentoTag,
+      descricao: equip.equipamentoDescricao,
+      sistemaId: equip.equipamentoSistemaId,
+      excluido: equip.excluidoCusto,
+    });
   };
 
   return (
@@ -583,6 +664,21 @@ export default function ItensDespesa() {
               </div>
             )}
 
+            {/* Banner de equipamentos excluídos */}
+            {!selectedEquipTag && excluidos.length > 0 && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
+                <ShieldAlert className="h-5 w-5 text-orange-600 dark:text-orange-400 shrink-0" />
+                <div className="text-sm">
+                  <span className="font-medium text-orange-800 dark:text-orange-200">
+                    {excluidos.length} equipamento{excluidos.length > 1 ? "s" : ""} excluído{excluidos.length > 1 ? "s" : ""} dos cálculos de custo:
+                  </span>{" "}
+                  <span className="text-orange-700 dark:text-orange-300">
+                    {excluidos.map(e => e.equipamentoTag).join(", ")}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* NÍVEL 1: Lista de Equipamentos */}
             {!selectedEquipTag && (
               <Card>
@@ -621,6 +717,7 @@ export default function ItensDespesa() {
                           <TableHead>Descrição</TableHead>
                           <TableHead className="text-right">Itens</TableHead>
                           <TableHead className="text-right">Total</TableHead>
+                          <TableHead className="w-[100px] text-center">Custo</TableHead>
                           <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -628,13 +725,42 @@ export default function ItensDespesa() {
                         {filteredEquipamentos.map(equip => (
                           <TableRow
                             key={equip.equipamentoTag}
-                            className="cursor-pointer hover:bg-muted/50"
+                            className={`cursor-pointer hover:bg-muted/50 ${equip.excluidoCusto ? "opacity-50 bg-red-50/50 dark:bg-red-950/20" : ""}`}
                             onClick={() => setSelectedEquipTag(equip.equipamentoTag)}
                           >
-                            <TableCell className="font-medium">{equip.equipamentoTag}</TableCell>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                {equip.equipamentoTag}
+                                {equip.excluidoCusto && (
+                                  <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                    EXCLUÍDO
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell className="text-muted-foreground">{equip.equipamentoDescricao || "-"}</TableCell>
                             <TableCell className="text-right">{equip.totalItens}</TableCell>
-                            <TableCell className="text-right font-semibold">{formatCurrency(equip.totalCusto)}</TableCell>
+                            <TableCell className={`text-right font-semibold ${equip.excluidoCusto ? "line-through text-muted-foreground" : ""}`}>
+                              {formatCurrency(equip.totalCusto)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button
+                                variant={equip.excluidoCusto ? "outline" : "ghost"}
+                                size="sm"
+                                className={`h-7 px-2 text-xs ${equip.excluidoCusto
+                                  ? "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
+                                  : "text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                                }`}
+                                onClick={(e) => handleExcludeClick(e, equip)}
+                                title={equip.excluidoCusto ? "Reincluir nos cálculos" : "Excluir dos cálculos de custo"}
+                              >
+                                {equip.excluidoCusto ? (
+                                  <><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reincluir</>
+                                ) : (
+                                  <><Ban className="h-3.5 w-3.5 mr-1" /> Excluir</>
+                                )}
+                              </Button>
+                            </TableCell>
                             <TableCell>
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </TableCell>
@@ -807,6 +933,64 @@ export default function ItensDespesa() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de confirmação de exclusão/reinclusão */}
+      <Dialog open={!!excludeDialogEquip} onOpenChange={(open) => !open && setExcludeDialogEquip(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {excludeDialogEquip?.excluido ? (
+                <><RotateCcw className="h-5 w-5 text-green-600" /> Reincluir Equipamento nos Cálculos</>
+              ) : (
+                <><Ban className="h-5 w-5 text-red-600" /> Excluir Equipamento dos Cálculos</>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {excludeDialogEquip?.excluido ? (
+                <>
+                  Deseja reincluir <strong>{excludeDialogEquip.tag}</strong>
+                  {excludeDialogEquip.descricao && <> ({excludeDialogEquip.descricao})</>} nos cálculos de custo da pedreira?
+                  As despesas deste equipamento voltarão a ser consideradas em todos os relatórios.
+                </>
+              ) : (
+                <>
+                  Deseja excluir <strong>{excludeDialogEquip?.tag}</strong>
+                  {excludeDialogEquip?.descricao && <> ({excludeDialogEquip.descricao})</>} dos cálculos de custo da pedreira?
+                  <br /><br />
+                  <strong>Esta ação afeta todos os períodos e relatórios:</strong>
+                  <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                    <li>Rateio MEM (despesas de equipamentos)</li>
+                    <li>Apuração de Custo (sintético e analítico)</li>
+                    <li>Custo por Setor (relatório por subsetor)</li>
+                    <li>Ranking de combustível</li>
+                  </ul>
+                  <br />
+                  O equipamento continuará visível na lista, mas marcado como excluído. Você pode reincluí-lo a qualquer momento.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExcludeDialogEquip(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={excludeDialogEquip?.excluido ? "default" : "destructive"}
+              onClick={() => {
+                if (excludeDialogEquip?.sistemaId) {
+                  toggleExcluido.mutate({
+                    id: excludeDialogEquip.sistemaId,
+                    excluidoCusto: excludeDialogEquip.excluido ? "nao" : "sim",
+                  });
+                }
+              }}
+              disabled={toggleExcluido.isPending}
+            >
+              {toggleExcluido.isPending ? "Processando..." : excludeDialogEquip?.excluido ? "Reincluir" : "Excluir dos Cálculos"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

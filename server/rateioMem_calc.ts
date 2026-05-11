@@ -234,7 +234,7 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
     ));
   const idsGruposExcluidos = new Set(gruposExcluidos.map(g => g.id));
 
-  // 3. Buscar todos os equipamentos
+  // 3. Buscar todos os equipamentos (excluindo os marcados como excluidoCusto)
   const equipsList = await db
     .select({
       id: equipamentos.id,
@@ -242,8 +242,12 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
       nomeDoEquipamento: equipamentos.nomeDoEquipamento,
       grupoId: equipamentos.grupoId,
       setorId: equipamentos.setorId,
+      excluidoCusto: equipamentos.excluidoCusto,
     })
     .from(equipamentos);
+
+  // IDs de equipamentos excluídos do custo
+  const idsEquipExcluidos = new Set(equipsList.filter(e => e.excluidoCusto === "sim").map(e => e.id));
 
   const equipMap = new Map(equipsList.map(e => [e.id, e]));
   const tagToIdMap = buildTagToIdMap(equipsList);
@@ -309,6 +313,7 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
 
     const equip = equipMap.get(r.equipamentoId);
     if (equip?.grupoId && idsGruposExcluidos.has(equip.grupoId)) continue;
+    if (idsEquipExcluidos.has(r.equipamentoId)) continue;
 
     horasTotalPorEquip.set(r.equipamentoId, (horasTotalPorEquip.get(r.equipamentoId) || 0) + horas);
 
@@ -350,6 +355,7 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
     if (!r.equipamentoId) continue;
     const equip = equipMap.get(r.equipamentoId);
     if (equip?.grupoId && idsGruposExcluidos.has(equip.grupoId)) continue;
+    if (idsEquipExcluidos.has(r.equipamentoId)) continue;
     if (EQUIPAMENTO_SETOR_FIXO[r.equipamentoId]) continue;
     if (horasPorEquipSetor.has(r.equipamentoId)) continue;
 
@@ -414,6 +420,9 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
       continue;
     }
 
+    // Pular equipamentos excluídos do custo
+    if (idsEquipExcluidos.has(equipId)) continue;
+
     const campo = CLASSIFICACAO_PARA_CAMPO[desp.classificacao];
     if (!campo) continue;
 
@@ -454,6 +463,7 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
     const equip = equipMap.get(equipId);
     if (!equip) continue;
     if (equip.grupoId && idsGruposExcluidos.has(equip.grupoId)) continue;
+    if (idsEquipExcluidos.has(equipId)) continue;
 
     const setoresDoEquip = horasPorEquipSetor.get(equipId);
     const horasTotal = horasTotalPorEquip.get(equipId) || 0;

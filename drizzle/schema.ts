@@ -83,6 +83,7 @@ export const equipamentos = mysqlTable("equipamentos", {
   grupoId: int("grupoId"),
   setorId: int("setorId"),
   ativo: mysqlEnum("ativo", ["sim", "nao"]).default("sim").notNull(),
+  excluidoCusto: mysqlEnum("excluidoCusto", ["sim", "nao"]).default("nao").notNull(), // Excluir do cálculo de custo (outros negócios)
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

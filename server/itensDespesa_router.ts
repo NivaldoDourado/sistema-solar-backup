@@ -138,6 +138,17 @@ function calcularConsumoCombustivel(itens: {
 
 export { calcularConsumoCombustivel };
 
+// Helper: buscar IDs de equipamentos excluídos do custo
+async function getIdsEquipExcluidos(): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db
+    .select({ id: equipamentos.id })
+    .from(equipamentos)
+    .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
+  return new Set(rows.map(r => r.id));
+}
+
 export const itensDespesaRouter = router({
   // Listar equipamentos com itens importados para um período
   listarEquipamentosPorPeriodo: protectedProcedure
@@ -147,6 +158,8 @@ export const itensDespesaRouter = router({
     .query(async ({ input }) => {
       const db2 = await getDb();
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const idsExcluidos = await getIdsEquipExcluidos();
 
       const result = await db2
         .select({
@@ -171,6 +184,7 @@ export const itensDespesaRouter = router({
         equipamentoSistemaId: r.equipamentoSistemaId,
         totalItens: Number(r.totalItens),
         totalCusto: Number(r.totalCusto) || 0,
+        excluidoCusto: r.equipamentoSistemaId ? idsExcluidos.has(r.equipamentoSistemaId) : false,
       }));
     }),
 
@@ -183,6 +197,9 @@ export const itensDespesaRouter = router({
     .query(async ({ input }) => {
       const db2 = await getDb();
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const idsExcluidos = await getIdsEquipExcluidos();
+
       const result = await db2
         .select({
           equipamentoTag: itemDespesaImportado.equipamentoTag,
@@ -202,13 +219,15 @@ export const itensDespesaRouter = router({
           itemDespesaImportado.equipamentoSistemaId,
         )
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
-      return result.map(r => ({
-        equipamentoTag: r.equipamentoTag,
-        equipamentoDescricao: r.equipamentoDescricao,
-        equipamentoSistemaId: r.equipamentoSistemaId,
-        totalItens: Number(r.totalItens),
-        totalCusto: Number(r.totalCusto) || 0,
-      }));
+      return result
+        .filter(r => !(r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)))
+        .map(r => ({
+          equipamentoTag: r.equipamentoTag,
+          equipamentoDescricao: r.equipamentoDescricao,
+          equipamentoSistemaId: r.equipamentoSistemaId,
+          totalItens: Number(r.totalItens),
+          totalCusto: Number(r.totalCusto) || 0,
+        }));
     }),
 
   // Listar classificações de um equipamento num período
@@ -300,7 +319,7 @@ export const itensDespesaRouter = router({
       return { temItens: Number(result[0]?.total || 0) > 0, totalItens: Number(result[0]?.total || 0) };
     }),
 
-  // Resumo geral por classificação para um período (todos os equipamentos)
+  // Resumo geral por classificação para um período (todos os equipamentos, excluindo os marcados)
   resumoPorClassificacao: protectedProcedure
     .input(z.object({
       periodoCustoId: z.number(),
@@ -309,25 +328,39 @@ export const itensDespesaRouter = router({
       const db2 = await getDb();
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      const idsExcluidos = await getIdsEquipExcluidos();
+
       const result = await db2
         .select({
           classificacao: itemDespesaImportado.classificacao,
-          totalItens: sql<number>`COUNT(*)`.as("totalItens"),
-          totalCusto: sql<string>`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`.as("totalCusto"),
-          totalEquipamentos: sql<number>`COUNT(DISTINCT ${itemDespesaImportado.equipamentoTag})`.as("totalEquipamentos"),
+          equipamentoSistemaId: itemDespesaImportado.equipamentoSistemaId,
+          equipamentoTag: itemDespesaImportado.equipamentoTag,
+          custo: itemDespesaImportado.custo,
         })
         .from(itemDespesaImportado)
-        .where(eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId))
-        .groupBy(itemDespesaImportado.classificacao)
-        .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
+        .where(eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId));
 
-      return result.map(r => ({
-        classificacao: r.classificacao,
-        classificacaoLabel: CLASSIFICACAO_LABELS[r.classificacao] || r.classificacao,
-        totalItens: Number(r.totalItens),
-        totalCusto: Number(r.totalCusto) || 0,
-        totalEquipamentos: Number(r.totalEquipamentos),
-      }));
+      // Filtrar excluídos e agrupar em memória
+      const filtrado = result.filter(r => !(r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)));
+      const grupos: Record<string, { classificacao: string; totalItens: number; totalCusto: number; tags: Set<string> }> = {};
+      for (const r of filtrado) {
+        if (!grupos[r.classificacao]) {
+          grupos[r.classificacao] = { classificacao: r.classificacao, totalItens: 0, totalCusto: 0, tags: new Set() };
+        }
+        grupos[r.classificacao].totalItens++;
+        grupos[r.classificacao].totalCusto += Number(r.custo) || 0;
+        grupos[r.classificacao].tags.add(r.equipamentoTag);
+      }
+
+      return Object.values(grupos)
+        .map(g => ({
+          classificacao: g.classificacao,
+          classificacaoLabel: CLASSIFICACAO_LABELS[g.classificacao] || g.classificacao,
+          totalItens: g.totalItens,
+          totalCusto: Math.round(g.totalCusto * 100) / 100,
+          totalEquipamentos: g.tags.size,
+        }))
+        .sort((a, b) => b.totalCusto - a.totalCusto);
     }),
 
   // =============================================
@@ -393,6 +426,9 @@ export const itensDespesaRouter = router({
           asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`),
         );
 
+      // Filtrar equipamentos excluídos do custo
+      const idsExcluidos = await getIdsEquipExcluidos();
+
       // Agrupar por equipamento
       const porEquipamento = new Map<string, {
         tag: string;
@@ -402,6 +438,9 @@ export const itensDespesaRouter = router({
       }>();
 
       for (const row of result) {
+        // Pular equipamentos excluídos
+        if (row.equipamentoSistemaId && idsExcluidos.has(row.equipamentoSistemaId)) continue;
+
         const tag = row.equipamentoTag;
         if (!porEquipamento.has(tag)) {
           porEquipamento.set(tag, {

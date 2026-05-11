@@ -842,3 +842,15 @@
 ## Renomeação de Contas de Custo
 - [x] Renomear "Sal.Adm./Diretoria/Pró-Lab./Almox./Ofic./Serv./Aux./Encargos" para "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" (banco + código)
 - [x] Renomear "Sal. Diretoria" para "Sal. Diretoria/Pró-Labore" (banco + código)
+
+## Exclusão de Equipamentos dos Cálculos de Custo
+- [x] Adicionar campo excluidoCusto (sim/não) na tabela equipamentos no schema
+- [x] Criar procedure toggleExcluidoCusto no backend (routers.ts)
+- [x] Adicionar UI de exclusão na tela Itens Detalhados (botão Ban/RotateCcw com dialog de confirmação)
+- [x] Filtrar equipamentos excluídos no cálculo do Rateio MEM (rateioMem_calc.ts - 5 pontos)
+- [x] Filtrar equipamentos excluídos no relatório sintético (via calcularRateioMem no custoSetor_router.ts)
+- [x] Filtrar equipamentos excluídos no relatório analítico (via calcularRateioMem no custoSetorRas_router.ts)
+- [x] Filtrar equipamentos excluídos nas procedures de itensDespesa_router.ts (4 procedures)
+- [x] Filtrar equipamentos excluídos na importação de despesas (importDespesas_router.ts)
+- [x] Mostrar indicador visual (badge vermelho "Excluído" + texto riscado + fundo vermelho)
+- [x] Permitir reincluir equipamento previamente excluído (toggle bidirecional)

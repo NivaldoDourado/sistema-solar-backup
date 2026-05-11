@@ -170,6 +170,7 @@ export const appRouter = router({
             grupoId: equipamentos.grupoId,
             setorId: equipamentos.setorId,
             ativo: equipamentos.ativo,
+            excluidoCusto: equipamentos.excluidoCusto,
             grupoNome: gruposDeEquipamentos.nome,
           })
           .from(equipamentos)
@@ -237,6 +238,33 @@ export const appRouter = router({
         
         await db.delete(equipamentos).where(eq(equipamentos.id, input.id));
         return { success: true };
+      }),
+
+    toggleExcluidoCusto: protectedProcedure
+      .use(requirePermission("equipamentos", "edit"))
+      .input(z.object({
+        id: z.number(),
+        excluidoCusto: z.enum(["sim", "nao"]),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        
+        await db.update(equipamentos)
+          .set({ excluidoCusto: input.excluidoCusto })
+          .where(eq(equipamentos.id, input.id));
+        return { success: true, excluidoCusto: input.excluidoCusto };
+      }),
+
+    listExcluidosCusto: protectedProcedure
+      .query(async () => {
+        const db = await getDb();
+        if (!db) return [];
+        return await db
+          .select({ id: equipamentos.id, codigoTag: equipamentos.codigoTag, nomeDoEquipamento: equipamentos.nomeDoEquipamento })
+          .from(equipamentos)
+          .where(eq(equipamentos.excluidoCusto, "sim"))
+          .orderBy(asc(equipamentos.nomeDoEquipamento));
       }),
   }),
 
