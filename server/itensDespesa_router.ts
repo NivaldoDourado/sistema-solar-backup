@@ -641,4 +641,141 @@ export const itensDespesaRouter = router({
 
       return { sucesso: true };
     }),
+
+  // ===== REVISÃO DE CORRESPONDÊNCIAS EQUIPAMENTO → SETOR =====
+
+  // Listar todas as correspondências equipamento → setor para revisão
+  listarCorrespondenciasSetor: protectedProcedure
+    .query(async () => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Importar correspondências
+      const { CORRESPONDENCIAS_APROVADAS: CA, CORRESPONDENCIAS_FORCADAS: CF } = await import("./importDespesas_correspondencias");
+
+      // Buscar todos os equipamentos com setor e grupo
+      const equipsList = await db2
+        .select({
+          id: equipamentos.id,
+          codigoTag: equipamentos.codigoTag,
+          nomeDoEquipamento: equipamentos.nomeDoEquipamento,
+          setorId: equipamentos.setorId,
+          grupoId: equipamentos.grupoId,
+          excluidoCusto: equipamentos.excluidoCusto,
+        })
+        .from(equipamentos)
+        .orderBy(asc(equipamentos.nomeDoEquipamento));
+
+      // Buscar setores
+      const { setores: setoresTable } = await import("../drizzle/schema");
+      const setoresRows = await db2.select({ id: setoresTable.id, nome: setoresTable.nome }).from(setoresTable);
+      const setoresMap = new Map(setoresRows.map(s => [s.id, s.nome]));
+
+      // Buscar grupos
+      const { gruposDeEquipamentos: gruposTable } = await import("../drizzle/schema");
+      const gruposRows = await db2.select({ id: gruposTable.id, nome: gruposTable.nome }).from(gruposTable);
+      const gruposMap = new Map(gruposRows.map(g => [g.id, g.nome]));
+
+      // Mapeamento de grupo para setor padrão (fallback)
+      const GRUPO_PARA_SETOR: Record<string, string> = {
+        "BRITADORES": "BRITAGEM SECUNDÁRIA",
+        "PENEIRAS VIBRATÓRIAS": "BRITAGEM SECUNDÁRIA",
+        "TRANSPORTADORES DE CORREIA": "BRITAGEM SECUNDÁRIA",
+        "COMPRESSORES DE AR DIESEL": "DESMONTE PRIMÁRIO",
+        "PERFURATRIZES HIDRAULICAS": "DESMONTE PRIMÁRIO",
+        "PERFURATRIZES PNEUMÁTICAS": "DESMONTE PRIMÁRIO",
+        "ESCAVADEIRAS HIDRÁULICAS": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+        "CAMINHÕES INTERNOS": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+        "CAMINHÕES MELOSA": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+        "CAMINHÕES PIPA": "OUTROS SERVIÇOS AUXILIARES",
+        "CAMINHÕES DA ENTREGA DE MATERIAL": "EXPEDIÇÃO",
+        "PÁS CARREGADEIRAS": "EXPEDIÇÃO",
+        "DRAGAS E BOMBA D'AGUA SUCÇÃO DIESEL": "DESMONTE PRIMÁRIO",
+        "CARROS PEQUENOS": "ADMINISTRACAO",
+        "OUTROS PARA CUSTO": "OUTROS SERVIÇOS AUXILIARES",
+      };
+
+      // Resolver setor para cada equipamento
+      function resolverSetor(equip: typeof equipsList[0]): { setorNome: string; origem: string } {
+        // 1. Setor cadastrado diretamente
+        if (equip.setorId && setoresMap.has(equip.setorId)) {
+          return { setorNome: setoresMap.get(equip.setorId)!, origem: "cadastro" };
+        }
+        // 2. Inferir pelo grupo
+        if (equip.grupoId && gruposMap.has(equip.grupoId)) {
+          const grupoNome = gruposMap.get(equip.grupoId)!;
+          if (GRUPO_PARA_SETOR[grupoNome]) {
+            return { setorNome: GRUPO_PARA_SETOR[grupoNome], origem: "grupo (" + grupoNome + ")" };
+          }
+        }
+        // 3. Inferir pelo nome
+        const nome = equip.nomeDoEquipamento.toUpperCase();
+        if (nome.includes('EXPLOSIVOS')) return { setorNome: 'DESMONTE PRIMÁRIO', origem: 'nome' };
+        if (nome.includes('PERFURATRIZ')) return { setorNome: 'DESMONTE PRIMÁRIO', origem: 'nome' };
+        if (nome.includes('COMPRESSOR')) return { setorNome: 'DESMONTE PRIMÁRIO', origem: 'nome' };
+        if (nome.includes('DRAGA')) return { setorNome: 'DESMONTE PRIMÁRIO', origem: 'nome' };
+        if (nome.includes('BRITADOR') && nome.includes('MOVEL')) return { setorNome: 'BRITAGEM MÓVEL', origem: 'nome' };
+        if (nome.includes('BRITADOR') || nome.includes('PENEIRA') || nome.includes('ALIMENTADOR') || nome.includes('CALHA')) return { setorNome: 'BRITAGEM SECUNDÁRIA', origem: 'nome' };
+        if (nome.includes('TRANSP') && nome.includes('CORREIA')) return { setorNome: 'BRITAGEM SECUNDÁRIA', origem: 'nome' };
+        if (nome.includes('ESCAVADEIRA') || nome.includes('KOMATSU')) return { setorNome: 'CARGA E TRANSPORTE DE PEDRA DA MINA', origem: 'nome' };
+        if (nome.includes('CAVALINHO') || nome.includes('CARRETA')) return { setorNome: 'EXPEDIÇÃO', origem: 'nome' };
+        if (nome.includes('PIPA')) return { setorNome: 'OUTROS SERVIÇOS AUXILIARES', origem: 'nome' };
+        if (nome.includes('BASCULANTE')) return { setorNome: 'CARGA E TRANSPORTE DE PEDRA DA MINA', origem: 'nome' };
+        if (nome.includes('MELOSA') || nome.includes('MELOZA')) return { setorNome: 'CARGA E TRANSPORTE DE PEDRA DA MINA', origem: 'nome' };
+        if (nome.includes('RANGER') || nome.includes('VAN')) return { setorNome: 'ADMINISTRACAO', origem: 'nome' };
+        return { setorNome: 'NÃO DEFINIDO', origem: 'nenhum' };
+      }
+
+      // Montar mapa de tags de correspondência para identificar a tag da planilha
+      const tagParaEquipId = new Map<string, number>();
+      for (const [tag, id] of Object.entries(CA)) tagParaEquipId.set(tag, id);
+      for (const [tag, info] of Object.entries(CF)) tagParaEquipId.set(tag, info.equipamentoId);
+
+      // Inverter: equipId → tags da planilha
+      const equipIdParaTags = new Map<number, string[]>();
+      for (const [tag, id] of Array.from(tagParaEquipId.entries())) {
+        if (!equipIdParaTags.has(id)) equipIdParaTags.set(id, []);
+        equipIdParaTags.get(id)!.push(tag);
+      }
+
+      // Montar resultado
+      const resultado = equipsList.map(equip => {
+        const { setorNome, origem } = resolverSetor(equip);
+        const tagsPlanilha = equipIdParaTags.get(equip.id) || [];
+        const grupoNome = equip.grupoId ? gruposMap.get(equip.grupoId) || null : null;
+        return {
+          id: equip.id,
+          codigoTag: equip.codigoTag,
+          nomeDoEquipamento: equip.nomeDoEquipamento,
+          setorId: equip.setorId,
+          setorNome,
+          origemSetor: origem,
+          grupoNome,
+          tagsPlanilha,
+          excluidoCusto: equip.excluidoCusto === "sim",
+        };
+      });
+
+      return {
+        equipamentos: resultado,
+        setores: setoresRows.map(s => ({ id: s.id, nome: s.nome })),
+      };
+    }),
+
+  // Alterar o setor de um equipamento (para revisão de correspondências)
+  alterarSetorEquipamento: protectedProcedure
+    .input(z.object({
+      equipamentoId: z.number(),
+      setorId: z.number().nullable(),
+    }))
+    .mutation(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      await db2.update(equipamentos)
+        .set({ setorId: input.setorId })
+        .where(eq(equipamentos.id, input.equipamentoId));
+
+      return { sucesso: true };
+    }),
 });

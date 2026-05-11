@@ -1,0 +1,150 @@
+{
+  "query": "SELECT e.id, e.codigoTag, e.nomeDoEquipamento, e.setorId, s.nome as setorNome FROM equipamentos e LEFT JOIN setores s ON e.setorId = s.id WHERE e.setorId IS NOT NULL LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.id, e.codigoTag, e.nomeDoEquipamento, e.setorId, s.nome as setorNome FROM equipamentos e LEFT JOIN setores s ON e.setorId = s.id WHERE e.setorId IS NOT NULL LIMIT 20;",
+  "rows": [
+    {
+      "id": "94",
+      "codigoTag": "RRG-6B68",
+      "nomeDoEquipamento": "RRG-6B68",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO"
+    },
+    {
+      "id": "120001",
+      "codigoTag": "AVS 4001200",
+      "nomeDoEquipamento": "ALIMENTADOR AVS4001200 (02)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120002",
+      "codigoTag": "C100",
+      "nomeDoEquipamento": "BRITADOR METSO C100 - PRIMARIO",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120003",
+      "codigoTag": "CALHA VIBRATORIA 01",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 01 (CS440)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120004",
+      "codigoTag": "CALHA VIBRATORIA 02",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 02 (CS440)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120005",
+      "codigoTag": "CALHA VIBRATORIA 03",
+      "nomeDoEquipamento": "CALHA VIBRATORIA 03 (H3800-03)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120006",
+      "codigoTag": "DRAGA D'AGUA A DIESEL",
+      "nomeDoEquipamento": "DRAGA D'AGUA A DIESEL",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120007",
+      "codigoTag": "DRAGA DIESEL 02",
+      "nomeDoEquipamento": "DRAGA DIESEL 02",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120008",
+      "codigoTag": "HZC4975",
+      "nomeDoEquipamento": "FORD F1000 (HZC4975)",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO"
+    },
+    {
+      "id": "120009",
+      "codigoTag": "HZU7750",
+      "nomeDoEquipamento": "ESCOLT (HZU7750)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120010",
+      "codigoTag": "IAD8995",
+      "nomeDoEquipamento": "MOTO RONDA CG 150 (IAD8995)",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO"
+    },
+    {
+      "id": "120011",
+      "codigoTag": "MAQUINA MIG",
+      "nomeDoEquipamento": "MAQUINA MIG",
+      "setorId": "60003",
+      "setorNome": "OFICINA"
+    },
+    {
+      "id": "120012",
+      "codigoTag": "MELOSA 01 / DIK",
+      "nomeDoEquipamento": "MELOSA 01 DIK",
+      "setorId": "60003",
+      "setorNome": "OFICINA"
+    },
+    {
+      "id": "120013",
+      "codigoTag": "MELOSA 02 BRIT.NOVA",
+      "nomeDoEquipamento": "MELOSA 02 BRIT.NOVA - HZL4229",
+      "setorId": "60003",
+      "setorNome": "OFICINA"
+    },
+    {
+      "id": "120014",
+      "codigoTag": "MOTO 02 (2003)",
+      "nomeDoEquipamento": "MOTO 02 (2003) ROBINHO",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120015",
+      "codigoTag": "MOTOR BOMBA",
+      "nomeDoEquipamento": "MOTOR BOMBA 01 NSB 11",
+      "setorId": "3",
+      "setorNome": "BRITAGEM PRIMÁRIA"
+    },
+    {
+      "id": "120016",
+      "codigoTag": "MOTOR BOMBA 02",
+      "nomeDoEquipamento": "MOTOR BOMBA NSB 90 (02)",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120017",
+      "codigoTag": "PA CARREG. 966 03",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLER 966C - 03",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "120018",
+      "codigoTag": "PA CARREG. 966R04",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLAR 966R - 04",
+      "setorId": "7",
+      "setorNome": "CARGA E TRANSPORTE DE PEDRA DA MINA"
+    },
+    {
+      "id": "120019",
+      "codigoTag": "PATROL 120 B",
+      "nomeDoEquipamento": "PATROL CATERPILLAR 120B",
+      "setorId": "9",
+      "setorNome": "DESMONTE PRIMÁRIO"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\tsetorId\tsetorNome\n94\tRRG-6B68\tRRG-6B68\t1\tADMINISTRACAO\n120001\tAVS 4001200\tALIMENTADOR AVS4001200 (02)\t9\tDESMONTE PRIMÁRIO\n120002\tC100\tBRITADOR METSO C100 - PRIMARIO\t9\tDESMONTE PRIMÁRIO\n120003\tCALHA VIBRATORIA 01\tCALHA VIBRATORIA 01 (CS440)\t9\tDESMONTE PRIMÁRIO\n120004\tCALHA VIBRATORIA 02\tCALHA VIBRATORIA 02 (CS440)\t9\tDESMONTE PRIMÁRIO\n120005\tCALHA VIBRATORIA 03\tCALHA VIBRATORIA 03 (H3800-03)\t9\tDESMONTE PRIMÁRIO\n120006\tDRAGA D'AGUA A DIESEL\tDRAGA D'AGUA A DIESEL\t9\tDESMONTE PRIMÁRIO\n120007\tDRAGA DIESEL 02\tDRAGA DIESEL 02\t9\tDESMONTE PRIMÁRIO\n120008\tHZC4975\tFORD F1000 (HZC4975)\t1\tADMINISTRACAO\n120009\tHZU7750\tESCOLT (HZU7750)\t9\tDESMONTE PRIMÁRIO\n120010\tIAD8995\tMOTO RONDA CG 150 (IAD8995)\t1\tADMINISTRACAO\n120011\tMAQUINA MIG\tMAQUINA MIG\t60003\tOFICINA\n120012\tMELOSA 01 / DIK\tMELOSA 01 DIK\t60003\tOFICINA\n120013\tMELOSA 02 BRIT.NOVA\tMELOSA 02 BRIT.NOVA - HZL4229\t60003\tOFICINA\n120014\tMOTO 02 (2003)\tMOTO 02 (2003) ROBINHO\t9\tDESMONTE PRIMÁRIO\n120015\tMOTOR BOMBA\tMOTOR BOMBA 01 NSB 11\t3\tBRITAGEM PRIMÁRIA\n120016\tMOTOR BOMBA 02\tMOTOR BOMBA NSB 90 (02)\t9\tDESMONTE PRIMÁRIO\n120017\tPA CARREG. 966 03\tPA CARREGADEIRA CATERPILLER 966C - 03\t9\tDESMONTE PRIMÁRIO\n120018\tPA CARREG. 966R04\tPA CARREGADEIRA CATERPILLAR 966R - 04\t7\tCARGA E TRANSPORTE DE PEDRA DA MINA\n120019\tPATROL 120 B\tPATROL CATERPILLAR 120B\t9\tDESMONTE PRIMÁRIO\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

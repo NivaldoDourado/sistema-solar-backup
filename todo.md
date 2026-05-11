@@ -884,3 +884,11 @@
 - [x] Separar equipamentos e setores: remover tags de setores da lista de equipamentos (evitar duplicação)
 - [x] Expansão inline dos itens de cada setor com tabela detalhada
 - [x] Busca/filtro por setor e banner de setores excluídos
+
+## Revisão de Correspondências Equipamento → Setor
+- [x] Criar procedure backend listarCorrespondenciasSetor (210 equipamentos com setor, origem, tags planilha, grupo)
+- [x] Criar procedure backend alterarSetorEquipamento (atualiza setorId no cadastro)
+- [x] Criar tela de revisão com lista completa + estatísticas (65 cadastro, 91 grupo, 3 inferido, 51 indefinido)
+- [x] Permitir edição inline do setor destino via dropdown (21 setores disponíveis)
+- [x] Propagação automática para cálculos de custo (rateioMem_calc.ts usa setorId como fonte primária)
+- [x] Persistência no banco de dados (campo setorId na tabela equipamento)
