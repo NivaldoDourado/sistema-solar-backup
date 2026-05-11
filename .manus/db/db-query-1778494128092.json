@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CAST(quantidade AS DECIMAL(15,2))) as totalQtd, SUM(CAST(valor AS DECIMAL(15,2))) as totalValor FROM resumo_vendas_produto WHERE periodoInicio = '2026-04-01' AND periodoFim = '2026-04-30'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT COUNT(*) as total, SUM(CAST(quantidade AS DECIMAL(15,2))) as totalQtd, SUM(CAST(valor AS DECIMAL(15,2))) as totalValor FROM resumo_vendas_produto WHERE periodoInicio = '2026-04-01' AND periodoFim = '2026-04-30'",
+  "rows": [
+    {
+      "total": "17",
+      "totalQtd": "93271.00",
+      "totalValor": "7588173.90"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\ttotalQtd\ttotalValor\n17\t93271.00\t7588173.90\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

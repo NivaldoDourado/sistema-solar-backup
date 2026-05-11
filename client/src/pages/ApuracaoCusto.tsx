@@ -274,7 +274,7 @@ export default function ApuracaoCusto() {
     if (!lancamentos || !periodoAtual) return null;
 
     const producao = producaoModulo?.total ?? parseFloat(periodoAtual.producaoTotal ?? "0") ?? 0;
-    const vendas = parseFloat(periodoAtual.quantidadeVendida ?? "0") || 0;
+    const vendas = parseFloat(periodoAtual.quantidadeVendida ?? "0") || (resumoVendasERP?.totalQuantidade ?? 0);
 
     type ContaItem = {
       id: number;
@@ -376,7 +376,7 @@ export default function ApuracaoCusto() {
       custoMedio,
       custoMedioComDI,
     };
-  }, [lancamentos, periodoAtual, producaoModulo]);  // ── Dados para gráficos ────────────────────────────────────────────────────────────────────────────
+  }, [lancamentos, periodoAtual, producaoModulo, resumoVendasERP]);  // ── Dados para gráficos ────────────────────────────────────────────────────────────────────────────
 
   // Paleta de cores para subsetores (por grupo)
   const SUBSETOR_PALETA: Record<string, string> = {
@@ -841,7 +841,7 @@ export default function ApuracaoCusto() {
                   </span>
                 )}
                 <span className="text-sm text-muted-foreground">
-                  Vendas: <strong>{periodoAtual.quantidadeVendida ? fmt(parseFloat(periodoAtual.quantidadeVendida)) : "—"} t</strong>
+                  Vendas: <strong>{(periodoAtual.quantidadeVendida && parseFloat(periodoAtual.quantidadeVendida) > 0) ? fmt(parseFloat(periodoAtual.quantidadeVendida)) : (resumoVendasERP?.totalQuantidade ? fmt(resumoVendasERP.totalQuantidade) : "—")} t</strong>
                 </span>
               </div>
             )}

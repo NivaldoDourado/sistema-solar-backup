@@ -808,3 +808,7 @@
 - [x] Manter Importação de Planilha como método legado claramente identificado
 - [x] Atualizar títulos das páginas para consistência com o menu
 - [x] Atualizar referências no código (mensagens de erro, links)
+
+## Bug: Vendas não aparecem na Apuração de Custo (abril/26)
+- [x] Investigar por que Apuração de Custo mostra "Vendas: — t" quando há 93.271 t importadas no módulo Vendas
+- [x] Corrigir integração para que vendas do PDF importado alimentem a Apuração de Custo (fallback via resumoVendasERP)
