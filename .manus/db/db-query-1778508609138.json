@@ -1,0 +1,20 @@
+{
+  "query": "\n-- Verificar a tag excluída\nSELECT id, tag, HEX(tag) as hex_tag FROM equipamento_excluido_tag WHERE tag LIKE '%PERFURATRIZ%';\n\n-- Verificar a tag nos itens importados\nSELECT DISTINCT equipamentoTag, HEX(equipamentoTag) as hex_tag FROM item_despesa_importado WHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%' LIMIT 3;\n\n-- Verificar se existe correspondência aprovada ou forçada para esta tag\nSELECT DISTINCT equipamentoTag, equipamentoSistemaId FROM item_despesa_importado WHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%' LIMIT 3;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Verificar a tag excluída\nSELECT id, tag, HEX(tag) as hex_tag FROM equipamento_excluido_tag WHERE tag LIKE '%PERFURATRIZ%';\n\n-- Verificar a tag nos itens importados\nSELECT DISTINCT equipamentoTag, HEX(equipamentoTag) as hex_tag FROM item_despesa_importado WHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%' LIMIT 3;\n\n-- Verificar se existe correspondência aprovada ou forçada para esta tag\nSELECT DISTINCT equipamentoTag, equipamentoSistemaId FROM item_despesa_importado WHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%' LIMIT 3;\n",
+  "rows": [
+    {
+      "id": "7",
+      "tag": "PERFURATRIZ HIDR. 01",
+      "hex_tag": "504552465552415452495A20484944522E203031"
+    }
+  ],
+  "messages": [
+    "equipamentoTag\thex_tag",
+    "PERFURATRIZ HIDR. 01\t504552465552415452495A20484944522E203031",
+    "equipamentoTag\tequipamentoSistemaId",
+    "PERFURATRIZ HIDR. 01\tNULL"
+  ],
+  "stdout": "id\ttag\thex_tag\n7\tPERFURATRIZ HIDR. 01\t504552465552415452495A20484944522E203031\nequipamentoTag\thex_tag\nPERFURATRIZ HIDR. 01\t504552465552415452495A20484944522E203031\nequipamentoTag\tequipamentoSistemaId\nPERFURATRIZ HIDR. 01\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 279
+}

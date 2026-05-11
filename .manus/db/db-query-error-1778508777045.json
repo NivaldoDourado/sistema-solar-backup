@@ -1,0 +1,14 @@
+{
+  "query": "\n-- Verificar quais tags excluídas têm correspondência com equipamentos cadastrados\nSELECT et.tag, et.id as tag_id FROM equipamento_excluido_tag et;\n\n-- Marcar PERFURATRIZ HIDR. 01 -> equipamento id 48 como excluído\nUPDATE equipamentos SET excluido_custo = 'sim' WHERE id = 48;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Verificar quais tags excluídas têm correspondência com equipamentos cadastrados\nSELECT et.tag, et.id as tag_id FROM equipamento_excluido_tag et;\n\n-- Marcar PERFURATRIZ HIDR. 01 -> equipamento id 48 como excluído\nUPDATE equipamentos SET excluido_custo = 'sim' WHERE id = 48;\n",
+  "returncode": 1,
+  "logs": [
+    "tag\ttag_id",
+    "QMD 0H48\t1",
+    "QMO6E54\t2",
+    "QMD0H48\t3",
+    "QMN1F10\t4",
+    "PERFURATRIZ HIDR. 01\t7",
+    "ERROR 1054 (42S22) at line 6: Unknown column 'excluido_custo' in 'field list'"
+  ]
+}

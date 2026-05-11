@@ -257,6 +257,13 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
   const equipMap = new Map(equipsList.map(e => [e.id, e]));
   const tagToIdMap = buildTagToIdMap(equipsList);
 
+  // Resolver IDs de equipamentos correspondentes a tags excluídas
+  // (para filtrar também horas e salários que usam equipamentoId)
+  for (const tagUpper of Array.from(tagsExcluidasSet)) {
+    const equipId = tagToIdMap.get(tagUpper);
+    if (equipId) idsEquipExcluidos.add(equipId);
+  }
+
   // 4. Buscar setores e grupos
   const setoresRows = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
   const setoresMap = new Map(setoresRows.map(s => [s.id, s.nome]));

@@ -1,0 +1,21 @@
+{
+  "query": "\n-- Verificar o equipamento no cadastro\nSELECT id, codigoTag, nomeDoEquipamento, excluidoCusto FROM equipamentos \nWHERE codigoTag LIKE '%PERFURATRIZ%' OR nomeDoEquipamento LIKE '%PERFURATRIZ HIDR%';\n\n-- Verificar nos itens importados\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%';\n\n-- Verificar a tag excluída\nSELECT * FROM equipamento_excluido_tag WHERE tag LIKE '%PERFURATRIZ%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Verificar o equipamento no cadastro\nSELECT id, codigoTag, nomeDoEquipamento, excluidoCusto FROM equipamentos \nWHERE codigoTag LIKE '%PERFURATRIZ%' OR nomeDoEquipamento LIKE '%PERFURATRIZ HIDR%';\n\n-- Verificar nos itens importados\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE equipamentoTag LIKE '%PERFURATRIZ HIDR%01%';\n\n-- Verificar a tag excluída\nSELECT * FROM equipamento_excluido_tag WHERE tag LIKE '%PERFURATRIZ%';\n",
+  "rows": [
+    {
+      "id": "48",
+      "codigoTag": "FOX 8-20",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "excluidoCusto": "nao"
+    }
+  ],
+  "messages": [
+    "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId",
+    "PERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tNULL",
+    "id\ttag\tdescricao\tmotivo\tuserId\tcreatedAt",
+    "7\tPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 14:04:30"
+  ],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\texcluidoCusto\n48\tFOX 8-20\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\tnao\nequipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\nPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tNULL\nid\ttag\tdescricao\tmotivo\tuserId\tcreatedAt\n7\tPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 14:04:30\n",
+  "stderr": "",
+  "execution_time_ms": 283
+}

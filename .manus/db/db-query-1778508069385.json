@@ -1,0 +1,41 @@
+{
+  "query": "\n-- Verificar se existem equipamentos cadastrados com essas tags\nSELECT id, codigoTag, nomeDoEquipamento, excluidoCusto FROM equipamentos \nWHERE codigoTag IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'TC01', 'TC01 (OM100 RM)');\n\n-- Verificar tags excluídas na tabela de tags\nSELECT * FROM equipamento_excluido_tag;\n\n-- Verificar se essas tags existem nos itens importados e se tinham equipamentoSistemaId\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE equipamentoTag IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'TC01', 'TC01 (OM100 RM)');\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Verificar se existem equipamentos cadastrados com essas tags\nSELECT id, codigoTag, nomeDoEquipamento, excluidoCusto FROM equipamentos \nWHERE codigoTag IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'TC01', 'TC01 (OM100 RM)');\n\n-- Verificar tags excluídas na tabela de tags\nSELECT * FROM equipamento_excluido_tag;\n\n-- Verificar se essas tags existem nos itens importados e se tinham equipamentoSistemaId\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE equipamentoTag IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'TC01', 'TC01 (OM100 RM)');\n",
+  "rows": [
+    {
+      "id": "86",
+      "codigoTag": "QMO6E54",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "excluidoCusto": "nao"
+    },
+    {
+      "id": "87",
+      "codigoTag": "QMN1F10",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "excluidoCusto": "nao"
+    },
+    {
+      "id": "120035",
+      "codigoTag": "TC01",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-01 (JC1200)",
+      "excluidoCusto": "nao"
+    }
+  ],
+  "messages": [
+    "id\ttag\tdescricao\tmotivo\tuserId\tcreatedAt",
+    "1\tQMD 0H48\tMB ATEGO 2426\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:29",
+    "2\tQMO6E54\tMERCEDES\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:45",
+    "3\tQMD0H48\tMERCEDES MUCK\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:43:52",
+    "4\tQMN1F10\tMERCEDES BENZ\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:44:47",
+    "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId",
+    "QMD 0H48\tMB ATEGO 2426\tNULL",
+    "TC01\tTRANSP CORREIA TC - 01 (JC1200)\tNULL",
+    "QMO6E54\tMERCEDES\tNULL",
+    "QMN1F10\tMERCEDES BENZ\tNULL",
+    "QMD0H48\tMERCEDES MUCK\tNULL",
+    "TC01 (OM100 RM)\tTRANSP CORREIA TC01 (OM - 100 RM)\tNULL"
+  ],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\texcluidoCusto\n86\tQMO6E54\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\tnao\n87\tQMN1F10\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\tnao\n120035\tTC01\tTRANSP CORREIA TC-01 (JC1200)\tnao\nid\ttag\tdescricao\tmotivo\tuserId\tcreatedAt\n1\tQMD 0H48\tMB ATEGO 2426\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:29\n2\tQMO6E54\tMERCEDES\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:45\n3\tQMD0H48\tMERCEDES MUCK\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:43:52\n4\tQMN1F10\tMERCEDES BENZ\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:44:47\nequipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\nQMD 0H48\tMB ATEGO 2426\tNULL\nTC01\tTRANSP CORREIA TC - 01 (JC1200)\tNULL\nQMO6E54\tMERCEDES\tNULL\nQMN1F10\tMERCEDES BENZ\tNULL\nQMD0H48\tMERCEDES MUCK\tNULL\nTC01 (OM100 RM)\tTRANSP CORREIA TC01 (OM - 100 RM)\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 304
+}

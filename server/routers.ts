@@ -252,19 +252,47 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
-        
+
+        // Import correspondências para resolver tag -> equipamentoId
+        const { CORRESPONDENCIAS_APROVADAS, CORRESPONDENCIAS_FORCADAS } = await import("./importDespesas_correspondencias");
+
+        // Helper: dado uma tag, encontrar o equipamentoId correspondente
+        const resolverEquipIdPorTag = (tag: string): number | null => {
+          const tagUpper = tag.toUpperCase();
+          // Correspondências forçadas
+          for (const [t, info] of Object.entries(CORRESPONDENCIAS_FORCADAS)) {
+            if (t.toUpperCase() === tagUpper) return info.equipamentoId;
+          }
+          // Correspondências aprovadas
+          for (const [t, id] of Object.entries(CORRESPONDENCIAS_APROVADAS)) {
+            if (t.toUpperCase() === tagUpper) return id;
+          }
+          return null;
+        };
+
         // Se tem ID do cadastro, usa o campo excluidoCusto da tabela equipamentos
         if (input.id) {
           await db.update(equipamentos)
             .set({ excluidoCusto: input.excluidoCusto })
             .where(eq(equipamentos.id, input.id));
+          // Também verificar se há tag correspondente na tabela de tags excluídas
+          if (input.excluidoCusto === "nao") {
+            // Ao reincluir, remover tags que apontam para este equipamento
+            const [equip] = await db.select({ codigoTag: equipamentos.codigoTag }).from(equipamentos).where(eq(equipamentos.id, input.id));
+            if (equip?.codigoTag) {
+              await db.delete(equipamentoExcluidoTag).where(eq(equipamentoExcluidoTag.tag, equip.codigoTag));
+            }
+          }
           return { success: true, excluidoCusto: input.excluidoCusto };
         }
         
         // Se não tem ID mas tem tag, usa a tabela equipamento_excluido_tag
         if (input.tag) {
+          // Verificar se esta tag corresponde a um equipamento cadastrado via correspondências
+          const equipIdCorrespondente = resolverEquipIdPorTag(input.tag);
+
           if (input.excluidoCusto === "sim") {
-            // Verificar se já existe
+            // Salvar na tabela de tags excluídas
             const [existing] = await db
               .select()
               .from(equipamentoExcluidoTag)
@@ -278,10 +306,22 @@ export const appRouter = router({
                 userId: ctx.user.id,
               });
             }
+            // Se tem correspondência, também marcar o equipamento cadastrado
+            if (equipIdCorrespondente) {
+              await db.update(equipamentos)
+                .set({ excluidoCusto: "sim" })
+                .where(eq(equipamentos.id, equipIdCorrespondente));
+            }
           } else {
-            // Reincluir: remover da tabela
+            // Reincluir: remover da tabela de tags
             await db.delete(equipamentoExcluidoTag)
               .where(eq(equipamentoExcluidoTag.tag, input.tag));
+            // Se tem correspondência, também reincluir o equipamento cadastrado
+            if (equipIdCorrespondente) {
+              await db.update(equipamentos)
+                .set({ excluidoCusto: "nao" })
+                .where(eq(equipamentos.id, equipIdCorrespondente));
+            }
           }
           return { success: true, excluidoCusto: input.excluidoCusto };
         }

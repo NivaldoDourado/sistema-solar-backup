@@ -1,0 +1,25 @@
+{
+  "query": "\n-- Marcar PERFURATRIZ HIDR. 01 -> equipamento id 48 como excluído\nUPDATE equipamentos SET excluidoCusto = 'sim' WHERE id = 48;\n\n-- Verificar todas as tags excluídas\nSELECT tag FROM equipamento_excluido_tag;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Marcar PERFURATRIZ HIDR. 01 -> equipamento id 48 como excluído\nUPDATE equipamentos SET excluidoCusto = 'sim' WHERE id = 48;\n\n-- Verificar todas as tags excluídas\nSELECT tag FROM equipamento_excluido_tag;\n",
+  "rows": [
+    {
+      "tag": "QMD 0H48"
+    },
+    {
+      "tag": "QMO6E54"
+    },
+    {
+      "tag": "QMD0H48"
+    },
+    {
+      "tag": "QMN1F10"
+    },
+    {
+      "tag": "PERFURATRIZ HIDR. 01"
+    }
+  ],
+  "messages": [],
+  "stdout": "tag\nQMD 0H48\nQMO6E54\nQMD0H48\nQMN1F10\nPERFURATRIZ HIDR. 01\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

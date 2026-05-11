@@ -861,3 +861,9 @@
 - [x] Filtrar tags excluídas no rateioMem_calc.ts (tagsExcluidasSet)
 - [x] Filtrar tags excluídas no itensDespesa_router.ts (5 procedures)
 - [x] Atualizar UI para permitir exclusão de qualquer equipamento na lista (remover validação de vínculo)
+
+## Bug: Exclusão de equipamentos não propaga para Apuração de Custo
+- [x] Problema: tags na planilha (ex: "PERFURATRIZ HIDR. 01") diferem do codigoTag no cadastro (ex: "FOX 8-20")
+- [x] Correção: no rateioMem_calc.ts, resolver IDs de equipamentos via tagToIdMap para tags excluídas
+- [x] Correção: procedure toggleExcluidoCusto agora também marca equipamento cadastrado via correspondências
+- [x] Sincronizar banco: equipamento id=48 (PERFURATRIZ HIDR. 01) marcado como excluído
