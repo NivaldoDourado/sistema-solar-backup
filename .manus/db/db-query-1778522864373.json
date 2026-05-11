@@ -1,0 +1,82 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome as grupoNome,\n  ROUND(SUM(CAST(i.custo AS DECIMAL(12,2))), 2) as totalDespesa\nFROM equipamentos e\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nINNER JOIN item_despesa_importado i ON UPPER(i.equipamentoTag) = UPPER(e.codigoTag)\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nAND i.periodoCustoId = 60001\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome\nORDER BY totalDespesa DESC\nLIMIT 20\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome as grupoNome,\n  ROUND(SUM(CAST(i.custo AS DECIMAL(12,2))), 2) as totalDespesa\nFROM equipamentos e\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nINNER JOIN item_despesa_importado i ON UPPER(i.equipamentoTag) = UPPER(e.codigoTag)\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nAND i.periodoCustoId = 60001\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome\nORDER BY totalDespesa DESC\nLIMIT 20\n",
+  "rows": [
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "codigoTag": "IXE1F44",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS",
+      "totalDespesa": "22444.92"
+    },
+    {
+      "id": "20",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA KOMATSU PC300",
+      "codigoTag": "PC300",
+      "grupoId": "8",
+      "grupoNome": "ESCAVADEIRAS HIDRÁULICAS",
+      "totalDespesa": "22054.50"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "codigoTag": "OER1B00",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS",
+      "totalDespesa": "20164.90"
+    },
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "codigoTag": "NVH6212",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS",
+      "totalDespesa": "9878.26"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "codigoTag": "NVJ7902",
+      "grupoId": "5",
+      "grupoNome": "CAMINHÕES INTERNOS",
+      "totalDespesa": "9655.06"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "codigoTag": "QMO6E54",
+      "grupoId": "16",
+      "grupoNome": "CAMINHÕES DA ENTREGA DE MATERIAL",
+      "totalDespesa": "5800.00"
+    },
+    {
+      "id": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "codigoTag": "PENEIRA NW200",
+      "grupoId": "12",
+      "grupoNome": "PENEIRAS VIBRATÓRIAS",
+      "totalDespesa": "166.58"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "codigoTag": "PIPA HZH 3961",
+      "grupoId": "7",
+      "grupoNome": "CAMINHÕES PIPA",
+      "totalDespesa": "160.86"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "codigoTag": "QMN1F10",
+      "grupoId": "16",
+      "grupoNome": "CAMINHÕES DA ENTREGA DE MATERIAL",
+      "totalDespesa": "1.65"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\tgrupoId\tgrupoNome\ttotalDespesa\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\tIXE1F44\t5\tCAMINHÕES INTERNOS\t22444.92\n20\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\tPC300\t8\tESCAVADEIRAS HIDRÁULICAS\t22054.50\n40\tCAMINHÃO BASCULANTE OER1B00\tOER1B00\t5\tCAMINHÕES INTERNOS\t20164.90\n38\tCAMINHÃO BASCULANTE NVH-6212\tNVH6212\t5\tCAMINHÕES INTERNOS\t9878.26\n37\tCAMINHÃO BASCULANTE  NVJ-7902\tNVJ7902\t5\tCAMINHÕES INTERNOS\t9655.06\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\tQMO6E54\t16\tCAMINHÕES DA ENTREGA DE MATERIAL\t5800.00\n91\tPENEIRA NW200\tPENEIRA NW200\t12\tPENEIRAS VIBRATÓRIAS\t166.58\n50\tCAMINHÃO PIPA  HZH 3961\tPIPA HZH 3961\t7\tCAMINHÕES PIPA\t160.86\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\tQMN1F10\t16\tCAMINHÕES DA ENTREGA DE MATERIAL\t1.65\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

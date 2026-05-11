@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = 60001 AND contaCustoId = 2",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = 60001 AND contaCustoId = 2",
+  "rows": [
+    {
+      "id": "90003",
+      "valor": "8033.24",
+      "observacoes": "[Fluxo] 5540-DESPESAS FINANCEIRAS"
+    },
+    {
+      "id": "120001",
+      "valor": "309340.07",
+      "observacoes": "[Impostos Manual] Previsão de Impostos"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tvalor\tobservacoes\n90003\t8033.24\t[Fluxo] 5540-DESPESAS FINANCEIRAS\n120001\t309340.07\t[Impostos Manual] Previsão de Impostos\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

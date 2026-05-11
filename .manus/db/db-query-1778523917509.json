@@ -1,0 +1,14 @@
+{
+  "query": "SELECT SUM(CAST(i.custo AS DECIMAL(12,2))) as total, COUNT(DISTINCT i.equipamentoTag) as tags\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = 60001\nAND i.equipamentoTag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(CAST(i.custo AS DECIMAL(12,2))) as total, COUNT(DISTINCT i.equipamentoTag) as tags\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = 60001\nAND i.equipamentoTag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\nAND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA')",
+  "rows": [
+    {
+      "total": "864613.98",
+      "tags": "37"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\ttags\n864613.98\t37\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

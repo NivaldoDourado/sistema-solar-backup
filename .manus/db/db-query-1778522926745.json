@@ -1,0 +1,26 @@
+{
+  "query": "\nSELECT * FROM equipamento_excluido_tag WHERE UPPER(tag) IN ('QMO6E54', 'QMN1F10', 'IXE1F44', 'OER1B00', 'NVH6212', 'NVJ7902', 'PC300', 'PENEIRA NW200', 'PIPA HZH 3961')\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT * FROM equipamento_excluido_tag WHERE UPPER(tag) IN ('QMO6E54', 'QMN1F10', 'IXE1F44', 'OER1B00', 'NVH6212', 'NVJ7902', 'PC300', 'PENEIRA NW200', 'PIPA HZH 3961')\n",
+  "rows": [
+    {
+      "id": "2",
+      "tag": "QMO6E54",
+      "descricao": "MERCEDES",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:42:45"
+    },
+    {
+      "id": "4",
+      "tag": "QMN1F10",
+      "descricao": "MERCEDES BENZ",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:44:47"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttag\tdescricao\tmotivo\tuserId\tcreatedAt\n2\tQMO6E54\tMERCEDES\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:45\n4\tQMN1F10\tMERCEDES BENZ\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:44:47\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

@@ -1,0 +1,76 @@
+{
+  "query": "SELECT lf.contaSistema, lf.setor, SUM(CAST(lf.valor AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM lancamento_fluxo lf\nWHERE lf.periodoCustoId = 60001\nGROUP BY lf.contaSistema, lf.setor\nORDER BY total DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lf.contaSistema, lf.setor, SUM(CAST(lf.valor AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM lancamento_fluxo lf\nWHERE lf.periodoCustoId = 60001\nGROUP BY lf.contaSistema, lf.setor\nORDER BY total DESC",
+  "rows": [
+    {
+      "contaSistema": "Despesas Administrativas",
+      "setor": "ADMINISTRAÇÃO",
+      "total": "129119.93",
+      "qtd": "35"
+    },
+    {
+      "contaSistema": "Frota/Man.Pat./Seg./Out.",
+      "setor": "OUTROS SERVIÇOS",
+      "total": "74246.37",
+      "qtd": "3"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "setor": "ADMINISTRAÇÃO",
+      "total": "66279.62",
+      "qtd": "7"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "setor": "BRITAGEM SEC./TERC./QUART.",
+      "total": "63486.03",
+      "qtd": "1"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "setor": "INDIRETAS",
+      "total": "60663.09",
+      "qtd": "10"
+    },
+    {
+      "contaSistema": "Comissão de Vendas",
+      "setor": "EXPEDIÇÃO",
+      "total": "38728.00",
+      "qtd": "1"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "setor": "BRITAGEM PRIMÁRIA",
+      "total": "20565.90",
+      "qtd": "1"
+    },
+    {
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "setor": "EXPEDIÇÃO",
+      "total": "8033.24",
+      "qtd": "4"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "setor": "ADMINISTRAÇÃO",
+      "total": "5586.06",
+      "qtd": "1"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "setor": "DESMONTE PRIMÁRIO",
+      "total": "5365.02",
+      "qtd": "1"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "setor": "OUTROS SERVIÇOS",
+      "total": "1426.95",
+      "qtd": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaSistema\tsetor\ttotal\tqtd\nDespesas Administrativas\tADMINISTRAÇÃO\t129119.93\t35\nFrota/Man.Pat./Seg./Out.\tOUTROS SERVIÇOS\t74246.37\t3\nConsultorias Especializadas\tADMINISTRAÇÃO\t66279.62\t7\nEnergia Elétrica\tBRITAGEM SEC./TERC./QUART.\t63486.03\t1\nDespesas Indiretas\tINDIRETAS\t60663.09\t10\nComissão de Vendas\tEXPEDIÇÃO\t38728.00\t1\nEnergia Elétrica\tBRITAGEM PRIMÁRIA\t20565.90\t1\nImpostos, CEFEM e Outras Taxas\tEXPEDIÇÃO\t8033.24\t4\nEnergia Elétrica\tADMINISTRAÇÃO\t5586.06\t1\nEnergia Elétrica\tDESMONTE PRIMÁRIO\t5365.02\t1\nEnergia Elétrica\tOUTROS SERVIÇOS\t1426.95\t1\n",
+  "stderr": "",
+  "execution_time_ms": 255
+}

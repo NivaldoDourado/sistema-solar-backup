@@ -1,16 +1,69 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
-import { custoSetor } from "../drizzle/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { custoSetor, lancamentoCusto, contaCusto, periodoCusto, lancamentoSalario, equipamentos, equipamentoExcluidoTag } from "../drizzle/schema";
+import { eq, and, asc, sql, desc } from "drizzle-orm";
 import { calcularRateioMem } from "./rateioMem_calc";
 import { calcularRateioMset, type RateioMsetResult } from "./rateioMset_calc";
+import { CORRESPONDENCIAS_FORCADAS, CORRESPONDENCIAS_APROVADAS } from "./importDespesas_correspondencias";
+
+/**
+ * Calcula o total real de despesas a partir de lancamento_custo + salários (mesma lógica da Apuração de Custo)
+ * Filtra equipamentos excluídos.
+ */
+async function calcularTotalRealDespesas(periodoCustoId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  // Buscar exclusões
+  const idsExclRows = await db.select({ id: equipamentos.id }).from(equipamentos).where(sql`${equipamentos.excluidoCusto} = 'sim'`);
+  const idsExcluidos = new Set(idsExclRows.map(r => r.id));
+  const tagsExclRows = await db.select({ tag: equipamentoExcluidoTag.tag }).from(equipamentoExcluidoTag);
+  const tagsExcluidas = new Set(tagsExclRows.map(r => r.tag.toUpperCase()));
+
+  // Mapear IDs excluídos para tags
+  const allExcludedTags = new Set(tagsExcluidas);
+  for (const [tag, equipId] of Object.entries(CORRESPONDENCIAS_APROVADAS)) {
+    if (idsExcluidos.has(equipId)) allExcludedTags.add(tag.toUpperCase());
+  }
+  for (const [tag, { equipamentoId }] of Object.entries(CORRESPONDENCIAS_FORCADAS)) {
+    if (idsExcluidos.has(equipamentoId)) allExcludedTags.add(tag.toUpperCase());
+  }
+
+  // Buscar lançamentos
+  const lancamentosNormais = await db
+    .select({ valor: lancamentoCusto.valor, observacoes: lancamentoCusto.observacoes })
+    .from(lancamentoCusto)
+    .where(eq(lancamentoCusto.periodoCustoId, periodoCustoId));
+
+  // Filtrar excluídos
+  let total = 0;
+  for (const l of lancamentosNormais) {
+    const obs = l.observacoes ?? "";
+    if (obs.startsWith("[Import]")) {
+      const rest = obs.substring(9).trim();
+      const dashIdx = rest.indexOf(" - ");
+      const tag = dashIdx === -1 ? rest.trim().toUpperCase() : rest.substring(0, dashIdx).trim().toUpperCase();
+      if (allExcludedTags.has(tag)) continue;
+    }
+    total += parseFloat(String(l.valor ?? "0"));
+  }
+
+  // Salários
+  const salariosRows = await db
+    .select({ totalValor: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))` })
+    .from(lancamentoSalario)
+    .where(eq(lancamentoSalario.periodoCustoId, periodoCustoId));
+  const totalSalarios = parseFloat(salariosRows[0]?.totalValor ?? "0");
+
+  return total + totalSalarios;
+}
 
 /**
  * Converte o resultado do rateio MEM para o formato sintético da Apuração de Custo.
  * Gera dados equivalentes aos importados da planilha RSSET.
  */
-function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: number }) {
+function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: number; equipamentosSemRateio?: { id: number; nome: string; tag: string; despesaTotal: number }[] }) {
   type Grupo = {
     grupoNome: string;
     subsetores: any[];
@@ -62,6 +115,48 @@ function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: nu
     gruposMap[sub.grupoNome].subtotalCusto += sub.totalSubsetor;
     gruposMap[sub.grupoNome].subtotalDespesa += 0;
     gruposMap[sub.grupoNome].subtotalGeral += sub.totalSubsetor;
+  }
+
+  // Incluir equipamentos sem rateio como "NÃO ALOCADOS" em SERVIÇOS AUXILIARES
+  if (rateio.equipamentosSemRateio && rateio.equipamentosSemRateio.length > 0) {
+    const totalSemRateio = rateio.equipamentosSemRateio.reduce((s, e) => s + e.despesaTotal, 0);
+    if (totalSemRateio > 0) {
+      const grupoNome = "SERVI\u00c7OS AUXILIARES";
+      const subsetorNome = "N\u00c3O ALOCADOS";
+      if (!gruposMap[grupoNome]) {
+        gruposMap[grupoNome] = {
+          grupoNome,
+          subsetores: [],
+          subtotalCusto: 0,
+          subtotalDespesa: 0,
+          subtotalGeral: 0,
+          subtotalCustoTon: 0,
+        };
+      }
+      const lancVirtual = {
+        id: virtualId++,
+        periodoCustoId: 0,
+        grupoNome,
+        subsetorNome,
+        setorId: null,
+        custoFixo: "0",
+        custoVariavel: totalSemRateio.toFixed(2),
+        totalCusto: totalSemRateio.toFixed(2),
+        despesaFixa: "0",
+        despesaVariavel: "0",
+        totalDespesa: "0",
+        totalGeral: totalSemRateio.toFixed(2),
+        custoTon: "0",
+        percentualTotal: "0",
+        ordemExibicao: 0,
+        userId: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      gruposMap[grupoNome].subsetores.push(lancVirtual);
+      gruposMap[grupoNome].subtotalCusto += totalSemRateio;
+      gruposMap[grupoNome].subtotalGeral += totalSemRateio;
+    }
   }
 
   const ORDEM_GRUPOS: Record<string, number> = {
@@ -326,6 +421,78 @@ export const custoSetorRouter = router({
           const msetResult = await calcularRateioMset(input.periodoCustoId);
           if (msetResult.despesas.length > 0) {
             injetarDespesasMsetNoSintetico(sintetico, msetResult);
+          }
+
+          // ─── RECONCILIAÇÃO: Garantir que totalGeral = total real (lancamento_custo + salários) ───
+          const totalReal = await calcularTotalRealDespesas(input.periodoCustoId);
+          const diferenca = totalReal - sintetico.totalGeral;
+          if (diferenca > 1) { // Mais de R$ 1 de diferença
+            // Adicionar a diferença como "NÃO ALOCADOS" em SERVIÇOS AUXILIARES
+            const grupoNome = "SERVI\u00c7OS AUXILIARES";
+            const subsetorNome = "N\u00c3O ALOCADOS";
+            let grupo = sintetico.grupos.find((g: any) => g.grupoNome === grupoNome);
+            if (!grupo) {
+              grupo = {
+                grupoNome,
+                subsetores: [],
+                subtotalCusto: 0,
+                subtotalDespesa: 0,
+                subtotalGeral: 0,
+                subtotalCustoTon: 0,
+              };
+              sintetico.grupos.push(grupo);
+            }
+            // Verificar se já existe subsetor "NÃO ALOCADOS"
+            let subExistente = grupo.subsetores.find((s: any) => s.subsetorNome === subsetorNome);
+            if (subExistente) {
+              const oldGeral = parseFloat(subExistente.totalGeral ?? "0");
+              subExistente.totalGeral = (oldGeral + diferenca).toFixed(2);
+              subExistente.custoVariavel = (parseFloat(subExistente.custoVariavel ?? "0") + diferenca).toFixed(2);
+              subExistente.totalCusto = (parseFloat(subExistente.totalCusto ?? "0") + diferenca).toFixed(2);
+              grupo.subtotalCusto += diferenca;
+              grupo.subtotalGeral += diferenca;
+            } else {
+              const lancVirtual = {
+                id: 999999,
+                periodoCustoId: 0,
+                grupoNome,
+                subsetorNome,
+                setorId: null,
+                custoFixo: "0",
+                custoVariavel: diferenca.toFixed(2),
+                totalCusto: diferenca.toFixed(2),
+                despesaFixa: "0",
+                despesaVariavel: "0",
+                totalDespesa: "0",
+                totalGeral: diferenca.toFixed(2),
+                custoTon: "0",
+                percentualTotal: "0",
+                ordemExibicao: 0,
+                userId: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+              grupo.subsetores.push(lancVirtual);
+              grupo.subtotalCusto += diferenca;
+              grupo.subtotalGeral += diferenca;
+              sintetico.lancamentos.push(lancVirtual);
+            }
+
+            // Atualizar totalGeral
+            sintetico.totalGeral = totalReal;
+
+            // Recalcular percentuais
+            for (const g of sintetico.grupos) {
+              for (const sub of g.subsetores) {
+                const geral = parseFloat(sub.totalGeral ?? "0");
+                sub.percentualTotal = sintetico.totalGeral > 0
+                  ? ((geral / sintetico.totalGeral) * 100).toFixed(4)
+                  : "0";
+              }
+              g.subsetores.sort(
+                (a: any, b: any) => parseFloat(b.totalGeral ?? "0") - parseFloat(a.totalGeral ?? "0")
+              );
+            }
           }
 
           return sintetico;

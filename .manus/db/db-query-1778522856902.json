@@ -1,0 +1,30 @@
+{
+  "query": "\nSELECT id, mes, ano FROM periodo_custo ORDER BY ano DESC, mes DESC LIMIT 10\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT id, mes, ano FROM periodo_custo ORDER BY ano DESC, mes DESC LIMIT 10\n",
+  "rows": [
+    {
+      "id": "60001",
+      "mes": "4",
+      "ano": "2026"
+    },
+    {
+      "id": "1",
+      "mes": "3",
+      "ano": "2026"
+    },
+    {
+      "id": "30001",
+      "mes": "2",
+      "ano": "2026"
+    },
+    {
+      "id": "30002",
+      "mes": "1",
+      "ano": "2026"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmes\tano\n60001\t4\t2026\n1\t3\t2026\n30001\t2\t2026\n30002\t1\t2026\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

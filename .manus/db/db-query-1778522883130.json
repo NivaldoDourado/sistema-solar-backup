@@ -1,0 +1,64 @@
+{
+  "query": "\nSELECT pd.equipamentoId, e.nomeDoEquipamento, COUNT(*) as registros, SUM(CAST(pd.horaKmTrabalhados AS DECIMAL(10,2))) as totalHoras\nFROM parte_diaria pd\nINNER JOIN equipamentos e ON pd.equipamentoId = e.id\nWHERE pd.equipamentoId IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nGROUP BY pd.equipamentoId, e.nomeDoEquipamento\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT pd.equipamentoId, e.nomeDoEquipamento, COUNT(*) as registros, SUM(CAST(pd.horaKmTrabalhados AS DECIMAL(10,2))) as totalHoras\nFROM parte_diaria pd\nINNER JOIN equipamentos e ON pd.equipamentoId = e.id\nWHERE pd.equipamentoId IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nGROUP BY pd.equipamentoId, e.nomeDoEquipamento\n",
+  "rows": [
+    {
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "registros": "24",
+      "totalHoras": "269.99"
+    },
+    {
+      "equipamentoId": "20",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA KOMATSU PC300",
+      "registros": "15",
+      "totalHoras": "91.00"
+    },
+    {
+      "equipamentoId": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "registros": "3",
+      "totalHoras": "18.00"
+    },
+    {
+      "equipamentoId": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "registros": "17",
+      "totalHoras": "139.96"
+    },
+    {
+      "equipamentoId": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "registros": "22",
+      "totalHoras": "6042.99"
+    },
+    {
+      "equipamentoId": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "registros": "22",
+      "totalHoras": "6580.96"
+    },
+    {
+      "equipamentoId": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "registros": "19",
+      "totalHoras": "148.99"
+    },
+    {
+      "equipamentoId": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "registros": "21",
+      "totalHoras": "168.00"
+    },
+    {
+      "equipamentoId": "91",
+      "nomeDoEquipamento": "PENEIRA NW200",
+      "registros": "23",
+      "totalHoras": "161.98"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoId\tnomeDoEquipamento\tregistros\ttotalHoras\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\t24\t269.99\n20\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\t15\t91.00\n50\tCAMINHÃO PIPA  HZH 3961\t3\t18.00\n40\tCAMINHÃO BASCULANTE OER1B00\t17\t139.96\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\t22\t6042.99\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\t22\t6580.96\n37\tCAMINHÃO BASCULANTE  NVJ-7902\t19\t148.99\n38\tCAMINHÃO BASCULANTE NVH-6212\t21\t168.00\n91\tPENEIRA NW200\t23\t161.98\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

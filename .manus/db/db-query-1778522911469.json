@@ -1,0 +1,55 @@
+{
+  "query": "\nSELECT DISTINCT i.equipamentoTag as tagPlanilha, e.codigoTag as tagCadastro, e.nomeDoEquipamento\nFROM item_despesa_importado i\nINNER JOIN equipamentos e ON UPPER(REPLACE(i.equipamentoTag, ' ', '')) = UPPER(REPLACE(e.codigoTag, ' ', ''))\nWHERE e.id IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND i.periodoCustoId = 60001\nLIMIT 20\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT DISTINCT i.equipamentoTag as tagPlanilha, e.codigoTag as tagCadastro, e.nomeDoEquipamento\nFROM item_despesa_importado i\nINNER JOIN equipamentos e ON UPPER(REPLACE(i.equipamentoTag, ' ', '')) = UPPER(REPLACE(e.codigoTag, ' ', ''))\nWHERE e.id IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND i.periodoCustoId = 60001\nLIMIT 20\n",
+  "rows": [
+    {
+      "tagPlanilha": "QMO6E54",
+      "tagCadastro": "QMO6E54",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54"
+    },
+    {
+      "tagPlanilha": "PENEIRA NW200",
+      "tagCadastro": "PENEIRA NW200",
+      "nomeDoEquipamento": "PENEIRA NW200"
+    },
+    {
+      "tagPlanilha": "QMN1F10",
+      "tagCadastro": "QMN1F10",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10"
+    },
+    {
+      "tagPlanilha": "OER1B00",
+      "tagCadastro": "OER1B00",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00"
+    },
+    {
+      "tagPlanilha": "PIPA HZH 3961",
+      "tagCadastro": "PIPA HZH 3961",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961"
+    },
+    {
+      "tagPlanilha": "PC300",
+      "tagCadastro": "PC300",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA KOMATSU PC300"
+    },
+    {
+      "tagPlanilha": "IXE1F44",
+      "tagCadastro": "IXE1F44",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44"
+    },
+    {
+      "tagPlanilha": "NVJ7902",
+      "tagCadastro": "NVJ7902",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902"
+    },
+    {
+      "tagPlanilha": "NVH6212",
+      "tagCadastro": "NVH6212",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212"
+    }
+  ],
+  "messages": [],
+  "stdout": "tagPlanilha\ttagCadastro\tnomeDoEquipamento\nQMO6E54\tQMO6E54\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\nPENEIRA NW200\tPENEIRA NW200\tPENEIRA NW200\nQMN1F10\tQMN1F10\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\nOER1B00\tOER1B00\tCAMINHÃO BASCULANTE OER1B00\nPIPA HZH 3961\tPIPA HZH 3961\tCAMINHÃO PIPA  HZH 3961\nPC300\tPC300\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\nIXE1F44\tIXE1F44\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\nNVJ7902\tNVJ7902\tCAMINHÃO BASCULANTE  NVJ-7902\nNVH6212\tNVH6212\tCAMINHÃO BASCULANTE NVH-6212\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

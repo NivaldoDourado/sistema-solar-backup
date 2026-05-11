@@ -897,3 +897,12 @@
 - [x] Investigar causa raiz (Apuração: R$ 2.771.022,26 vs Avaliação Global: R$ 2.317.060,30)
 - [x] Corrigir: Avaliação Global agora usa lancamentoCusto.listByPeriodo (mesma fonte da Apuração de Custo)
 - [x] Ambas as telas agora mostram R$ 2.771.022,26 como total de despesas para Abril/2026
+
+## Unificação: Custo por Setor deve incluir TODAS as despesas
+- [x] Verificar equipamentos sem rateio (sem horas) e forçar alocação pelo setor do cadastro
+- [x] Incluir despesas de setores (TAGS_OUTRAS_DESP_SETOR) no relatório Custo por Setor (etapa 4 no rateioMset_calc.ts)
+- [x] Incluir despesas indiretas no relatório Custo por Setor (etapa 5 no rateioMset_calc.ts)
+- [x] Adicionar DIRETORIA e PRÓ-LABORE ao mapeamento SETOR_PARA_SUBSETOR_MSET
+- [x] Implementar reconciliação automática com lancamento_custo no custoSetor_router.ts
+- [x] Total do Custo por Setor agora confere com Apuração de Custo (R$ 2.771.022,26)
+- [x] Diferença não-alocável (R$ 148.264,14) aparece como "NÃO ALOCADOS" em SERVIÇOS AUXILIARES

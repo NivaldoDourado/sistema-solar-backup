@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome as grupoNome,\n  SUM(CAST(i.custo AS DECIMAL(12,2))) as totalDespesa\nFROM equipamentos e\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nINNER JOIN item_despesa_importado i ON UPPER(i.equipamentoTag) = UPPER(e.codigoTag)\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nAND i.periodoCustoId = 1\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome\nORDER BY totalDespesa DESC\nLIMIT 20\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome as grupoNome,\n  SUM(CAST(i.custo AS DECIMAL(12,2))) as totalDespesa\nFROM equipamentos e\nLEFT JOIN grupos_de_equipamentos g ON e.grupoId = g.id\nINNER JOIN item_despesa_importado i ON UPPER(i.equipamentoTag) = UPPER(e.codigoTag)\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nAND i.periodoCustoId = 1\nGROUP BY e.id, e.nomeDoEquipamento, e.codigoTag, e.grupoId, g.nome\nORDER BY totalDespesa DESC\nLIMIT 20\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 268
+}

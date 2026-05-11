@@ -1,0 +1,28 @@
+{
+  "query": "SELECT ls.contaCustoId, cc.nome as contaNome, SUM(CAST(ls.valor AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM lancamento_salario ls\nLEFT JOIN conta_custo cc ON cc.id = ls.contaCustoId\nWHERE ls.periodoCustoId = 60001\nGROUP BY ls.contaCustoId, cc.nome\nORDER BY total DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT ls.contaCustoId, cc.nome as contaNome, SUM(CAST(ls.valor AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM lancamento_salario ls\nLEFT JOIN conta_custo cc ON cc.id = ls.contaCustoId\nWHERE ls.periodoCustoId = 60001\nGROUP BY ls.contaCustoId, cc.nome\nORDER BY total DESC",
+  "rows": [
+    {
+      "contaCustoId": "1",
+      "contaNome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "total": "425717.05",
+      "qtd": "4"
+    },
+    {
+      "contaCustoId": "12",
+      "contaNome": "Sal. Diretoria/Pró-Labore",
+      "total": "263969.96",
+      "qtd": "1"
+    },
+    {
+      "contaCustoId": "30004",
+      "contaNome": "Sal.Oper./Enc. Oper.",
+      "total": "147029.75",
+      "qtd": "30"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tcontaNome\ttotal\tqtd\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t425717.05\t4\n12\tSal. Diretoria/Pró-Labore\t263969.96\t1\n30004\tSal.Oper./Enc. Oper.\t147029.75\t30\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

@@ -16,8 +16,11 @@ import {
   lancamentoCusto,
   periodoCusto,
   setores,
+  itemDespesaImportado,
+  equipamentoExcluidoTag,
 } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
+import { TAGS_OUTRAS_DESP_SETOR } from "./importDespesas_correspondencias";
 
 // ─── Mapeamento de setor operacional → subsetor/grupo do relatório ───────────
 export const SETOR_PARA_SUBSETOR_MSET: Record<string, { subsetor: string; grupo: string }> = {
@@ -48,6 +51,9 @@ export const SETOR_PARA_SUBSETOR_MSET: Record<string, { subsetor: string; grupo:
   "REFEITÓRIO E LIMPEZA":                 { subsetor: "REFEITÓRIO E LIMPEZA",       grupo: "SERVIÇOS AUXILIARES" },
   "APOIO GERAL":                          { subsetor: "OUTROS SERVIÇOS",            grupo: "SERVIÇOS AUXILIARES" },
   "INDIRETAS":                            { subsetor: "ADMINISTRAÇÃO",              grupo: "ADMINISTRAÇÃO" },
+  "DIRETORIA":                            { subsetor: "ADMINISTRAÇÃO",              grupo: "ADMINISTRAÇÃO" },
+  "PRÓ-LABORE":                           { subsetor: "ADMINISTRAÇÃO",              grupo: "ADMINISTRAÇÃO" },
+  "CARGA E TRANSPORTE":                   { subsetor: "PEDRA PARA BRITADOR",       grupo: "PEDRA PARA BRITADOR" },
 };
 
 // ─── Mapeamento de contaSistema do Fluxo → descrição na MSET ─────────────────
@@ -234,6 +240,76 @@ export async function calcularRateioMset(periodoCustoId: number): Promise<Rateio
       ordemExibicao: ordemGlobal,
       fonte: "imposto",
     });
+  }
+
+  // ─── 4. Processar Despesas Específicas de Setores (TAGS_OUTRAS_DESP_SETOR) ──────
+  // Essas despesas são excluídas do MEM e precisam entrar no MSET
+  const tagsSetorEntries = Object.entries(TAGS_OUTRAS_DESP_SETOR);
+  const tagsSetorUpper = tagsSetorEntries.map(([tag, setor]) => ({ tag: tag.toUpperCase(), setor }));
+
+  // Buscar tags excluídas pelo usuário
+  const tagsExcluidasRows = await db.select().from(equipamentoExcluidoTag);
+  const tagsExcluidasSet = new Set(tagsExcluidasRows.map(t => t.tag.toUpperCase()));
+
+  // Buscar itens importados do período que são de setores
+  const itensImportados = await db
+    .select({
+      equipamentoTag: itemDespesaImportado.equipamentoTag,
+      custo: itemDespesaImportado.custo,
+      classificacao: itemDespesaImportado.classificacao,
+    })
+    .from(itemDespesaImportado)
+    .where(eq(itemDespesaImportado.periodoCustoId, periodoCustoId));
+
+  // Filtrar apenas itens de tags de setores (não excluídas)
+  for (const item of itensImportados) {
+    const tagUpper = item.equipamentoTag.toUpperCase();
+    const tagInfo = tagsSetorUpper.find(t => t.tag === tagUpper);
+    if (!tagInfo) continue;
+    // Pular se a tag está excluída pelo usuário
+    if (tagsExcluidasSet.has(tagUpper)) continue;
+
+    const valor = parseFloat(item.custo || '0');
+    if (valor === 0) continue;
+
+    // Mapear o setor destino para subsetor/grupo do relatório
+    const setorDestino = tagInfo.setor;
+    const mapping = SETOR_PARA_SUBSETOR_MSET[setorDestino.toUpperCase()] ?? SETOR_PARA_SUBSETOR_MSET[setorDestino];
+    if (!mapping) continue;
+
+    ordemGlobal++;
+    despesas.push({
+      subsetorNome: mapping.subsetor,
+      grupoNome: mapping.grupo,
+      descricao: `Outras Desp. Setor (${item.equipamentoTag})`,
+      valor,
+      ordemExibicao: ordemGlobal,
+      fonte: "fluxo", // Usar fluxo como fonte para manter compatibilidade
+    });
+  }
+
+  // ─── 5. Processar Despesas Indiretas (campo do período de custo) ──────
+  const [periodoData] = await db
+    .select({ despesasIndiretas: periodoCusto.despesasIndiretas })
+    .from(periodoCusto)
+    .where(eq(periodoCusto.id, periodoCustoId));
+
+  if (periodoData) {
+    const despIndiretas = parseFloat(periodoData.despesasIndiretas ?? "0");
+    if (despIndiretas > 0) {
+      const mappingIndiretas = SETOR_PARA_SUBSETOR_MSET["INDIRETAS"];
+      if (mappingIndiretas) {
+        ordemGlobal++;
+        despesas.push({
+          subsetorNome: mappingIndiretas.subsetor,
+          grupoNome: mappingIndiretas.grupo,
+          descricao: "Despesas Indiretas",
+          valor: despIndiretas,
+          ordemExibicao: ordemGlobal,
+          fonte: "fluxo",
+        });
+      }
+    }
   }
 
   // ─── Consolidar: agrupar despesas iguais (mesma descricao + subsetor) ──────

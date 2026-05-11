@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome\nFROM equipamento e\nLEFT JOIN setor s ON e.setorId = s.id\nWHERE e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL\nORDER BY e.setorId IS NULL DESC, e.nomeDoEquipamento\nLIMIT 30\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome\nFROM equipamento e\nLEFT JOIN setor s ON e.setorId = s.id\nWHERE e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL\nORDER BY e.setorId IS NULL DESC, e.nomeDoEquipamento\nLIMIT 30\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 2: Table 'us3q3oba5lqqatdwwyhq5k.equipamento' doesn't exist"
+  ]
+}

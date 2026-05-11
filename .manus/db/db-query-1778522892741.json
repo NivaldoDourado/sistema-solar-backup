@@ -1,0 +1,46 @@
+{
+  "query": "\nSELECT pd.equipamentoId, COUNT(pdi.id) as totalItens\nFROM parte_diaria pd\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.equipamentoId IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nGROUP BY pd.equipamentoId\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT pd.equipamentoId, COUNT(pdi.id) as totalItens\nFROM parte_diaria pd\nLEFT JOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nWHERE pd.equipamentoId IN (29, 20, 40, 38, 37, 86, 91, 50, 87)\nAND pd.data >= '2026-04-01' AND pd.data <= '2026-04-30'\nGROUP BY pd.equipamentoId\n",
+  "rows": [
+    {
+      "equipamentoId": "50",
+      "totalItens": "3"
+    },
+    {
+      "equipamentoId": "38",
+      "totalItens": "63"
+    },
+    {
+      "equipamentoId": "29",
+      "totalItens": "39"
+    },
+    {
+      "equipamentoId": "86",
+      "totalItens": "22"
+    },
+    {
+      "equipamentoId": "40",
+      "totalItens": "37"
+    },
+    {
+      "equipamentoId": "37",
+      "totalItens": "45"
+    },
+    {
+      "equipamentoId": "20",
+      "totalItens": "30"
+    },
+    {
+      "equipamentoId": "91",
+      "totalItens": "23"
+    },
+    {
+      "equipamentoId": "87",
+      "totalItens": "22"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoId\ttotalItens\n50\t3\n38\t63\n29\t39\n86\t22\n40\t37\n37\t45\n20\t30\n91\t23\n87\t22\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

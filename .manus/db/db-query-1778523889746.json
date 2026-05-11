@@ -1,0 +1,160 @@
+{
+  "query": "SELECT i.equipamentoTag, SUM(CAST(i.custo AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = 60001\nGROUP BY i.equipamentoTag\nORDER BY total DESC\nLIMIT 30",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT i.equipamentoTag, SUM(CAST(i.custo AS DECIMAL(12,2))) as total, COUNT(*) as qtd\nFROM item_despesa_importado i\nWHERE i.periodoCustoId = 60001\nGROUP BY i.equipamentoTag\nORDER BY total DESC\nLIMIT 30",
+  "rows": [
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "total": "137709.83",
+      "qtd": "27"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "total": "75771.14",
+      "qtd": "123"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "total": "64753.46",
+      "qtd": "46"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "total": "61249.74",
+      "qtd": "33"
+    },
+    {
+      "equipamentoTag": "944 C",
+      "total": "58738.97",
+      "qtd": "38"
+    },
+    {
+      "equipamentoTag": "L566 02",
+      "total": "56169.12",
+      "qtd": "18"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "total": "44651.46",
+      "qtd": "66"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "total": "42674.43",
+      "qtd": "37"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "total": "41273.51",
+      "qtd": "47"
+    },
+    {
+      "equipamentoTag": "C100",
+      "total": "40801.74",
+      "qtd": "12"
+    },
+    {
+      "equipamentoTag": "IXD6D34",
+      "total": "39324.27",
+      "qtd": "68"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "total": "37666.96",
+      "qtd": "34"
+    },
+    {
+      "equipamentoTag": "OM100",
+      "total": "36903.48",
+      "qtd": "18"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "total": "32573.40",
+      "qtd": "41"
+    },
+    {
+      "equipamentoTag": "RUC4F80",
+      "total": "32370.68",
+      "qtd": "36"
+    },
+    {
+      "equipamentoTag": "OUTROS",
+      "total": "24408.71",
+      "qtd": "23"
+    },
+    {
+      "equipamentoTag": "PZE8D13",
+      "total": "23102.16",
+      "qtd": "32"
+    },
+    {
+      "equipamentoTag": "IXE1F44",
+      "total": "22444.92",
+      "qtd": "38"
+    },
+    {
+      "equipamentoTag": "PC300",
+      "total": "22054.50",
+      "qtd": "58"
+    },
+    {
+      "equipamentoTag": "OER1B00",
+      "total": "20164.90",
+      "qtd": "24"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04",
+      "total": "16326.34",
+      "qtd": "43"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01",
+      "total": "15000.00",
+      "qtd": "1"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188",
+      "total": "14476.94",
+      "qtd": "26"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ 01",
+      "total": "14306.06",
+      "qtd": "13"
+    },
+    {
+      "equipamentoTag": "QMD 0H48",
+      "total": "12814.93",
+      "qtd": "13"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "total": "11934.07",
+      "qtd": "20"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE",
+      "total": "10554.38",
+      "qtd": "55"
+    },
+    {
+      "equipamentoTag": "PATROL 120 B",
+      "total": "10164.68",
+      "qtd": "29"
+    },
+    {
+      "equipamentoTag": "NVH6212",
+      "total": "9878.26",
+      "qtd": "21"
+    },
+    {
+      "equipamentoTag": "NVJ7902",
+      "total": "9655.06",
+      "qtd": "22"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\ttotal\tqtd\nEXPLOSIVOS\t137709.83\t27\nPERFURATRIZ HIDR. 01\t75771.14\t123\nESCAVADEIRA R938\t64753.46\t46\nBRITADOR CS440\t61249.74\t33\n944 C\t58738.97\t38\nL566 02\t56169.12\t18\nJC1200 01\t44651.46\t66\nESCAVADEIRA R 938 02\t42674.43\t37\nL 566\t41273.51\t47\nC100\t40801.74\t12\nIXD6D34\t39324.27\t68\nHP 200 ( METSO)\t37666.96\t34\nOM100\t36903.48\t18\nHL 76003\t32573.40\t41\nRUC4F80\t32370.68\t36\nOUTROS\t24408.71\t23\nPZE8D13\t23102.16\t32\nIXE1F44\t22444.92\t38\nPC300\t22054.50\t58\nOER1B00\t20164.90\t24\nPÁ CARREG. 966R04\t16326.34\t43\nALIMENTADOR AVS01\t15000.00\t1\nCAMINHÃO NML0188\t14476.94\t26\nPERFURATRIZ 01\t14306.06\t13\nQMD 0H48\t12814.93\t13\nBRITADOR MOVEL\t11934.07\t20\nDRAGA D´ÁGUA A DIESE\t10554.38\t55\nPATROL 120 B\t10164.68\t29\nNVH6212\t9878.26\t21\nNVJ7902\t9655.06\t22\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

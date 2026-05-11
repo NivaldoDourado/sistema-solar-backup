@@ -1,0 +1,220 @@
+{
+  "query": "\nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nORDER BY e.nomeDoEquipamento\nLIMIT 30\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT e.id, e.nomeDoEquipamento, e.codigoTag, e.setorId, s.nome as setorNome\nFROM equipamentos e\nLEFT JOIN setores s ON e.setorId = s.id\nWHERE (e.excluidoCusto != 'sim' OR e.excluidoCusto IS NULL)\nAND e.setorId IS NULL\nORDER BY e.nomeDoEquipamento\nLIMIT 30\n",
+  "rows": [
+    {
+      "id": "34",
+      "nomeDoEquipamento": "BASCULANTE HZO2175",
+      "codigoTag": "HZO2175",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "33",
+      "nomeDoEquipamento": "BASCULANTE OEJ5355",
+      "codigoTag": "OEJ5355",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "codigoTag": "CS440",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "7",
+      "nomeDoEquipamento": "BRITADOR CÔNICO FURLAN CC1200",
+      "codigoTag": "CC1200",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "codigoTag": "NVJ7902",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "42",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE HZK-7665",
+      "codigoTag": "HZK7665",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "36",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE HZV-1393",
+      "codigoTag": "HZV1393",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "35",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE IAL-9195",
+      "codigoTag": "IAL9195",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "codigoTag": "RUC 4F80",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "30",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXD-6334",
+      "codigoTag": "IXD6334",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "codigoTag": "IXE1F44",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "codigoTag": "PZE 8D13",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "76",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENZ 1620 GZV-4E48",
+      "codigoTag": "GZV-4E48",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "77",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39",
+      "codigoTag": "QKV-4F39",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "codigoTag": "NML0188",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "codigoTag": "NVH6212",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "codigoTag": "OER1B00",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "47",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO BUD 2B54",
+      "codigoTag": "BUD 2B54",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "87",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMN-1F10",
+      "codigoTag": "QMN1F10",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "86",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB 2651 QMO-6E54",
+      "codigoTag": "QMO6E54",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "44",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO MB ATRON 1635 /ORF2F89",
+      "codigoTag": "ORF2F89",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "32",
+      "nomeDoEquipamento": "CAMINHÃO CAVALINHO OEL9556",
+      "codigoTag": "OEL9556",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "83",
+      "nomeDoEquipamento": "CAMINHAO CAVALINHO QMD-4J77",
+      "codigoTag": "QMD-4J77",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "97",
+      "nomeDoEquipamento": "CAMINHÃO MUCK MB ACTROS 2426",
+      "codigoTag": "QMD-0H48",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "50",
+      "nomeDoEquipamento": "CAMINHÃO PIPA  HZH 3961",
+      "codigoTag": "PIPA HZH 3961",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "43",
+      "nomeDoEquipamento": "CAMINHÃO PIPA AUS-5073",
+      "codigoTag": "PIPA AUS-5073",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "39",
+      "nomeDoEquipamento": "CAMINHÃO PIPA HZT-0105",
+      "codigoTag": "PIPA HZT-0105",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "49",
+      "nomeDoEquipamento": "CARRETA MERCEDES-BENZ HMQ 6155",
+      "codigoTag": "HMQ-6155",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "74",
+      "nomeDoEquipamento": "CARRETA MERCEDES-BENZ MVG 2I05",
+      "codigoTag": "MVG 2I05",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    },
+    {
+      "id": "5",
+      "nomeDoEquipamento": "COMPRESSOR DE AR ATLAS COPCO XAS420",
+      "codigoTag": "XAS420",
+      "setorId": "NULL",
+      "setorNome": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\tsetorId\tsetorNome\n34\tBASCULANTE HZO2175\tHZO2175\tNULL\tNULL\n33\tBASCULANTE OEJ5355\tOEJ5355\tNULL\tNULL\n92\tBRITADOR CONICO CS440\tCS440\tNULL\tNULL\n7\tBRITADOR CÔNICO FURLAN CC1200\tCC1200\tNULL\tNULL\n37\tCAMINHÃO BASCULANTE  NVJ-7902\tNVJ7902\tNULL\tNULL\n42\tCAMINHÃO BASCULANTE HZK-7665\tHZK7665\tNULL\tNULL\n36\tCAMINHÃO BASCULANTE HZV-1393\tHZV1393\tNULL\tNULL\n35\tCAMINHÃO BASCULANTE IAL-9195\tIAL9195\tNULL\tNULL\n88\tCAMINHAO BASCULANTE MB/ RUC 4F80\tRUC 4F80\tNULL\tNULL\n30\tCAMINHÃO BASCULANTE MERC. BENS / IXD-6334\tIXD6334\tNULL\tNULL\n29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\tIXE1F44\tNULL\tNULL\n52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\tPZE 8D13\tNULL\tNULL\n76\tCAMINHÃO BASCULANTE MERC. BENZ 1620 GZV-4E48\tGZV-4E48\tNULL\tNULL\n77\tCAMINHÃO BASCULANTE MERC. BENZ ATRON 2324 QKV-4F39\tQKV-4F39\tNULL\tNULL\n41\tCAMINHÃO BASCULANTE NML-0188\tNML0188\tNULL\tNULL\n38\tCAMINHÃO BASCULANTE NVH-6212\tNVH6212\tNULL\tNULL\n40\tCAMINHÃO BASCULANTE OER1B00\tOER1B00\tNULL\tNULL\n47\tCAMINHAO CAVALINHO BUD 2B54\tBUD 2B54\tNULL\tNULL\n87\tCAMINHAO CAVALINHO MB 2651 QMN-1F10\tQMN1F10\tNULL\tNULL\n86\tCAMINHAO CAVALINHO MB 2651 QMO-6E54\tQMO6E54\tNULL\tNULL\n44\tCAMINHAO CAVALINHO MB ATRON 1635 /ORF2F89\tORF2F89\tNULL\tNULL\n32\tCAMINHÃO CAVALINHO OEL9556\tOEL9556\tNULL\tNULL\n83\tCAMINHAO CAVALINHO QMD-4J77\tQMD-4J77\tNULL\tNULL\n97\tCAMINHÃO MUCK MB ACTROS 2426\tQMD-0H48\tNULL\tNULL\n50\tCAMINHÃO PIPA  HZH 3961\tPIPA HZH 3961\tNULL\tNULL\n43\tCAMINHÃO PIPA AUS-5073\tPIPA AUS-5073\tNULL\tNULL\n39\tCAMINHÃO PIPA HZT-0105\tPIPA HZT-0105\tNULL\tNULL\n49\tCARRETA MERCEDES-BENZ HMQ 6155\tHMQ-6155\tNULL\tNULL\n74\tCARRETA MERCEDES-BENZ MVG 2I05\tMVG 2I05\tNULL\tNULL\n5\tCOMPRESSOR DE AR ATLAS COPCO XAS420\tXAS420\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}
