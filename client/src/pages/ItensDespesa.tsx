@@ -939,29 +939,33 @@ export default function ItensDespesa() {
                 <><Ban className="h-5 w-5 text-red-600" /> Excluir Equipamento dos Cálculos</>
               )}
             </DialogTitle>
-            <DialogDescription>
-              {excludeDialogEquip?.excluido ? (
-                <>
-                  Deseja reincluir <strong>{excludeDialogEquip.tag}</strong>
-                  {excludeDialogEquip.descricao && <> ({excludeDialogEquip.descricao})</>} nos cálculos de custo da pedreira?
-                  As despesas deste equipamento voltarão a ser consideradas em todos os relatórios.
-                </>
-              ) : (
-                <>
-                  Deseja excluir <strong>{excludeDialogEquip?.tag}</strong>
-                  {excludeDialogEquip?.descricao && <> ({excludeDialogEquip.descricao})</>} dos cálculos de custo da pedreira?
-                  <br /><br />
-                  <strong>Esta ação afeta todos os períodos e relatórios:</strong>
-                  <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                    <li>Rateio MEM (despesas de equipamentos)</li>
-                    <li>Apuração de Custo (sintético e analítico)</li>
-                    <li>Custo por Setor (relatório por subsetor)</li>
-                    <li>Ranking de combustível</li>
-                  </ul>
-                  <br />
-                  O equipamento continuará visível na lista, mas marcado como excluído. Você pode reincluí-lo a qualquer momento.
-                </>
-              )}
+            <DialogDescription asChild>
+              <div className="text-muted-foreground text-sm">
+                {excludeDialogEquip?.excluido ? (
+                  <p>
+                    Deseja reincluir <strong>{excludeDialogEquip.tag}</strong>
+                    {excludeDialogEquip.descricao && <> ({excludeDialogEquip.descricao})</>} nos cálculos de custo da pedreira?
+                    As despesas deste equipamento voltarão a ser consideradas em todos os relatórios.
+                  </p>
+                ) : (
+                  <>
+                    <p>
+                      Deseja excluir <strong>{excludeDialogEquip?.tag}</strong>
+                      {excludeDialogEquip?.descricao && <> ({excludeDialogEquip.descricao})</>} dos cálculos de custo da pedreira?
+                    </p>
+                    <p className="mt-2 font-semibold">Esta ação afeta todos os períodos e relatórios:</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                      <li>Rateio MEM (despesas de equipamentos)</li>
+                      <li>Apuração de Custo (sintético e analítico)</li>
+                      <li>Custo por Setor (relatório por subsetor)</li>
+                      <li>Ranking de combustível</li>
+                    </ul>
+                    <p className="mt-2">
+                      O equipamento continuará visível na lista, mas marcado como excluído. Você pode reincluí-lo a qualquer momento.
+                    </p>
+                  </>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
