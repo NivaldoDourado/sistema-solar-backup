@@ -1,0 +1,13 @@
+{
+  "query": "SELECT SUM(CAST(valor AS DECIMAL(14,2))) as total FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND (observacoes LIKE '%QMD 0H48%' OR observacoes LIKE '%QMO6E54%' OR observacoes LIKE '%QMD0H48%' OR observacoes LIKE '%QMN1F10%' OR observacoes LIKE '%PERFURATRIZ HIDR%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(CAST(valor AS DECIMAL(14,2))) as total FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND (observacoes LIKE '%QMD 0H48%' OR observacoes LIKE '%QMO6E54%' OR observacoes LIKE '%QMD0H48%' OR observacoes LIKE '%QMN1F10%' OR observacoes LIKE '%PERFURATRIZ HIDR%');",
+  "rows": [
+    {
+      "total": "95279.30"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n95279.30\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

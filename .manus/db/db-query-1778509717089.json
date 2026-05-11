@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, contaCustoId, valor, LEFT(observacoes, 120) as obs FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND observacoes LIKE '%PERFURATRIZ HIDR%' ORDER BY CAST(valor AS DECIMAL(14,2)) DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaCustoId, valor, LEFT(observacoes, 120) as obs FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND observacoes LIKE '%PERFURATRIZ HIDR%' ORDER BY CAST(valor AS DECIMAL(14,2)) DESC;",
+  "rows": [
+    {
+      "id": "90173",
+      "contaCustoId": "16",
+      "valor": "26799.35",
+      "obs": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Desgaste"
+    },
+    {
+      "id": "90176",
+      "contaCustoId": "14",
+      "valor": "20639.78",
+      "obs": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Combustível"
+    },
+    {
+      "id": "90174",
+      "contaCustoId": "17",
+      "valor": "10655.40",
+      "obs": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Reposição"
+    },
+    {
+      "id": "90175",
+      "contaCustoId": "19",
+      "valor": "8962.34",
+      "obs": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Outras Despesas"
+    },
+    {
+      "id": "90172",
+      "contaCustoId": "15",
+      "valor": "8714.29",
+      "obs": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Lubrificantes"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tvalor\tobs\n90173\t16\t26799.35\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Desgaste\n90176\t14\t20639.78\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Combustível\n90174\t17\t10655.40\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Reposição\n90175\t19\t8962.34\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Outras Despesas\n90172\t15\t8714.29\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Lubrificantes\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

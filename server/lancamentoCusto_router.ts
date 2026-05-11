@@ -3,16 +3,85 @@ import { eq, and, desc, sql, like } from "drizzle-orm";
 import { router, protectedProcedure, requirePermission } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
-import { lancamentoCusto, contaCusto, periodoCusto, lancamentoSalario } from "../drizzle/schema";
+import { lancamentoCusto, contaCusto, periodoCusto, lancamentoSalario, equipamentos, equipamentoExcluidoTag } from "../drizzle/schema";
+import { CORRESPONDENCIAS_FORCADAS, CORRESPONDENCIAS_APROVADAS } from "./importDespesas_correspondencias";
+
+/**
+ * Busca IDs de equipamentos com excluidoCusto = 'sim' no cadastro
+ */
+async function getIdsEquipExcluidos(): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db
+    .select({ id: equipamentos.id })
+    .from(equipamentos)
+    .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
+  return new Set(rows.map(r => r.id));
+}
+
+/**
+ * Busca tags excluídas da tabela equipamento_excluido_tag (equipamentos sem vínculo)
+ */
+async function getTagsExcluidas(): Promise<Set<string>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db.select({ tag: equipamentoExcluidoTag.tag }).from(equipamentoExcluidoTag);
+  return new Set(rows.map(r => r.tag.toUpperCase()));
+}
+
+/**
+ * Monta um Set com todas as tags excluídas (por ID de equipamento + por tag direta)
+ * Usa CORRESPONDENCIAS_FORCADAS e CORRESPONDENCIAS_APROVADAS para mapear ID → tags
+ */
+function buildTagsExcluidasFromIds(idsExcluidos: Set<number>, tagsExcluidas: Set<string>): Set<string> {
+  const allExcludedTags = new Set(tagsExcluidas);
+
+  // Mapear IDs excluídos para tags da planilha via correspondências
+  // Inverter CORRESPONDENCIAS_APROVADAS: equipamentoId → tags[]
+  for (const [tag, equipId] of Object.entries(CORRESPONDENCIAS_APROVADAS)) {
+    if (idsExcluidos.has(equipId)) {
+      allExcludedTags.add(tag.toUpperCase());
+    }
+  }
+
+  // Inverter CORRESPONDENCIAS_FORCADAS: equipamentoId → tags[]
+  for (const [tag, { equipamentoId }] of Object.entries(CORRESPONDENCIAS_FORCADAS)) {
+    if (idsExcluidos.has(equipamentoId)) {
+      allExcludedTags.add(tag.toUpperCase());
+    }
+  }
+
+  return allExcludedTags;
+}
+
+/**
+ * Extrai a tag do equipamento do campo observacoes de um lançamento [Import]
+ * Formato: "[Import] TAG - DESCRICAO | Classificação"
+ */
+function extractTagFromObservacoes(obs: string): string | null {
+  if (!obs.startsWith("[Import]")) return null;
+  // Remove "[Import] " prefix
+  const rest = obs.substring(9).trim();
+  // A tag é tudo antes do primeiro " - "
+  const dashIdx = rest.indexOf(" - ");
+  if (dashIdx === -1) return rest.trim().toUpperCase();
+  return rest.substring(0, dashIdx).trim().toUpperCase();
+}
 
 export const lancamentoCustoRouter = router({
   // Listar lançamentos de um período específico (inclui salários manuais agregados)
+  // FILTRA equipamentos excluídos do custo
   listByPeriodo: protectedProcedure
     .use(requirePermission("custos", "view"))
     .input(z.object({ periodoCustoId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return [];
+
+      // Buscar exclusões
+      const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
+      const allExcludedTags = buildTagsExcluidasFromIds(idsExcluidos, tagsExcluidas);
 
       // Buscar lançamentos normais (Import + Fluxo + Manual)
       const lancamentosNormais = await db
@@ -31,6 +100,17 @@ export const lancamentoCustoRouter = router({
         .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
         .where(eq(lancamentoCusto.periodoCustoId, input.periodoCustoId))
         .orderBy(contaCusto.classificacao, desc(lancamentoCusto.valor));
+
+      // Filtrar lançamentos de equipamentos excluídos
+      const lancamentosFiltrados = lancamentosNormais.filter(l => {
+        const obs = l.observacoes ?? "";
+        // Só filtra lançamentos [Import] (que são por equipamento)
+        if (!obs.startsWith("[Import]")) return true;
+        const tag = extractTagFromObservacoes(obs);
+        if (!tag) return true;
+        // Se a tag está excluída, remover do resultado
+        return !allExcludedTags.has(tag);
+      });
 
       // Buscar salários manuais agregados por conta
       const salariosAgregados = await db
@@ -62,7 +142,7 @@ export const lancamentoCustoRouter = router({
         }));
 
       // Combinar e ordenar
-      const todos = [...lancamentosNormais, ...lancamentosSalario];
+      const todos = [...lancamentosFiltrados, ...lancamentosSalario];
       todos.sort((a, b) => {
         const classA = a.contaClassificacao ?? "";
         const classB = b.contaClassificacao ?? "";
@@ -224,26 +304,40 @@ export const lancamentoCustoRouter = router({
       return { success: true };
     }),
 
-  // Resumo por classificação para um período
+  // Resumo por classificação para um período (COM filtro de exclusão)
   resumoPorClassificacao: protectedProcedure
     .use(requirePermission("custos", "view"))
     .input(z.object({ periodoCustoId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return [];
+
+      // Buscar exclusões
+      const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
+      const allExcludedTags = buildTagsExcluidasFromIds(idsExcluidos, tagsExcluidas);
+
       const rows = await db
         .select({
           classificacao: contaCusto.classificacao,
           divisor: contaCusto.divisor,
           valor: lancamentoCusto.valor,
+          observacoes: lancamentoCusto.observacoes,
         })
         .from(lancamentoCusto)
         .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
         .where(eq(lancamentoCusto.periodoCustoId, input.periodoCustoId));
 
-      // Agrupar por classificação
+      // Agrupar por classificação, filtrando excluídos
       const grupos: Record<string, { classificacao: string; divisor: string; total: number }> = {};
       for (const row of rows) {
+        // Filtrar lançamentos [Import] de equipamentos excluídos
+        const obs = row.observacoes ?? "";
+        if (obs.startsWith("[Import]")) {
+          const tag = extractTagFromObservacoes(obs);
+          if (tag && allExcludedTags.has(tag)) continue;
+        }
+
         const key = row.classificacao ?? "custo_variavel";
         if (!grupos[key]) {
           grupos[key] = { classificacao: key, divisor: row.divisor ?? "producao", total: 0 };
@@ -260,6 +354,12 @@ export const lancamentoCustoRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return { subsetores: [], total: 0 };
+
+      // Buscar exclusões
+      const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
+      const allExcludedTags = buildTagsExcluidasFromIds(idsExcluidos, tagsExcluidas);
+
       // Buscar conta "Outras Despesas de Setores"
       const [contaODS] = await db.select({ id: contaCusto.id }).from(contaCusto)
         .where(like(contaCusto.nome, "%Outras Despesas de Setores%"));
@@ -278,15 +378,20 @@ export const lancamentoCustoRouter = router({
       const porSetor: Record<string, { setor: string; valor: number; itens: { tag: string; descricao: string; valor: number }[] }> = {};
       for (const row of rows) {
         const obs = row.observacoes ?? "";
+
+        // Filtrar equipamentos excluídos
+        const tag = extractTagFromObservacoes(obs);
+        if (tag && allExcludedTags.has(tag)) continue;
+
         const matchSetor = obs.match(/Outras Desp\. Setor → (.+)$/);
         const matchTag = obs.match(/\[Import\] (.+?) - (.+?) \|/);
         const setor = matchSetor ? matchSetor[1].trim() : "Outros";
-        const tag = matchTag ? matchTag[1].trim() : "";
+        const tagName = matchTag ? matchTag[1].trim() : "";
         const descricao = matchTag ? matchTag[2].trim() : "";
         const valor = parseFloat(String(row.valor || "0"));
         if (!porSetor[setor]) porSetor[setor] = { setor, valor: 0, itens: [] };
         porSetor[setor].valor += valor;
-        porSetor[setor].itens.push({ tag, descricao, valor });
+        porSetor[setor].itens.push({ tag: tagName, descricao, valor });
       }
       const subsetores = Object.values(porSetor).sort((a, b) => b.valor - a.valor);
       const total = subsetores.reduce((s, r) => s + r.valor, 0);

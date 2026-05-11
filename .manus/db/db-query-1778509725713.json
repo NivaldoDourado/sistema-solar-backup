@@ -1,0 +1,53 @@
+{
+  "query": "SELECT * FROM equipamento_excluido_tag; SELECT id, codigoTag, excluidoCusto FROM equipamentos WHERE id = 48;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT * FROM equipamento_excluido_tag; SELECT id, codigoTag, excluidoCusto FROM equipamentos WHERE id = 48;",
+  "rows": [
+    {
+      "id": "1",
+      "tag": "QMD 0H48",
+      "descricao": "MB ATEGO 2426",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:42:29"
+    },
+    {
+      "id": "2",
+      "tag": "QMO6E54",
+      "descricao": "MERCEDES",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:42:45"
+    },
+    {
+      "id": "3",
+      "tag": "QMD0H48",
+      "descricao": "MERCEDES MUCK",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:43:52"
+    },
+    {
+      "id": "4",
+      "tag": "QMN1F10",
+      "descricao": "MERCEDES BENZ",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:44:47"
+    },
+    {
+      "id": "9",
+      "tag": "PERFURATRIZ HIDR. 01",
+      "descricao": "PERFURATRIZ HIDRAULICA FOX 8 - 20 01",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 14:22:02"
+    }
+  ],
+  "messages": [
+    "id\tcodigoTag\texcluidoCusto",
+    "48\tFOX 8-20\tsim"
+  ],
+  "stdout": "id\ttag\tdescricao\tmotivo\tuserId\tcreatedAt\n1\tQMD 0H48\tMB ATEGO 2426\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:29\n2\tQMO6E54\tMERCEDES\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:45\n3\tQMD0H48\tMERCEDES MUCK\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:43:52\n4\tQMN1F10\tMERCEDES BENZ\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:44:47\n9\tPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 14:22:02\nid\tcodigoTag\texcluidoCusto\n48\tFOX 8-20\tsim\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

@@ -1,0 +1,190 @@
+{
+  "query": "SELECT id, contaCustoId, valor, LEFT(observacoes, 100) as obs_prefix FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) ORDER BY CAST(valor AS DECIMAL(14,2)) DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaCustoId, valor, LEFT(observacoes, 100) as obs_prefix FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) ORDER BY CAST(valor AS DECIMAL(14,2)) DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "120001",
+      "contaCustoId": "2",
+      "valor": "309340.07",
+      "obs_prefix": "[Impostos Manual] Previsão de Impostos"
+    },
+    {
+      "id": "90062",
+      "contaCustoId": "17",
+      "valor": "136668.83",
+      "obs_prefix": "[Import] EXPLOSIVOS - DETONA | Peças de Reposição"
+    },
+    {
+      "id": "90002",
+      "contaCustoId": "4",
+      "valor": "129119.93",
+      "obs_prefix": "[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS"
+    },
+    {
+      "id": "90005",
+      "contaCustoId": "5",
+      "valor": "96429.96",
+      "obs_prefix": "[Fluxo] 2183-ENERGIA ELÉTRICA"
+    },
+    {
+      "id": "90006",
+      "contaCustoId": "30002",
+      "valor": "74246.37",
+      "obs_prefix": "[Fluxo] 2160-FROTA"
+    },
+    {
+      "id": "90001",
+      "contaCustoId": "10",
+      "valor": "66279.62",
+      "obs_prefix": "[Fluxo] 5537-CONSULTORIA"
+    },
+    {
+      "id": "90004",
+      "contaCustoId": "9",
+      "valor": "60663.09",
+      "obs_prefix": "[Fluxo] 3006-DESPESAS INDIRETAS"
+    },
+    {
+      "id": "90018",
+      "contaCustoId": "16",
+      "valor": "44500.00",
+      "obs_prefix": "[Import] BRITADOR CS440 - BRITADOR HYDROCONE S4800 | Peças de Desgaste"
+    },
+    {
+      "id": "90011",
+      "contaCustoId": "14",
+      "valor": "42068.92",
+      "obs_prefix": "[Import] 944 C - ESCAVADEIRA LIEBHERR | Combustível"
+    },
+    {
+      "id": "90026",
+      "contaCustoId": "16",
+      "valor": "40047.58",
+      "obs_prefix": "[Import] C100 - BRITADOR METSO C100 - PRIMARIO | Peças de Desgaste"
+    },
+    {
+      "id": "90095",
+      "contaCustoId": "16",
+      "valor": "39330.00",
+      "obs_prefix": "[Import] JC1200 01 - BRITADOR DE MANDIBULAS | Peças de Desgaste"
+    },
+    {
+      "id": "90007",
+      "contaCustoId": "30003",
+      "valor": "38728.00",
+      "obs_prefix": "[Fluxo] 2184-COMISSÃO DE VENDAS"
+    },
+    {
+      "id": "90061",
+      "contaCustoId": "14",
+      "valor": "33405.16",
+      "obs_prefix": "[Import] ESCAVADEIRA R938 - ESCAVADEIRA LIEBHER R938 | Combustível"
+    },
+    {
+      "id": "90137",
+      "contaCustoId": "17",
+      "valor": "32788.42",
+      "obs_prefix": "[Import] OM100 - BRITADOR DE IMPACTO | Peças de Reposição"
+    },
+    {
+      "id": "90076",
+      "contaCustoId": "16",
+      "valor": "31742.53",
+      "obs_prefix": "[Import] HP 200 ( METSO) - BRITADOR CONE HP 200 (METSO) | Peças de Desgaste"
+    },
+    {
+      "id": "90056",
+      "contaCustoId": "14",
+      "valor": "27899.59",
+      "obs_prefix": "[Import] ESCAVADEIRA R 938 02 - ESCAVADEIRA R 938 | Combustível"
+    },
+    {
+      "id": "90173",
+      "contaCustoId": "16",
+      "valor": "26799.35",
+      "obs_prefix": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Desgaste"
+    },
+    {
+      "id": "90059",
+      "contaCustoId": "17",
+      "valor": "24975.25",
+      "obs_prefix": "[Import] ESCAVADEIRA R938 - ESCAVADEIRA LIEBHER R938 | Peças de Reposição"
+    },
+    {
+      "id": "90139",
+      "contaCustoId": "7",
+      "valor": "24408.71",
+      "obs_prefix": "[Import] OUTROS - OUTROS | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "90074",
+      "contaCustoId": "14",
+      "valor": "21744.25",
+      "obs_prefix": "[Import] HL 76003 - HYUNDAI HL760 - 9 | Combustível"
+    },
+    {
+      "id": "90101",
+      "contaCustoId": "14",
+      "valor": "21094.39",
+      "obs_prefix": "[Import] L 566 - PA CARREGADEIRA LIEBHER | Combustível"
+    },
+    {
+      "id": "90104",
+      "contaCustoId": "19",
+      "valor": "20688.26",
+      "obs_prefix": "[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Outras Despesas"
+    },
+    {
+      "id": "90176",
+      "contaCustoId": "14",
+      "valor": "20639.78",
+      "obs_prefix": "[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Combustível"
+    },
+    {
+      "id": "90087",
+      "contaCustoId": "17",
+      "valor": "18378.38",
+      "obs_prefix": "[Import] IXD6D34 - MERCEDES MB ACTOS 4844 | Peças de Reposição"
+    },
+    {
+      "id": "90221",
+      "contaCustoId": "14",
+      "valor": "18050.02",
+      "obs_prefix": "[Import] RUC4F80 - MB AROCS 4851 | Combustível"
+    },
+    {
+      "id": "90105",
+      "contaCustoId": "14",
+      "valor": "17710.44",
+      "obs_prefix": "[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Combustível"
+    },
+    {
+      "id": "90093",
+      "contaCustoId": "14",
+      "valor": "17554.66",
+      "obs_prefix": "[Import] IXE1F44 - MERCEDEZ BENZ  ACTROS 4844 | Combustível"
+    },
+    {
+      "id": "90186",
+      "contaCustoId": "14",
+      "valor": "16869.68",
+      "obs_prefix": "[Import] PZE8D13 - MERCEDEZ BENS ACTROS 4844 | Combustível"
+    },
+    {
+      "id": "90103",
+      "contaCustoId": "17",
+      "valor": "15871.46",
+      "obs_prefix": "[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Peças de Reposição"
+    },
+    {
+      "id": "90012",
+      "contaCustoId": "19",
+      "valor": "15000.00",
+      "obs_prefix": "[Import] ALIMENTADOR AVS01 - ALIMENTADOR AVS 4001200 (01) OBS.SERVICO | Outras Despesas"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tvalor\tobs_prefix\n120001\t2\t309340.07\t[Impostos Manual] Previsão de Impostos\n90062\t17\t136668.83\t[Import] EXPLOSIVOS - DETONA | Peças de Reposição\n90002\t4\t129119.93\t[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS\n90005\t5\t96429.96\t[Fluxo] 2183-ENERGIA ELÉTRICA\n90006\t30002\t74246.37\t[Fluxo] 2160-FROTA\n90001\t10\t66279.62\t[Fluxo] 5537-CONSULTORIA\n90004\t9\t60663.09\t[Fluxo] 3006-DESPESAS INDIRETAS\n90018\t16\t44500.00\t[Import] BRITADOR CS440 - BRITADOR HYDROCONE S4800 | Peças de Desgaste\n90011\t14\t42068.92\t[Import] 944 C - ESCAVADEIRA LIEBHERR | Combustível\n90026\t16\t40047.58\t[Import] C100 - BRITADOR METSO C100 - PRIMARIO | Peças de Desgaste\n90095\t16\t39330.00\t[Import] JC1200 01 - BRITADOR DE MANDIBULAS | Peças de Desgaste\n90007\t30003\t38728.00\t[Fluxo] 2184-COMISSÃO DE VENDAS\n90061\t14\t33405.16\t[Import] ESCAVADEIRA R938 - ESCAVADEIRA LIEBHER R938 | Combustível\n90137\t17\t32788.42\t[Import] OM100 - BRITADOR DE IMPACTO | Peças de Reposição\n90076\t16\t31742.53\t[Import] HP 200 ( METSO) - BRITADOR CONE HP 200 (METSO) | Peças de Desgaste\n90056\t14\t27899.59\t[Import] ESCAVADEIRA R 938 02 - ESCAVADEIRA R 938 | Combustível\n90173\t16\t26799.35\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Peças de Desgaste\n90059\t17\t24975.25\t[Import] ESCAVADEIRA R938 - ESCAVADEIRA LIEBHER R938 | Peças de Reposição\n90139\t7\t24408.71\t[Import] OUTROS - OUTROS | Outras Desp. Setor → OUTROS SERVIÇOS\n90074\t14\t21744.25\t[Import] HL 76003 - HYUNDAI HL760 - 9 | Combustível\n90101\t14\t21094.39\t[Import] L 566 - PA CARREGADEIRA LIEBHER | Combustível\n90104\t19\t20688.26\t[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Outras Despesas\n90176\t14\t20639.78\t[Import] PERFURATRIZ HIDR. 01 - PERFURATRIZ HIDRAULICA FOX 8 - 20 01 | Combustível\n90087\t17\t18378.38\t[Import] IXD6D34 - MERCEDES MB ACTOS 4844 | Peças de Reposição\n90221\t14\t18050.02\t[Import] RUC4F80 - MB AROCS 4851 | Combustível\n90105\t14\t17710.44\t[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Combustível\n90093\t14\t17554.66\t[Import] IXE1F44 - MERCEDEZ BENZ  ACTROS 4844 | Combustível\n90186\t14\t16869.68\t[Import] PZE8D13 - MERCEDEZ BENS ACTROS 4844 | Combustível\n90103\t17\t15871.46\t[Import] L566 02 - PA CARREGADEIRA LIEBHERR | Peças de Reposição\n90012\t19\t15000.00\t[Import] ALIMENTADOR AVS01 - ALIMENTADOR AVS 4001200 (01) OBS.SERVICO | Outras Despesas\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

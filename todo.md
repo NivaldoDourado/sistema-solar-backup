@@ -867,3 +867,11 @@
 - [x] Correção: no rateioMem_calc.ts, resolver IDs de equipamentos via tagToIdMap para tags excluídas
 - [x] Correção: procedure toggleExcluidoCusto agora também marca equipamento cadastrado via correspondências
 - [x] Sincronizar banco: equipamento id=48 (PERFURATRIZ HIDR. 01) marcado como excluído
+
+## Bug DEFINITIVO: Exclusão de equipamentos não propaga para Apuração de Custo
+- [x] Causa raiz: lancamentoCusto_router.ts → listByPeriodo retornava TODOS os lançamentos sem filtro de exclusão
+- [x] A Apuração de Custo lê dados de lancamento_custo (snapshots persistidos na importação), não recalcula via rateioMem_calc.ts
+- [x] Solução: filtro dinâmico em listByPeriodo — extrai tag do campo observacoes ([Import] TAG - DESC | ...) e verifica contra equipamentos excluídos
+- [x] Implementado buildTagsExcluidasFromIds() que mapeia IDs excluídos → tags via CORRESPONDENCIAS_FORCADAS e CORRESPONDENCIAS_APROVADAS
+- [x] Filtro também aplicado em resumoPorClassificacao e subsetoresOutrasDesp
+- [x] Validação: R$ 95.279,30 de redução confirmada (soma exata dos 5 equipamentos excluídos)
