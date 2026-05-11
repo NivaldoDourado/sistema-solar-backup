@@ -1,0 +1,25 @@
+{
+  "query": "SHOW TABLES LIKE '%equip%'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SHOW TABLES LIKE '%equip%'",
+  "rows": [
+    {
+      "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)": "custo_setor_equipamento"
+    },
+    {
+      "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)": "equipamento_excluido_tag"
+    },
+    {
+      "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)": "equipamentos"
+    },
+    {
+      "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)": "grupos_de_equipamentos"
+    },
+    {
+      "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)": "pesagens_equipamentos"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_Us3Q3oBA5LqqATDWwyHq5k (%equip%)\ncusto_setor_equipamento\nequipamento_excluido_tag\nequipamentos\ngrupos_de_equipamentos\npesagens_equipamentos\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

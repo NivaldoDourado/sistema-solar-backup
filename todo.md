@@ -906,3 +906,12 @@
 - [x] Implementar reconciliação automática com lancamento_custo no custoSetor_router.ts
 - [x] Total do Custo por Setor agora confere com Apuração de Custo (R$ 2.771.022,26)
 - [x] Diferença não-alocável (R$ 148.264,14) aparece como "NÃO ALOCADOS" em SERVIÇOS AUXILIARES
+
+## Investigação: Eliminar R$ 148.264 "NÃO ALOCADOS"
+- [x] Identificar quais tags/despesas compõem os R$ 148.264
+  - Tag "EXPLOSIVOS" (R$ 137.709,83): mapeada para equipId 58 que não existe no cadastro
+  - Tag "DRAGA D´ÁGUA A DIESE" (R$ 10.554,38): variante truncada sem correspondência
+- [x] Criar correspondências faltantes para alocar ao setor correto
+  - EXPLOSIVOS → movido para TAGS_OUTRAS_DESP_SETOR com setor DESMONTE PRIMÁRIO
+  - DRAGA D´ÁGUA A DIESE → correspondência adicionada para equipId 120006
+- [x] Testar que NÃO ALOCADOS foi eliminado (gap reduzido de R$ 148.264,14 para R$ 0,07)

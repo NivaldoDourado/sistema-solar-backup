@@ -1,0 +1,54 @@
+{
+  "query": "\nSELECT s.nome, ROUND(SUM(CAST(pdi.quantidade AS DECIMAL(10,2))), 1) as totalViagens\nFROM parte_diaria pd\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data BETWEEN '2026-04-01' AND '2026-04-30'\nGROUP BY s.nome\nORDER BY totalViagens DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT s.nome, ROUND(SUM(CAST(pdi.quantidade AS DECIMAL(10,2))), 1) as totalViagens\nFROM parte_diaria pd\nJOIN parte_diaria_itens pdi ON pdi.parteDiariaId = pd.id\nJOIN setores s ON pdi.setorId = s.id\nWHERE pd.data BETWEEN '2026-04-01' AND '2026-04-30'\nGROUP BY s.nome\nORDER BY totalViagens DESC\n",
+  "rows": [
+    {
+      "nome": "CARGA E TRANSPORTE DE PEDRA DA MINA",
+      "totalViagens": "2004.0"
+    },
+    {
+      "nome": "OUTROS SERVIÇOS AUXILIARES",
+      "totalViagens": "957.0"
+    },
+    {
+      "nome": "BRITAGEM MÓVEL",
+      "totalViagens": "456.0"
+    },
+    {
+      "nome": "MOVIMENTAÇÃO DE ESTOQUE",
+      "totalViagens": "415.0"
+    },
+    {
+      "nome": "DECAPEAMENTO",
+      "totalViagens": "158.0"
+    },
+    {
+      "nome": "EXPEDIÇÃO",
+      "totalViagens": "0.0"
+    },
+    {
+      "nome": "BRITAGEM TERCEÁRIA",
+      "totalViagens": "0.0"
+    },
+    {
+      "nome": "BRITAGEM QUARTENÁRIA",
+      "totalViagens": "0.0"
+    },
+    {
+      "nome": "DESMONTE PRIMÁRIO",
+      "totalViagens": "0.0"
+    },
+    {
+      "nome": "BRITAGEM PRIMÁRIA",
+      "totalViagens": "0.0"
+    },
+    {
+      "nome": "BRITAGEM SECUNDÁRIA",
+      "totalViagens": "0.0"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\ttotalViagens\nCARGA E TRANSPORTE DE PEDRA DA MINA\t2004.0\nOUTROS SERVIÇOS AUXILIARES\t957.0\nBRITAGEM MÓVEL\t456.0\nMOVIMENTAÇÃO DE ESTOQUE\t415.0\nDECAPEAMENTO\t158.0\nEXPEDIÇÃO\t0.0\nBRITAGEM TERCEÁRIA\t0.0\nBRITAGEM QUARTENÁRIA\t0.0\nDESMONTE PRIMÁRIO\t0.0\nBRITAGEM PRIMÁRIA\t0.0\nBRITAGEM SECUNDÁRIA\t0.0\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

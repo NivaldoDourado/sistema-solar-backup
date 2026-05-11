@@ -1,0 +1,15 @@
+{
+  "query": "\nSELECT \n  CASE WHEN equipamentoId IS NULL THEN 'SEM_EQUIP' ELSE 'COM_EQUIP' END as tipo,\n  COUNT(*) as qtd,\n  ROUND(SUM(CAST(valor AS DECIMAL(14,2))), 2) as total\nFROM lancamento_salario\nWHERE periodoCustoId = 60001 AND contaCustoId = 30004\nGROUP BY tipo\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT \n  CASE WHEN equipamentoId IS NULL THEN 'SEM_EQUIP' ELSE 'COM_EQUIP' END as tipo,\n  COUNT(*) as qtd,\n  ROUND(SUM(CAST(valor AS DECIMAL(14,2))), 2) as total\nFROM lancamento_salario\nWHERE periodoCustoId = 60001 AND contaCustoId = 30004\nGROUP BY tipo\n",
+  "rows": [
+    {
+      "tipo": "COM_EQUIP",
+      "qtd": "30",
+      "total": "147029.75"
+    }
+  ],
+  "messages": [],
+  "stdout": "tipo\tqtd\ttotal\nCOM_EQUIP\t30\t147029.75\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

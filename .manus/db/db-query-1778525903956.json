@@ -1,0 +1,16 @@
+{
+  "query": "\nSELECT DISTINCT equipamentoTag FROM item_despesa_importado WHERE periodoCustoId = 60001 AND equipamentoTag LIKE '%DRAGA%'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT DISTINCT equipamentoTag FROM item_despesa_importado WHERE periodoCustoId = 60001 AND equipamentoTag LIKE '%DRAGA%'\n",
+  "rows": [
+    {
+      "equipamentoTag": "DRAGA DIESEL 02"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\nDRAGA DIESEL 02\nDRAGA D´ÁGUA A DIESE\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

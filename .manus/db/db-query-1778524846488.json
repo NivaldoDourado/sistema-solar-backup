@@ -1,0 +1,75 @@
+{
+  "query": "\nSELECT lc.contaCustoId, cc.nome, ROUND(SUM(lc.valor), 2) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 60001\nGROUP BY lc.contaCustoId, cc.nome\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT lc.contaCustoId, cc.nome, ROUND(SUM(lc.valor), 2) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 60001\nGROUP BY lc.contaCustoId, cc.nome\nORDER BY total DESC\n",
+  "rows": [
+    {
+      "contaCustoId": "17",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "total": "390607.97"
+    },
+    {
+      "contaCustoId": "14",
+      "nome": "Combustível",
+      "total": "348594.64"
+    },
+    {
+      "contaCustoId": "2",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "total": "317373.31"
+    },
+    {
+      "contaCustoId": "16",
+      "nome": "Peças de Desgaste",
+      "total": "224538.84"
+    },
+    {
+      "contaCustoId": "4",
+      "nome": "Despesas Administrativas",
+      "total": "129119.93"
+    },
+    {
+      "contaCustoId": "19",
+      "nome": "Outras Despesas dos Equipamentos",
+      "total": "111795.67"
+    },
+    {
+      "contaCustoId": "5",
+      "nome": "Energia Elétrica",
+      "total": "96429.96"
+    },
+    {
+      "contaCustoId": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "total": "74246.37"
+    },
+    {
+      "contaCustoId": "10",
+      "nome": "Consultorias Especializadas",
+      "total": "66279.62"
+    },
+    {
+      "contaCustoId": "9",
+      "nome": "Despesas Indiretas",
+      "total": "60663.09"
+    },
+    {
+      "contaCustoId": "15",
+      "nome": "Lubrificantes",
+      "total": "58763.41"
+    },
+    {
+      "contaCustoId": "7",
+      "nome": "Outras Despesas de Setores",
+      "total": "46253.63"
+    },
+    {
+      "contaCustoId": "30003",
+      "nome": "Comissão de Vendas",
+      "total": "38728.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tnome\ttotal\n17\tPeças de Reposição / Itens de Consumo\t390607.97\n14\tCombustível\t348594.64\n2\tImpostos, CEFEM e Outras Taxas\t317373.31\n16\tPeças de Desgaste\t224538.84\n4\tDespesas Administrativas\t129119.93\n19\tOutras Despesas dos Equipamentos\t111795.67\n5\tEnergia Elétrica\t96429.96\n30002\tFrota/Man.Pat./Seg./Out.\t74246.37\n10\tConsultorias Especializadas\t66279.62\n9\tDespesas Indiretas\t60663.09\n15\tLubrificantes\t58763.41\n7\tOutras Despesas de Setores\t46253.63\n30003\tComissão de Vendas\t38728.00\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

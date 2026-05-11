@@ -1,0 +1,62 @@
+{
+  "query": "\nSELECT observacoes, ROUND(SUM(valor), 2) as total\nFROM lancamento_custo\nWHERE periodoCustoId = 60001\nAND (\n  observacoes LIKE '%QMD 0H48%' OR observacoes LIKE '%QMO6E54%' OR observacoes LIKE '%QMD0H48%'\n  OR observacoes LIKE '%QMN1F10%' OR observacoes LIKE '%SETOR RH%' OR observacoes LIKE '%RRH 9F10%'\n  OR observacoes LIKE '%TNW 2I60%'\n)\nGROUP BY observacoes\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT observacoes, ROUND(SUM(valor), 2) as total\nFROM lancamento_custo\nWHERE periodoCustoId = 60001\nAND (\n  observacoes LIKE '%QMD 0H48%' OR observacoes LIKE '%QMO6E54%' OR observacoes LIKE '%QMD0H48%'\n  OR observacoes LIKE '%QMN1F10%' OR observacoes LIKE '%SETOR RH%' OR observacoes LIKE '%RRH 9F10%'\n  OR observacoes LIKE '%TNW 2I60%'\n)\nGROUP BY observacoes\nORDER BY total DESC\n",
+  "rows": [
+    {
+      "observacoes": "[Import] QMD 0H48 - MB ATEGO 2426 | Combustível",
+      "total": "11250.93"
+    },
+    {
+      "observacoes": "[Import] QMO6E54 - MERCEDES | Lubrificantes",
+      "total": "5800.00"
+    },
+    {
+      "observacoes": "[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO",
+      "total": "4525.79"
+    },
+    {
+      "observacoes": "[Import] RRH 9F10 - ford f150 CARRO GUGA | Outras Despesas",
+      "total": "1464.70"
+    },
+    {
+      "observacoes": "[Import] QMD 0H48 - MB ATEGO 2426 | Peças de Reposição",
+      "total": "1284.00"
+    },
+    {
+      "observacoes": "[Import] TNW 2I60 - RANGER GUGA | Combustível",
+      "total": "1137.11"
+    },
+    {
+      "observacoes": "[Import] RRH 9F10 - ford f150 CARRO GUGA | Combustível",
+      "total": "1128.90"
+    },
+    {
+      "observacoes": "[Import] QMD0H48 - MERCEDES MUCK | Combustível",
+      "total": "883.06"
+    },
+    {
+      "observacoes": "[Import] RRH 9F10 - ford f150 CARRO GUGA | Peças de Reposição",
+      "total": "667.39"
+    },
+    {
+      "observacoes": "[Import] RRH 9F10 - ford f150 CARRO GUGA | Lubrificantes",
+      "total": "656.91"
+    },
+    {
+      "observacoes": "[Import] QMD 0H48 - MB ATEGO 2426 | Outras Despesas",
+      "total": "280.00"
+    },
+    {
+      "observacoes": "[Import] QMD0H48 - MERCEDES MUCK | Peças de Reposição",
+      "total": "8.50"
+    },
+    {
+      "observacoes": "[Import] QMN1F10 - MERCEDES BENZ | Peças de Reposição",
+      "total": "1.65"
+    }
+  ],
+  "messages": [],
+  "stdout": "observacoes\ttotal\n[Import] QMD 0H48 - MB ATEGO 2426 | Combustível\t11250.93\n[Import] QMO6E54 - MERCEDES | Lubrificantes\t5800.00\n[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO\t4525.79\n[Import] RRH 9F10 - ford f150 CARRO GUGA | Outras Despesas\t1464.70\n[Import] QMD 0H48 - MB ATEGO 2426 | Peças de Reposição\t1284.00\n[Import] TNW 2I60 - RANGER GUGA | Combustível\t1137.11\n[Import] RRH 9F10 - ford f150 CARRO GUGA | Combustível\t1128.90\n[Import] QMD0H48 - MERCEDES MUCK | Combustível\t883.06\n[Import] RRH 9F10 - ford f150 CARRO GUGA | Peças de Reposição\t667.39\n[Import] RRH 9F10 - ford f150 CARRO GUGA | Lubrificantes\t656.91\n[Import] QMD 0H48 - MB ATEGO 2426 | Outras Despesas\t280.00\n[Import] QMD0H48 - MERCEDES MUCK | Peças de Reposição\t8.50\n[Import] QMN1F10 - MERCEDES BENZ | Peças de Reposição\t1.65\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

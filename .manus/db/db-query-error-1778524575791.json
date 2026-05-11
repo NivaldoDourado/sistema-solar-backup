@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT i.tag, COUNT(*) as qtd_itens, ROUND(SUM(i.custo), 2) as total\nFROM item_despesa_importado i\nJOIN periodo_custo pc ON i.periodoCustoId = pc.id\nWHERE pc.mes = 4 AND pc.ano = 2026\n  AND i.tag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\n  AND i.tag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OFICINA', 'SUBSTAÇÃO', 'ESCRITÓRIO', 'OBRA ALMOXARIFADO', 'OBRAS', 'PORTARIA', 'BALANÇA', 'BORRACHARIA')\nGROUP BY i.tag\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT i.tag, COUNT(*) as qtd_itens, ROUND(SUM(i.custo), 2) as total\nFROM item_despesa_importado i\nJOIN periodo_custo pc ON i.periodoCustoId = pc.id\nWHERE pc.mes = 4 AND pc.ano = 2026\n  AND i.tag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\n  AND i.tag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OFICINA', 'SUBSTAÇÃO', 'ESCRITÓRIO', 'OBRA ALMOXARIFADO', 'OBRAS', 'PORTARIA', 'BALANÇA', 'BORRACHARIA')\nGROUP BY i.tag\nORDER BY total DESC\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'i.tag' in 'group statement'"
+  ]
+}

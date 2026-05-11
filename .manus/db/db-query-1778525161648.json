@@ -1,0 +1,38 @@
+{
+  "query": "\nSELECT contaSistema, ROUND(SUM(CAST(valor AS DECIMAL(14,2))), 2) as total\nFROM lancamento_fluxo\nWHERE periodoCustoId = 60001\nGROUP BY contaSistema\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT contaSistema, ROUND(SUM(CAST(valor AS DECIMAL(14,2))), 2) as total\nFROM lancamento_fluxo\nWHERE periodoCustoId = 60001\nGROUP BY contaSistema\nORDER BY total DESC\n",
+  "rows": [
+    {
+      "contaSistema": "Despesas Administrativas",
+      "total": "129119.93"
+    },
+    {
+      "contaSistema": "Energia Elétrica",
+      "total": "96429.96"
+    },
+    {
+      "contaSistema": "Frota/Man.Pat./Seg./Out.",
+      "total": "74246.37"
+    },
+    {
+      "contaSistema": "Consultorias Especializadas",
+      "total": "66279.62"
+    },
+    {
+      "contaSistema": "Despesas Indiretas",
+      "total": "60663.09"
+    },
+    {
+      "contaSistema": "Comissão de Vendas",
+      "total": "38728.00"
+    },
+    {
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "total": "8033.24"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaSistema\ttotal\nDespesas Administrativas\t129119.93\nEnergia Elétrica\t96429.96\nFrota/Man.Pat./Seg./Out.\t74246.37\nConsultorias Especializadas\t66279.62\nDespesas Indiretas\t60663.09\nComissão de Vendas\t38728.00\nImpostos, CEFEM e Outras Taxas\t8033.24\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

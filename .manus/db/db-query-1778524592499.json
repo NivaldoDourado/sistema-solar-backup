@@ -1,0 +1,230 @@
+{
+  "query": "\nSELECT i.equipamentoTag, COUNT(*) as qtd_itens, ROUND(SUM(i.custo), 2) as total\nFROM item_despesa_importado i\nJOIN periodo_custo pc ON i.periodoCustoId = pc.id\nWHERE pc.mes = 4 AND pc.ano = 2026\n  AND i.equipamentoTag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\n  AND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OFICINA', 'SUBSTAÇÃO', 'ESCRITÓRIO', 'OBRA ALMOXARIFADO', 'OBRAS', 'PORTARIA', 'BALANÇA', 'BORRACHARIA')\nGROUP BY i.equipamentoTag\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT i.equipamentoTag, COUNT(*) as qtd_itens, ROUND(SUM(i.custo), 2) as total\nFROM item_despesa_importado i\nJOIN periodo_custo pc ON i.periodoCustoId = pc.id\nWHERE pc.mes = 4 AND pc.ano = 2026\n  AND i.equipamentoTag NOT IN (SELECT codigoTag FROM equipamentos WHERE codigoTag IS NOT NULL)\n  AND i.equipamentoTag NOT IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'OFICINA', 'SUBSTAÇÃO', 'ESCRITÓRIO', 'OBRA ALMOXARIFADO', 'OBRAS', 'PORTARIA', 'BALANÇA', 'BORRACHARIA')\nGROUP BY i.equipamentoTag\nORDER BY total DESC\n",
+  "rows": [
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "qtd_itens": "27",
+      "total": "137709.83"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "qtd_itens": "123",
+      "total": "75771.14"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "qtd_itens": "46",
+      "total": "64753.46"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "qtd_itens": "33",
+      "total": "61249.74"
+    },
+    {
+      "equipamentoTag": "944 C",
+      "qtd_itens": "38",
+      "total": "58738.97"
+    },
+    {
+      "equipamentoTag": "L566 02",
+      "qtd_itens": "18",
+      "total": "56169.12"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "qtd_itens": "66",
+      "total": "44651.46"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "qtd_itens": "37",
+      "total": "42674.43"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "qtd_itens": "47",
+      "total": "41273.51"
+    },
+    {
+      "equipamentoTag": "IXD6D34",
+      "qtd_itens": "68",
+      "total": "39324.27"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "qtd_itens": "34",
+      "total": "37666.96"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "qtd_itens": "41",
+      "total": "32573.40"
+    },
+    {
+      "equipamentoTag": "RUC4F80",
+      "qtd_itens": "36",
+      "total": "32370.68"
+    },
+    {
+      "equipamentoTag": "PZE8D13",
+      "qtd_itens": "32",
+      "total": "23102.16"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01",
+      "qtd_itens": "1",
+      "total": "15000.00"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188",
+      "qtd_itens": "26",
+      "total": "14476.94"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ 01",
+      "qtd_itens": "13",
+      "total": "14306.06"
+    },
+    {
+      "equipamentoTag": "QMD 0H48",
+      "qtd_itens": "13",
+      "total": "12814.93"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "qtd_itens": "20",
+      "total": "11934.07"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE",
+      "qtd_itens": "55",
+      "total": "10554.38"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665",
+      "qtd_itens": "20",
+      "total": "9043.61"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI",
+      "qtd_itens": "198",
+      "total": "8550.34"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZT0105",
+      "qtd_itens": "25",
+      "total": "5567.97"
+    },
+    {
+      "equipamentoTag": "H380003",
+      "qtd_itens": "9",
+      "total": "4386.00"
+    },
+    {
+      "equipamentoTag": "H3800 02",
+      "qtd_itens": "25",
+      "total": "4129.57"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "qtd_itens": "39",
+      "total": "3758.11"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073",
+      "qtd_itens": "43",
+      "total": "3499.58"
+    },
+    {
+      "equipamentoTag": "RRG 6B68",
+      "qtd_itens": "11",
+      "total": "2956.51"
+    },
+    {
+      "equipamentoTag": "SIST. DESPOEIRAMENTO",
+      "qtd_itens": "11",
+      "total": "2163.40"
+    },
+    {
+      "equipamentoTag": "NNT 5E41",
+      "qtd_itens": "19",
+      "total": "2141.68"
+    },
+    {
+      "equipamentoTag": "NNT5E41",
+      "qtd_itens": "2",
+      "total": "1581.66"
+    },
+    {
+      "equipamentoTag": "PRANCHA 3 EIXOS",
+      "qtd_itens": "2",
+      "total": "934.32"
+    },
+    {
+      "equipamentoTag": "QMD0H48",
+      "qtd_itens": "2",
+      "total": "891.56"
+    },
+    {
+      "equipamentoTag": "HZH3J61",
+      "qtd_itens": "4",
+      "total": "765.61"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS",
+      "qtd_itens": "2",
+      "total": "526.15"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "qtd_itens": "3",
+      "total": "521.60"
+    },
+    {
+      "equipamentoTag": "TORNEARIA",
+      "qtd_itens": "11",
+      "total": "416.93"
+    },
+    {
+      "equipamentoTag": "PENEIRA 06 OM100VSI",
+      "qtd_itens": "6",
+      "total": "332.52"
+    },
+    {
+      "equipamentoTag": "QMK3A00 (RRF 4H99)",
+      "qtd_itens": "1",
+      "total": "310.04"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO",
+      "qtd_itens": "7",
+      "total": "221.58"
+    },
+    {
+      "equipamentoTag": "COMPRESSOR GA160",
+      "qtd_itens": "1",
+      "total": "207.19"
+    },
+    {
+      "equipamentoTag": "TC05 (B.MOVEL)",
+      "qtd_itens": "2",
+      "total": "145.76"
+    },
+    {
+      "equipamentoTag": "FAZENDA",
+      "qtd_itens": "2",
+      "total": "134.32"
+    },
+    {
+      "equipamentoTag": "TC01 (OM100 RM)",
+      "qtd_itens": "1",
+      "total": "83.29"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tqtd_itens\ttotal\nEXPLOSIVOS\t27\t137709.83\nPERFURATRIZ HIDR. 01\t123\t75771.14\nESCAVADEIRA R938\t46\t64753.46\nBRITADOR CS440\t33\t61249.74\n944 C\t38\t58738.97\nL566 02\t18\t56169.12\nJC1200 01\t66\t44651.46\nESCAVADEIRA R 938 02\t37\t42674.43\nL 566\t47\t41273.51\nIXD6D34\t68\t39324.27\nHP 200 ( METSO)\t34\t37666.96\nHL 76003\t41\t32573.40\nRUC4F80\t36\t32370.68\nPZE8D13\t32\t23102.16\nALIMENTADOR AVS01\t1\t15000.00\nCAMINHÃO NML0188\t26\t14476.94\nPERFURATRIZ 01\t13\t14306.06\nQMD 0H48\t13\t12814.93\nBRITADOR MOVEL\t20\t11934.07\nDRAGA D´ÁGUA A DIESE\t55\t10554.38\nCAMINHÃO HZK7665\t20\t9043.61\nMATERIAL EPI\t198\t8550.34\nCAMINHÃO HZT0105\t25\t5567.97\nH380003\t9\t4386.00\nH3800 02\t25\t4129.57\nOFICINABRITAGEM\t39\t3758.11\nCAMINHÃO AU5073\t43\t3499.58\nRRG 6B68\t11\t2956.51\nSIST. DESPOEIRAMENTO\t11\t2163.40\nNNT 5E41\t19\t2141.68\nNNT5E41\t2\t1581.66\nPRANCHA 3 EIXOS\t2\t934.32\nQMD0H48\t2\t891.56\nHZH3J61\t4\t765.61\nCARROS DIVERSOS\t2\t526.15\nBRITADOR MOVEL METSO\t3\t521.60\nTORNEARIA\t11\t416.93\nPENEIRA 06 OM100VSI\t6\t332.52\nQMK3A00 (RRF 4H99)\t1\t310.04\nMATERIAL DE CONSUMO\t7\t221.58\nCOMPRESSOR GA160\t1\t207.19\nTC05 (B.MOVEL)\t2\t145.76\nFAZENDA\t2\t134.32\nTC01 (OM100 RM)\t1\t83.29\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}

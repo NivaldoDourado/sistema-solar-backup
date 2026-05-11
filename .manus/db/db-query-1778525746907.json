@@ -1,0 +1,38 @@
+{
+  "query": "\nSELECT 'equipamento_excluido_tag' as fonte, tag as info FROM equipamento_excluido_tag\nUNION ALL\nSELECT 'equipamentos_excluidos' as fonte, CONCAT(id, ' - ', nomeDoEquipamento, ' - ', COALESCE(codigoTag, 'sem tag')) as info FROM equipamentos WHERE excluidoCusto = 'sim'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT 'equipamento_excluido_tag' as fonte, tag as info FROM equipamento_excluido_tag\nUNION ALL\nSELECT 'equipamentos_excluidos' as fonte, CONCAT(id, ' - ', nomeDoEquipamento, ' - ', COALESCE(codigoTag, 'sem tag')) as info FROM equipamentos WHERE excluidoCusto = 'sim'\n",
+  "rows": [
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "QMD 0H48"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "QMO6E54"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "QMD0H48"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "QMN1F10"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "SETOR RH"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "RRH 9F10"
+    },
+    {
+      "fonte": "equipamento_excluido_tag",
+      "info": "TNW 2I60"
+    }
+  ],
+  "messages": [],
+  "stdout": "fonte\tinfo\nequipamento_excluido_tag\tQMD 0H48\nequipamento_excluido_tag\tQMO6E54\nequipamento_excluido_tag\tQMD0H48\nequipamento_excluido_tag\tQMN1F10\nequipamento_excluido_tag\tSETOR RH\nequipamento_excluido_tag\tRRH 9F10\nequipamento_excluido_tag\tTNW 2I60\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}
