@@ -254,6 +254,8 @@ export interface RelatorioSecao {
   linhas: Array<{
     conta: string;
     divisor?: string;
+    totalCusto?: string;
+    totalDespesa?: string;
     valor: string;
     custoPorTon?: string;
     percentual?: string;
@@ -299,12 +301,17 @@ export function exportRelatorioToExcel(opts: RelatorioExportOptions) {
   }
   wsData.push([]);
 
-  // Colunas da tabela
+  // Colunas da tabela - detectar se usa totalCusto/totalDespesa
   const headerRow = wsData.length;
-  const COL_COUNT_ACTUAL = 6;
-  wsData.push(["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]);
+  const hasCD = secoes.some(s => s.linhas.some(l => l.totalCusto !== undefined));
+  const COL_COUNT_ACTUAL = hasCD ? 7 : 6;
+  if (hasCD) {
+    wsData.push(["Grupo / Subtotal", "Setor/Processo", "Total Custo (R$)", "Total Despesa (R$)", "Total Geral (R$)", "Custo/t (R$)", "%"]);
+  } else {
+    wsData.push(["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]);
+  }
 
-  // Atualizar merges anteriores para 6 colunas
+  // Atualizar merges anteriores para colunas corretas
   for (let i = 0; i < headerRow; i++) {
     const m = merges.find((m: any) => m.s.r === i);
     if (m) m.e.c = COL_COUNT_ACTUAL - 1;
@@ -314,23 +321,40 @@ export function exportRelatorioToExcel(opts: RelatorioExportOptions) {
   for (const secao of secoes) {
     // Título da seção
     const secaoRow = wsData.length;
-    wsData.push([secao.titulo, "", "", "", "", ""]);
+    const emptyRow = Array(COL_COUNT_ACTUAL).fill("");
+    emptyRow[0] = secao.titulo;
+    wsData.push(emptyRow);
     merges.push({ s: { r: secaoRow, c: 0 }, e: { r: secaoRow, c: COL_COUNT_ACTUAL - 1 } });
 
     for (const linha of secao.linhas) {
-      wsData.push([
-        linha.isSubtotal || linha.isTotal ? linha.conta : "",
-        linha.isSubtotal || linha.isTotal ? "" : linha.conta,
-        linha.divisor ?? "",
-        linha.valor,
-        linha.custoPorTon ?? "",
-        linha.percentual ?? "",
-      ]);
+      const isSpecial = linha.isSubtotal || linha.isTotal;
+      if (hasCD) {
+        wsData.push([
+          isSpecial ? linha.conta : "",
+          isSpecial ? "" : linha.conta,
+          linha.totalCusto ?? "",
+          linha.totalDespesa ?? "",
+          linha.valor,
+          linha.custoPorTon ?? "",
+          linha.percentual ?? "",
+        ]);
+      } else {
+        wsData.push([
+          isSpecial ? linha.conta : "",
+          isSpecial ? "" : linha.conta,
+          linha.divisor ?? "",
+          linha.valor,
+          linha.custoPorTon ?? "",
+          linha.percentual ?? "",
+        ]);
+      }
     }
   }
 
   const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws["!cols"] = [{ wch: 30 }, { wch: 35 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 10 }];
+  ws["!cols"] = hasCD
+    ? [{ wch: 30 }, { wch: 35 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 10 }]
+    : [{ wch: 30 }, { wch: 35 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 10 }];
   ws["!merges"] = merges;
 
   const wb = XLSX.utils.book_new();
@@ -400,24 +424,41 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   }
 
   // Tabela única contínua (sem quebra de página) com todas as seções
-  const tableHead = [["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]];
+  // Detectar se as seções usam totalCusto/totalDespesa (CustoSetor) ou não (ApuracaoCusto)
+  const hasCustoDesp = secoes.some(s => s.linhas.some(l => l.totalCusto !== undefined));
+  const tableHead = hasCustoDesp
+    ? [["Grupo / Subtotal", "Setor/Processo", "Total Custo (R$)", "Total Despesa (R$)", "Total Geral (R$)", "Custo/t (R$)", "%"]]
+    : [["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]];
 
   // Montar body com todas as seções concatenadas
   const fullBody: any[] = [];
+  const numCols = hasCustoDesp ? 7 : 6;
   for (const secao of secoes) {
     fullBody.push(
-      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 6 } }]
+      [{ content: secao.titulo, colSpan: numCols, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 6 } }]
     );
     for (const linha of secao.linhas) {
       const isSpecial = linha.isSubtotal || linha.isTotal;
-      fullBody.push([
-        { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
-        { content: isSpecial ? "" : linha.conta },
-        { content: linha.divisor ?? "" },
-        { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-        { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
-        { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-      ]);
+      if (hasCustoDesp) {
+        fullBody.push([
+          { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
+          { content: isSpecial ? "" : linha.conta },
+          { content: linha.totalCusto ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+          { content: linha.totalDespesa ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+          { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+          { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
+          { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+        ]);
+      } else {
+        fullBody.push([
+          { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
+          { content: isSpecial ? "" : linha.conta },
+          { content: linha.divisor ?? "" },
+          { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+          { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
+          { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+        ]);
+      }
     }
   }
 
@@ -428,7 +469,15 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     styles: { fontSize: 6, cellPadding: 0.8, overflow: "ellipsize" as const },
     headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 6 },
     alternateRowStyles: { fillColor: [248, 250, 252] as [number, number, number] },
-    columnStyles: {
+    columnStyles: hasCustoDesp ? {
+      0: { cellWidth: 26 },
+      1: { cellWidth: 44 },
+      2: { cellWidth: 24, halign: "right" as const },
+      3: { cellWidth: 24, halign: "right" as const },
+      4: { cellWidth: 26, halign: "right" as const },
+      5: { cellWidth: 14, halign: "right" as const },
+      6: { cellWidth: 10, halign: "right" as const },
+    } : {
       0: { cellWidth: 28 },
       1: { cellWidth: 52 },
       2: { cellWidth: 28 },

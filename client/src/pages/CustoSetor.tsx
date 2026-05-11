@@ -446,16 +446,34 @@ export default function CustoSetor() {
                   titulo: "Resumo Consolidado por Subsetor",
                   corCabecalho: [15, 23, 42] as [number, number, number],
                   linhas: [
-                    ...relatorio.grupos.flatMap((g: any) =>
-                      g.subsetores.map((s: any) => ({
+                    ...relatorio.grupos.flatMap((g: any) => [
+                      ...g.subsetores.map((s: any) => ({
                         conta: s.subsetorNome,
-                        divisor: g.grupoNome,
-                        valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                        totalCusto: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                        totalDespesa: fmtBRL(parseFloat(s.totalDespesa ?? "0")),
+                        valor: fmtBRL(parseFloat(s.totalGeral ?? "0")),
                         custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
                         percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
-                      }))
-                    ),
-                    { conta: "TOTAL DOS DESEMBOLSOS", valor: fmtBRL(totalGeral), custoPorTon: `R$ ${fmtTon(totalCustoTon)}`, percentual: "100,0%", isTotal: true },
+                      })),
+                      {
+                        conta: g.grupoNome,
+                        totalCusto: fmtBRL(g.subtotalCusto),
+                        totalDespesa: fmtBRL(g.subtotalDespesa),
+                        valor: fmtBRL(g.subtotalGeral),
+                        custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`,
+                        percentual: fmtPct(totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0),
+                        isSubtotal: true,
+                      },
+                    ]),
+                    {
+                      conta: "TOTAL DOS DESEMBOLSOS",
+                      totalCusto: fmtBRL(relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalCusto, 0)),
+                      totalDespesa: fmtBRL(relatorio.grupos.reduce((s: number, g: any) => s + g.subtotalDespesa, 0)),
+                      valor: fmtBRL(totalGeral),
+                      custoPorTon: `R$ ${fmtTon(totalCustoTon)}`,
+                      percentual: "100,0%",
+                      isTotal: true,
+                    },
                   ],
                 };
                 // Seções por grupo
@@ -472,11 +490,20 @@ export default function CustoSetor() {
                   linhas: [
                     ...g.subsetores.map((s: any) => ({
                       conta: s.subsetorNome,
-                      valor: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                      totalCusto: fmtBRL(parseFloat(s.totalCusto ?? "0")),
+                      totalDespesa: fmtBRL(parseFloat(s.totalDespesa ?? "0")),
+                      valor: fmtBRL(parseFloat(s.totalGeral ?? "0")),
                       custoPorTon: `R$ ${fmtTon(parseFloat(s.custoTon ?? "0"))}`,
                       percentual: fmtPct(totalGeral > 0 ? (parseFloat(s.totalGeral ?? "0") / totalGeral) * 100 : 0),
                     })),
-                    { conta: `SUBTOTAL ${g.grupoNome}`, valor: fmtBRL(g.subtotalGeral), custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`, isSubtotal: true },
+                    {
+                      conta: `SUBTOTAL ${g.grupoNome}`,
+                      totalCusto: fmtBRL(g.subtotalCusto),
+                      totalDespesa: fmtBRL(g.subtotalDespesa),
+                      valor: fmtBRL(g.subtotalGeral),
+                      custoPorTon: `R$ ${fmtTon(g.subtotalCustoTon)}`,
+                      isSubtotal: true,
+                    },
                   ],
                 }));
                 return [resumoConsolidado, ...secoesGrupos];
