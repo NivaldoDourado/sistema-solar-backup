@@ -1,0 +1,40 @@
+{
+  "query": "SELECT contaCustoId, setorId, equipamentoId, CAST(valor AS DECIMAL(15,2)) as valor FROM lancamento_salario WHERE periodoCustoId = 60001 AND contaCustoId IN (1, 12) ORDER BY contaCustoId, setorId",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT contaCustoId, setorId, equipamentoId, CAST(valor AS DECIMAL(15,2)) as valor FROM lancamento_salario WHERE periodoCustoId = 60001 AND contaCustoId IN (1, 12) ORDER BY contaCustoId, setorId",
+  "rows": [
+    {
+      "contaCustoId": "1",
+      "setorId": "1",
+      "equipamentoId": "NULL",
+      "valor": "136236.51"
+    },
+    {
+      "contaCustoId": "1",
+      "setorId": "15",
+      "equipamentoId": "NULL",
+      "valor": "107117.11"
+    },
+    {
+      "contaCustoId": "1",
+      "setorId": "60002",
+      "equipamentoId": "NULL",
+      "valor": "69906.65"
+    },
+    {
+      "contaCustoId": "1",
+      "setorId": "60003",
+      "equipamentoId": "NULL",
+      "valor": "112456.78"
+    },
+    {
+      "contaCustoId": "12",
+      "setorId": "120002",
+      "equipamentoId": "NULL",
+      "valor": "263969.96"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tsetorId\tequipamentoId\tvalor\n1\t1\tNULL\t136236.51\n1\t15\tNULL\t107117.11\n1\t60002\tNULL\t69906.65\n1\t60003\tNULL\t112456.78\n12\t120002\tNULL\t263969.96\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

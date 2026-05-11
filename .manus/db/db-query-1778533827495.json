@@ -1,0 +1,25 @@
+{
+  "query": "SELECT contaCustoId, COUNT(*) as qtd, SUM(CAST(valor AS DECIMAL(15,2))) as total FROM lancamento_salario WHERE periodoCustoId = 60001 GROUP BY contaCustoId ORDER BY contaCustoId",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT contaCustoId, COUNT(*) as qtd, SUM(CAST(valor AS DECIMAL(15,2))) as total FROM lancamento_salario WHERE periodoCustoId = 60001 GROUP BY contaCustoId ORDER BY contaCustoId",
+  "rows": [
+    {
+      "contaCustoId": "1",
+      "qtd": "4",
+      "total": "425717.05"
+    },
+    {
+      "contaCustoId": "12",
+      "qtd": "1",
+      "total": "263969.96"
+    },
+    {
+      "contaCustoId": "30004",
+      "qtd": "30",
+      "total": "147029.75"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tqtd\ttotal\n1\t4\t425717.05\n12\t1\t263969.96\n30004\t30\t147029.75\n",
+  "stderr": "",
+  "execution_time_ms": 377
+}

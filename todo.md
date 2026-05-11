@@ -951,3 +951,13 @@
 - [x] Adicionar linhas de subtotal por grupo na tabela
 - [x] Incluir totais de Total Custo e Total Despesa na linha de rodapé
 - [x] Verificar que Total Custo + Total Despesa = Total Geral
+
+## Bug: Total inflado no Relatório Analítico (R$ 3.196.739 vs R$ 2.771.022)
+- [x] Investigar por que o total é R$ 3.196.739,38 em vez de R$ 2.771.022,26
+  - Causa: Sal.Adm/Dir (R$ 425.717,05) duplicado - adicionado no convertRateioMemToAnalitico E no MSET
+- [x] Identificar a duplicidade ou fonte extra de dados
+  - convertRateioMemToAnalitico recebia salAdmDir como 2º arg e somava manualmente
+  - injetarDespesasMsetNoAnalitico já incluía Sal.Adm/Dir via MSET
+- [x] Corrigir para que o total bata com os outros relatórios
+  - Removida lógica duplicada: convertRateioMemToAnalitico agora recebe apenas rateio
+  - Total correto: R$ 2.771.022,33 (MEM R$ 1.119.057,35 + MSET R$ 1.651.964,98)

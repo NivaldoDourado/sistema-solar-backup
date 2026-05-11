@@ -19,50 +19,9 @@ import type { RateioMemResult } from "./rateioMem_calc";
  */
 async function convertRateioMemToAnalitico(
   rateio: RateioMemResult,
-  salarioRows: { id: number; contaCustoId: number; valor: string; equipamentoId: number | null; setorId: number | null; descricao: string | null }[],
-  db: any,
 ) {
-  // Buscar nomes de equipamentos e setores para salários manuais
-  const salEquipIds = salarioRows.filter(r => r.equipamentoId).map(r => r.equipamentoId!);
-  const salSetorIds = salarioRows.filter(r => r.setorId).map(r => r.setorId!);
-
-  let equipNomeMap = new Map<number, string>();
-  let setorNomeMap = new Map<number, string>();
-
-  if (salEquipIds.length > 0) {
-    const eqs = await db.select({ id: equipamentos.id, nomeDoEquipamento: equipamentos.nomeDoEquipamento, codigoTag: equipamentos.codigoTag }).from(equipamentos);
-    for (const e of eqs) {
-      equipNomeMap.set(e.id, e.codigoTag ? `${e.codigoTag} - ${e.nomeDoEquipamento}` : e.nomeDoEquipamento);
-    }
-  }
-
-  if (salSetorIds.length > 0) {
-    const secs = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
-    for (const s of secs) {
-      setorNomeMap.set(s.id, s.nome);
-    }
-  }
-
-  // Processar salários Adm/Diretoria como despesas específicas por subsetor
-  const salDespPorSubsetor = new Map<string, { subsetor: string; grupo: string; valor: number; descricao: string }[]>();
-  for (const sal of salarioRows) {
-    if ((sal.contaCustoId === CONTA_SAL_ADM_ID || sal.contaCustoId === CONTA_SAL_DIRETORIA_ID) && sal.setorId) {
-      const setorNome = setorNomeMap.get(sal.setorId);
-      if (!setorNome) continue;
-      const mapping = SETOR_PARA_SUBSETOR[setorNome.toUpperCase()];
-      if (!mapping) continue;
-      const key = `${mapping.grupo}||${mapping.subsetor}`;
-      if (!salDespPorSubsetor.has(key)) salDespPorSubsetor.set(key, []);
-      salDespPorSubsetor.get(key)!.push({
-        subsetor: mapping.subsetor,
-        grupo: mapping.grupo,
-        valor: parseFloat(sal.valor),
-        descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
-          ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos [Manual]"
-          : "Sal. Diretoria/Pró-Labore [Manual]",
-      });
-    }
-  }
+  // NOTA: Sal.Adm/Dir NÃO são processados aqui porque o MSET já os inclui
+  // e injetarDespesasMsetNoAnalitico() os injeta no relatório. Evita duplicidade.
 
   // Montar estrutura de grupos/subsetores a partir do rateio MEM
   type SubsetorData = {
@@ -126,44 +85,6 @@ async function convertRateioMemToAnalitico(
       };
       subsetoresMap[key].equipamentos.push(equipRow);
       subsetoresMap[key].totalEquipamentos += equip.despesas.total;
-    }
-  }
-
-  // Adicionar salários Adm/Diretoria como despesas específicas
-  for (const [key, salItems] of Array.from(salDespPorSubsetor.entries())) {
-    const porDescricao = new Map<string, number>();
-    for (const item of salItems) {
-      porDescricao.set(item.descricao, (porDescricao.get(item.descricao) ?? 0) + item.valor);
-    }
-
-    const firstItem = salItems[0];
-    if (!subsetoresMap[key]) {
-      subsetoresMap[key] = {
-        subsetorNome: firstItem.subsetor,
-        grupoNome: firstItem.grupo,
-        equipamentos: [],
-        despesasEspecificas: [],
-        totalEquipamentos: 0,
-        totalDespesasEspecificas: 0,
-        totalSubsetor: 0,
-      };
-    }
-
-    for (const [descricao, valor] of Array.from(porDescricao.entries())) {
-      const virtualDesp = {
-        id: -(subsetoresMap[key].despesasEspecificas.length + 1000),
-        periodoCustoId: 0,
-        subsetorNome: firstItem.subsetor,
-        grupoNome: firstItem.grupo,
-        descricao,
-        valor: valor.toFixed(2),
-        ordemExibicao: 999,
-        userId: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      subsetoresMap[key].despesasEspecificas.push(virtualDesp);
-      subsetoresMap[key].totalDespesasEspecificas += valor;
     }
   }
 
@@ -447,7 +368,7 @@ export const custoSetorRasRouter = router({
         const rateioResult = await calcularRateioMem(input.periodoCustoId);
         if (rateioResult.subsetores.length > 0) {
           // Converter resultado do rateio MEM para o formato do relatório analítico
-          const analitico = await convertRateioMemToAnalitico(rateioResult, salarioRows, db);
+          const analitico = await convertRateioMemToAnalitico(rateioResult);
 
           // Injetar despesas MSET on-the-fly (se não há dados importados na custo_setor_despesa)
           if (despesas.length === 0) {
