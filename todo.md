@@ -929,3 +929,10 @@
 - [x] Remover quebra de página entre seções (tudo contínuo)
 - [x] Diminuir altura das linhas (cellPadding 1.2, fontSize 7) para caber em 1 página
 - [x] Testar exportação PDF no novo formato
+
+## Ajustes nos Cards KPIs do Relatório Apuração de Custo
+- [x] Renomear "Custo Médio (R$/t)" para "C.M. s/ Despesas Indiretas"
+- [x] Inserir novo card "Total Desp. s/ Desp. Indiretas" antes do antigo "Total Geral"
+- [x] Renomear "Total Geral (R$)" para "Total Desp. c/ Despesas Indiretas"
+- [x] Mover os dois cards de Custo Médio para a direita (posições 5 e 6)
+- [x] Atualizar mensagem WhatsApp com novos nomes

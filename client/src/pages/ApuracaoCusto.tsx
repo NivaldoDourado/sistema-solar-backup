@@ -644,7 +644,7 @@ export default function ApuracaoCusto() {
     if (relatorio.totalDespesasIndiretas > 0) {
       msg += `  • Despesas Indiretas: R$ ${fmt(relatorio.totalDespesasIndiretas)} (${fmtPct(relatorio.totalGeral > 0 ? (relatorio.totalDespesasIndiretas / relatorio.totalGeral) * 100 : 0)})\n`;
     }
-    msg += `\n📈 *Custo Médio:* R$ ${fmt(relatorio.custoMedio)}/t`;
+    msg += `\n📈 *C.M. s/ Desp. Indiretas:* R$ ${fmt(relatorio.custoMedio)}/t`;
     if (relatorio.totalDespesasIndiretas > 0) {
       msg += `\n📈 *C.M. c/ Desp. Indiretas:* R$ ${fmt(relatorio.custoMedioComDI)}/t`;
     }
@@ -676,8 +676,9 @@ export default function ApuracaoCusto() {
                 const kpis = [
                   { label: "Produção (t)", value: relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "—" },
                   { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
-                  { label: "Total Geral (R$)", value: "R$ " + fmt(relatorio.totalGeral) },
-                  { label: "Custo Médio (R$/t)", value: "R$ " + fmt(relatorio.custoMedio) },
+                  { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
+                  { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
                   { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
                 ];
                 const secoes = [
@@ -709,8 +710,9 @@ export default function ApuracaoCusto() {
                     titulo: "Totais",
                     corCabecalho: [15, 23, 42] as [number, number, number],
                     linhas: [
-                      { conta: "TOTAL GERAL", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
-                      { conta: "CUSTO MÉDIO", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
+                      { conta: "TOTAL DESP. s/ DESP. INDIRETAS", valor: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel), isTotal: true },
+                      { conta: "TOTAL DESP. c/ DESPESAS INDIRETAS", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
+                      { conta: "C.M. s/ DESPESAS INDIRETAS", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
                       { conta: "C.M. c/ Despesas Indiretas", custoPorTon: "R$ " + fmt(relatorio.custoMedioComDI), valor: "", isTotal: true },
                     ],
                   },
@@ -733,8 +735,9 @@ export default function ApuracaoCusto() {
                 const kpis = [
                   { label: "Produção (t)", value: relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "—" },
                   { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
-                  { label: "Total Geral (R$)", value: "R$ " + fmt(relatorio.totalGeral) },
-                  { label: "Custo Médio (R$/t)", value: "R$ " + fmt(relatorio.custoMedio) },
+                  { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
+                  { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
                   { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
                 ];
                 const secoes = [
@@ -766,8 +769,9 @@ export default function ApuracaoCusto() {
                     titulo: "Totais",
                     corCabecalho: [15, 23, 42] as [number, number, number],
                     linhas: [
-                      { conta: "TOTAL GERAL", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
-                      { conta: "CUSTO MÉDIO", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
+                      { conta: "TOTAL DESP. s/ DESP. INDIRETAS", valor: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel), isTotal: true },
+                      { conta: "TOTAL DESP. c/ DESPESAS INDIRETAS", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
+                      { conta: "C.M. s/ DESPESAS INDIRETAS", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
                       { conta: "C.M. c/ Despesas Indiretas", custoPorTon: "R$ " + fmt(relatorio.custoMedioComDI), valor: "", isTotal: true },
                     ],
                   },
@@ -921,7 +925,7 @@ export default function ApuracaoCusto() {
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1 mb-1">
                   <Calculator className="h-3 w-3 text-violet-600" />
-                  <p className="text-xs text-muted-foreground">Custo Médio</p>
+                  <p className="text-xs text-muted-foreground">C.M. s/ Despesas Indiretas</p>
                 </div>
                 <p className="text-2xl font-bold text-violet-700 font-mono">
                   {(relatorio.producao > 0 || relatorio.vendas > 0) ? `R$ ${fmt(relatorio.custoMedio)}` : "—"}
