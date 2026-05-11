@@ -875,3 +875,12 @@
 - [x] Implementado buildTagsExcluidasFromIds() que mapeia IDs excluídos → tags via CORRESPONDENCIAS_FORCADAS e CORRESPONDENCIAS_APROVADAS
 - [x] Filtro também aplicado em resumoPorClassificacao e subsetoresOutrasDesp
 - [x] Validação: R$ 95.279,30 de redução confirmada (soma exata dos 5 equipamentos excluídos)
+
+## Itens Detalhados - Bloco de Despesas Específicas de Setores
+- [x] Criar procedure backend para listar despesas de setores (listarDespesasSetores + listarItensSetor)
+- [x] Implementar lógica de exclusão/reinclusão de despesas de setores (reutiliza equipamento_excluido_tag)
+- [x] Adicionar bloco visual separado na tela Itens Detalhados com as despesas de setores
+- [x] Garantir que exclusão de despesas de setores propague para Apuração de Custo (já propagava via rateioMem_calc.ts)
+- [x] Separar equipamentos e setores: remover tags de setores da lista de equipamentos (evitar duplicação)
+- [x] Expansão inline dos itens de cada setor com tabela detalhada
+- [x] Busca/filtro por setor e banner de setores excluídos

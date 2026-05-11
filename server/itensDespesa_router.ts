@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, sql, desc, asc } from "drizzle-orm";
+import { eq, and, sql, desc, asc, inArray } from "drizzle-orm";
 import { router, protectedProcedure } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "./db";
@@ -9,6 +9,7 @@ import {
   periodoCusto,
   equipamentoExcluidoTag,
 } from "../drizzle/schema";
+import { TAGS_OUTRAS_DESP_SETOR } from "./importDespesas_correspondencias";
 
 const CLASSIFICACAO_LABELS: Record<string, string> = {
   combustivel: "Combustível",
@@ -170,6 +171,7 @@ export const itensDespesaRouter = router({
 
       const idsExcluidos = await getIdsEquipExcluidos();
       const tagsExcluidas = await getTagsExcluidas();
+      const tagsSetores = new Set(Object.keys(TAGS_OUTRAS_DESP_SETOR).map(t => t.toUpperCase()));
 
       const result = await db2
         .select({
@@ -188,14 +190,17 @@ export const itensDespesaRouter = router({
         )
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
 
-      return result.map(r => ({
-        equipamentoTag: r.equipamentoTag,
-        equipamentoDescricao: r.equipamentoDescricao,
-        equipamentoSistemaId: r.equipamentoSistemaId,
-        totalItens: Number(r.totalItens),
-        totalCusto: Number(r.totalCusto) || 0,
-        excluidoCusto: (r.equipamentoSistemaId ? idsExcluidos.has(r.equipamentoSistemaId) : false) || tagsExcluidas.has(r.equipamentoTag.toUpperCase()),
-      }));
+      // Filtrar: remover tags que pertencem ao bloco de setores (exibidas separadamente)
+      return result
+        .filter(r => !tagsSetores.has(r.equipamentoTag.toUpperCase()))
+        .map(r => ({
+          equipamentoTag: r.equipamentoTag,
+          equipamentoDescricao: r.equipamentoDescricao,
+          equipamentoSistemaId: r.equipamentoSistemaId,
+          totalItens: Number(r.totalItens),
+          totalCusto: Number(r.totalCusto) || 0,
+          excluidoCusto: (r.equipamentoSistemaId ? idsExcluidos.has(r.equipamentoSistemaId) : false) || tagsExcluidas.has(r.equipamentoTag.toUpperCase()),
+        }));
     }),
 
   // Listar equipamentos filtrados por uma classificação específica (para drill-down por conta)
@@ -540,6 +545,83 @@ export const itensDespesaRouter = router({
         custo: Number(r.custo) || 0,
         centroCusto: r.centroCusto,
         hodometro: r.hodometro ? Number(r.hodometro) : null,
+        observacoes: r.observacoes,
+      }));
+    }),
+
+  // =============================================
+  // DESPESAS ESPECÍFICAS DE SETORES
+  // =============================================
+
+  // Listar despesas de setores agrupadas por tag (setor) para um período
+  listarDespesasSetores: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const tagsExcluidas = await getTagsExcluidas();
+      const tagsSetores = Object.keys(TAGS_OUTRAS_DESP_SETOR);
+
+      if (tagsSetores.length === 0) return [];
+
+      const result = await db2
+        .select({
+          equipamentoTag: itemDespesaImportado.equipamentoTag,
+          equipamentoDescricao: itemDespesaImportado.equipamentoDescricao,
+          totalItens: sql<number>`COUNT(*)`.as("totalItens"),
+          totalCusto: sql<string>`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`.as("totalCusto"),
+        })
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          inArray(itemDespesaImportado.equipamentoTag, tagsSetores),
+        ))
+        .groupBy(
+          itemDespesaImportado.equipamentoTag,
+          itemDespesaImportado.equipamentoDescricao,
+        )
+        .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
+
+      return result.map(r => ({
+        equipamentoTag: r.equipamentoTag,
+        equipamentoDescricao: r.equipamentoDescricao,
+        setorDestino: TAGS_OUTRAS_DESP_SETOR[r.equipamentoTag] || "OUTROS SERVIÇOS",
+        totalItens: Number(r.totalItens),
+        totalCusto: Number(r.totalCusto) || 0,
+        excluidoCusto: tagsExcluidas.has(r.equipamentoTag.toUpperCase()),
+      }));
+    }),
+
+  // Listar itens detalhados de uma tag de setor
+  listarItensSetor: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+      equipamentoTag: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const result = await db2
+        .select()
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          eq(itemDespesaImportado.equipamentoTag, input.equipamentoTag),
+        ))
+        .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+      return result.map(r => ({
+        id: r.id,
+        sequencia: r.sequencia,
+        data: r.data,
+        produto: r.produto,
+        grupoProduto: r.grupoProduto,
+        classificacao: r.classificacao,
+        quantidade: Number(r.quantidade) || 0,
+        custo: Number(r.custo) || 0,
+        centroCusto: r.centroCusto,
         observacoes: r.observacoes,
       }));
     }),

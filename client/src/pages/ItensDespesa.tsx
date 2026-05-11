@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, ChevronDown, ArrowLeft, Fuel, Wrench, Cog, Package, FileText, Search, TrendingUp, AlertTriangle, Gauge, Ban, RotateCcw, ShieldAlert } from "lucide-react";
+import { ChevronRight, ChevronDown, ArrowLeft, Fuel, Wrench, Cog, Package, FileText, Search, TrendingUp, AlertTriangle, Gauge, Ban, RotateCcw, ShieldAlert, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -442,6 +442,40 @@ export default function ItensDespesa() {
     { enabled: !!selectedPeriodoId }
   );
 
+  // Despesas específicas de setores
+  const { data: despesasSetoresData, isLoading: loadingSetores } = trpc.itensDespesa.listarDespesasSetores.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId }
+  );
+
+  // State para expandir itens de um setor e busca
+  const [expandedSetor, setExpandedSetor] = useState<string | null>(null);
+  const [searchSetor, setSearchSetor] = useState("");
+
+  // Filtrar setores
+  const filteredSetores = useMemo(() => {
+    if (!despesasSetoresData) return [];
+    if (!searchSetor) return despesasSetoresData;
+    const s = searchSetor.toLowerCase();
+    return despesasSetoresData.filter(st =>
+      st.equipamentoTag.toLowerCase().includes(s) ||
+      (st.equipamentoDescricao || "").toLowerCase().includes(s) ||
+      st.setorDestino.toLowerCase().includes(s)
+    );
+  }, [despesasSetoresData, searchSetor]);
+
+  // Contar setores excluídos
+  const setoresExcluidos = useMemo(() => {
+    if (!despesasSetoresData) return [];
+    return despesasSetoresData.filter(s => s.excluidoCusto);
+  }, [despesasSetoresData]);
+
+  // Buscar itens detalhados do setor expandido
+  const { data: itensSetorData, isLoading: loadingItensSetor } = trpc.itensDespesa.listarItensSetor.useQuery(
+    { periodoCustoId: selectedPeriodoId!, equipamentoTag: expandedSetor! },
+    { enabled: !!selectedPeriodoId && !!expandedSetor }
+  );
+
   // Mutation para toggle de exclusão
   const toggleExcluido = trpc.equipamentos.toggleExcluidoCusto.useMutation({
     onSuccess: (_, variables) => {
@@ -759,6 +793,190 @@ export default function ItensDespesa() {
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </TableCell>
                           </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ============================================= */}
+            {/* BLOCO 2: DESPESAS ESPECÍFICAS DE SETORES */}
+            {/* ============================================= */}
+            {/* Banner de setores excluídos */}
+            {!selectedEquipTag && setoresExcluidos.length > 0 && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800">
+                <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <div className="text-sm">
+                  <span className="font-medium text-indigo-800 dark:text-indigo-200">
+                    {setoresExcluidos.length} despesa{setoresExcluidos.length > 1 ? "s" : ""} de setor excluída{setoresExcluidos.length > 1 ? "s" : ""} dos cálculos:
+                  </span>{" "}
+                  <span className="text-indigo-700 dark:text-indigo-300">
+                    {setoresExcluidos.map(e => e.equipamentoTag).join(", ")}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!selectedEquipTag && despesasSetoresData && despesasSetoresData.length > 0 && (
+              <Card className="border-t-4 border-t-indigo-500">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                      Despesas Específicas de Setores
+                      <span className="text-sm font-normal text-muted-foreground">({despesasSetoresData.length} setores)</span>
+                    </CardTitle>
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-56">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar setor..."
+                          value={searchSetor}
+                          onChange={(e) => setSearchSetor(e.target.value)}
+                          className="pl-8 h-9"
+                        />
+                      </div>
+                      <div className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                        Total: {formatCurrency(despesasSetoresData.filter(s => !s.excluidoCusto).reduce((sum, s) => sum + s.totalCusto, 0))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Despesas não vinculadas a equipamentos específicos, alocadas diretamente aos setores.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {loadingSetores ? (
+                    <div className="text-center py-8 text-muted-foreground">Carregando despesas de setores...</div>
+                  ) : filteredSetores.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">Nenhum setor encontrado com este filtro.</div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[40px]"></TableHead>
+                          <TableHead>Tag / Origem</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead>Setor Destino</TableHead>
+                          <TableHead className="text-right">Itens</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                          <TableHead className="w-[100px] text-center">Custo</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredSetores.map(setor => (
+                          <React.Fragment key={setor.equipamentoTag}>
+                            <TableRow
+                              className={`cursor-pointer hover:bg-muted/50 ${setor.excluidoCusto ? "opacity-50 bg-red-50/50 dark:bg-red-950/20" : ""}`}
+                              onClick={() => setExpandedSetor(expandedSetor === setor.equipamentoTag ? null : setor.equipamentoTag)}
+                            >
+                              <TableCell className="px-2">
+                                {expandedSetor === setor.equipamentoTag ? (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  {setor.equipamentoTag}
+                                  {setor.excluidoCusto && (
+                                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                      EXCLUÍDO
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">{setor.equipamentoDescricao || "-"}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800">
+                                  {setor.setorDestino}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">{setor.totalItens}</TableCell>
+                              <TableCell className={`text-right font-semibold ${setor.excluidoCusto ? "line-through text-muted-foreground" : ""}`}>
+                                {formatCurrency(setor.totalCusto)}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Button
+                                  variant={setor.excluidoCusto ? "outline" : "ghost"}
+                                  size="sm"
+                                  className={`h-7 px-2 text-xs ${setor.excluidoCusto
+                                    ? "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950"
+                                    : "text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExcludeDialogEquip({
+                                      tag: setor.equipamentoTag,
+                                      descricao: setor.equipamentoDescricao,
+                                      sistemaId: null,
+                                      excluido: setor.excluidoCusto,
+                                    });
+                                  }}
+                                  title={setor.excluidoCusto ? "Reincluir nos cálculos" : "Excluir dos cálculos de custo"}
+                                >
+                                  {setor.excluidoCusto ? (
+                                    <><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reincluir</>
+                                  ) : (
+                                    <><Ban className="h-3.5 w-3.5 mr-1" /> Excluir</>
+                                  )}
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                            {/* Itens expandidos do setor */}
+                            {expandedSetor === setor.equipamentoTag && (
+                              <TableRow>
+                                <TableCell colSpan={7} className="p-0">
+                                  <div className="bg-muted/30 border-t border-b px-6 py-4">
+                                    {loadingItensSetor ? (
+                                      <div className="text-center py-4 text-muted-foreground text-sm">Carregando itens...</div>
+                                    ) : !itensSetorData || itensSetorData.length === 0 ? (
+                                      <div className="text-center py-4 text-muted-foreground text-sm">Nenhum item encontrado.</div>
+                                    ) : (
+                                      <div className="overflow-x-auto">
+                                        <Table>
+                                          <TableHeader>
+                                            <TableRow className="text-xs">
+                                              <TableHead className="w-[80px]">Data</TableHead>
+                                              <TableHead>Produto</TableHead>
+                                              <TableHead className="text-right w-[70px]">Qtd</TableHead>
+                                              <TableHead className="text-right w-[110px]">Custo</TableHead>
+                                              <TableHead className="w-[180px]">Observações</TableHead>
+                                            </TableRow>
+                                          </TableHeader>
+                                          <TableBody>
+                                            {itensSetorData.map((item) => (
+                                              <TableRow key={item.id} className="text-xs">
+                                                <TableCell>{item.data || "-"}</TableCell>
+                                                <TableCell>
+                                                  <div className="font-medium">{item.produto}</div>
+                                                  {item.grupoProduto && (
+                                                    <div className="text-muted-foreground text-[10px]">{item.grupoProduto}</div>
+                                                  )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                  {formatNumber(item.quantidade, item.quantidade % 1 === 0 ? 0 : 2)}
+                                                </TableCell>
+                                                <TableCell className="text-right font-semibold">
+                                                  {formatCurrency(item.custo)}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground max-w-[180px] truncate" title={item.observacoes || ""}>
+                                                  {item.observacoes || "-"}
+                                                </TableCell>
+                                              </TableRow>
+                                            ))}
+                                          </TableBody>
+                                        </Table>
+                                      </div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </React.Fragment>
                         ))}
                       </TableBody>
                     </Table>

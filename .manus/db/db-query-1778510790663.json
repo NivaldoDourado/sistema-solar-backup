@@ -1,0 +1,82 @@
+{
+  "query": "SELECT equipamentoTag, equipamentoDescricao, COUNT(*) as totalItens, SUM(CAST(custo AS DECIMAL(14,2))) as totalCusto FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND equipamentoTag IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA') GROUP BY equipamentoTag, equipamentoDescricao ORDER BY totalCusto DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, equipamentoDescricao, COUNT(*) as totalItens, SUM(CAST(custo AS DECIMAL(14,2))) as totalCusto FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 4 AND ano = 2026 LIMIT 1) AND equipamentoTag IN ('OUTROS', 'SETOR RH', 'ALMOXARIFADO', 'CANTINA', 'CARROS DIVERSOS', 'FAZENDA', 'MATERIAL DE CONSUMO', 'MATERIAL EPI', 'OBRA ALMOXARIFADO', 'OBRAS', 'OFICINA', 'OFICINABRITAGEM', 'SIST. DESPOEIRAMENTO', 'SUBSTAÇÃO', 'TORNEARIA') GROUP BY equipamentoTag, equipamentoDescricao ORDER BY totalCusto DESC;",
+  "rows": [
+    {
+      "equipamentoTag": "OUTROS",
+      "equipamentoDescricao": "OUTROS",
+      "totalItens": "23",
+      "totalCusto": "24408.71"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI",
+      "equipamentoDescricao": "EPI",
+      "totalItens": "198",
+      "totalCusto": "8550.34"
+    },
+    {
+      "equipamentoTag": "SETOR RH",
+      "equipamentoDescricao": "SETOR RECURSOS HUMANOS",
+      "totalItens": "31",
+      "totalCusto": "4525.79"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM",
+      "equipamentoDescricao": "OFICINA - BRITAGEM",
+      "totalItens": "39",
+      "totalCusto": "3758.11"
+    },
+    {
+      "equipamentoTag": "SIST. DESPOEIRAMENTO",
+      "equipamentoDescricao": "SISTEMA DESPOEIRAMENTO DA BRITAGEM",
+      "totalItens": "11",
+      "totalCusto": "2163.40"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "equipamentoDescricao": "CANTINA",
+      "totalItens": "2",
+      "totalCusto": "1159.00"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS",
+      "equipamentoDescricao": "CARROS DIVERSOS",
+      "totalItens": "2",
+      "totalCusto": "526.15"
+    },
+    {
+      "equipamentoTag": "TORNEARIA",
+      "equipamentoDescricao": "TORNEARIA",
+      "totalItens": "11",
+      "totalCusto": "416.93"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "equipamentoDescricao": "ALMOXARIFADO",
+      "totalItens": "11",
+      "totalCusto": "386.32"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO",
+      "equipamentoDescricao": "MATERIAL DE CONSUMO",
+      "totalItens": "7",
+      "totalCusto": "221.58"
+    },
+    {
+      "equipamentoTag": "FAZENDA",
+      "equipamentoDescricao": "FAZENDA BONANZA",
+      "totalItens": "2",
+      "totalCusto": "134.32"
+    },
+    {
+      "equipamentoTag": "SUBSTAÇÃO",
+      "equipamentoDescricao": "SUBSTAÇÃO",
+      "totalItens": "1",
+      "totalCusto": "3.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\ttotalItens\ttotalCusto\nOUTROS\tOUTROS\t23\t24408.71\nMATERIAL EPI\tEPI\t198\t8550.34\nSETOR RH\tSETOR RECURSOS HUMANOS\t31\t4525.79\nOFICINABRITAGEM\tOFICINA - BRITAGEM\t39\t3758.11\nSIST. DESPOEIRAMENTO\tSISTEMA DESPOEIRAMENTO DA BRITAGEM\t11\t2163.40\nCANTINA\tCANTINA\t2\t1159.00\nCARROS DIVERSOS\tCARROS DIVERSOS\t2\t526.15\nTORNEARIA\tTORNEARIA\t11\t416.93\nALMOXARIFADO\tALMOXARIFADO\t11\t386.32\nMATERIAL DE CONSUMO\tMATERIAL DE CONSUMO\t7\t221.58\nFAZENDA\tFAZENDA BONANZA\t2\t134.32\nSUBSTAÇÃO\tSUBSTAÇÃO\t1\t3.00\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}
