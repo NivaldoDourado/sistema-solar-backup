@@ -966,3 +966,10 @@
 - [x] Adicionar separador visual (linha/borda) entre os totais de cada grupo
 - [x] Destacar linhas de total de grupo em vermelho (texto ou fundo)
 - [x] Aplicar tanto na tela quanto no PDF exportado
+
+## Comparativos Históricos - Seletor Multi-período e Tabelas Comparativas
+- [x] Seletor de múltiplos períodos para comparação acumulada (ex: dez/25, jan/26, fev/26, mar/26)
+- [x] Backend: endpoint para retornar dados acumulados de múltiplos períodos
+- [x] Tabela comparativa por Plano de Custo (contas x períodos selecionados)
+- [x] Tabela comparativa por Setores (setores x períodos selecionados)
+- [ ] Integrar gráficos existentes com os períodos selecionados [futuro]

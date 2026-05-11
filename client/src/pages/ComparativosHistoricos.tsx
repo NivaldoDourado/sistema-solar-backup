@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, BarChart3, DollarSign, Truck, Fuel,
-  Factory, ShoppingCart, AlertCircle, Download, FileText
+  Factory, ShoppingCart, AlertCircle, Download, FileText, CalendarDays, X, Plus
 } from "lucide-react";
 import { exportToExcel, exportToPDF } from "@/lib/export-utils";
 import { MessageCircle } from "lucide-react";
@@ -129,6 +129,16 @@ export default function ComparativosHistoricos() {
   const [anoFim, setAnoFim] = useState(ANO_ATUAL);
   const [activeTab, setActiveTab] = useState("financeiro");
 
+  // Estado para Comparativo Multi-período
+  const [periodosSelecionados, setPeriodosSelecionados] = useState<{ mes: number; ano: number }[]>([
+    { mes: 12, ano: ANO_ATUAL - 1 },
+    { mes: 1, ano: ANO_ATUAL },
+    { mes: 2, ano: ANO_ATUAL },
+    { mes: 3, ano: ANO_ATUAL },
+  ]);
+  const [novoPeriodoMes, setNovoPeriodoMes] = useState(4);
+  const [novoPeriodoAno, setNovoPeriodoAno] = useState(ANO_ATUAL);
+
   const { data: serieData, isLoading: loadingSerie } = trpc.comparativos.serieHistorica.useQuery(
     { anoInicio, anoFim },
     { enabled: anoInicio <= anoFim }
@@ -143,6 +153,29 @@ export default function ComparativosHistoricos() {
     { anoInicio, anoFim },
     { enabled: anoInicio <= anoFim }
   );
+
+  // Queries para Comparativo Multi-período
+  const { data: planoCustoData, isLoading: loadingPlanoCusto } = trpc.comparativos.comparativoPlanoCusto.useQuery(
+    { periodos: periodosSelecionados },
+    { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
+  );
+  const { data: setoresData, isLoading: loadingSetores } = trpc.comparativos.comparativoSetores.useQuery(
+    { periodos: periodosSelecionados },
+    { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
+  );
+
+  const addPeriodo = useCallback(() => {
+    const exists = periodosSelecionados.some(p => p.mes === novoPeriodoMes && p.ano === novoPeriodoAno);
+    if (!exists && periodosSelecionados.length < 12) {
+      const newPeriodos = [...periodosSelecionados, { mes: novoPeriodoMes, ano: novoPeriodoAno }]
+        .sort((a, b) => a.ano !== b.ano ? a.ano - b.ano : a.mes - b.mes);
+      setPeriodosSelecionados(newPeriodos);
+    }
+  }, [periodosSelecionados, novoPeriodoMes, novoPeriodoAno]);
+
+  const removePeriodo = useCallback((idx: number) => {
+    setPeriodosSelecionados(prev => prev.filter((_, i) => i !== idx));
+  }, []);
 
   // Destinatários WhatsApp
   const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
@@ -314,6 +347,7 @@ export default function ComparativosHistoricos() {
           <TabsTrigger value="custoSetor">Custo por Setor</TabsTrigger>
           <TabsTrigger value="combustivel">Combustível</TabsTrigger>
           <TabsTrigger value="tabela">Tabela Resumo</TabsTrigger>
+          <TabsTrigger value="comparativo" className="bg-blue-50 text-blue-700 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Comparativo Multi-período</TabsTrigger>
         </TabsList>
 
         {/* ABA: Financeiro */}
@@ -804,6 +838,245 @@ export default function ComparativosHistoricos() {
                         {totalProducao > 0 ? `R$ ${fmt(totalCusto / totalProducao, 2)}` : "—"}
                       </td>
                       <td className="py-2 px-2 text-right font-mono text-orange-600">{fmt(totalCombustivel, 0)} L</td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ABA: Comparativo Multi-período */}
+        <TabsContent value="comparativo" className="space-y-6 mt-4">
+          {/* Seletor de Períodos */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-base">Seleção de Períodos para Comparação</CardTitle>
+              </div>
+              <CardDescription>Escolha os períodos que deseja comparar (máximo 12). Os dados serão apresentados de forma acumulada.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Períodos selecionados */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {periodosSelecionados.map((p, idx) => (
+                  <Badge key={`${p.ano}-${p.mes}`} variant="secondary" className="text-sm py-1 px-3 gap-1.5 bg-blue-100 text-blue-800 hover:bg-blue-200">
+                    {String(p.mes).padStart(2, "0")}/{p.ano}
+                    <button onClick={() => removePeriodo(idx)} className="ml-1 hover:text-red-600">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {periodosSelecionados.length === 0 && (
+                  <span className="text-sm text-muted-foreground">Nenhum período selecionado. Adicione períodos abaixo.</span>
+                )}
+              </div>
+              {/* Adicionar período */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Select value={String(novoPeriodoMes)} onValueChange={(v) => setNovoPeriodoMes(Number(v))}>
+                  <SelectTrigger className="w-28 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                      <SelectItem key={m} value={String(m)}>
+                        {["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][m-1]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={String(novoPeriodoAno)} onValueChange={(v) => setNovoPeriodoAno(Number(v))}>
+                  <SelectTrigger className="w-24 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ANOS.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" className="gap-1" onClick={addPeriodo}>
+                  <Plus className="h-4 w-4" />
+                  Adicionar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tabela Comparativa por Plano de Custo */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Comparativo por Plano de Custo</CardTitle>
+                  <CardDescription>Valores acumulados de cada conta nos períodos selecionados</CardDescription>
+                </div>
+                {planoCustoData && planoCustoData.contas.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      const labels = planoCustoData.labels;
+                      const cols = [
+                        { header: "Conta / Descrição", key: "descricao", width: 30 },
+                        ...labels.map((l, i) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+                        { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+                      ];
+                      const data = planoCustoData.contas.map(c => {
+                        const row: Record<string, any> = { descricao: c.descricao, total: c.total };
+                        c.valores.forEach((v, i) => { row[`p${i}`] = v; });
+                        return row;
+                      });
+                      // Linha de total
+                      const totalRow: Record<string, any> = { descricao: "TOTAL GERAL" };
+                      labels.forEach((_, i) => {
+                        totalRow[`p${i}`] = planoCustoData.contas.reduce((s, c) => s + c.valores[i], 0);
+                      });
+                      totalRow.total = planoCustoData.contas.reduce((s, c) => s + c.total, 0);
+                      data.push(totalRow);
+                      exportToExcel({ title: "Comparativo por Plano de Custo", subtitle: `Períodos: ${labels.join(", ")}`, filename: "comparativo_plano_custo", columns: cols, data });
+                    }}
+                  >
+                    <Download className="h-4 w-4" /> Excel
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              {loadingPlanoCusto ? (
+                <div className="h-32 flex items-center justify-center text-muted-foreground text-sm">Carregando...</div>
+              ) : !planoCustoData || planoCustoData.contas.length === 0 ? (
+                <EmptyState message="Nenhum dado de custo encontrado para os períodos selecionados." />
+              ) : (
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-blue-200 bg-blue-50">
+                      <th className="text-left py-2 px-3 font-semibold text-blue-800 min-w-[200px]">Conta / Descrição</th>
+                      {planoCustoData.labels.map(l => (
+                        <th key={l} className="text-right py-2 px-3 font-semibold text-blue-800 min-w-[110px]">{l}</th>
+                      ))}
+                      <th className="text-right py-2 px-3 font-bold text-blue-900 min-w-[120px]">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {planoCustoData.contas.map((conta, i) => (
+                      <tr key={conta.descricao} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                        <td className="py-2 px-3 font-medium text-foreground">{conta.descricao}</td>
+                        {conta.valores.map((v, j) => (
+                          <td key={j} className="py-2 px-3 text-right font-mono text-foreground">
+                            {v > 0 ? `R$ ${fmt(v)}` : "—"}
+                          </td>
+                        ))}
+                        <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
+                          R$ {fmt(conta.total)}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Linha de Total Geral */}
+                    <tr className="border-t-2 border-red-300 bg-red-50 font-bold">
+                      <td className="py-2 px-3 text-red-800">TOTAL GERAL</td>
+                      {planoCustoData.labels.map((_, j) => {
+                        const totalCol = planoCustoData.contas.reduce((s, c) => s + c.valores[j], 0);
+                        return (
+                          <td key={j} className="py-2 px-3 text-right font-mono text-red-700">
+                            R$ {fmt(totalCol)}
+                          </td>
+                        );
+                      })}
+                      <td className="py-2 px-3 text-right font-mono text-red-800">
+                        R$ {fmt(planoCustoData.contas.reduce((s, c) => s + c.total, 0))}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Tabela Comparativa por Setores */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Comparativo por Setores</CardTitle>
+                  <CardDescription>Valores acumulados de cada setor/grupo nos períodos selecionados</CardDescription>
+                </div>
+                {setoresData && setoresData.setores.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      const labels = setoresData.labels;
+                      const cols = [
+                        { header: "Setor / Grupo", key: "grupoNome", width: 25 },
+                        ...labels.map((l, i) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+                        { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+                      ];
+                      const data = setoresData.setores.map(s => {
+                        const row: Record<string, any> = { grupoNome: s.grupoNome, total: s.total };
+                        s.valores.forEach((v, i) => { row[`p${i}`] = v; });
+                        return row;
+                      });
+                      // Linha de total
+                      const totalRow: Record<string, any> = { grupoNome: "TOTAL GERAL" };
+                      labels.forEach((_, i) => {
+                        totalRow[`p${i}`] = setoresData.setores.reduce((s, c) => s + c.valores[i], 0);
+                      });
+                      totalRow.total = setoresData.setores.reduce((s, c) => s + c.total, 0);
+                      data.push(totalRow);
+                      exportToExcel({ title: "Comparativo por Setores", subtitle: `Períodos: ${labels.join(", ")}`, filename: "comparativo_setores", columns: cols, data });
+                    }}
+                  >
+                    <Download className="h-4 w-4" /> Excel
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              {loadingSetores ? (
+                <div className="h-32 flex items-center justify-center text-muted-foreground text-sm">Carregando...</div>
+              ) : !setoresData || setoresData.setores.length === 0 ? (
+                <EmptyState message="Nenhum dado de setor encontrado para os períodos selecionados." />
+              ) : (
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-green-200 bg-green-50">
+                      <th className="text-left py-2 px-3 font-semibold text-green-800 min-w-[200px]">Setor / Grupo</th>
+                      {setoresData.labels.map(l => (
+                        <th key={l} className="text-right py-2 px-3 font-semibold text-green-800 min-w-[110px]">{l}</th>
+                      ))}
+                      <th className="text-right py-2 px-3 font-bold text-green-900 min-w-[120px]">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {setoresData.setores.map((setor, i) => (
+                      <tr key={setor.grupoNome} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                        <td className="py-2 px-3 font-medium text-foreground">{setor.grupoNome}</td>
+                        {setor.valores.map((v, j) => (
+                          <td key={j} className="py-2 px-3 text-right font-mono text-foreground">
+                            {v > 0 ? `R$ ${fmt(v)}` : "—"}
+                          </td>
+                        ))}
+                        <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
+                          R$ {fmt(setor.total)}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Linha de Total Geral */}
+                    <tr className="border-t-2 border-red-300 bg-red-50 font-bold">
+                      <td className="py-2 px-3 text-red-800">TOTAL GERAL</td>
+                      {setoresData.labels.map((_, j) => {
+                        const totalCol = setoresData.setores.reduce((s, c) => s + c.valores[j], 0);
+                        return (
+                          <td key={j} className="py-2 px-3 text-right font-mono text-red-700">
+                            R$ {fmt(totalCol)}
+                          </td>
+                        );
+                      })}
+                      <td className="py-2 px-3 text-right font-mono text-red-800">
+                        R$ {fmt(setoresData.setores.reduce((s, c) => s + c.total, 0))}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
