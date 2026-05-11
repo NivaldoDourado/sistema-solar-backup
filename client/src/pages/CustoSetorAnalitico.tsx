@@ -742,6 +742,20 @@ export default function CustoSetorAnalitico() {
                     />
                   );
                 })}
+
+                {/* Barra de Total do Grupo - destaque vermelho com separador */}
+                <div className="mt-3 border-t-4 border-red-600 pt-3">
+                  <div className="flex items-center justify-between bg-red-50 border border-red-300 rounded-lg px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-600"></div>
+                      <span className="text-sm font-bold text-red-800">TOTAL DO GRUPO: {grupo.grupoNome}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-red-600 font-medium">{fmtPct(pct)} do total geral</span>
+                      <span className="text-lg font-bold font-mono text-red-700">{fmtBRL(grupo.totalGrupo)}</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             )}
           </Card>

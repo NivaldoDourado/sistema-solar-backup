@@ -961,3 +961,8 @@
 - [x] Corrigir para que o total bata com os outros relatórios
   - Removida lógica duplicada: convertRateioMemToAnalitico agora recebe apenas rateio
   - Total correto: R$ 2.771.022,33 (MEM R$ 1.119.057,35 + MSET R$ 1.651.964,98)
+
+## Relatório Analítico - Separador e Destaque nos Totais de Grupo
+- [x] Adicionar separador visual (linha/borda) entre os totais de cada grupo
+- [x] Destacar linhas de total de grupo em vermelho (texto ou fundo)
+- [x] Aplicar tanto na tela quanto no PDF exportado
