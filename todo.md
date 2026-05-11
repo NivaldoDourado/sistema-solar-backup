@@ -936,3 +936,9 @@
 - [x] Renomear "Total Geral (R$)" para "Total Desp. c/ Despesas Indiretas"
 - [x] Mover os dois cards de Custo Médio para a direita (posições 5 e 6)
 - [x] Atualizar mensagem WhatsApp com novos nomes
+
+## Melhorias na tela Custo por Setor
+- [x] Corrigir responsividade (flex-col mobile, overflow-hidden, padding responsivo)
+- [x] Substituir cards atuais (Total Geral, Custo Médio, Grupos) pelos 6 KPIs da Apuração de Custo
+- [x] PDF já usa exportRelatorioToPDF em formato retrato com compactação (1 página)
+- [x] Atualizar buildKpis e mensagem WhatsApp com os 6 KPIs

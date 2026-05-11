@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart } from "lucide-react";
+import { Upload, RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, PieChart, Factory, Building2, TrendingUp, Calculator, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { exportRelatorioToExcel, exportRelatorioToPDF } from "@/lib/export-utils";
 import { DonutChartModal } from "@/components/DonutChartModal";
@@ -182,6 +182,81 @@ export default function CustoSetor() {
   const producaoTotal = producaoModulo?.total ?? parseFloat(periodoAtual?.producaoTotal ?? "0") ?? 0;
   const vendasTotal = parseFloat(periodoAtual?.quantidadeVendida ?? "0") || 0;
 
+  // Buscar lançamentos de custo para calcular KPIs detalhados
+  const { data: lancamentosCusto } = trpc.lancamentoCusto.listByPeriodo.useQuery(
+    { periodoCustoId: periodoSelecionado! },
+    { enabled: !!periodoSelecionado }
+  );
+
+  // Buscar vendas ERP
+  const periodoVendasDatas = useMemo(() => {
+    if (!periodoAtual) return null;
+    const mes = String(periodoAtual.mes).padStart(2, "0");
+    const ano = periodoAtual.ano;
+    const lastDay = new Date(ano, periodoAtual.mes, 0).getDate();
+    return {
+      periodoInicio: `${ano}-${mes}-01`,
+      periodoFim: `${ano}-${mes}-${String(lastDay).padStart(2, "0")}`,
+    };
+  }, [periodoAtual]);
+  const { data: resumoVendasERP } = trpc.vendas.resumoVendasParaPeriodoCusto.useQuery(
+    { periodoInicio: periodoVendasDatas?.periodoInicio ?? "", periodoFim: periodoVendasDatas?.periodoFim ?? "" },
+    { enabled: !!periodoVendasDatas }
+  );
+
+  // KPIs calculados (mesma lógica da Apuração de Custo)
+  const kpisCalculados = useMemo(() => {
+    if (!lancamentosCusto || !periodoAtual) return null;
+    const producao = producaoTotal;
+    const vendas = parseFloat(periodoAtual.quantidadeVendida ?? "0") || (resumoVendasERP?.totalQuantidade ?? 0);
+    let totalCustoVariavel = 0;
+    let totalDespesaVariavel = 0;
+    let totalDespesasIndiretas = 0;
+    let totalGeralCalc = 0;
+    // Agrupar lançamentos da mesma conta
+    const agrupado = new Map<number, { nome: string; valor: number; divisor: string; classificacao: string }>();
+    for (const l of lancamentosCusto as any[]) {
+      const valor = parseFloat(String(l.valor || "0"));
+      if (valor === 0) continue;
+      const existing = agrupado.get(l.contaCustoId);
+      if (existing) {
+        existing.valor += valor;
+      } else {
+        agrupado.set(l.contaCustoId, {
+          nome: l.contaNome ?? "—",
+          valor,
+          divisor: l.contaDivisor ?? "producao",
+          classificacao: l.contaClassificacao ?? "custo_variavel",
+        });
+      }
+    }
+    for (const [, { valor, divisor, classificacao }] of Array.from(agrupado.entries())) {
+      if (classificacao === "despesa_variavel" && divisor === "producao") {
+        totalDespesasIndiretas += valor;
+      } else if (divisor === "vendas") {
+        totalDespesaVariavel += valor;
+      } else {
+        totalCustoVariavel += valor;
+      }
+      totalGeralCalc += valor;
+    }
+    const custoPorTonProducao = producao > 0 ? totalCustoVariavel / producao : 0;
+    const custoPorTonVendas = vendas > 0 ? totalDespesaVariavel / vendas : 0;
+    const custoMedio = custoPorTonProducao + custoPorTonVendas;
+    const custoPorTonDespesasIndiretas = producao > 0 ? totalDespesasIndiretas / producao : 0;
+    const custoMedioComDI = custoMedio + custoPorTonDespesasIndiretas;
+    return {
+      producao,
+      vendas,
+      totalCustoVariavel,
+      totalDespesaVariavel,
+      totalDespesasIndiretas,
+      totalGeral: totalGeralCalc,
+      custoMedio,
+      custoMedioComDI,
+    };
+  }, [lancamentosCusto, periodoAtual, producaoTotal, resumoVendasERP]);
+
   // Totais gerais
   const totalGeral = relatorio?.totalGeral ?? 0;
   const totalCustoTon = relatorio?.totalCustoTon ?? 0;
@@ -260,14 +335,19 @@ export default function CustoSetor() {
   const whatsappMessage = useMemo(() => {
     if (!relatorio || !relatorio.grupos.length) return undefined;
     let msg = `🏭 *Custo Sintético por Setor — ${periodoLabel}*\n`;
-    msg += `Total Geral: ${fmtBRL(totalGeral)} | Custo/t: R$ ${fmtTon(totalCustoTon)}\n\n`;
+    if (kpisCalculados) {
+      msg += `Produção: ${producaoTotal > 0 ? fmtTon(producaoTotal) + " t" : "—"} | Vendas: ${kpisCalculados.vendas > 0 ? fmtTon(kpisCalculados.vendas) + " t" : "—"}\n`;
+      msg += `Total s/ DI: ${fmtBRL(kpisCalculados.totalCustoVariavel + kpisCalculados.totalDespesaVariavel)} | Total c/ DI: ${fmtBRL(kpisCalculados.totalGeral)}\n`;
+      msg += `C.M. s/ DI: R$ ${fmtTon(kpisCalculados.custoMedio)} | C.M. c/ DI: R$ ${fmtTon(kpisCalculados.custoMedioComDI)}\n\n`;
+    } else {
+      msg += `Total Geral: ${fmtBRL(totalGeral)} | Custo/t: R$ ${fmtTon(totalCustoTon)}\n\n`;
+    }
     for (const g of relatorio.grupos) {
       const pct = totalGeral > 0 ? (g.subtotalGeral / totalGeral) * 100 : 0;
       msg += `*${g.grupoNome}:* ${fmtBRL(g.subtotalGeral)} (${fmtPct(pct)}) | R$ ${fmtTon(g.subtotalCustoTon)}/t\n`;
     }
     return msg;
-  }, [relatorio, totalGeral, totalCustoTon, periodoLabel]);
-
+   }, [relatorio, totalGeral, totalCustoTon, periodoLabel, kpisCalculados, producaoTotal]);
   // Dados para o gráfico de rosca — subsetores individuais (ordem decrescente por totalGeral)
   const dadosGrafico = useMemo(() => {
     if (!relatorio?.grupos?.length) return [];
@@ -298,13 +378,13 @@ export default function CustoSetor() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <FileSpreadsheet className="h-6 w-6 text-primary" />
-              Custo Sintético por Setor
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
+              <span className="truncate">Custo Sintético por Setor</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               Relatório de custos distribuídos por setor produtivo
@@ -351,9 +431,12 @@ export default function CustoSetor() {
             </Button>
             {relatorio && relatorio.grupos.length > 0 && (() => {
               const buildKpis = () => [
-                { label: "Total Geral (R$)", value: fmtBRL(totalGeral) },
-                { label: "Custo Médio (R$/t)", value: `R$ ${fmtTon(totalCustoTon)}` },
-                { label: "Grupos", value: String(relatorio.grupos.length) },
+                { label: "Produção (t)", value: producaoTotal > 0 ? fmtTon(producaoTotal) + " t" : "—" },
+                { label: "Vendas (t)", value: (kpisCalculados?.vendas ?? vendasTotal) > 0 ? fmtTon(kpisCalculados?.vendas ?? vendasTotal) + " t" : "—" },
+                { label: "Total Desp. s/ Desp. Indiretas", value: kpisCalculados ? fmtBRL(kpisCalculados.totalCustoVariavel + kpisCalculados.totalDespesaVariavel) : fmtBRL(totalGeral) },
+                { label: "Total Desp. c/ Despesas Indiretas", value: fmtBRL(kpisCalculados?.totalGeral ?? totalGeral) },
+                { label: "C.M. s/ Despesas Indiretas", value: kpisCalculados && kpisCalculados.custoMedio > 0 ? `R$ ${fmtTon(kpisCalculados.custoMedio)}` : "—" },
+                { label: "C.M. c/ Desp. Indiretas", value: kpisCalculados && kpisCalculados.custoMedioComDI > 0 ? `R$ ${fmtTon(kpisCalculados.custoMedioComDI)}` : "—" },
               ];
               const buildSecoes = () => {
                 // Seção 1: Resumo Consolidado por Subsetor (todos os subsetores juntos)
@@ -533,24 +616,78 @@ export default function CustoSetor() {
 
         {relatorio && relatorio.grupos.length > 0 && (
           <>
-            {/* Cards de resumo */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="pt-4 pb-4">
-                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Total Geral</p>
-                  <p className="text-2xl font-bold text-blue-700 mt-1">{fmtBRL(totalGeral)}</p>
+            {/* Cards KPIs — mesmos 6 da Apuração de Custo */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* 1. Produção */}
+              <Card className="border-emerald-200 bg-emerald-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Truck className="h-3 w-3 text-emerald-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">Produção (t)</p>
+                  </div>
+                  <p className="text-sm font-bold text-emerald-700 font-mono">
+                    {producaoTotal > 0 ? fmtTon(producaoTotal) + " t" : "—"}
+                  </p>
                 </CardContent>
               </Card>
-              <Card className="bg-green-50 border-green-200">
-                <CardContent className="pt-4 pb-4">
-                  <p className="text-xs text-green-600 font-medium uppercase tracking-wide">Custo Médio</p>
-                  <p className="text-2xl font-bold text-green-700 mt-1">R$ {fmtTon(totalCustoTon)}</p>
+              {/* 2. Vendas */}
+              <Card className="border-sky-200 bg-sky-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <TrendingUp className="h-3 w-3 text-sky-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">Vendas (t)</p>
+                  </div>
+                  <p className="text-sm font-bold text-sky-700 font-mono">
+                    {(kpisCalculados?.vendas ?? vendasTotal) > 0 ? fmtTon(kpisCalculados?.vendas ?? vendasTotal) + " t" : "—"}
+                  </p>
                 </CardContent>
               </Card>
-              <Card className="bg-purple-50 border-purple-200">
-                <CardContent className="pt-4 pb-4">
-                  <p className="text-xs text-purple-600 font-medium uppercase tracking-wide">Grupos</p>
-                  <p className="text-2xl font-bold text-purple-700 mt-1">{relatorio.grupos.length}</p>
+              {/* 3. Total Desp. s/ Desp. Indiretas */}
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Factory className="h-3 w-3 text-blue-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">Total s/ Desp. Indir.</p>
+                  </div>
+                  <p className="text-sm font-bold text-blue-700 font-mono">
+                    {kpisCalculados ? fmtBRL(kpisCalculados.totalCustoVariavel + kpisCalculados.totalDespesaVariavel) : fmtBRL(totalGeral)}
+                  </p>
+                </CardContent>
+              </Card>
+              {/* 4. Total Desp. c/ Despesas Indiretas */}
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Building2 className="h-3 w-3 text-orange-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">Total c/ Desp. Indir.</p>
+                  </div>
+                  <p className="text-sm font-bold text-orange-700 font-mono">
+                    {fmtBRL(kpisCalculados?.totalGeral ?? totalGeral)}
+                  </p>
+                </CardContent>
+              </Card>
+              {/* 5. C.M. s/ Despesas Indiretas */}
+              <Card className="border-violet-200 bg-violet-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Calculator className="h-3 w-3 text-violet-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">C.M. s/ Desp. Indir.</p>
+                  </div>
+                  <p className="text-sm font-bold text-violet-700 font-mono">
+                    {kpisCalculados && (kpisCalculados.producao > 0 || kpisCalculados.vendas > 0) ? `R$ ${fmtTon(kpisCalculados.custoMedio)}` : "—"}
+                  </p>
+                </CardContent>
+              </Card>
+              {/* 6. C.M. c/ Desp. Indiretas */}
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Building2 className="h-3 w-3 text-orange-600" />
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase">C.M. c/ Desp. Indir.</p>
+                  </div>
+                  <p className="text-sm font-bold text-orange-700 font-mono">
+                    {kpisCalculados && (kpisCalculados.producao > 0 || kpisCalculados.vendas > 0) ? `R$ ${fmtTon(kpisCalculados.custoMedioComDI)}` : "—"}
+                  </p>
                 </CardContent>
               </Card>
             </div>
