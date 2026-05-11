@@ -120,6 +120,13 @@
       "when": 1778504890765,
       "tag": "0016_parallel_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1778506207220,
+      "tag": "0017_lovely_punisher",
+      "breakpoints": true
     }
   ]
 }

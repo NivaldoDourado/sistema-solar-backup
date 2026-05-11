@@ -526,12 +526,6 @@ export default function ItensDespesa() {
 
   const handleExcludeClick = (e: React.MouseEvent, equip: { equipamentoTag: string; equipamentoDescricao: string | null; equipamentoSistemaId: number | null; excluidoCusto: boolean }) => {
     e.stopPropagation();
-    if (!equip.equipamentoSistemaId) {
-      toast.error("Equipamento sem vínculo", {
-        description: "Este equipamento não possui vínculo com o cadastro do sistema. Não é possível excluí-lo.",
-      });
-      return;
-    }
     setExcludeDialogEquip({
       tag: equip.equipamentoTag,
       descricao: equip.equipamentoDescricao,
@@ -977,9 +971,11 @@ export default function ItensDespesa() {
             <Button
               variant={excludeDialogEquip?.excluido ? "default" : "destructive"}
               onClick={() => {
-                if (excludeDialogEquip?.sistemaId) {
+                if (excludeDialogEquip) {
                   toggleExcluido.mutate({
-                    id: excludeDialogEquip.sistemaId,
+                    ...(excludeDialogEquip.sistemaId ? { id: excludeDialogEquip.sistemaId } : {}),
+                    tag: excludeDialogEquip.tag,
+                    descricao: excludeDialogEquip.descricao ?? undefined,
                     excluidoCusto: excludeDialogEquip.excluido ? "nao" : "sim",
                   });
                 }

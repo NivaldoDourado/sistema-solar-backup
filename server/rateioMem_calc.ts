@@ -18,6 +18,7 @@ import {
   gruposDeEquipamentos,
   periodoCusto,
   servicos,
+  equipamentoExcluidoTag,
 } from "../drizzle/schema";
 import { eq, and, inArray, isNotNull, or, like } from "drizzle-orm";
 import {
@@ -246,8 +247,12 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
     })
     .from(equipamentos);
 
-  // IDs de equipamentos excluídos do custo
+  // IDs de equipamentos excluídos do custo (cadastrados)
   const idsEquipExcluidos = new Set(equipsList.filter(e => e.excluidoCusto === "sim").map(e => e.id));
+
+  // Tags excluídas (equipamentos sem vínculo no cadastro)
+  const tagsExcluidasRows = await db.select().from(equipamentoExcluidoTag);
+  const tagsExcluidasSet = new Set(tagsExcluidasRows.map(t => t.tag.toUpperCase()));
 
   const equipMap = new Map(equipsList.map(e => [e.id, e]));
   const tagToIdMap = buildTagToIdMap(equipsList);
@@ -402,6 +407,8 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
   for (const desp of despesasImportadas) {
     const tagUpper = desp.equipamentoTag.toUpperCase();
     if (tagsSetorSet.has(tagUpper) || tagsNaoLancarSet.has(tagUpper) || tagsExcluirSet.has(tagUpper)) continue;
+    // Pular tags excluídas pelo usuário (equipamentos sem vínculo)
+    if (tagsExcluidasSet.has(tagUpper)) continue;
 
     let equipId = tagToIdMap.get(tagUpper);
     if (!equipId) {

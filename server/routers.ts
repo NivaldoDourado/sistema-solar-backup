@@ -57,6 +57,7 @@ import {
   parteDiariaParadas,
   rotinas,
   statusRotinaDiario,
+  equipamentoExcluidoTag,
 } from "../drizzle/schema";
 import { eq, desc, asc, sql, and, or, gte, lte, count, like, inArray, isNotNull } from "drizzle-orm";
 import { sendPushToAll, sendPushToUser, vapidPublicKey } from "./webpush";
@@ -243,28 +244,65 @@ export const appRouter = router({
     toggleExcluidoCusto: protectedProcedure
       .use(requirePermission("equipamentos", "edit"))
       .input(z.object({
-        id: z.number(),
+        id: z.number().optional(),
+        tag: z.string().optional(),
+        descricao: z.string().optional(),
         excluidoCusto: z.enum(["sim", "nao"]),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        await db.update(equipamentos)
-          .set({ excluidoCusto: input.excluidoCusto })
-          .where(eq(equipamentos.id, input.id));
-        return { success: true, excluidoCusto: input.excluidoCusto };
+        // Se tem ID do cadastro, usa o campo excluidoCusto da tabela equipamentos
+        if (input.id) {
+          await db.update(equipamentos)
+            .set({ excluidoCusto: input.excluidoCusto })
+            .where(eq(equipamentos.id, input.id));
+          return { success: true, excluidoCusto: input.excluidoCusto };
+        }
+        
+        // Se não tem ID mas tem tag, usa a tabela equipamento_excluido_tag
+        if (input.tag) {
+          if (input.excluidoCusto === "sim") {
+            // Verificar se já existe
+            const [existing] = await db
+              .select()
+              .from(equipamentoExcluidoTag)
+              .where(eq(equipamentoExcluidoTag.tag, input.tag))
+              .limit(1);
+            if (!existing) {
+              await db.insert(equipamentoExcluidoTag).values({
+                tag: input.tag,
+                descricao: input.descricao ?? null,
+                motivo: "Excluído pelo usuário - outros negócios",
+                userId: ctx.user.id,
+              });
+            }
+          } else {
+            // Reincluir: remover da tabela
+            await db.delete(equipamentoExcluidoTag)
+              .where(eq(equipamentoExcluidoTag.tag, input.tag));
+          }
+          return { success: true, excluidoCusto: input.excluidoCusto };
+        }
+        
+        throw new Error("Informe o ID do equipamento ou a tag para exclusão");
       }),
 
     listExcluidosCusto: protectedProcedure
       .query(async () => {
         const db = await getDb();
-        if (!db) return [];
-        return await db
+        if (!db) return { cadastrados: [], porTag: [] };
+        const cadastrados = await db
           .select({ id: equipamentos.id, codigoTag: equipamentos.codigoTag, nomeDoEquipamento: equipamentos.nomeDoEquipamento })
           .from(equipamentos)
           .where(eq(equipamentos.excluidoCusto, "sim"))
           .orderBy(asc(equipamentos.nomeDoEquipamento));
+        const porTag = await db
+          .select()
+          .from(equipamentoExcluidoTag)
+          .orderBy(asc(equipamentoExcluidoTag.tag));
+        return { cadastrados, porTag };
       }),
   }),
 

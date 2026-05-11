@@ -7,6 +7,7 @@ import {
   itemDespesaImportado,
   equipamentos,
   periodoCusto,
+  equipamentoExcluidoTag,
 } from "../drizzle/schema";
 
 const CLASSIFICACAO_LABELS: Record<string, string> = {
@@ -138,7 +139,7 @@ function calcularConsumoCombustivel(itens: {
 
 export { calcularConsumoCombustivel };
 
-// Helper: buscar IDs de equipamentos excluídos do custo
+// Helper: buscar IDs de equipamentos excluídos do custo (cadastrados)
 async function getIdsEquipExcluidos(): Promise<Set<number>> {
   const db = await getDb();
   if (!db) return new Set();
@@ -147,6 +148,14 @@ async function getIdsEquipExcluidos(): Promise<Set<number>> {
     .from(equipamentos)
     .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
   return new Set(rows.map(r => r.id));
+}
+
+// Helper: buscar tags excluídas (equipamentos sem vínculo no cadastro)
+async function getTagsExcluidas(): Promise<Set<string>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db.select({ tag: equipamentoExcluidoTag.tag }).from(equipamentoExcluidoTag);
+  return new Set(rows.map(r => r.tag.toUpperCase()));
 }
 
 export const itensDespesaRouter = router({
@@ -160,6 +169,7 @@ export const itensDespesaRouter = router({
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
 
       const result = await db2
         .select({
@@ -184,7 +194,7 @@ export const itensDespesaRouter = router({
         equipamentoSistemaId: r.equipamentoSistemaId,
         totalItens: Number(r.totalItens),
         totalCusto: Number(r.totalCusto) || 0,
-        excluidoCusto: r.equipamentoSistemaId ? idsExcluidos.has(r.equipamentoSistemaId) : false,
+        excluidoCusto: (r.equipamentoSistemaId ? idsExcluidos.has(r.equipamentoSistemaId) : false) || tagsExcluidas.has(r.equipamentoTag.toUpperCase()),
       }));
     }),
 
@@ -199,6 +209,7 @@ export const itensDespesaRouter = router({
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
 
       const result = await db2
         .select({
@@ -220,7 +231,7 @@ export const itensDespesaRouter = router({
         )
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
       return result
-        .filter(r => !(r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)))
+        .filter(r => !((r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)) || tagsExcluidas.has(r.equipamentoTag.toUpperCase())))
         .map(r => ({
           equipamentoTag: r.equipamentoTag,
           equipamentoDescricao: r.equipamentoDescricao,
@@ -329,6 +340,7 @@ export const itensDespesaRouter = router({
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
 
       const result = await db2
         .select({
@@ -340,8 +352,8 @@ export const itensDespesaRouter = router({
         .from(itemDespesaImportado)
         .where(eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId));
 
-      // Filtrar excluídos e agrupar em memória
-      const filtrado = result.filter(r => !(r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)));
+      // Filtrar excluídos (cadastrados + por tag) e agrupar em memória
+      const filtrado = result.filter(r => !((r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)) || tagsExcluidas.has(r.equipamentoTag.toUpperCase())));
       const grupos: Record<string, { classificacao: string; totalItens: number; totalCusto: number; tags: Set<string> }> = {};
       for (const r of filtrado) {
         if (!grupos[r.classificacao]) {
@@ -428,6 +440,7 @@ export const itensDespesaRouter = router({
 
       // Filtrar equipamentos excluídos do custo
       const idsExcluidos = await getIdsEquipExcluidos();
+      const tagsExcluidas = await getTagsExcluidas();
 
       // Agrupar por equipamento
       const porEquipamento = new Map<string, {
@@ -438,8 +451,9 @@ export const itensDespesaRouter = router({
       }>();
 
       for (const row of result) {
-        // Pular equipamentos excluídos
+        // Pular equipamentos excluídos (cadastrados + por tag)
         if (row.equipamentoSistemaId && idsExcluidos.has(row.equipamentoSistemaId)) continue;
+        if (tagsExcluidas.has(row.equipamentoTag.toUpperCase())) continue;
 
         const tag = row.equipamentoTag;
         if (!porEquipamento.has(tag)) {

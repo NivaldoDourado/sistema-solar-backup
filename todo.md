@@ -854,3 +854,10 @@
 - [x] Filtrar equipamentos excluídos na importação de despesas (importDespesas_router.ts)
 - [x] Mostrar indicador visual (badge vermelho "Excluído" + texto riscado + fundo vermelho)
 - [x] Permitir reincluir equipamento previamente excluído (toggle bidirecional)
+
+## Correção: Exclusão de Equipamentos sem Vínculo
+- [x] Criar tabela equipamento_excluido_tag para armazenar tags excluídas sem vínculo no cadastro
+- [x] Ajustar procedure toggleExcluidoCusto para aceitar exclusão por tag (sem equipamentoSistemaId)
+- [x] Filtrar tags excluídas no rateioMem_calc.ts (tagsExcluidasSet)
+- [x] Filtrar tags excluídas no itensDespesa_router.ts (5 procedures)
+- [x] Atualizar UI para permitir exclusão de qualquer equipamento na lista (remover validação de vínculo)

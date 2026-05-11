@@ -91,6 +91,18 @@ export const equipamentos = mysqlTable("equipamentos", {
 export type Equipamento = typeof equipamentos.$inferSelect;
 export type InsertEquipamento = typeof equipamentos.$inferInsert;
 
+// Tags de equipamentos excluídos do cálculo de custo (para equipamentos sem vínculo no cadastro)
+export const equipamentoExcluidoTag = mysqlTable("equipamento_excluido_tag", {
+  id: int("id").autoincrement().primaryKey(),
+  tag: varchar("tag", { length: 100 }).notNull(),
+  descricao: varchar("descricao", { length: 255 }),
+  motivo: varchar("motivo", { length: 255 }),
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EquipamentoExcluidoTag = typeof equipamentoExcluidoTag.$inferSelect;
+
 // Produtos
 export const produtos = mysqlTable("produtos", {
   id: int("id").autoincrement().primaryKey(),
