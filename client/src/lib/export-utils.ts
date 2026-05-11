@@ -354,31 +354,31 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   }
 
   // Cabeçalho textual (compacto)
-  let curY = 10;
-  doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
-  doc.text(SYSTEM_NAME_LINE1, 12, curY); curY += 4.5;
+  let curY = 8;
+  doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+  doc.text(SYSTEM_NAME_LINE1, 10, curY); curY += 4;
+
+  doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(empresa ?? SYSTEM_NAME_LINE2, 10, curY); curY += 3.5;
+
+  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+  doc.text(titulo, 10, curY); curY += 4.5;
 
   doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
-  doc.text(empresa ?? SYSTEM_NAME_LINE2, 12, curY); curY += 4;
+  doc.text(`Período: ${periodo}`, 10, curY); curY += 3.5;
 
-  doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
-  doc.text(titulo, 12, curY); curY += 5;
+  doc.setFontSize(6.5); doc.setFont("helvetica", "italic"); doc.setTextColor(120, 120, 120);
+  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 10, curY);
+  curY += 4;
 
-  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
-  doc.text(`Período: ${periodo}`, 12, curY); curY += 4;
-
-  doc.setFontSize(7); doc.setFont("helvetica", "italic"); doc.setTextColor(120, 120, 120);
-  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 12, curY);
-  curY += 5;
-
-  // KPIs em grid compacto (3 na primeira linha, 2 na segunda)
+  // KPIs em grid compacto (3 na primeira linha, 3 na segunda)
   if (kpis.length > 0) {
-    const kpiMargin = 12;
-    const kpiGap = 2;
+    const kpiMargin = 10;
+    const kpiGap = 1.5;
     const kpiCols = 3;
     const kpiAvailW = pageWidth - kpiMargin * 2;
     const kpiW = (kpiAvailW - kpiGap * (kpiCols - 1)) / kpiCols;
-    const kpiH = 9;
+    const kpiH = 8;
 
     kpis.forEach((kpi, i) => {
       const row = Math.floor(i / kpiCols);
@@ -387,16 +387,16 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
       const y = curY + row * (kpiH + kpiGap);
 
       doc.setFillColor(240, 245, 255);
-      doc.roundedRect(x, y, kpiW, kpiH, 1.5, 1.5, "F");
-      doc.setFontSize(6); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
-      doc.text(kpi.label, x + 2, y + 3.5);
-      doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
-      doc.text(kpi.value, x + 2, y + 7.5);
+      doc.roundedRect(x, y, kpiW, kpiH, 1.2, 1.2, "F");
+      doc.setFontSize(5.5); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+      doc.text(kpi.label, x + 1.5, y + 3);
+      doc.setFontSize(7.5); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+      doc.text(kpi.value, x + 1.5, y + 6.5);
       doc.setFont("helvetica", "normal");
     });
 
     const totalRows = Math.ceil(kpis.length / kpiCols);
-    curY += totalRows * (kpiH + kpiGap) + 2;
+    curY += totalRows * (kpiH + kpiGap) + 1.5;
   }
 
   // Tabela única contínua (sem quebra de página) com todas as seções
@@ -406,7 +406,7 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   const fullBody: any[] = [];
   for (const secao of secoes) {
     fullBody.push(
-      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 7 } }]
+      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 6 } }]
     );
     for (const linha of secao.linhas) {
       const isSpecial = linha.isSubtotal || linha.isTotal;
@@ -425,18 +425,18 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     head: tableHead,
     body: fullBody,
     startY: curY,
-    styles: { fontSize: 7, cellPadding: 1.2 },
-    headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 7 },
+    styles: { fontSize: 6, cellPadding: 0.8, overflow: "ellipsize" as const },
+    headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 6 },
     alternateRowStyles: { fillColor: [248, 250, 252] as [number, number, number] },
     columnStyles: {
-      0: { cellWidth: 26 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 22 },
+      0: { cellWidth: 28 },
+      1: { cellWidth: 52 },
+      2: { cellWidth: 28 },
       3: { cellWidth: 28, halign: "right" as const },
-      4: { cellWidth: 22, halign: "right" as const },
+      4: { cellWidth: 18, halign: "right" as const },
       5: { cellWidth: 12, halign: "right" as const },
     },
-    margin: { left: 12, right: 12 },
+    margin: { left: 10, right: 10 },
     didDrawPage: (data: any) => {
       const pc = doc.getNumberOfPages();
       doc.setFontSize(6.5); doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
