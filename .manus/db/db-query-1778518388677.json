@@ -1,0 +1,245 @@
+{
+  "query": "SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos WHERE codigoTag = 'TEST-001';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nomeDoEquipamento, codigoTag FROM equipamentos WHERE codigoTag = 'TEST-001';",
+  "rows": [
+    {
+      "id": "1",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "98",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "99",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "30001",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "30002",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120063",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120065",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120066",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120068",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120069",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120070",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120071",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120072",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "120073",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "150001",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "150002",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "150003",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "150004",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "150005",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180001",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180002",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180003",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180004",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180005",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180006",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180007",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180008",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180009",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180010",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180011",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180012",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "180013",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210001",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210002",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210003",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210004",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210005",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "210006",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240001",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240002",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240003",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240004",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240005",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240006",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240007",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240008",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    },
+    {
+      "id": "240009",
+      "nomeDoEquipamento": "Equipamento de Teste",
+      "codigoTag": "TEST-001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnomeDoEquipamento\tcodigoTag\n1\tEquipamento de Teste\tTEST-001\n98\tEquipamento de Teste\tTEST-001\n99\tEquipamento de Teste\tTEST-001\n30001\tEquipamento de Teste\tTEST-001\n30002\tEquipamento de Teste\tTEST-001\n120063\tEquipamento de Teste\tTEST-001\n120065\tEquipamento de Teste\tTEST-001\n120066\tEquipamento de Teste\tTEST-001\n120068\tEquipamento de Teste\tTEST-001\n120069\tEquipamento de Teste\tTEST-001\n120070\tEquipamento de Teste\tTEST-001\n120071\tEquipamento de Teste\tTEST-001\n120072\tEquipamento de Teste\tTEST-001\n120073\tEquipamento de Teste\tTEST-001\n150001\tEquipamento de Teste\tTEST-001\n150002\tEquipamento de Teste\tTEST-001\n150003\tEquipamento de Teste\tTEST-001\n150004\tEquipamento de Teste\tTEST-001\n150005\tEquipamento de Teste\tTEST-001\n180001\tEquipamento de Teste\tTEST-001\n180002\tEquipamento de Teste\tTEST-001\n180003\tEquipamento de Teste\tTEST-001\n180004\tEquipamento de Teste\tTEST-001\n180005\tEquipamento de Teste\tTEST-001\n180006\tEquipamento de Teste\tTEST-001\n180007\tEquipamento de Teste\tTEST-001\n180008\tEquipamento de Teste\tTEST-001\n180009\tEquipamento de Teste\tTEST-001\n180010\tEquipamento de Teste\tTEST-001\n180011\tEquipamento de Teste\tTEST-001\n180012\tEquipamento de Teste\tTEST-001\n180013\tEquipamento de Teste\tTEST-001\n210001\tEquipamento de Teste\tTEST-001\n210002\tEquipamento de Teste\tTEST-001\n210003\tEquipamento de Teste\tTEST-001\n210004\tEquipamento de Teste\tTEST-001\n210005\tEquipamento de Teste\tTEST-001\n210006\tEquipamento de Teste\tTEST-001\n240001\tEquipamento de Teste\tTEST-001\n240002\tEquipamento de Teste\tTEST-001\n240003\tEquipamento de Teste\tTEST-001\n240004\tEquipamento de Teste\tTEST-001\n240005\tEquipamento de Teste\tTEST-001\n240006\tEquipamento de Teste\tTEST-001\n240007\tEquipamento de Teste\tTEST-001\n240008\tEquipamento de Teste\tTEST-001\n240009\tEquipamento de Teste\tTEST-001\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

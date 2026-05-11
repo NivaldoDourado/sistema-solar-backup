@@ -892,3 +892,8 @@
 - [x] Permitir edição inline do setor destino via dropdown (21 setores disponíveis)
 - [x] Propagação automática para cálculos de custo (rateioMem_calc.ts usa setorId como fonte primária)
 - [x] Persistência no banco de dados (campo setorId na tabela equipamento)
+
+## Correção: Divergência Apuração de Custo vs Avaliação Global
+- [x] Investigar causa raiz (Apuração: R$ 2.771.022,26 vs Avaliação Global: R$ 2.317.060,30)
+- [x] Corrigir: Avaliação Global agora usa lancamentoCusto.listByPeriodo (mesma fonte da Apuração de Custo)
+- [x] Ambas as telas agora mostram R$ 2.771.022,26 como total de despesas para Abril/2026

@@ -128,6 +128,12 @@ export default function AvaliacaoGlobal() {
     { enabled: !!periodoAtual?.id }
   );
 
+  // Buscar lançamentos de custo (mesma fonte da Apuração de Custo) para totalizar despesas
+  const { data: lancamentosCusto } = trpc.lancamentoCusto.listByPeriodo.useQuery(
+    { periodoCustoId: periodoAtual?.id ?? 0 },
+    { enabled: !!periodoAtual?.id }
+  );
+
   // Produção automática do período (Método Caminhões para abril/26+, legado para anteriores)
   const { data: producaoData } = trpc.periodoCusto.getProducaoDoModulo.useQuery({ mes, ano });
   const producaoTotal = producaoData?.total ?? 0;
@@ -180,7 +186,21 @@ export default function AvaliacaoGlobal() {
 
   // Valores automáticos do sistema
   const faturamento = resumoVendas?.totalReceita ?? 0;
-  const custos = relatorioSetor?.totalGeral ?? 0;
+  // Calcular custos a partir dos lançamentos (mesma lógica da Apuração de Custo)
+  const custos = useMemo(() => {
+    if (!lancamentosCusto || lancamentosCusto.length === 0) return relatorioSetor?.totalGeral ?? 0;
+    let total = 0;
+    const agrupado = new Map<number, number>();
+    for (const l of lancamentosCusto) {
+      const valor = parseFloat(String(l.valor || "0"));
+      if (valor === 0) continue;
+      agrupado.set(l.contaCustoId, (agrupado.get(l.contaCustoId) ?? 0) + valor);
+    }
+    for (const [, valor] of Array.from(agrupado.entries())) {
+      total += valor;
+    }
+    return total;
+  }, [lancamentosCusto, relatorioSetor]);
 
   // Valores manuais
   const frete = parseMoney(form.frete);
