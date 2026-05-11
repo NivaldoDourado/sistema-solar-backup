@@ -343,12 +343,12 @@ export function exportRelatorioToExcel(opts: RelatorioExportOptions) {
 export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   const { titulo, periodo, empresa, kpis, secoes, filename } = opts;
 
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  const pageWidth = doc.internal.pageSize.getWidth();
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
 
   // Logo
   const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
-  const logoW = 28, logoH = 30;
+  const logoW = 24, logoH = 26;
   if (logoBase64) {
     doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
   }
@@ -371,21 +371,32 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, curY);
   curY += 7;
 
-  // KPIs em linha horizontal
+  // KPIs em grid (3 na primeira linha, 2 na segunda para formato retrato)
   if (kpis.length > 0) {
-    const kpiW = (pageWidth - 28) / kpis.length;
-    doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+    const kpiMargin = 14;
+    const kpiGap = 3;
+    const kpiCols = 3;
+    const kpiAvailW = pageWidth - kpiMargin * 2;
+    const kpiW = (kpiAvailW - kpiGap * (kpiCols - 1)) / kpiCols;
+    const kpiH = 12;
+
     kpis.forEach((kpi, i) => {
-      const x = 14 + i * kpiW;
+      const row = Math.floor(i / kpiCols);
+      const col = i % kpiCols;
+      const x = kpiMargin + col * (kpiW + kpiGap);
+      const y = curY + row * (kpiH + kpiGap);
+
       doc.setFillColor(240, 245, 255);
-      doc.roundedRect(x, curY, kpiW - 3, 10, 2, 2, "F");
-      doc.setFontSize(7); doc.setTextColor(100, 100, 100);
-      doc.text(kpi.label, x + 2, curY + 3.5);
+      doc.roundedRect(x, y, kpiW, kpiH, 2, 2, "F");
+      doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+      doc.text(kpi.label, x + 3, y + 4.5);
       doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
-      doc.text(kpi.value, x + 2, curY + 8);
+      doc.text(kpi.value, x + 3, y + 9.5);
       doc.setFont("helvetica", "normal");
     });
-    curY += 14;
+
+    const totalRows = Math.ceil(kpis.length / kpiCols);
+    curY += totalRows * (kpiH + kpiGap) + 2;
   }
 
   // Tabela principal: seções renderizadas separadamente para controle de quebra de página
@@ -395,12 +406,12 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 8 },
     alternateRowStyles: { fillColor: [248, 250, 252] as [number, number, number] },
     columnStyles: {
-      0: { cellWidth: 32 },
-      1: { cellWidth: 55 },
-      2: { cellWidth: 28 },
-      3: { cellWidth: 32, halign: "right" as const },
-      4: { cellWidth: 28, halign: "right" as const },
-      5: { cellWidth: 14, halign: "right" as const },
+      0: { cellWidth: 28 },
+      1: { cellWidth: 48 },
+      2: { cellWidth: 22 },
+      3: { cellWidth: 30, halign: "right" as const },
+      4: { cellWidth: 24, halign: "right" as const },
+      5: { cellWidth: 12, halign: "right" as const },
     },
     margin: { left: 14, right: 14 },
     didDrawPage: (data: any) => {

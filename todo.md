@@ -915,3 +915,15 @@
   - EXPLOSIVOS → movido para TAGS_OUTRAS_DESP_SETOR com setor DESMONTE PRIMÁRIO
   - DRAGA D´ÁGUA A DIESE → correspondência adicionada para equipId 120006
 - [x] Testar que NÃO ALOCADOS foi eliminado (gap reduzido de R$ 148.264,14 para R$ 0,07)
+
+## Investigado: Equipamentos alocados no subsetor errado no Relatório Analítico
+- [x] Investigar por que 944C (setor CARGA E TRANSPORTE DE PEDRA DA MINA) aparece em OUTROS SERVIÇOS
+  - Causa: itens da PD lançados com setor 15 (OUTROS SERVIÇOS AUXILIARES) com quantidade 0
+  - Decisão: rateio da PD deve prevalecer sobre setor do cadastro (equipamento pode trabalhar em vários setores)
+  - Não é bug, comportamento correto
+
+## Relatório Apuração de Custo - Formato Retrato
+- [x] Alterar orientação do PDF de paisagem para retrato
+- [x] Reorganizar cards do cabeçalho para caber no formato retrato (grid 3+2)
+- [x] Ajustar larguras das colunas da tabela para formato retrato
+- [x] Testar exportação PDF no novo formato
