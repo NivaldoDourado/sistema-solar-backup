@@ -346,39 +346,39 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
 
-  // Logo
+  // Logo (compacto)
   const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
-  const logoW = 24, logoH = 26;
+  const logoW = 20, logoH = 22;
   if (logoBase64) {
-    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
+    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 5, logoW, logoH);
   }
 
-  // Cabeçalho textual
-  let curY = 12;
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
-  doc.text(SYSTEM_NAME_LINE1, 14, curY); curY += 6;
+  // Cabeçalho textual (compacto)
+  let curY = 10;
+  doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+  doc.text(SYSTEM_NAME_LINE1, 12, curY); curY += 4.5;
+
+  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(empresa ?? SYSTEM_NAME_LINE2, 12, curY); curY += 4;
+
+  doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+  doc.text(titulo, 12, curY); curY += 5;
 
   doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
-  doc.text(empresa ?? SYSTEM_NAME_LINE2, 14, curY); curY += 5;
+  doc.text(`Período: ${periodo}`, 12, curY); curY += 4;
 
-  doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
-  doc.text(titulo, 14, curY); curY += 6;
+  doc.setFontSize(7); doc.setFont("helvetica", "italic"); doc.setTextColor(120, 120, 120);
+  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 12, curY);
+  curY += 5;
 
-  doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
-  doc.text(`Período: ${periodo}`, 14, curY); curY += 5;
-
-  doc.setFontSize(8); doc.setFont("helvetica", "italic"); doc.setTextColor(120, 120, 120);
-  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, curY);
-  curY += 7;
-
-  // KPIs em grid (3 na primeira linha, 2 na segunda para formato retrato)
+  // KPIs em grid compacto (3 na primeira linha, 2 na segunda)
   if (kpis.length > 0) {
-    const kpiMargin = 14;
-    const kpiGap = 3;
+    const kpiMargin = 12;
+    const kpiGap = 2;
     const kpiCols = 3;
     const kpiAvailW = pageWidth - kpiMargin * 2;
     const kpiW = (kpiAvailW - kpiGap * (kpiCols - 1)) / kpiCols;
-    const kpiH = 12;
+    const kpiH = 9;
 
     kpis.forEach((kpi, i) => {
       const row = Math.floor(i / kpiCols);
@@ -387,11 +387,11 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
       const y = curY + row * (kpiH + kpiGap);
 
       doc.setFillColor(240, 245, 255);
-      doc.roundedRect(x, y, kpiW, kpiH, 2, 2, "F");
-      doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
-      doc.text(kpi.label, x + 3, y + 4.5);
-      doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
-      doc.text(kpi.value, x + 3, y + 9.5);
+      doc.roundedRect(x, y, kpiW, kpiH, 1.5, 1.5, "F");
+      doc.setFontSize(6); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+      doc.text(kpi.label, x + 2, y + 3.5);
+      doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+      doc.text(kpi.value, x + 2, y + 7.5);
       doc.setFont("helvetica", "normal");
     });
 
@@ -399,59 +399,51 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     curY += totalRows * (kpiH + kpiGap) + 2;
   }
 
-  // Tabela principal: seções renderizadas separadamente para controle de quebra de página
+  // Tabela única contínua (sem quebra de página) com todas as seções
   const tableHead = [["Grupo / Subtotal", "Setor/Processo", "Grupo", "Total Geral (R$)", "Custo/t (R$)", "%"]];
-  const tableStyles = {
-    styles: { fontSize: 7.5, cellPadding: 1.8 },
-    headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 8 },
+
+  // Montar body com todas as seções concatenadas
+  const fullBody: any[] = [];
+  for (const secao of secoes) {
+    fullBody.push(
+      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 7 } }]
+    );
+    for (const linha of secao.linhas) {
+      const isSpecial = linha.isSubtotal || linha.isTotal;
+      fullBody.push([
+        { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
+        { content: isSpecial ? "" : linha.conta },
+        { content: linha.divisor ?? "" },
+        { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+        { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
+        { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
+      ]);
+    }
+  }
+
+  autoTable(doc, {
+    head: tableHead,
+    body: fullBody,
+    startY: curY,
+    styles: { fontSize: 7, cellPadding: 1.2 },
+    headStyles: { fillColor: [15, 50, 120] as [number, number, number], textColor: 255 as number, fontStyle: "bold" as const, fontSize: 7 },
     alternateRowStyles: { fillColor: [248, 250, 252] as [number, number, number] },
     columnStyles: {
-      0: { cellWidth: 28 },
-      1: { cellWidth: 48 },
+      0: { cellWidth: 26 },
+      1: { cellWidth: 50 },
       2: { cellWidth: 22 },
-      3: { cellWidth: 30, halign: "right" as const },
-      4: { cellWidth: 24, halign: "right" as const },
+      3: { cellWidth: 28, halign: "right" as const },
+      4: { cellWidth: 22, halign: "right" as const },
       5: { cellWidth: 12, halign: "right" as const },
     },
-    margin: { left: 14, right: 14 },
+    margin: { left: 12, right: 12 },
     didDrawPage: (data: any) => {
       const pc = doc.getNumberOfPages();
-      doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
-      doc.text(`Página ${data.pageNumber} de ${pc}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 8);
-      doc.text(SYSTEM_NAME_LINE1, 14, doc.internal.pageSize.getHeight() - 8);
+      doc.setFontSize(6.5); doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
+      doc.text(`Página ${data.pageNumber} de ${pc}`, pageWidth - 28, doc.internal.pageSize.getHeight() - 7);
+      doc.text(SYSTEM_NAME_LINE1, 12, doc.internal.pageSize.getHeight() - 7);
     },
-  };
-
-  for (let si = 0; si < secoes.length; si++) {
-    const secao = secoes[si];
-    // Quebra de página somente antes da segunda seção (primeiro grupo após o resumo consolidado)
-    if (si === 1) {
-      doc.addPage();
-      curY = 14;
-    }
-    const body: any[] = [
-      [{ content: secao.titulo, colSpan: 6, styles: { fillColor: secao.corCabecalho ?? [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 8 } }],
-      ...secao.linhas.map(linha => {
-        const isSpecial = linha.isSubtotal || linha.isTotal;
-        return [
-          { content: isSpecial ? linha.conta : "", styles: isSpecial ? { fontStyle: "bold" } : {} },
-          { content: isSpecial ? "" : linha.conta },
-          { content: linha.divisor ?? "" },
-          { content: linha.valor, styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-          { content: linha.custoPorTon ?? "", styles: { halign: "right" } },
-          { content: linha.percentual ?? "", styles: { halign: "right", fontStyle: isSpecial ? "bold" : "normal" } },
-        ];
-      }),
-    ];
-    autoTable(doc, {
-      head: si === 0 ? tableHead : undefined,
-      body,
-      startY: curY,
-      showHead: si === 0 ? "firstPage" : "never",
-      ...tableStyles,
-    });
-    curY = (doc as any).lastAutoTable.finalY + 4;
-  }
+  });
 
   doc.save(`${filename}.pdf`);
 }

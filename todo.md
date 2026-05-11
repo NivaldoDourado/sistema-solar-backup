@@ -926,4 +926,6 @@
 - [x] Alterar orientação do PDF de paisagem para retrato
 - [x] Reorganizar cards do cabeçalho para caber no formato retrato (grid 3+2)
 - [x] Ajustar larguras das colunas da tabela para formato retrato
+- [x] Remover quebra de página entre seções (tudo contínuo)
+- [x] Diminuir altura das linhas (cellPadding 1.2, fontSize 7) para caber em 1 página
 - [x] Testar exportação PDF no novo formato
