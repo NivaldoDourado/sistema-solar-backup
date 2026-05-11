@@ -812,3 +812,7 @@
 ## Bug: Vendas não aparecem na Apuração de Custo (abril/26)
 - [x] Investigar por que Apuração de Custo mostra "Vendas: — t" quando há 93.271 t importadas no módulo Vendas
 - [x] Corrigir integração para que vendas do PDF importado alimentem a Apuração de Custo (fallback via resumoVendasERP)
+
+## Bug: 39 erros de "duplicate key" na Apuração de Custo
+- [x] Identificar componentes com chaves React duplicadas (key='0') - causa: convertRateioMemToSintetico gerava id:0 para todos
+- [x] Corrigir usando IDs virtuais incrementais (900000+)

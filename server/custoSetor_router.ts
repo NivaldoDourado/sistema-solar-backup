@@ -20,6 +20,7 @@ function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: nu
   };
 
   const gruposMap: Record<string, Grupo> = {};
+  let virtualId = 900000; // IDs virtuais altos para não colidir com IDs reais
 
   for (const sub of rateio.subsetores) {
     if (!gruposMap[sub.grupoNome]) {
@@ -34,7 +35,7 @@ function convertRateioMemToSintetico(rateio: { subsetores: any[]; totalGeral: nu
     }
 
     const lancVirtual = {
-      id: 0,
+      id: virtualId++,
       periodoCustoId: 0,
       grupoNome: sub.grupoNome,
       subsetorNome: sub.subsetorNome,
