@@ -973,3 +973,13 @@
 - [x] Tabela comparativa por Plano de Custo (contas x períodos selecionados)
 - [x] Tabela comparativa por Setores (setores x períodos selecionados)
 - [ ] Integrar gráficos existentes com os períodos selecionados [futuro]
+
+## Bug (CORRIGIDO): Comparativo Multi-período não carrega dados de abril/26
+- [x] Investigar por que abril/26 retorna R$ 0,00 no comparativo
+  - Causa: endpoints usavam apenas custo_setor_equipamento/despesa (dados RAS importados), que não existem para abril/26+
+- [x] Verificar diferença de inserção de dados (planilha vs lançamentos diretos)
+  - Jan-mar: dados em custo_setor_equipamento + custo_setor_despesa (importados via planilha RSSET)
+  - Abril+: dados em lancamento_custo + lancamento_salario (lançamentos diretos)
+- [x] Corrigir para incluir dados de abril/26+ no comparativo
+  - comparativoPlanoCusto: reescrito para usar lancamento_custo + lancamento_salario (fonte unificada)
+  - comparativoSetores: fallback com calcularRateioMem + calcularRateioMset para períodos sem RAS

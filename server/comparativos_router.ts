@@ -1,12 +1,15 @@
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
 import { z } from "zod";
-import { sql, and, gte, lte } from "drizzle-orm";
+import { sql, and, gte, lte, eq } from "drizzle-orm";
 import {
   periodoCusto, custoSetorEquipamento, custoSetorDespesa,
-  resumoVendasProduto, avaliacaoGlobal, abastecimento, producao
+  resumoVendasProduto, avaliacaoGlobal, abastecimento, producao,
+  lancamentoCusto, lancamentoSalario, contaCusto,
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
+import { calcularRateioMem } from "./rateioMem_calc";
+import { calcularRateioMset } from "./rateioMset_calc";
 
 /**
  * Calcula o custo total por grupo/subsetor para um conjunto de períodos
@@ -292,7 +295,7 @@ export const comparativosRouter = router({
 
   /**
    * Comparativo multi-período por Plano de Custo (contas)
-   * Retorna cada conta de custo com os valores acumulados por período selecionado
+   * Usa lancamento_custo + lancamento_salario como fonte unificada (funciona para TODOS os períodos)
    */
   comparativoPlanoCusto: protectedProcedure
     .input(z.object({
@@ -325,74 +328,71 @@ export const comparativosRouter = router({
       const ids = periodoIds.map(p => p.id);
       const idsSql = sql.join(ids.map(id => sql`${id}`), sql`, `);
 
-      // Buscar custos de equipamento agrupados por campo de custo
-      const equipRows = await db.select({
-        periodoCustoId: custoSetorEquipamento.periodoCustoId,
-        salOperEncOper: sql<string>`SUM(${custoSetorEquipamento.salOperEncOper})`,
-        depreciacao: sql<string>`SUM(${custoSetorEquipamento.depreciacao})`,
-        combustivel: sql<string>`SUM(${custoSetorEquipamento.combustivel})`,
-        lubrificantes: sql<string>`SUM(${custoSetorEquipamento.lubrificantes})`,
-        pecasDesgaste: sql<string>`SUM(${custoSetorEquipamento.pecasDesgaste})`,
-        pecasReposicao: sql<string>`SUM(${custoSetorEquipamento.pecasReposicao})`,
-        outrasDespesas: sql<string>`SUM(${custoSetorEquipamento.outrasDespesas})`,
+      // Fonte unificada: lancamento_custo agrupado por conta e período
+      const lancRows = await db.select({
+        periodoCustoId: lancamentoCusto.periodoCustoId,
+        contaNome: contaCusto.nome,
+        total: sql<string>`SUM(${lancamentoCusto.valor})`,
       })
-        .from(custoSetorEquipamento)
-        .where(sql`${custoSetorEquipamento.periodoCustoId} IN (${idsSql})`)
-        .groupBy(custoSetorEquipamento.periodoCustoId);
+        .from(lancamentoCusto)
+        .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
+        .where(sql`${lancamentoCusto.periodoCustoId} IN (${idsSql})`)
+        .groupBy(lancamentoCusto.periodoCustoId, contaCusto.nome);
 
-      // Buscar despesas específicas agrupadas por descrição
-      const despRows = await db.select({
-        periodoCustoId: custoSetorDespesa.periodoCustoId,
-        descricao: custoSetorDespesa.descricao,
-        total: sql<string>`SUM(${custoSetorDespesa.valor})`,
+      // Salários agrupados por conta e período
+      const salRows = await db.select({
+        periodoCustoId: lancamentoSalario.periodoCustoId,
+        contaNome: contaCusto.nome,
+        total: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))`,
       })
-        .from(custoSetorDespesa)
-        .where(sql`${custoSetorDespesa.periodoCustoId} IN (${idsSql})`)
-        .groupBy(custoSetorDespesa.periodoCustoId, custoSetorDespesa.descricao);
+        .from(lancamentoSalario)
+        .innerJoin(contaCusto, eq(lancamentoSalario.contaCustoId, contaCusto.id))
+        .where(sql`${lancamentoSalario.periodoCustoId} IN (${idsSql})`)
+        .groupBy(lancamentoSalario.periodoCustoId, contaCusto.nome);
+
+      // Mapeamento de nomes de conta para labels amigáveis no comparativo
+      const CONTA_LABELS: Record<string, string> = {
+        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal. Diretoria/Pró-Labore": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal.Oper./Enc. Oper.": "Sal.Oper./Enc.Oper.",
+        "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
+        "Combustível": "Combustível",
+        "Peças de Reposição / Itens de Consumo": "Peças de Reposição",
+        "Peças de Desgaste": "Peças de Desgaste",
+        "Explosivos e Acessórios": "Explosivos e Acessórios",
+        "Despesas Indiretas": "Despesas Indiretas",
+        "Energia Elétrica": "Energia Elétrica",
+        "Despesas Administrativas": "Desp.Admin.Telef.e Inform.",
+        "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
+        "Lubrificantes": "Lubrificantes",
+        "Frota/Man.Pat./Seg./Out.": "Frota/Man.Pat./Seg./Out.",
+        "Outras Despesas dos Equipamentos": "Outras Despesas",
+        "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
+        "Comissão de Vendas": "Comissão de Vendas",
+        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
+        "Depreciação": "Depreciação",
+        "RH - Salários da Operação": "Sal.Oper./Enc.Oper.",
+      };
 
       // Montar mapa de contas por período
       const contasMap: Record<string, Record<string, number>> = {};
 
-      const CONTAS_EQUIP = [
-        { key: "salOperEncOper", label: "Sal.Oper./Enc.Oper." },
-        { key: "depreciacao", label: "Depreciação" },
-        { key: "combustivel", label: "Combustível" },
-        { key: "lubrificantes", label: "Lubrificantes" },
-        { key: "pecasDesgaste", label: "Peças de Desgaste" },
-        { key: "pecasReposicao", label: "Peças de Reposição" },
-        { key: "outrasDespesas", label: "Outras Despesas" },
-      ];
-
-      for (const row of equipRows) {
-        const pid = String(row.periodoCustoId);
-        for (const c of CONTAS_EQUIP) {
-          const val = parseFloat(String((row as any)[c.key] || "0"));
-          if (val > 0) {
-            if (!contasMap[c.label]) contasMap[c.label] = {};
-            contasMap[c.label][pid] = (contasMap[c.label][pid] ?? 0) + val;
-          }
-        }
-      }
-
-      for (const row of despRows) {
+      for (const row of lancRows) {
         const pid = String(row.periodoCustoId);
         const val = parseFloat(String(row.total || "0"));
-        if (val > 0) {
-          if (!contasMap[row.descricao]) contasMap[row.descricao] = {};
-          contasMap[row.descricao][pid] = (contasMap[row.descricao][pid] ?? 0) + val;
-        }
+        if (val <= 0) continue;
+        const label = CONTA_LABELS[row.contaNome] ?? row.contaNome;
+        if (!contasMap[label]) contasMap[label] = {};
+        contasMap[label][pid] = (contasMap[label][pid] ?? 0) + val;
       }
 
-      // Buscar despesas indiretas de cada período
-      for (const p of periodoIds) {
-        const periodo = allPeriodos.find(pp => pp.id === p.id);
-        if (periodo) {
-          const di = parseFloat(String(periodo.despesasIndiretas || "0"));
-          if (di > 0) {
-            if (!contasMap["Despesas Indiretas"]) contasMap["Despesas Indiretas"] = {};
-            contasMap["Despesas Indiretas"][String(p.id)] = di;
-          }
-        }
+      for (const row of salRows) {
+        const pid = String(row.periodoCustoId);
+        const val = parseFloat(String(row.total || "0"));
+        if (val <= 0) continue;
+        const label = CONTA_LABELS[row.contaNome] ?? row.contaNome;
+        if (!contasMap[label]) contasMap[label] = {};
+        contasMap[label][pid] = (contasMap[label][pid] ?? 0) + val;
       }
 
       // Converter para array e ordenar por total decrescente
@@ -410,7 +410,8 @@ export const comparativosRouter = router({
 
   /**
    * Comparativo multi-período por Setores (grupos)
-   * Retorna cada setor/grupo com os valores acumulados por período selecionado
+   * Para períodos com dados RAS importados: usa custo_setor_equipamento + custo_setor_despesa
+   * Para períodos sem dados RAS (abril/26+): usa calcularRateioMem + calcularRateioMset (fallback)
    */
   comparativoSetores: protectedProcedure
     .input(z.object({
@@ -440,44 +441,83 @@ export const comparativosRouter = router({
 
       if (periodoIds.length === 0) return { labels: [], setores: [] };
 
-      const ids = periodoIds.map(p => p.id);
-      const idsSql = sql.join(ids.map(id => sql`${id}`), sql`, `);
-
-      // Buscar custos de equipamento por grupo
-      const equipGrupo = await db.select({
-        periodoCustoId: custoSetorEquipamento.periodoCustoId,
-        grupoNome: custoSetorEquipamento.grupoNome,
-        total: sql<string>`SUM(${custoSetorEquipamento.totalDespesasEquipamento})`,
-      })
-        .from(custoSetorEquipamento)
-        .where(sql`${custoSetorEquipamento.periodoCustoId} IN (${idsSql})`)
-        .groupBy(custoSetorEquipamento.periodoCustoId, custoSetorEquipamento.grupoNome);
-
-      // Buscar despesas específicas por grupo
-      const despGrupo = await db.select({
-        periodoCustoId: custoSetorDespesa.periodoCustoId,
-        grupoNome: custoSetorDespesa.grupoNome,
-        total: sql<string>`SUM(${custoSetorDespesa.valor})`,
-      })
-        .from(custoSetorDespesa)
-        .where(sql`${custoSetorDespesa.periodoCustoId} IN (${idsSql})`)
-        .groupBy(custoSetorDespesa.periodoCustoId, custoSetorDespesa.grupoNome);
-
       // Montar mapa de setores por período
       const setoresMap: Record<string, Record<string, number>> = {};
 
-      for (const row of equipGrupo) {
-        const pid = String(row.periodoCustoId);
-        const val = parseFloat(String(row.total || "0"));
-        if (!setoresMap[row.grupoNome]) setoresMap[row.grupoNome] = {};
-        setoresMap[row.grupoNome][pid] = (setoresMap[row.grupoNome][pid] ?? 0) + val;
-      }
+      // Processar cada período individualmente para detectar se tem dados RAS ou não
+      for (const p of periodoIds) {
+        const pid = String(p.id);
 
-      for (const row of despGrupo) {
-        const pid = String(row.periodoCustoId);
-        const val = parseFloat(String(row.total || "0"));
-        if (!setoresMap[row.grupoNome]) setoresMap[row.grupoNome] = {};
-        setoresMap[row.grupoNome][pid] = (setoresMap[row.grupoNome][pid] ?? 0) + val;
+        // Verificar se tem dados RAS importados
+        const equipCount = await db.select({ cnt: sql<string>`COUNT(*)` })
+          .from(custoSetorEquipamento)
+          .where(eq(custoSetorEquipamento.periodoCustoId, p.id));
+        const hasRas = parseInt(equipCount[0]?.cnt || "0") > 0;
+
+        if (hasRas) {
+          // Usar dados RAS importados
+          const equipGrupo = await db.select({
+            grupoNome: custoSetorEquipamento.grupoNome,
+            total: sql<string>`SUM(${custoSetorEquipamento.totalDespesasEquipamento})`,
+          })
+            .from(custoSetorEquipamento)
+            .where(eq(custoSetorEquipamento.periodoCustoId, p.id))
+            .groupBy(custoSetorEquipamento.grupoNome);
+
+          const despGrupo = await db.select({
+            grupoNome: custoSetorDespesa.grupoNome,
+            total: sql<string>`SUM(${custoSetorDespesa.valor})`,
+          })
+            .from(custoSetorDespesa)
+            .where(eq(custoSetorDespesa.periodoCustoId, p.id))
+            .groupBy(custoSetorDespesa.grupoNome);
+
+          for (const row of equipGrupo) {
+            const val = parseFloat(String(row.total || "0"));
+            if (!setoresMap[row.grupoNome]) setoresMap[row.grupoNome] = {};
+            setoresMap[row.grupoNome][pid] = (setoresMap[row.grupoNome][pid] ?? 0) + val;
+          }
+
+          for (const row of despGrupo) {
+            const val = parseFloat(String(row.total || "0"));
+            if (!setoresMap[row.grupoNome]) setoresMap[row.grupoNome] = {};
+            setoresMap[row.grupoNome][pid] = (setoresMap[row.grupoNome][pid] ?? 0) + val;
+          }
+        } else {
+          // Fallback: usar calcularRateioMem + calcularRateioMset (mesma lógica do relatório sintético)
+          const rateioMem = await calcularRateioMem(p.id);
+          const rateioMset = await calcularRateioMset(p.id);
+
+          // Agrupar MEM por grupo
+          for (const sub of rateioMem.subsetores) {
+            const grupoNome = sub.grupoNome;
+            const val = sub.totalSubsetor;
+            if (val <= 0) continue;
+            if (!setoresMap[grupoNome]) setoresMap[grupoNome] = {};
+            setoresMap[grupoNome][pid] = (setoresMap[grupoNome][pid] ?? 0) + val;
+          }
+
+          // Agrupar MSET por grupo
+          for (const desp of rateioMset.despesas) {
+            const grupoNome = desp.grupoNome;
+            const val = desp.valor;
+            if (val <= 0) continue;
+            if (!setoresMap[grupoNome]) setoresMap[grupoNome] = {};
+            setoresMap[grupoNome][pid] = (setoresMap[grupoNome][pid] ?? 0) + val;
+          }
+
+          // Equipamentos sem rateio (não alocados) → SERVIÇOS AUXILIARES
+          if (rateioMem.equipamentosSemRateio && rateioMem.equipamentosSemRateio.length > 0) {
+            const totalNaoAlocado = rateioMem.equipamentosSemRateio.reduce(
+              (s, e) => s + (e.despesaTotal ?? 0), 0
+            );
+            if (totalNaoAlocado > 0) {
+              const grupoNome = "SERVI\u00c7OS AUXILIARES";
+              if (!setoresMap[grupoNome]) setoresMap[grupoNome] = {};
+              setoresMap[grupoNome][pid] = (setoresMap[grupoNome][pid] ?? 0) + totalNaoAlocado;
+            }
+          }
+        }
       }
 
       // Converter para array e ordenar por total decrescente

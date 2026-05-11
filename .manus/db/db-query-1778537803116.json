@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, nome FROM conta_custo WHERE id > 20 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM conta_custo WHERE id > 20 ORDER BY id;",
+  "rows": [
+    {
+      "id": "30002",
+      "nome": "Frota/Man.Pat./Seg./Out."
+    },
+    {
+      "id": "30003",
+      "nome": "Comissão de Vendas"
+    },
+    {
+      "id": "30004",
+      "nome": "Sal.Oper./Enc. Oper."
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n30002\tFrota/Man.Pat./Seg./Out.\n30003\tComissão de Vendas\n30004\tSal.Oper./Enc. Oper.\n",
+  "stderr": "",
+  "execution_time_ms": 253
+}

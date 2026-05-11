@@ -1,0 +1,15 @@
+{
+  "query": "SELECT SUM(lc.valor) as lancTotal, (SELECT SUM(totalDespesasEquipamento) FROM custo_setor_equipamento WHERE periodoCustoId = 30002) as equipTotal, (SELECT SUM(valor) FROM custo_setor_despesa WHERE periodoCustoId = 30002) as despTotal FROM lancamento_custo lc WHERE lc.periodoCustoId = 30002;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(lc.valor) as lancTotal, (SELECT SUM(totalDespesasEquipamento) FROM custo_setor_equipamento WHERE periodoCustoId = 30002) as equipTotal, (SELECT SUM(valor) FROM custo_setor_despesa WHERE periodoCustoId = 30002) as despTotal FROM lancamento_custo lc WHERE lc.periodoCustoId = 30002;",
+  "rows": [
+    {
+      "lancTotal": "2744031.34",
+      "equipTotal": "858424.74",
+      "despTotal": "1565818.13"
+    }
+  ],
+  "messages": [],
+  "stdout": "lancTotal\tequipTotal\tdespTotal\n2744031.34\t858424.74\t1565818.13\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

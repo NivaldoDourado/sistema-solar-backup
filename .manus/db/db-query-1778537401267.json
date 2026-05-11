@@ -1,0 +1,9 @@
+{
+  "query": "SELECT e.nomeDoEquipamento, ge.nome as grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id LEFT JOIN grupos_de_equipamentos ge ON e.grupoId = ge.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY e.nomeDoEquipamento, ge.nome ORDER BY total DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT e.nomeDoEquipamento, ge.nome as grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id LEFT JOIN grupos_de_equipamentos ge ON e.grupoId = ge.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY e.nomeDoEquipamento, ge.nome ORDER BY total DESC LIMIT 5;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 277
+}

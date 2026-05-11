@@ -1,0 +1,30 @@
+{
+  "query": "SELECT cc.nome, SUM(total) as total FROM (SELECT contaCustoId, valor as total FROM lancamento_custo WHERE periodoCustoId = 30002 UNION ALL SELECT contaCustoId, valor as total FROM lancamento_salario WHERE periodoCustoId = 30002) sub JOIN conta_custo cc ON sub.contaCustoId = cc.id GROUP BY cc.nome ORDER BY total DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT cc.nome, SUM(total) as total FROM (SELECT contaCustoId, valor as total FROM lancamento_custo WHERE periodoCustoId = 30002 UNION ALL SELECT contaCustoId, valor as total FROM lancamento_salario WHERE periodoCustoId = 30002) sub JOIN conta_custo cc ON sub.contaCustoId = cc.id GROUP BY cc.nome ORDER BY total DESC LIMIT 5;",
+  "rows": [
+    {
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "total": "624948.58"
+    },
+    {
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "total": "400545.99"
+    },
+    {
+      "nome": "Despesas Indiretas",
+      "total": "319788.47"
+    },
+    {
+      "nome": "Combustível",
+      "total": "255862.84"
+    },
+    {
+      "nome": "Peças de Desgaste",
+      "total": "195824.94"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\ttotal\nSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t624948.58\nImpostos, CEFEM e Outras Taxas\t400545.99\nDespesas Indiretas\t319788.47\nCombustível\t255862.84\nPeças de Desgaste\t195824.94\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

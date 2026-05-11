@@ -1,0 +1,42 @@
+{
+  "query": "SELECT pc.id, pc.mes, pc.ano, (SELECT COUNT(*) FROM lancamento_custo WHERE periodoCustoId = pc.id) as lancamentos, (SELECT COUNT(*) FROM custo_setor_equipamento WHERE periodoCustoId = pc.id) as equipamentos, (SELECT COUNT(*) FROM custo_setor_despesa WHERE periodoCustoId = pc.id) as despesas FROM periodo_custo pc WHERE pc.ano = 2026 ORDER BY pc.mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.id, pc.mes, pc.ano, (SELECT COUNT(*) FROM lancamento_custo WHERE periodoCustoId = pc.id) as lancamentos, (SELECT COUNT(*) FROM custo_setor_equipamento WHERE periodoCustoId = pc.id) as equipamentos, (SELECT COUNT(*) FROM custo_setor_despesa WHERE periodoCustoId = pc.id) as despesas FROM periodo_custo pc WHERE pc.ano = 2026 ORDER BY pc.mes;",
+  "rows": [
+    {
+      "id": "30002",
+      "mes": "1",
+      "ano": "2026",
+      "lancamentos": "17",
+      "equipamentos": "69",
+      "despesas": "24"
+    },
+    {
+      "id": "30001",
+      "mes": "2",
+      "ano": "2026",
+      "lancamentos": "17",
+      "equipamentos": "71",
+      "despesas": "25"
+    },
+    {
+      "id": "1",
+      "mes": "3",
+      "ano": "2026",
+      "lancamentos": "17",
+      "equipamentos": "81",
+      "despesas": "23"
+    },
+    {
+      "id": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "lancamentos": "271",
+      "equipamentos": "0",
+      "despesas": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmes\tano\tlancamentos\tequipamentos\tdespesas\n30002\t1\t2026\t17\t69\t24\n30001\t2\t2026\t17\t71\t25\n1\t3\t2026\t17\t81\t23\n60001\t4\t2026\t271\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 319
+}

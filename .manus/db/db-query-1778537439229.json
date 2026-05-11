@@ -1,0 +1,40 @@
+{
+  "query": "SELECT ls.contaCustoId, cc.nome, ls.equipamentoId, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id WHERE ls.periodoCustoId = 60001 AND ls.equipamentoId IS NOT NULL GROUP BY ls.contaCustoId, cc.nome, ls.equipamentoId ORDER BY total DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT ls.contaCustoId, cc.nome, ls.equipamentoId, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id WHERE ls.periodoCustoId = 60001 AND ls.equipamentoId IS NOT NULL GROUP BY ls.contaCustoId, cc.nome, ls.equipamentoId ORDER BY total DESC LIMIT 5;",
+  "rows": [
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "19",
+      "total": "8476.03"
+    },
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "93",
+      "total": "8200.09"
+    },
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "51",
+      "total": "7978.86"
+    },
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "22",
+      "total": "7753.66"
+    },
+    {
+      "contaCustoId": "30004",
+      "nome": "Sal.Oper./Enc. Oper.",
+      "equipamentoId": "3",
+      "total": "7625.16"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tnome\tequipamentoId\ttotal\n30004\tSal.Oper./Enc. Oper.\t19\t8476.03\n30004\tSal.Oper./Enc. Oper.\t93\t8200.09\n30004\tSal.Oper./Enc. Oper.\t51\t7978.86\n30004\tSal.Oper./Enc. Oper.\t22\t7753.66\n30004\tSal.Oper./Enc. Oper.\t3\t7625.16\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

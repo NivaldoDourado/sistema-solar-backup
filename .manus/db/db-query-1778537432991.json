@@ -1,0 +1,45 @@
+{
+  "query": "SELECT ls.contaCustoId, cc.nome, ls.setorId, s.nome as setorNome, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id LEFT JOIN setores s ON ls.setorId = s.id WHERE ls.periodoCustoId = 60001 AND ls.setorId IS NOT NULL GROUP BY ls.contaCustoId, cc.nome, ls.setorId, s.nome ORDER BY total DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT ls.contaCustoId, cc.nome, ls.setorId, s.nome as setorNome, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id LEFT JOIN setores s ON ls.setorId = s.id WHERE ls.periodoCustoId = 60001 AND ls.setorId IS NOT NULL GROUP BY ls.contaCustoId, cc.nome, ls.setorId, s.nome ORDER BY total DESC LIMIT 10;",
+  "rows": [
+    {
+      "contaCustoId": "12",
+      "nome": "Sal. Diretoria/Pró-Labore",
+      "setorId": "120002",
+      "setorNome": "DIRETORIA",
+      "total": "263969.96"
+    },
+    {
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO",
+      "total": "136236.51"
+    },
+    {
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "setorId": "60003",
+      "setorNome": "OFICINA",
+      "total": "112456.78"
+    },
+    {
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "setorId": "15",
+      "setorNome": "OUTROS SERVIÇOS AUXILIARES",
+      "total": "107117.11"
+    },
+    {
+      "contaCustoId": "1",
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "setorId": "60002",
+      "setorNome": "ALMOXARIFADO",
+      "total": "69906.65"
+    }
+  ],
+  "messages": [],
+  "stdout": "contaCustoId\tnome\tsetorId\tsetorNome\ttotal\n12\tSal. Diretoria/Pró-Labore\t120002\tDIRETORIA\t263969.96\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t1\tADMINISTRACAO\t136236.51\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t60003\tOFICINA\t112456.78\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t15\tOUTROS SERVIÇOS AUXILIARES\t107117.11\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t60002\tALMOXARIFADO\t69906.65\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

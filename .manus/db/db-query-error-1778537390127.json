@@ -1,0 +1,8 @@
+{
+  "query": "SELECT idi.equipamentoSistemaId, e.nomeDoEquipamento, g.nome as grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id LEFT JOIN grupos g ON e.grupoId = g.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY idi.equipamentoSistemaId, e.nomeDoEquipamento, g.nome ORDER BY total DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT idi.equipamentoSistemaId, e.nomeDoEquipamento, g.nome as grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id LEFT JOIN grupos g ON e.grupoId = g.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY idi.equipamentoSistemaId, e.nomeDoEquipamento, g.nome ORDER BY total DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'us3q3oba5lqqatdwwyhq5k.grupos' doesn't exist"
+  ]
+}

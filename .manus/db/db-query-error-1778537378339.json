@@ -1,0 +1,8 @@
+{
+  "query": "SELECT idi.equipamentoSistemaId, e.nome, e.grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY idi.equipamentoSistemaId, e.nome, e.grupoNome ORDER BY total DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT idi.equipamentoSistemaId, e.nome, e.grupoNome, SUM(idi.custo) as total FROM item_despesa_importado idi LEFT JOIN equipamentos e ON idi.equipamentoSistemaId = e.id WHERE idi.periodoCustoId = 60001 AND idi.equipamentoSistemaId IS NOT NULL GROUP BY idi.equipamentoSistemaId, e.nome, e.grupoNome ORDER BY total DESC LIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'e.nome' in 'group statement'"
+  ]
+}

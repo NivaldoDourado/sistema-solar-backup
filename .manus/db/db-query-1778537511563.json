@@ -1,0 +1,13 @@
+{
+  "query": "SELECT despesasIndiretas FROM periodo_custo WHERE id = 30002;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT despesasIndiretas FROM periodo_custo WHERE id = 30002;",
+  "rows": [
+    {
+      "despesasIndiretas": "319788.47"
+    }
+  ],
+  "messages": [],
+  "stdout": "despesasIndiretas\n319788.47\n",
+  "stderr": "",
+  "execution_time_ms": 256
+}

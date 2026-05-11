@@ -1,0 +1,14 @@
+{
+  "query": "SELECT (SELECT SUM(valor) FROM lancamento_custo WHERE periodoCustoId = 60001) as totalLanc, (SELECT SUM(valor) FROM lancamento_salario WHERE periodoCustoId = 60001) as totalSal;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT (SELECT SUM(valor) FROM lancamento_custo WHERE periodoCustoId = 60001) as totalLanc, (SELECT SUM(valor) FROM lancamento_salario WHERE periodoCustoId = 60001) as totalSal;",
+  "rows": [
+    {
+      "totalLanc": "1963394.44",
+      "totalSal": "836716.76"
+    }
+  ],
+  "messages": [],
+  "stdout": "totalLanc\ttotalSal\n1963394.44\t836716.76\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}
