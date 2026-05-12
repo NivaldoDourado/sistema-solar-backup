@@ -1063,3 +1063,21 @@ export const lancamentoSalario = mysqlTable("lancamento_salario", {
 });
 export type LancamentoSalario = typeof lancamentoSalario.$inferSelect;
 export type InsertLancamentoSalario = typeof lancamentoSalario.$inferInsert;
+
+// ============================================================================
+// CONTAS EXCLUÍDAS DO FLUXO REALIZADO (gerenciadas pelo usuário)
+// ============================================================================
+export const contaExcluidaFluxo = mysqlTable("conta_excluida_fluxo", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Código numérico da conta (ex: "7047") */
+  codigo: varchar("codigo", { length: 20 }).notNull(),
+  /** Nome da conta (ex: "DIRETORIA DIST. LUCRO MAX") */
+  nome: varchar("nome", { length: 255 }).notNull(),
+  /** Motivo da exclusão (informado pelo usuário) */
+  motivo: varchar("motivo", { length: 500 }),
+  /** Quem excluiu */
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ContaExcluidaFluxo = typeof contaExcluidaFluxo.$inferSelect;
+export type InsertContaExcluidaFluxo = typeof contaExcluidaFluxo.$inferInsert;

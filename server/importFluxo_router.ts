@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { lancamentoFluxo, periodoCusto, lancamentoCusto, contaCusto } from "../drizzle/schema";
+import { lancamentoFluxo, periodoCusto, lancamentoCusto, contaCusto, contaExcluidaFluxo } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import {
@@ -67,7 +67,9 @@ interface FluxoParsed {
 
 // ===== PARSER =====
 
-export function parsePlanilhaFluxo(buffer: Buffer): FluxoParsed {
+export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []): FluxoParsed {
+  // Combinar exclusões estáticas com dinâmicas (do banco)
+  const todasExclusoesIndividuais = [...CONTAS_INDIVIDUAIS_EXCLUIR, ...extraExcluidos];
   const wb = XLSX.read(buffer, { type: "buffer" });
   const ws = wb.Sheets[wb.SheetNames[0]];
   const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
@@ -269,8 +271,8 @@ export function parsePlanilhaFluxo(buffer: Buffer): FluxoParsed {
     for (const conta of contasDessaPrincipal) {
       if (conta.valor === null || conta.valor === 0) continue;
 
-      // Verificar exclusão individual
-      if (CONTAS_INDIVIDUAIS_EXCLUIR.includes(conta.codigo)) {
+      // Verificar exclusão individual (estática + dinâmica do banco)
+      if (todasExclusoesIndividuais.includes(conta.codigo)) {
         preview.excluidas.push({
           codigo: conta.codigo,
           nome: conta.nome,
@@ -354,7 +356,13 @@ export const importFluxoRouter = router({
     .input(z.object({ fileBase64: z.string() }))
     .mutation(async ({ input }) => {
       const buffer = Buffer.from(input.fileBase64, "base64");
-      const parsed = parsePlanilhaFluxo(buffer);
+
+      // Buscar contas excluídas dinâmicas do banco
+      const db = (await getDb())!;
+      const excluidas = await db.select({ codigo: contaExcluidaFluxo.codigo }).from(contaExcluidaFluxo);
+      const codigosExcluidos = excluidas.map((c: { codigo: string }) => c.codigo);
+
+      const parsed = parsePlanilhaFluxo(buffer, codigosExcluidos);
       return parsed;
     }),
 

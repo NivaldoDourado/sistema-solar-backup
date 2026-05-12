@@ -21,6 +21,7 @@ import { salariosRouter } from "./salarios_router";
 import { impostosRouter } from "./impostos_router";
 import { rateioMemRouter } from "./rateioMem_router";
 import { validacaoFechamentoRouter } from "./validacaoFechamento_router";
+import { contaExcluidaRouter } from "./contaExcluida_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3508,6 +3509,7 @@ export const appRouter = router({
   impostos: impostosRouter,
   rateioMem: rateioMemRouter,
   validacaoFechamento: validacaoFechamentoRouter,
+  contaExcluida: contaExcluidaRouter,
   authLocal: authLocalRouter,
 
   // ============================================================================

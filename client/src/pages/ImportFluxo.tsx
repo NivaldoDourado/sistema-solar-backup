@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle,
   ArrowRight, ArrowLeft, Loader2, Info, ChevronDown, ChevronRight,
-  Building2, Banknote, Zap
+  Building2, Banknote, Zap, Settings2, Plus, Trash2
 } from "lucide-react";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -25,6 +27,12 @@ export default function ImportFluxo() {
   const [importResult, setImportResult] = useState<any>(null);
   const [expandedContas, setExpandedContas] = useState<Set<string>>(new Set());
 
+  // Dialog de gerenciamento de contas excluídas
+  const [showExcluidas, setShowExcluidas] = useState(false);
+  const [novaCodigo, setNovaCodigo] = useState("");
+  const [novaNome, setNovaNome] = useState("");
+  const [novaMotivo, setNovaMotivo] = useState("");
+
   // Período
   const now = new Date();
   const [mes, setMes] = useState(now.getMonth() + 1);
@@ -33,6 +41,30 @@ export default function ImportFluxo() {
   const periodosQuery = trpc.periodoCusto.list.useQuery();
   const parseMutation = trpc.importFluxo.parsePlanilha.useMutation();
   const importMutation = trpc.importFluxo.confirmarImportacao.useMutation();
+
+  // Contas excluídas
+  const contasExcluidasQuery = trpc.contaExcluida.listar.useQuery();
+  const adicionarExcluida = trpc.contaExcluida.adicionar.useMutation({
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success(result.message);
+        setNovaCodigo("");
+        setNovaNome("");
+        setNovaMotivo("");
+        contasExcluidasQuery.refetch();
+      } else {
+        toast.error(result.message);
+      }
+    },
+    onError: (err) => toast.error("Erro ao adicionar: " + err.message),
+  });
+  const removerExcluida = trpc.contaExcluida.remover.useMutation({
+    onSuccess: () => {
+      toast.success("Conta restaurada (removida da lista de exclusão)");
+      contasExcluidasQuery.refetch();
+    },
+    onError: (err) => toast.error("Erro ao remover: " + err.message),
+  });
 
   // Encontrar ou criar período
   const periodoAtual = useMemo(() => {
@@ -87,17 +119,42 @@ export default function ImportFluxo() {
     });
   };
 
+  const handleAdicionarExcluida = () => {
+    if (!novaCodigo.trim() || !novaNome.trim()) {
+      toast.error("Código e Nome são obrigatórios");
+      return;
+    }
+    adicionarExcluida.mutate({
+      codigo: novaCodigo.trim(),
+      nome: novaNome.trim(),
+      motivo: novaMotivo.trim() || undefined,
+    });
+  };
+
   const totalImportar = parsed?.totalImportar || 0;
   const totalExcluir = parsed?.totalExcluir || 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Fluxo Realizado</h1>
-        <p className="text-muted-foreground">
-          Importação do relatório de Fluxo de Caixa (DataGold) para apropriação de despesas administrativas e setoriais
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Fluxo Realizado</h1>
+          <p className="text-muted-foreground">
+            Importação do relatório de Fluxo de Caixa (DataGold) para apropriação de despesas administrativas e setoriais
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowExcluidas(true)}
+          className="gap-2"
+        >
+          <Settings2 className="h-4 w-4" />
+          Contas Excluídas
+          {contasExcluidasQuery.data && contasExcluidasQuery.data.length > 0 && (
+            <Badge variant="secondary" className="ml-1">{contasExcluidasQuery.data.length}</Badge>
+          )}
+        </Button>
       </div>
 
       {/* Steps indicator */}
@@ -407,6 +464,143 @@ export default function ImportFluxo() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog: Gerenciar Contas Excluídas */}
+      <Dialog open={showExcluidas} onOpenChange={setShowExcluidas}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings2 className="h-5 w-5" />
+              Gerenciar Contas Excluídas do Fluxo
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-4">
+            {/* Info */}
+            <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              <Info className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Contas adicionadas aqui serão automaticamente excluídas durante a importação do Fluxo Realizado.
+                Isso permite excluir contas individuais sem alterar o código do sistema.
+              </span>
+            </div>
+
+            {/* Formulário para adicionar */}
+            <div className="border rounded-lg p-4 space-y-3">
+              <p className="text-sm font-medium">Adicionar Nova Exclusão</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Código *</label>
+                  <Input
+                    placeholder="Ex: 7047"
+                    value={novaCodigo}
+                    onChange={(e) => setNovaCodigo(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Nome da Conta *</label>
+                  <Input
+                    placeholder="Ex: DIRETORIA DIST. LUCRO MAX"
+                    value={novaNome}
+                    onChange={(e) => setNovaNome(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Motivo (opcional)</label>
+                  <Input
+                    placeholder="Ex: Não é custo operacional"
+                    value={novaMotivo}
+                    onChange={(e) => setNovaMotivo(e.target.value)}
+                  />
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleAdicionarExcluida}
+                disabled={adicionarExcluida.isPending}
+                className="gap-1"
+              >
+                {adicionarExcluida.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Plus className="h-3 w-3" />
+                )}
+                Adicionar
+              </Button>
+            </div>
+
+            {/* Lista de contas excluídas */}
+            <div className="border rounded-lg">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground">Código</th>
+                    <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground">Nome</th>
+                    <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground">Motivo</th>
+                    <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground">Data</th>
+                    <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contasExcluidasQuery.isLoading && (
+                    <tr>
+                      <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                        Carregando...
+                      </td>
+                    </tr>
+                  )}
+                  {contasExcluidasQuery.data && contasExcluidasQuery.data.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                        Nenhuma conta excluída cadastrada. Apenas as exclusões estáticas do código serão aplicadas.
+                      </td>
+                    </tr>
+                  )}
+                  {contasExcluidasQuery.data?.map((conta: any) => (
+                    <tr key={conta.id} className="border-b hover:bg-muted/30">
+                      <td className="py-2 px-3 font-mono font-medium">{conta.codigo}</td>
+                      <td className="py-2 px-3">{conta.nome}</td>
+                      <td className="py-2 px-3 text-muted-foreground text-xs">{conta.motivo || "—"}</td>
+                      <td className="py-2 px-3 text-muted-foreground text-xs">
+                        {conta.createdAt ? new Date(conta.createdAt).toLocaleDateString("pt-BR") : "—"}
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            if (confirm(`Remover exclusão da conta ${conta.codigo}-${conta.nome}? Ela voltará a ser importada.`)) {
+                              removerExcluida.mutate({ id: conta.id });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Info sobre exclusões estáticas */}
+            <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg">
+              <p className="font-medium mb-1">Exclusões estáticas (definidas no código):</p>
+              <p>2068 - OUTRAS DESP. ADM (compra de areia)</p>
+              <p>2304 - PAGAMENTO EMPRESTIMO</p>
+              <p className="mt-1 italic">Estas não podem ser removidas por aqui.</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExcluidas(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

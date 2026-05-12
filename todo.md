@@ -1042,3 +1042,11 @@
 - [x] Investigar todos os locais com botões de exportação
 - [x] Criar função de impressão com cabeçalho padronizado (GEM, empresa, período)
 - [x] Adicionar botão de impressão em todos os locais com exportação
+
+## Excluir contas específicas da apuração de custo (Solução Completa)
+- [x] Investigar como lançamentos do Fluxo Realizado são importados e onde a conta 7047 aparece
+- [x] Criar tabela `contaExcluidaFluxo` no banco de dados
+- [x] Criar endpoints tRPC: listar, adicionar, remover contas excluídas
+- [x] Integrar exclusões dinâmicas com importação do Fluxo Realizado
+- [x] Criar interface de gerenciamento de contas excluídas no frontend
+- [x] Testar fluxo completo: 146 testes passando, exclusões dinâmicas integradas com parsePlanilhaFluxo
