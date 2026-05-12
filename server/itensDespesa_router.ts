@@ -9,7 +9,7 @@ import {
   periodoCusto,
   equipamentoExcluidoTag,
 } from "../drizzle/schema";
-import { TAGS_OUTRAS_DESP_SETOR } from "./importDespesas_correspondencias";
+import { TAGS_OUTRAS_DESP_SETOR, TAGS_CONTA_EXPLOSIVOS } from "./importDespesas_correspondencias";
 
 const CLASSIFICACAO_LABELS: Record<string, string> = {
   combustivel: "Combustível",
@@ -235,8 +235,24 @@ export const itensDespesaRouter = router({
           itemDespesaImportado.equipamentoSistemaId,
         )
         .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
+      // Tags de explosivos que devem ser excluídas deste drill-down
+      // (seus itens têm classificacao "pecas_reposicao" no itemDespesaImportado,
+      //  mas o lançamento de custo vai para a conta "Explosivos e Acessórios")
+      const tagsExplosivos = new Set(TAGS_CONTA_EXPLOSIVOS.map(t => t.toUpperCase()));
+      // Tags de outras despesas de setor (mesma lógica)
+      const tagsOutrasDesp = new Set(Object.keys(TAGS_OUTRAS_DESP_SETOR).map(t => t.toUpperCase()));
+
       return result
-        .filter(r => !((r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)) || tagsExcluidas.has(r.equipamentoTag.toUpperCase())))
+        .filter(r => {
+          const tagUpper = r.equipamentoTag.toUpperCase();
+          // Excluir equipamentos excluídos
+          if ((r.equipamentoSistemaId && idsExcluidos.has(r.equipamentoSistemaId)) || tagsExcluidas.has(tagUpper)) return false;
+          // Excluir tags de explosivos (lançadas em conta específica)
+          if (tagsExplosivos.has(tagUpper)) return false;
+          // Excluir tags de outras despesas de setor
+          if (tagsOutrasDesp.has(tagUpper)) return false;
+          return true;
+        })
         .map(r => ({
           equipamentoTag: r.equipamentoTag,
           equipamentoDescricao: r.equipamentoDescricao,

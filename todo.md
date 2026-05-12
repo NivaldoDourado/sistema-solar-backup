@@ -1013,3 +1013,8 @@
 
 ## PDF Donut - Rótulos de percentual nas fatias maiores
 - [x] Adicionar rótulos de percentual diretamente sobre as fatias > 8% do donut no PDF
+
+## Bug: Explosivos (DETONA) aparecendo na tela de detalhamento por equipamento
+- [x] Excluir explosivos (DETONA) da lista de equipamentos da conta "Peças de Reposição / Itens de Consumo" no detalhamento por equipamento
+- [x] Corrigir o total da tela de detalhamento (deve ser R$ 247.219,95, não R$ 397.203,80)
+- [x] Não afetar a tela de Custo Variável que está correta
