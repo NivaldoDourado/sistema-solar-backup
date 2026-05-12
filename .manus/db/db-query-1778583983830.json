@@ -1,0 +1,78 @@
+{
+  "query": "\nSELECT cc.nome, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 30002\nGROUP BY cc.nome\nORDER BY total DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT cc.nome, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 30002\nGROUP BY cc.nome\nORDER BY total DESC\n",
+  "rows": [
+    {
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "total": "624948.58"
+    },
+    {
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "total": "400545.99"
+    },
+    {
+      "nome": "Despesas Indiretas",
+      "total": "319788.47"
+    },
+    {
+      "nome": "Combustível",
+      "total": "255862.84"
+    },
+    {
+      "nome": "Peças de Desgaste",
+      "total": "195824.94"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "total": "175514.33"
+    },
+    {
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "total": "146120.18"
+    },
+    {
+      "nome": "Explosivos e Acessórios",
+      "total": "143419.70"
+    },
+    {
+      "nome": "Despesas Administrativas",
+      "total": "127714.61"
+    },
+    {
+      "nome": "Energia Elétrica",
+      "total": "107276.25"
+    },
+    {
+      "nome": "Consultorias Especializadas",
+      "total": "96052.21"
+    },
+    {
+      "nome": "Lubrificantes",
+      "total": "51234.92"
+    },
+    {
+      "nome": "Outras Despesas dos Equipamentos",
+      "total": "33867.54"
+    },
+    {
+      "nome": "Equipamentos de Apoio",
+      "total": "31784.34"
+    },
+    {
+      "nome": "Outras Despesas de Setores",
+      "total": "15324.10"
+    },
+    {
+      "nome": "Comissão de Vendas",
+      "total": "14084.00"
+    },
+    {
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "total": "4668.34"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\ttotal\nSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t624948.58\nImpostos, CEFEM e Outras Taxas\t400545.99\nDespesas Indiretas\t319788.47\nCombustível\t255862.84\nPeças de Desgaste\t195824.94\nSal.Oper./Enc. Oper.\t175514.33\nPeças de Reposição / Itens de Consumo\t146120.18\nExplosivos e Acessórios\t143419.70\nDespesas Administrativas\t127714.61\nEnergia Elétrica\t107276.25\nConsultorias Especializadas\t96052.21\nLubrificantes\t51234.92\nOutras Despesas dos Equipamentos\t33867.54\nEquipamentos de Apoio\t31784.34\nOutras Despesas de Setores\t15324.10\nComissão de Vendas\t14084.00\nFrota/Man.Pat./Seg./Out.\t4668.34\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

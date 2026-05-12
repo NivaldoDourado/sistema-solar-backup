@@ -1,0 +1,14 @@
+{
+  "query": "\nSELECT cc.nome, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 30002 AND cc.nome LIKE '%Indiret%'\nGROUP BY cc.nome\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT cc.nome, SUM(lc.valor) as total\nFROM lancamento_custo lc\nJOIN conta_custo cc ON lc.contaCustoId = cc.id\nWHERE lc.periodoCustoId = 30002 AND cc.nome LIKE '%Indiret%'\nGROUP BY cc.nome\n",
+  "rows": [
+    {
+      "nome": "Despesas Indiretas",
+      "total": "319788.47"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\ttotal\nDespesas Indiretas\t319788.47\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

@@ -1,0 +1,31 @@
+{
+  "query": "SELECT tag FROM equipamento_excluido_tag",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT tag FROM equipamento_excluido_tag",
+  "rows": [
+    {
+      "tag": "QMD 0H48"
+    },
+    {
+      "tag": "QMO6E54"
+    },
+    {
+      "tag": "QMD0H48"
+    },
+    {
+      "tag": "QMN1F10"
+    },
+    {
+      "tag": "SETOR RH"
+    },
+    {
+      "tag": "RRH 9F10"
+    },
+    {
+      "tag": "TNW 2I60"
+    }
+  ],
+  "messages": [],
+  "stdout": "tag\nQMD 0H48\nQMO6E54\nQMD0H48\nQMN1F10\nSETOR RH\nRRH 9F10\nTNW 2I60\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

@@ -1,0 +1,8 @@
+{
+  "query": "\n-- Total de lancamento_custo para abril/26 (periodoCustoId = 60001)\nSELECT 'lancamento_custo' as fonte, SUM(valor) as total FROM lancamento_custo WHERE periodo_custo_id = 60001\nUNION ALL\n-- Total de lancamento_salario para abril/26\nSELECT 'lancamento_salario' as fonte, SUM(valor) as total FROM lancamento_salario WHERE periodo_custo_id = 60001\nUNION ALL\n-- Total combinado\nSELECT 'TOTAL' as fonte, (SELECT COALESCE(SUM(valor),0) FROM lancamento_custo WHERE periodo_custo_id = 60001) + (SELECT COALESCE(SUM(valor),0) FROM lancamento_salario WHERE periodo_custo_id = 60001) as total\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Total de lancamento_custo para abril/26 (periodoCustoId = 60001)\nSELECT 'lancamento_custo' as fonte, SUM(valor) as total FROM lancamento_custo WHERE periodo_custo_id = 60001\nUNION ALL\n-- Total de lancamento_salario para abril/26\nSELECT 'lancamento_salario' as fonte, SUM(valor) as total FROM lancamento_salario WHERE periodo_custo_id = 60001\nUNION ALL\n-- Total combinado\nSELECT 'TOTAL' as fonte, (SELECT COALESCE(SUM(valor),0) FROM lancamento_custo WHERE periodo_custo_id = 60001) + (SELECT COALESCE(SUM(valor),0) FROM lancamento_salario WHERE periodo_custo_id = 60001) as total\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 3: Unknown column 'periodo_custo_id' in 'where clause'"
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "query": "SELECT lc.id, cc.nome, lc.valor, \n  (SELECT SUM(idi.custo) FROM item_despesa_importado idi WHERE idi.lancamentoCustoId = lc.id) as total_itens,\n  (SELECT SUM(idi.custo) FROM item_despesa_importado idi WHERE idi.lancamentoCustoId = lc.id AND UPPER(idi.equipamentoTag) IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')) as total_excluido\nFROM lancamento_custo lc \nJOIN conta_custo cc ON lc.contaCustoId = cc.id \nWHERE lc.periodoCustoId = 60001 \nORDER BY lc.valor DESC \nLIMIT 15",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.id, cc.nome, lc.valor, \n  (SELECT SUM(idi.custo) FROM item_despesa_importado idi WHERE idi.lancamentoCustoId = lc.id) as total_itens,\n  (SELECT SUM(idi.custo) FROM item_despesa_importado idi WHERE idi.lancamentoCustoId = lc.id AND UPPER(idi.equipamentoTag) IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')) as total_excluido\nFROM lancamento_custo lc \nJOIN conta_custo cc ON lc.contaCustoId = cc.id \nWHERE lc.periodoCustoId = 60001 \nORDER BY lc.valor DESC \nLIMIT 15",
+  "rows": [
+    {
+      "id": "120001",
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "valor": "309340.07",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90062",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "valor": "136668.83",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90002",
+      "nome": "Despesas Administrativas",
+      "valor": "129119.93",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90005",
+      "nome": "Energia Elétrica",
+      "valor": "96429.96",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90006",
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "valor": "74246.37",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90001",
+      "nome": "Consultorias Especializadas",
+      "valor": "66279.62",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90004",
+      "nome": "Despesas Indiretas",
+      "valor": "60663.09",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90018",
+      "nome": "Peças de Desgaste",
+      "valor": "44500.00",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90011",
+      "nome": "Combustível",
+      "valor": "42068.92",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90026",
+      "nome": "Peças de Desgaste",
+      "valor": "40047.58",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90095",
+      "nome": "Peças de Desgaste",
+      "valor": "39330.00",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90007",
+      "nome": "Comissão de Vendas",
+      "valor": "38728.00",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90061",
+      "nome": "Combustível",
+      "valor": "33405.16",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90137",
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "valor": "32788.42",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    },
+    {
+      "id": "90076",
+      "nome": "Peças de Desgaste",
+      "valor": "31742.53",
+      "total_itens": "NULL",
+      "total_excluido": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\tvalor\ttotal_itens\ttotal_excluido\n120001\tImpostos, CEFEM e Outras Taxas\t309340.07\tNULL\tNULL\n90062\tPeças de Reposição / Itens de Consumo\t136668.83\tNULL\tNULL\n90002\tDespesas Administrativas\t129119.93\tNULL\tNULL\n90005\tEnergia Elétrica\t96429.96\tNULL\tNULL\n90006\tFrota/Man.Pat./Seg./Out.\t74246.37\tNULL\tNULL\n90001\tConsultorias Especializadas\t66279.62\tNULL\tNULL\n90004\tDespesas Indiretas\t60663.09\tNULL\tNULL\n90018\tPeças de Desgaste\t44500.00\tNULL\tNULL\n90011\tCombustível\t42068.92\tNULL\tNULL\n90026\tPeças de Desgaste\t40047.58\tNULL\tNULL\n90095\tPeças de Desgaste\t39330.00\tNULL\tNULL\n90007\tComissão de Vendas\t38728.00\tNULL\tNULL\n90061\tCombustível\t33405.16\tNULL\tNULL\n90137\tPeças de Reposição / Itens de Consumo\t32788.42\tNULL\tNULL\n90076\tPeças de Desgaste\t31742.53\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

@@ -1,0 +1,13 @@
+{
+  "query": "SELECT SUM(custo) as total_excluido FROM item_despesa_importado WHERE periodoCustoId = 60001 AND UPPER(equipamentoTag) IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(custo) as total_excluido FROM item_despesa_importado WHERE periodoCustoId = 60001 AND UPPER(equipamentoTag) IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')",
+  "rows": [
+    {
+      "total_excluido": "29088.93"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_excluido\n29088.93\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

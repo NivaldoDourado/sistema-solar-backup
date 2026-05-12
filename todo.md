@@ -983,3 +983,13 @@
 - [x] Corrigir para incluir dados de abril/26+ no comparativo
   - comparativoPlanoCusto: reescrito para usar lancamento_custo + lancamento_salario (fonte unificada)
   - comparativoSetores: fallback com calcularRateioMem + calcularRateioMset para períodos sem RAS
+
+## Bug (CORRIGIDO): Inconsistência de totais no Comparativo Multi-período
+- [x] Plano de Custo abril/26: mostra R$ 2.800.111,20 mas deveria ser R$ 2.771.022,33 (diferença R$ 29.088,87)
+  - Causa: equipamentos com tags excluídas (R$ 29.088,93) estavam sendo incluídos
+  - Correção: subtrair proporcional dos equipamentos excluídos nas contas MEM
+- [x] Setores jan-mar/26: não inclui despesas indiretas (total menor que deveria)
+  - Causa: usava campo periodo_custo.despesasIndiretas (que era 0 para fev/26)
+  - Correção: buscar despesas indiretas do lancamento_custo (conta 'Despesas Indiretas')
+- [x] Alinhar ambas tabelas para incluir despesas indiretas em todos os períodos
+  - Totais agora batem: Plano ≈ Setores (diferença de centavos por arredondamento)

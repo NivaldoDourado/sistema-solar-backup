@@ -1,0 +1,22 @@
+{
+  "query": "SELECT cc.nome, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id WHERE ls.periodoCustoId = 60001 GROUP BY cc.nome ORDER BY total DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT cc.nome, SUM(ls.valor) as total FROM lancamento_salario ls JOIN conta_custo cc ON ls.contaCustoId = cc.id WHERE ls.periodoCustoId = 60001 GROUP BY cc.nome ORDER BY total DESC",
+  "rows": [
+    {
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "total": "425717.05"
+    },
+    {
+      "nome": "Sal. Diretoria/Pró-Labore",
+      "total": "263969.96"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "total": "147029.75"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\ttotal\nSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t425717.05\nSal. Diretoria/Pró-Labore\t263969.96\nSal.Oper./Enc. Oper.\t147029.75\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

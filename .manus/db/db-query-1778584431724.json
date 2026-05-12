@@ -1,0 +1,14 @@
+{
+  "query": "SELECT \n  (SELECT SUM(custo) FROM item_despesa_importado WHERE periodoCustoId = 60001 AND UPPER(equipamentoTag) NOT IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')) as total_itens_validos,\n  (SELECT SUM(custo) FROM item_despesa_importado WHERE periodoCustoId = 60001) as total_itens_todos",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT \n  (SELECT SUM(custo) FROM item_despesa_importado WHERE periodoCustoId = 60001 AND UPPER(equipamentoTag) NOT IN ('QMD 0H48', 'QMO6E54', 'QMD0H48', 'QMN1F10', 'SETOR RH', 'RRH 9F10', 'TNW 2I60')) as total_itens_validos,\n  (SELECT SUM(custo) FROM item_despesa_importado WHERE periodoCustoId = 60001) as total_itens_todos",
+  "rows": [
+    {
+      "total_itens_validos": "1151465.29",
+      "total_itens_todos": "1180554.22"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_itens_validos\ttotal_itens_todos\n1151465.29\t1180554.22\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

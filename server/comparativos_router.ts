@@ -6,6 +6,7 @@ import {
   periodoCusto, custoSetorEquipamento, custoSetorDespesa,
   resumoVendasProduto, avaliacaoGlobal, abastecimento, producao,
   lancamentoCusto, lancamentoSalario, contaCusto,
+  itemDespesaImportado, equipamentoExcluidoTag,
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { calcularRateioMem } from "./rateioMem_calc";
@@ -328,7 +329,35 @@ export const comparativosRouter = router({
       const ids = periodoIds.map(p => p.id);
       const idsSql = sql.join(ids.map(id => sql`${id}`), sql`, `);
 
-      // Fonte unificada: lancamento_custo agrupado por conta e período
+      // Buscar tags excluídas do custo
+      const tagsExcluidasRows = await db.select().from(equipamentoExcluidoTag);
+      const tagsExcluidasSet = new Set(tagsExcluidasRows.map(t => t.tag.toUpperCase()));
+
+      // Mapeamento de nomes de conta para labels amigáveis no comparativo
+      const CONTA_LABELS: Record<string, string> = {
+        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal. Diretoria/Pró-Labore": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal.Oper./Enc. Oper.": "Sal.Oper./Enc.Oper.",
+        "RH - Salários da Operação": "Sal.Oper./Enc.Oper.",
+        "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
+        "Combustível": "Combustível",
+        "Peças de Reposição / Itens de Consumo": "Peças de Reposição",
+        "Peças de Desgaste": "Peças de Desgaste",
+        "Explosivos e Acessórios": "Explosivos e Acessórios",
+        "Despesas Indiretas": "Despesas Indiretas",
+        "Energia Elétrica": "Energia Elétrica",
+        "Despesas Administrativas": "Desp.Admin.Telef.e Inform.",
+        "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
+        "Lubrificantes": "Lubrificantes",
+        "Frota/Man.Pat./Seg./Out.": "Frota/Man.Pat./Seg./Out.",
+        "Outras Despesas dos Equipamentos": "Outras Despesas",
+        "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
+        "Comissão de Vendas": "Comissão de Vendas",
+        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
+        "Depreciação": "Depreciação",
+      };
+
+      // Fonte: lancamento_custo agrupado por conta e período
       const lancRows = await db.select({
         periodoCustoId: lancamentoCusto.periodoCustoId,
         contaNome: contaCusto.nome,
@@ -350,29 +379,24 @@ export const comparativosRouter = router({
         .where(sql`${lancamentoSalario.periodoCustoId} IN (${idsSql})`)
         .groupBy(lancamentoSalario.periodoCustoId, contaCusto.nome);
 
-      // Mapeamento de nomes de conta para labels amigáveis no comparativo
-      const CONTA_LABELS: Record<string, string> = {
-        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
-        "Sal. Diretoria/Pró-Labore": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
-        "Sal.Oper./Enc. Oper.": "Sal.Oper./Enc.Oper.",
-        "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",
-        "Combustível": "Combustível",
-        "Peças de Reposição / Itens de Consumo": "Peças de Reposição",
-        "Peças de Desgaste": "Peças de Desgaste",
-        "Explosivos e Acessórios": "Explosivos e Acessórios",
-        "Despesas Indiretas": "Despesas Indiretas",
-        "Energia Elétrica": "Energia Elétrica",
-        "Despesas Administrativas": "Desp.Admin.Telef.e Inform.",
-        "Consultorias Especializadas": "Juridíco/Cons.Esp./Serv.Ter.",
-        "Lubrificantes": "Lubrificantes",
-        "Frota/Man.Pat./Seg./Out.": "Frota/Man.Pat./Seg./Out.",
-        "Outras Despesas dos Equipamentos": "Outras Despesas",
-        "Outras Despesas de Setores": "Outras Desp.Setor/Proc.",
-        "Comissão de Vendas": "Comissão de Vendas",
-        "Equipamentos de Apoio": "Equip.Apoio (Comb./Lub/Peças/Serv.)",
-        "Depreciação": "Depreciação",
-        "RH - Salários da Operação": "Sal.Oper./Enc.Oper.",
-      };
+      // Calcular total dos equipamentos excluídos por período
+      // (para subtrair do total de lancamento_custo)
+      const excluidos: Record<string, number> = {};
+      if (tagsExcluidasSet.size > 0) {
+        const tagsArr = Array.from(tagsExcluidasSet);
+        const tagsSql = sql.join(tagsArr.map(t => sql`${t}`), sql`, `);
+        const exclRows = await db.select({
+          periodoCustoId: itemDespesaImportado.periodoCustoId,
+          total: sql<string>`SUM(${itemDespesaImportado.custo})`,
+        })
+          .from(itemDespesaImportado)
+          .where(sql`${itemDespesaImportado.periodoCustoId} IN (${idsSql}) AND UPPER(${itemDespesaImportado.equipamentoTag}) IN (${tagsSql})`)
+          .groupBy(itemDespesaImportado.periodoCustoId);
+
+        for (const row of exclRows) {
+          excluidos[String(row.periodoCustoId)] = parseFloat(String(row.total || "0"));
+        }
+      }
 
       // Montar mapa de contas por período
       const contasMap: Record<string, Record<string, number>> = {};
@@ -401,6 +425,41 @@ export const comparativosRouter = router({
         const total = valores.reduce((s, v) => s + v, 0);
         return { descricao, valores, total };
       }).sort((a, b) => b.total - a.total);
+
+      // Calcular total geral por período e subtrair equipamentos excluídos
+      // O total correto = soma das contas - equipamentos excluídos
+      // Distribuir a redução proporcionalmente nas contas MEM (Combustível, Lubrificantes, Peças, Outras Despesas)
+      const contasMem = ["Combustível", "Lubrificantes", "Peças de Desgaste", "Peças de Reposição", "Outras Despesas"];
+      for (const p of periodoIds) {
+        const pid = String(p.id);
+        const totalExcluido = excluidos[pid] ?? 0;
+        if (totalExcluido <= 0) continue;
+
+        // Calcular total das contas MEM neste período
+        let totalMem = 0;
+        for (const c of contas) {
+          if (contasMem.includes(c.descricao)) {
+            const idx = periodoIds.findIndex(pp => pp.id === p.id);
+            totalMem += c.valores[idx] ?? 0;
+          }
+        }
+        if (totalMem <= 0) continue;
+
+        // Subtrair proporcionalmente
+        for (const c of contas) {
+          if (contasMem.includes(c.descricao)) {
+            const idx = periodoIds.findIndex(pp => pp.id === p.id);
+            const proporcao = (c.valores[idx] ?? 0) / totalMem;
+            c.valores[idx] = (c.valores[idx] ?? 0) - totalExcluido * proporcao;
+          }
+        }
+      }
+
+      // Recalcular totais após ajuste
+      for (const c of contas) {
+        c.total = c.valores.reduce((s, v) => s + v, 0);
+      }
+      contas.sort((a, b) => b.total - a.total);
 
       return {
         labels: periodoIds.map(p => p.label),
@@ -482,6 +541,22 @@ export const comparativosRouter = router({
             const val = parseFloat(String(row.total || "0"));
             if (!setoresMap[row.grupoNome]) setoresMap[row.grupoNome] = {};
             setoresMap[row.grupoNome][pid] = (setoresMap[row.grupoNome][pid] ?? 0) + val;
+          }
+
+          // Adicionar despesas indiretas do lancamento_custo (conta "Despesas Indiretas")
+          // que não estão incluídas nas tabelas RAS
+          const despIndRows = await db.select({
+            total: sql<string>`SUM(${lancamentoCusto.valor})`,
+          })
+            .from(lancamentoCusto)
+            .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
+            .where(sql`${lancamentoCusto.periodoCustoId} = ${p.id} AND ${contaCusto.nome} = 'Despesas Indiretas'`);
+          const despInd = parseFloat(despIndRows[0]?.total ?? "0");
+          if (despInd > 0) {
+            // Despesas indiretas são alocadas no setor ADMINISTRAÇÃO
+            const grupoNome = "ADMINISTRA\u00c7\u00c3O";
+            if (!setoresMap[grupoNome]) setoresMap[grupoNome] = {};
+            setoresMap[grupoNome][pid] = (setoresMap[grupoNome][pid] ?? 0) + despInd;
           }
         } else {
           // Fallback: usar calcularRateioMem + calcularRateioMset (mesma lógica do relatório sintético)
