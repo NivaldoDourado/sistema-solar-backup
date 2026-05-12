@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart, ShoppingCart, DollarSign, Percent, ChevronDown, ChevronUp, Truck } from "lucide-react";
+import { BarChart3, Lock, Info, Factory, TrendingUp, Calculator, Building2, PieChart, ShoppingCart, DollarSign, Percent, ChevronDown, ChevronUp, Truck, XIcon } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { DonutChartModal } from "@/components/DonutChartModal";
 import {
@@ -28,7 +28,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { exportRelatorioToExcel, exportRelatorioToPDF } from "@/lib/export-utils";
+import { exportRelatorioToExcel, exportRelatorioToPDF, type ExportColumn } from "@/lib/export-utils";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -246,6 +246,148 @@ export default function ApuracaoCusto() {
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
     [periodos, selectedPeriodoId]
   );
+
+  // Export options for drill-down dialog
+  const drillDownExportOptions = useMemo((): Omit<import("@/lib/export-utils").ExportOptions, "title" | "subtitle" | "filename"> => {
+    if (!drillDown) return { columns: [], data: [] };
+    const fmtVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(v ?? "");
+    const fmtPctVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%" : String(v ?? "");
+
+    // Nivel 1: Composicao
+    if (drillDown.nivel === 1 && composicaoConta) {
+      const total = composicaoConta.reduce((s, r) => s + r.valor, 0);
+      return {
+        columns: [
+          { header: "Origem", key: "origem" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: composicaoConta.map(r => ({ origem: r.origem, valor: r.valor, pct: total > 0 ? (r.valor / total) * 100 : 0 })),
+      };
+    }
+    // Nivel 2: Equipamentos
+    if (drillDown.nivel === 2 && drillDown.classificacao && drillEquipamentos) {
+      const total = drillEquipamentos.reduce((s, e) => s + e.totalCusto, 0);
+      return {
+        columns: [
+          { header: "Equipamento", key: "equip" },
+          { header: "Tag", key: "tag" },
+          { header: "Itens", key: "itens" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: drillEquipamentos.map(e => ({ equip: e.equipamentoDescricao || e.equipamentoTag, tag: e.equipamentoTag, itens: e.totalItens, valor: e.totalCusto, pct: total > 0 ? (e.totalCusto / total) * 100 : 0 })),
+      };
+    }
+    // Nivel 2: Explosivos por produto
+    if (drillDown.nivel === 2 && isExplosivos && drillExplosivos) {
+      const total = drillExplosivos.reduce((s, e) => s + e.totalCusto, 0);
+      return {
+        columns: [
+          { header: "Produto", key: "produto" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Qtd", key: "qtd", format: fmtVal },
+          { header: "Itens", key: "itens" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: drillExplosivos.map(e => ({ produto: e.produto, grupo: e.grupoProduto || "", qtd: e.totalQuantidade, itens: e.totalItens, valor: e.totalCusto, pct: total > 0 ? (e.totalCusto / total) * 100 : 0 })),
+      };
+    }
+    // Nivel 2: Subsetores (Outras Desp)
+    if (drillDown.nivel === 2 && isOutrasDesp && drillSubsetores) {
+      return {
+        columns: [
+          { header: "Subsetor", key: "subsetor" },
+          { header: "Itens", key: "itens" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: drillSubsetores.subsetores.map(s => ({ subsetor: s.setor, itens: s.itens.length, valor: s.valor, pct: drillSubsetores.total > 0 ? (s.valor / drillSubsetores.total) * 100 : 0 })),
+      };
+    }
+    // Nivel 2: Salarios
+    if (drillDown.nivel === 2 && isSalario && drillSalarios) {
+      const total = drillSalarios.reduce((s, r) => s + r.valor, 0);
+      return {
+        columns: [
+          { header: contaSalarioId === 30004 ? "Equipamento" : "Setor", key: "destino" },
+          { header: "Descri\u00e7\u00e3o", key: "descricao" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: drillSalarios.map(r => ({ destino: r.destino, descricao: r.descricao || "", valor: r.valor, pct: total > 0 ? (r.valor / total) * 100 : 0 })),
+      };
+    }
+    // Nivel 2: Fluxo por setor
+    if (drillDown.nivel === 2 && contaFluxoNome && drillFluxoDetalhe) {
+      const total = drillFluxoDetalhe.total;
+      const todasSubcontas = drillFluxoDetalhe.setores.flatMap(s => s.subcontas.map(sc => ({ nome: sc.nome, valor: sc.valor, setor: s.setor }))).sort((a, b) => b.valor - a.valor);
+      return {
+        columns: [
+          { header: "Subconta", key: "nome" },
+          { header: "Setor", key: "setor" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: todasSubcontas.map(sc => ({ nome: sc.nome, setor: sc.setor, valor: sc.valor, pct: total > 0 ? (sc.valor / total) * 100 : 0 })),
+      };
+    }
+    // Nivel 3: Itens detalhados (equipamento ou explosivos)
+    if (drillDown.nivel === 3 && isExplosivos && drillExplosivosDetalhados) {
+      return {
+        columns: [
+          { header: "Data", key: "data" },
+          { header: "Produto", key: "produto" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Qtd", key: "qtd", format: fmtVal },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+        ],
+        data: drillExplosivosDetalhados.map(i => ({ data: i.data || "", produto: i.produto, grupo: i.grupoProduto || "", qtd: i.quantidade, valor: i.custo })),
+      };
+    }
+    if (drillDown.nivel === 3 && !isOutrasDesp && !isExplosivos && drillItens) {
+      return {
+        columns: [
+          { header: "Data", key: "data" },
+          { header: "Produto", key: "produto" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Qtd", key: "qtd", format: fmtVal },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+        ],
+        data: drillItens.map(i => ({ data: i.data || "", produto: i.produto, grupo: i.grupoProduto || "", qtd: i.quantidade, valor: i.custo })),
+      };
+    }
+    // Nivel 3: Outras Desp - tags do subsetor
+    if (drillDown.nivel === 3 && isOutrasDesp && drillDown.subsetor && drillSubsetores) {
+      const sub = drillSubsetores.subsetores.find(s => s.setor === drillDown.subsetor);
+      if (sub) {
+        return {
+          columns: [
+            { header: "Tag", key: "tag" },
+            { header: "Descri\u00e7\u00e3o", key: "descricao" },
+            { header: "Valor (R$)", key: "valor", format: fmtVal },
+            { header: "%", key: "pct", format: fmtPctVal },
+          ],
+          data: sub.itens.sort((a, b) => b.valor - a.valor).map(t => ({ tag: t.tag, descricao: t.descricao, valor: t.valor, pct: sub.valor > 0 ? (t.valor / sub.valor) * 100 : 0 })),
+        };
+      }
+    }
+    // Nivel 4: Itens detalhados por tag (Outras Desp)
+    if (drillDown.nivel === 4 && isOutrasDesp && drillItensTag) {
+      return {
+        columns: [
+          { header: "Data", key: "data" },
+          { header: "Produto", key: "produto" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Qtd", key: "qtd", format: fmtVal },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+        ],
+        data: drillItensTag.map(i => ({ data: i.data || "", produto: i.produto, grupo: i.grupoProduto || "", qtd: i.quantidade, valor: i.custo })),
+      };
+    }
+    return { columns: [], data: [] };
+  }, [drillDown, composicaoConta, drillEquipamentos, drillExplosivos, drillExplosivosDetalhados, drillSubsetores, drillItens, drillItensTag, drillSalarios, drillFluxoDetalhe, isExplosivos, isOutrasDesp, isSalario, contaSalarioId, contaFluxoNome]);
 
   const { data: producaoModulo } = trpc.periodoCusto.getProducaoDoModulo.useQuery(
     { mes: periodoAtual?.mes ?? 1, ano: periodoAtual?.ano ?? 2026 },
@@ -1744,9 +1886,11 @@ export default function ApuracaoCusto() {
 
       {/* Modal de Drill-down Multi-nível: Composição → Equipamentos → Itens */}
       <Dialog open={!!drillDown} onOpenChange={(open) => { if (!open) setDrillDown(null); }}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-base flex items-center gap-2">
+        <DialogContent showCloseButton={false} className="!max-w-6xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+          {/* Fixed header */}
+          <div className="flex items-start justify-between px-6 pt-5 pb-3 border-b bg-background shrink-0">
+            <div className="flex flex-col gap-1 pr-10 min-w-0">
+            <DialogTitle className="text-base flex items-center gap-2 flex-wrap">
               {drillDown?.nivel === 1 && (
                 <>{drillDown.contaNome} — Composição</>
               )}
@@ -1800,7 +1944,35 @@ export default function ApuracaoCusto() {
               Total da conta: <span className="font-mono font-semibold">R$ {fmt(drillDown?.contaTotal ?? 0)}</span>
               {periodoAtual && <span className="ml-2">| {periodoAtual.mes}/{periodoAtual.ano}</span>}
             </p>
-          </DialogHeader>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <DashboardExportMenu
+                title={(() => {
+                  if (!drillDown) return "";
+                  if (drillDown.nivel === 1) return `${drillDown.contaNome} - Composição`;
+                  if (drillDown.nivel === 2 && drillDown.classificacao) return `${drillDown.contaNome} - Equipamentos`;
+                  if (drillDown.nivel === 2 && isExplosivos) return `${drillDown.contaNome} - Produtos`;
+                  if (drillDown.nivel === 2 && isOutrasDesp) return `${drillDown.contaNome} - Subsetores`;
+                  if (drillDown.nivel === 2 && isSalario) return `${drillDown.contaNome} - ${contaSalarioId === 30004 ? "Equipamentos" : "Setores"}`;
+                  if (drillDown.nivel === 2 && contaFluxoNome) return `${drillDown.contaNome} - Setores`;
+                  if (drillDown.nivel === 3 && isExplosivos) return `${drillDown.contaNome} - Itens Detalhados`;
+                  if (drillDown.nivel === 3 && !isOutrasDesp && !isExplosivos) return `${drillDown.contaNome} - ${drillDown.equipamentoDescricao || drillDown.equipamentoTag}`;
+                  if (drillDown.nivel === 3 && isOutrasDesp) return `${drillDown.contaNome} - ${drillDown.subsetor}`;
+                  if (drillDown.nivel === 4 && isOutrasDesp) return `${drillDown.contaNome} - ${drillDown.subsetorTagDescricao || drillDown.subsetorTag}`;
+                  return drillDown.contaNome;
+                })()}
+                subtitle={periodoAtual ? `Período: ${periodoAtual.mes}/${periodoAtual.ano}` : undefined}
+                filename={`drilldown-${drillDown?.contaNome?.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase() ?? "dados"}`}
+                exportOptions={drillDownExportOptions}
+              />
+              <button onClick={() => setDrillDown(null)} className="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
+                <XIcon className="h-4 w-4" />
+                <span className="sr-only">Fechar</span>
+              </button>
+            </div>
+          </div>
+          {/* Scrollable body */}
+          <div className="overflow-y-auto overflow-x-auto px-6 py-4 flex-1 min-h-0">
 
           {/* Nível 1: Composição por origem */}
           {drillDown?.nivel === 1 && (
@@ -1905,9 +2077,9 @@ export default function ApuracaoCusto() {
                         <TableRow>
                           <TableHead className="w-8">#</TableHead>
                           <TableHead>Equipamento</TableHead>
-                          <TableHead className="text-right w-20">Itens</TableHead>
-                          <TableHead className="text-right w-40">Valor (R$)</TableHead>
-                          <TableHead className="text-right w-24">%</TableHead>
+                          <TableHead className="text-right w-16">Itens</TableHead>
+                          <TableHead className="text-right w-32">Valor (R$)</TableHead>
+                          <TableHead className="text-right w-16">%</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -2389,6 +2561,7 @@ export default function ApuracaoCusto() {
               )}
             </div>
           )}
+          </div>{/* end scrollable body */}
         </DialogContent>
       </Dialog>
 

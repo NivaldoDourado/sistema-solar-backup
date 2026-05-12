@@ -1023,3 +1023,17 @@
 - [x] Criar endpoint para listar itens de explosivos por período
 - [x] Implementar drill-down no frontend para a conta Explosivos e Acessórios
 - [x] Exibir itens detalhados com data, descrição, quantidade e valor (ordem decrescente)
+
+## Melhorias nos diálogos de drill-down
+- [x] Aumentar largura dos diálogos para evitar corte de texto
+- [x] Corrigir posição do botão X de fechar
+- [x] Melhorar barras de rolagem e exibição de conteúdo
+- [x] Garantir que textos longos não sejam cortados
+
+## Exportação Excel/PDF nos diálogos de drill-down
+- [x] Adicionar botões de exportação Excel e PDF em todas as telas de drill-down
+- [x] Cabeçalho padrão: GEM, Solar Pedreira, título, período, data/hora
+- [x] Logomarca Dourado Gestão no cabeçalho
+
+## Reduzir logomarca Dourado Gestão nos relatórios
+- [x] Reduzir logomarca para ~60% do tamanho atual em todos os relatórios existentes

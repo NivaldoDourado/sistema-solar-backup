@@ -123,9 +123,9 @@ export async function exportToPDF(options: ExportOptions) {
   const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
 
   // ── Logo (top-right) ─────────────────────────────────────────────────────
-  // Original logo is roughly square (428×470 px). We render at ~28mm wide.
-  const logoW = 28;
-  const logoH = 30; // keep aspect ratio close to original
+  // Original logo is roughly square (428×470 px). Reduced to ~60% of original size.
+  const logoW = 17;
+  const logoH = 18; // keep aspect ratio close to original
   const logoX = pageWidth - logoW - 10;
   const logoY = 6;
   if (logoBase64) {
@@ -410,9 +410,9 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
 
-  // Logo (compacto)
+  // Logo (compacto, ~60% do tamanho original)
   const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
-  const logoW = 20, logoH = 22;
+  const logoW = 12, logoH = 13;
   if (logoBase64) {
     doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 5, logoW, logoH);
   }
