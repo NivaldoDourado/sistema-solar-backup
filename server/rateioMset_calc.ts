@@ -20,7 +20,7 @@ import {
   equipamentoExcluidoTag,
 } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
-import { TAGS_OUTRAS_DESP_SETOR } from "./importDespesas_correspondencias";
+import { TAGS_OUTRAS_DESP_SETOR, TAGS_CONTA_EXPLOSIVOS } from "./importDespesas_correspondencias";
 
 // ─── Mapeamento de setor operacional → subsetor/grupo do relatório ───────────
 export const SETOR_PARA_SUBSETOR_MSET: Record<string, { subsetor: string; grupo: string }> = {
@@ -260,6 +260,28 @@ export async function calcularRateioMset(periodoCustoId: number): Promise<Rateio
     })
     .from(itemDespesaImportado)
     .where(eq(itemDespesaImportado.periodoCustoId, periodoCustoId));
+
+  // Filtrar itens de tags de Explosivos e Acessórios (conta específica de setor)
+  const tagsExplosivosUpperMset = new Set(TAGS_CONTA_EXPLOSIVOS.map(t => t.toUpperCase()));
+  for (const item of itensImportados) {
+    const tagUpper = item.equipamentoTag.toUpperCase();
+    if (!tagsExplosivosUpperMset.has(tagUpper)) continue;
+    if (tagsExcluidasSet.has(tagUpper)) continue;
+    const valor = parseFloat(item.custo || '0');
+    if (valor === 0) continue;
+    // Explosivos vai para DESMONTE PRIMÁRIO
+    const mappingExpl = SETOR_PARA_SUBSETOR_MSET["DESMONTE PRIMÁRIO"];
+    if (!mappingExpl) continue;
+    ordemGlobal++;
+    despesas.push({
+      subsetorNome: mappingExpl.subsetor,
+      grupoNome: mappingExpl.grupo,
+      descricao: "Explosivos e Acessórios",
+      valor,
+      ordemExibicao: ordemGlobal,
+      fonte: "fluxo",
+    });
+  }
 
   // Filtrar apenas itens de tags de setores (não excluídas)
   for (const item of itensImportados) {

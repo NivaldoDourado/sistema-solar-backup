@@ -19,6 +19,7 @@ import {
   TAGS_EXCLUIR,
   CORRESPONDENCIAS_FORCADAS,
   VALOR_CORRECAO_TRANSPORTADORA,
+  TAGS_CONTA_EXPLOSIVOS,
 } from "./importDespesas_correspondencias";
 
 // ===== REGRAS DE CLASSIFICAÇÃO =====
@@ -333,9 +334,13 @@ export const importDespesasRouter = router({
         .from(gruposDeEquipamentos);
 
       const equipamentosComCorrespondencia = parsed.equipamentos.map(ep => {
+        // Se é item de Explosivos e Acessórios (conta específica de setor)
+        const isExplosivos = TAGS_CONTA_EXPLOSIVOS.some(t => ep.codigoTag.toUpperCase() === t.toUpperCase());
         // Se é item de Outras Desp. Setor, não buscar correspondência com equipamento
         const setorDesp = TAGS_OUTRAS_DESP_SETOR[ep.codigoTag];
-        const match = setorDesp ? { id: -1, nome: `Outras Desp. Setor → ${setorDesp}`, score: 100 } : encontrarCorrespondencia(ep.codigoTag, ep.descricao, equipSistema);
+        const match = isExplosivos
+          ? { id: -2, nome: `Conta Específica → Explosivos e Acessórios`, score: 100 }
+          : setorDesp ? { id: -1, nome: `Outras Desp. Setor → ${setorDesp}`, score: 100 } : encontrarCorrespondencia(ep.codigoTag, ep.descricao, equipSistema);
         return {
           ...ep,
           correspondencia: match,
@@ -455,7 +460,28 @@ export const importDespesasRouter = router({
       let totalPecasReposicao = 0;
       let totalOutrasDespesas = 0;
 
+      // Buscar conta "Explosivos e Acessórios" para lançamentos de explosivos
+      const contaExplosivos = contas.find(c => c.nome.toLowerCase().includes("explosivos"));
+
       for (const equip of equipamentosParaImportar) {
+        // Verificar se é item de "Explosivos e Acessórios" (conta específica de setor)
+        const isExplosivos = TAGS_CONTA_EXPLOSIVOS.some(t => equip.codigoTag.toUpperCase() === t.toUpperCase());
+        if (isExplosivos && contaExplosivos) {
+          // Lançar como Explosivos e Acessórios (conta específica)
+          const totalEquip = equip.despesas.reduce((sum, d) => sum + d.custo, 0);
+          if (totalEquip > 0) {
+            lancamentos.push({
+              periodoCustoId: periodoId,
+              contaCustoId: contaExplosivos.id,
+              valor: totalEquip.toFixed(2),
+              observacoes: `[Import] ${equip.codigoTag} - ${equip.descricao} | Explosivos e Acessórios (Despesa Específica de Setor)`,
+              userId: ctx.user.id,
+            });
+            totalImportado += totalEquip;
+          }
+          continue;
+        }
+
         // Verificar se é item de "Outras Desp. Setor"
         const setorDestino = TAGS_OUTRAS_DESP_SETOR[equip.codigoTag];
         if (setorDestino && contaOutrasDesp) {

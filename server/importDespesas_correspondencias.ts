@@ -98,8 +98,13 @@ export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
   "SIST. DESPOEIRAMENTO": "BRITAGEM SECUNDÁRIA",
   "SUBSTAÇÃO": "BRITAGEM SECUNDÁRIA",
   "TORNEARIA": "OUTROS SERVIÇOS",
-  "EXPLOSIVOS": "DESMONTE PRIMÁRIO",
 };
+
+// ===== TAGS QUE DEVEM SER LANÇADAS NA CONTA ESPECÍFICA "EXPLOSIVOS E ACESSÓRIOS" =====
+// Estas tags não são equipamentos - suas despesas vão integralmente para a conta de custo "Explosivos e Acessórios"
+export const TAGS_CONTA_EXPLOSIVOS: string[] = [
+  "EXPLOSIVOS",
+];
 
 // ===== TAGS A EXCLUIR (não importar, não lançar) =====
 export const TAGS_EXCLUIR: string[] = [

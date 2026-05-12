@@ -27,6 +27,7 @@ import {
   TAGS_OUTRAS_DESP_SETOR,
   TAGS_NAO_LANCAR,
   TAGS_EXCLUIR,
+  TAGS_CONTA_EXPLOSIVOS,
 } from "./importDespesas_correspondencias";
 
 // ─── Constantes ─────────────────────────────────────────────────────────────
@@ -407,13 +408,14 @@ export async function calcularRateioMem(periodoCustoId: number): Promise<RateioM
   // 10. Agregar despesas por equipamentoId
   const despesasPorEquipId = new Map<number, DespesasEquipamento>();
   const tagsSetorSet = new Set(Object.keys(TAGS_OUTRAS_DESP_SETOR).map(t => t.toUpperCase()));
+  const tagsExplosivosSet = new Set(TAGS_CONTA_EXPLOSIVOS.map(t => t.toUpperCase()));
   const tagsNaoLancarSet = new Set(TAGS_NAO_LANCAR.map(t => t.toUpperCase()));
   const tagsExcluirSet = new Set(TAGS_EXCLUIR.map(t => t.toUpperCase()));
   const equipamentosSemCorrespondencia: string[] = [];
 
   for (const desp of despesasImportadas) {
     const tagUpper = desp.equipamentoTag.toUpperCase();
-    if (tagsSetorSet.has(tagUpper) || tagsNaoLancarSet.has(tagUpper) || tagsExcluirSet.has(tagUpper)) continue;
+    if (tagsSetorSet.has(tagUpper) || tagsExplosivosSet.has(tagUpper) || tagsNaoLancarSet.has(tagUpper) || tagsExcluirSet.has(tagUpper)) continue;
     // Pular tags excluídas pelo usuário (equipamentos sem vínculo)
     if (tagsExcluidasSet.has(tagUpper)) continue;
 

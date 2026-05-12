@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, equipamentoTag, equipamentoDescricao, classificacao, produto, custo, equipamentoSistemaId FROM item_despesa_importado WHERE equipamentoTag LIKE '%EXPLOSIV%' AND periodoCustoId = 60001 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, equipamentoTag, equipamentoDescricao, classificacao, produto, custo, equipamentoSistemaId FROM item_despesa_importado WHERE equipamentoTag LIKE '%EXPLOSIV%' AND periodoCustoId = 60001 LIMIT 10;",
+  "rows": [
+    {
+      "id": "417",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "outras_despesas",
+      "produto": "SERVIÇO DE APLICAÇÃO E DESMONTE DE ROCHA",
+      "custo": "500.00",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "418",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL LIGACAO 4,8M 17MS",
+      "custo": "593.70",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "419",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL LIGACAO 4,8M 25MS",
+      "custo": "593.70",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "420",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL LIGACAO 4,8M 42MS",
+      "custo": "1424.88",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "421",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "EMULSÃO BOMBEADA",
+      "custo": "54000.00",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "422",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BOOSTER PENTEX CD 150G / 250G",
+      "custo": "2388.00",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "423",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "PIROPIM (ESPOLETA)",
+      "custo": "108.50",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "424",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL COLUNA 18M 250MS",
+      "custo": "1618.78",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "425",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL COLUNA 12M 275MS",
+      "custo": "2990.40",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "id": "426",
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "classificacao": "pecas_reposicao",
+      "produto": "BRINEL DE LIGACAO 6,0M 67MS",
+      "custo": "1233.10",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tequipamentoTag\tequipamentoDescricao\tclassificacao\tproduto\tcusto\tequipamentoSistemaId\n417\tEXPLOSIVOS\tDETONA\toutras_despesas\tSERVIÇO DE APLICAÇÃO E DESMONTE DE ROCHA\t500.00\tNULL\n418\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL LIGACAO 4,8M 17MS\t593.70\tNULL\n419\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL LIGACAO 4,8M 25MS\t593.70\tNULL\n420\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL LIGACAO 4,8M 42MS\t1424.88\tNULL\n421\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tEMULSÃO BOMBEADA\t54000.00\tNULL\n422\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBOOSTER PENTEX CD 150G / 250G\t2388.00\tNULL\n423\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tPIROPIM (ESPOLETA)\t108.50\tNULL\n424\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL COLUNA 18M 250MS\t1618.78\tNULL\n425\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL COLUNA 12M 275MS\t2990.40\tNULL\n426\tEXPLOSIVOS\tDETONA\tpecas_reposicao\tBRINEL DE LIGACAO 6,0M 67MS\t1233.10\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

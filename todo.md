@@ -993,3 +993,15 @@
   - Correção: buscar despesas indiretas do lancamento_custo (conta 'Despesas Indiretas')
 - [x] Alinhar ambas tabelas para incluir despesas indiretas em todos os períodos
   - Totais agora batem: Plano ≈ Setores (diferença de centavos por arredondamento)
+
+## Correção: EXPLOSIVOS-DETONA classificado na conta errada
+- [x] Investigar como o item EXPLOSIVOS-DETONA está cadastrado (equipamento vs despesa específica)
+  - Era tratado como equipamento do grupo EXTRAÇÃO JAZIDA, despesas iam para Peças de Reposição
+- [x] Corrigir correspondência para que vá para conta "Explosivos e Acessórios" em vez de "Peças de Reposição"
+  - Criado TAGS_CONTA_EXPLOSIVOS no importDespesas_correspondencias.ts
+  - Adicionado tratamento na importação (preview + confirmação) para conta 6
+  - rateioMem_calc.ts: exclui EXPLOSIVOS do rateio de equipamentos
+  - rateioMset_calc.ts: inclui EXPLOSIVOS como "Explosivos e Acessórios" no DESMONTE PRIMÁRIO
+  - Dados de abril/26 corrigidos no banco (lancamento_custo movido para conta 6)
+- [x] Verificar se a correção afeta os totais dos relatórios corretamente
+  - Totais batem: Plano de Custo e Setores ambos R$ 2.771.022 para abril/26
