@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft, Search, XIcon } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // ─── Formatadores ────────────────────────────────────────────────────────────
@@ -18,6 +19,8 @@ const fmtBRLShort = (v: number) => {
 };
 const fmtPct = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+const fmt = (v: number) =>
+  v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -33,6 +36,15 @@ export const CONTA_CAMPO_LABEL: Record<string, string> = {
   pecasDesgaste: "Peças de Desgaste",
   pecasReposicao: "Peças de Reposição / Itens de Consumo",
   outrasDespesas: "Outras Despesas",
+};
+
+// Mapeamento: campo do equipamento → classificação no itemDespesaImportado
+const CAMPO_PARA_CLASSIFICACAO: Record<string, string> = {
+  combustivel: "combustivel",
+  lubrificantes: "lubrificantes",
+  pecasDesgaste: "pecas_desgaste",
+  pecasReposicao: "pecas_reposicao",
+  outrasDespesas: "outras_despesas",
 };
 
 // ─── Paleta de cores por grupo ───────────────────────────────────────────────
@@ -86,22 +98,49 @@ type GrupoData = {
   totalGrupo: number;
 };
 
-// ─── Componente de linha de equipamento ─────────────────────────────────────
+// ─── Drill-down state ───────────────────────────────────────────────────────
+type DrillDownState = {
+  tipo: "equipamento_conta" | "despesa_setor";
+  // Para equipamento_conta: drill nas contas de um equipamento específico
+  equipamentoNome?: string;
+  equipamentoTag?: string; // tag extraída do nome (antes do " - ")
+  contaCampo?: string; // campo: combustivel, lubrificantes, etc.
+  contaLabel?: string; // label legível
+  classificacao?: string; // classificação no itemDespesaImportado
+  contaValor?: number;
+  subsetorNome?: string;
+  grupoNome?: string;
+  nivel: 1 | 2; // 1 = lista de itens por equipamento+classificação, 2 = itens detalhados
+  // Para despesa_setor: drill na despesa específica (Energia Elétrica, etc.)
+  despesaDescricao?: string;
+  despesaValor?: number;
+};
+
+// ─── Extrair tag do nome do equipamento ─────────────────────────────────────
+function extrairTag(equipamentoNome: string): string {
+  // O nome vem no formato "TAG - DESCRIÇÃO" ou apenas "DESCRIÇÃO"
+  const idx = equipamentoNome.indexOf(" - ");
+  if (idx > 0) return equipamentoNome.substring(0, idx).trim();
+  return equipamentoNome.trim();
+}
+
+// ─── Componente de linha de equipamento (com drill-down) ────────────────────
 function EquipamentoRow({
   equip,
   totalSubsetor,
   filtroContaCampo,
   subsetorNome,
+  onDrillDown,
 }: {
   equip: Equipamento;
   totalSubsetor: number;
   filtroContaCampo?: string;
   subsetorNome?: string;
+  onDrillDown: (campo: string, label: string, valor: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
   const sal    = parseFloat(equip.salOperEncOper ?? "0");
-  const dep    = parseFloat(equip.depreciacao ?? "0");
   const comb   = parseFloat(equip.combustivel ?? "0");
   const lubr   = parseFloat(equip.lubrificantes ?? "0");
   const pDesg  = parseFloat(equip.pecasDesgaste ?? "0");
@@ -113,6 +152,21 @@ function EquipamentoRow({
   // Destacar a célula da conta filtrada
   const highlight = (campo: string) =>
       filtroContaCampo === campo ? "bg-yellow-100 font-bold text-yellow-900 border-l-2 border-yellow-400" : "";
+
+  const contasDetalhadas = useMemo(() => [
+    { label: subsetorNome === "ADMINISTRAÇÃO" ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" : "Salários com Encargos", valor: sal, show: sal > 0, campo: "salOperEncOper", drillable: false },
+    { label: "Combustível", valor: comb, show: comb > 0, campo: "combustivel", drillable: true },
+    { label: "Lubrificantes", valor: lubr, show: lubr > 0, campo: "lubrificantes", drillable: true },
+    { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0, campo: "pecasDesgaste", drillable: true },
+    { label: "Peças de Reposição/Item de Consumo", valor: pRep, show: pRep > 0, campo: "pecasReposicao", drillable: true },
+    { label: "Outras Despesas", valor: outras, show: outras > 0, campo: "outrasDespesas", drillable: true },
+    ...(equip.horasTrabalhadas && parseFloat(equip.horasTrabalhadas) > 0
+      ? [{ label: "Horas Trabalhadas", valor: null as number | null, show: true, text: `${parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr`, campo: "", drillable: false }]
+      : []),
+    ...(equip.producaoTotal && parseFloat(equip.producaoTotal) > 0
+      ? [{ label: "Produção", valor: null as number | null, show: true, text: `${parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} ${equip.unidadeProducao}`, campo: "", drillable: false }]
+      : []),
+  ], [sal, comb, lubr, pDesg, pRep, outras, equip.horasTrabalhadas, equip.producaoTotal, equip.unidadeProducao, subsetorNome]);
 
   return (
     <>
@@ -142,25 +196,28 @@ function EquipamentoRow({
           <TableCell colSpan={9} className="py-2 px-6">
             <table className="w-full text-sm">
               <tbody>
-                {[
-                  { label: subsetorNome === "ADMINISTRAÇÃO" ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" : "Salários com Encargos", valor: sal, show: sal > 0, campo: "salOperEncOper" },
-                  { label: "Combustível", valor: comb, show: comb > 0, campo: "combustivel" },
-                  { label: "Lubrificantes", valor: lubr, show: lubr > 0, campo: "lubrificantes" },
-                  { label: "Peças de Desgaste", valor: pDesg, show: pDesg > 0, campo: "pecasDesgaste" },
-                  { label: "Peças de Reposição/Item de Consumo", valor: pRep, show: pRep > 0, campo: "pecasReposicao" },
-                  { label: "Outras Despesas", valor: outras, show: outras > 0, campo: "outrasDespesas" },
-                  ...(equip.horasTrabalhadas && parseFloat(equip.horasTrabalhadas) > 0
-                    ? [{ label: "Horas Trabalhadas", valor: null, show: true, text: `${parseFloat(equip.horasTrabalhadas).toLocaleString("pt-BR")} hr`, campo: "" }]
-                    : []),
-                  ...(equip.producaoTotal && parseFloat(equip.producaoTotal) > 0
-                    ? [{ label: "Produção", valor: null, show: true, text: `${parseFloat(equip.producaoTotal).toLocaleString("pt-BR")} ${equip.unidadeProducao}`, campo: "" }]
-                    : []),
-                ]
+                {contasDetalhadas
                   .filter(d => d.show)
                   .map((d, i) => (
-                    <tr key={d.label} className={`${i % 2 === 0 ? "bg-background/60" : ""} ${filtroContaCampo === d.campo ? "bg-yellow-50" : ""}`}>
-                      <td className={`py-1.5 pl-2 pr-4 w-64 ${filtroContaCampo === d.campo ? "text-yellow-700 font-semibold" : "text-muted-foreground"}`}>{d.label}</td>
-                      <td className={`py-1.5 font-semibold font-mono ${filtroContaCampo === d.campo ? "text-yellow-900" : "text-foreground"}`}>
+                    <tr
+                      key={d.label}
+                      className={`${i % 2 === 0 ? "bg-background/60" : ""} ${filtroContaCampo === d.campo ? "bg-yellow-50" : ""} ${d.drillable && d.valor && d.valor > 0 ? "cursor-pointer hover:bg-blue-50 group" : ""}`}
+                      onClick={(e) => {
+                        if (d.drillable && d.valor && d.valor > 0) {
+                          e.stopPropagation();
+                          onDrillDown(d.campo, d.label, d.valor);
+                        }
+                      }}
+                    >
+                      <td className={`py-1.5 pl-2 pr-4 w-64 ${filtroContaCampo === d.campo ? "text-yellow-700 font-semibold" : "text-muted-foreground"} ${d.drillable && d.valor && d.valor > 0 ? "group-hover:text-blue-700" : ""}`}>
+                        <span className="flex items-center gap-1.5">
+                          {d.label}
+                          {d.drillable && d.valor && d.valor > 0 && (
+                            <Search className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-500 transition-opacity" />
+                          )}
+                        </span>
+                      </td>
+                      <td className={`py-1.5 font-semibold font-mono ${filtroContaCampo === d.campo ? "text-yellow-900" : "text-foreground"} ${d.drillable && d.valor && d.valor > 0 ? "group-hover:text-blue-700" : ""}`}>
                         {(d as any).text ?? fmtBRL(d.valor!)}
                       </td>
                     </tr>
@@ -182,6 +239,8 @@ function SubsetorCard({
   filtroContaCampo,
   isDestaque,
   setRef,
+  onDrillDownEquip,
+  onDrillDownDespesa,
 }: {
   subsetor: SubsetorData;
   totalGeral: number;
@@ -189,6 +248,8 @@ function SubsetorCard({
   filtroContaCampo?: string;
   isDestaque?: boolean;
   setRef?: (el: HTMLDivElement | null) => void;
+  onDrillDownEquip: (equip: Equipamento, campo: string, label: string, valor: number) => void;
+  onDrillDownDespesa: (desp: DespesaEspecifica) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const pctTotal = totalGeral > 0 ? (subsetor.totalSubsetor / totalGeral) * 100 : 0;
@@ -276,6 +337,7 @@ function SubsetorCard({
                         totalSubsetor={subsetor.totalSubsetor}
                         filtroContaCampo={filtroContaCampo}
                         subsetorNome={subsetor.subsetorNome}
+                        onDrillDown={(campo, label, valor) => onDrillDownEquip(equip, campo, label, valor)}
                       />
                     ))}
                     {/* Linha de subtotal dos equipamentos */}
@@ -330,21 +392,30 @@ function SubsetorCard({
                       const valor = parseFloat(desp.valor ?? "0");
                       const pct = subsetor.totalSubsetor > 0 ? (valor / subsetor.totalSubsetor) * 100 : 0;
                       const isSalAdm = desp.descricao === "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos";
-                      const labelExibido = isSalAdm && subsetor.subsetorNome !== "ADMINISTRA\u00c7\u00c3O"
-                        ? "Sal\u00e1rios com Encargos"
+                      const labelExibido = isSalAdm && subsetor.subsetorNome !== "ADMINISTRAÇÃO"
+                        ? "Salários com Encargos"
                         : desp.descricao;
                       const hasIcon = desp.descricao.includes("Energia") || desp.descricao.includes("Explosivos");
+                      // Despesas com id negativo são virtuais (MSET/salários manuais) — podem ter drill-down
+                      const isDrillable = valor > 0;
                       return (
-                        <TableRow key={desp.id} className={idx % 2 === 0 ? "" : "bg-muted/20"}>
+                        <TableRow
+                          key={desp.id}
+                          className={`${idx % 2 === 0 ? "" : "bg-muted/20"} ${isDrillable ? "cursor-pointer hover:bg-blue-50 group" : ""}`}
+                          onClick={() => isDrillable && onDrillDownDespesa(desp)}
+                        >
                           <TableCell className="text-sm font-medium">
                             <div className="flex items-center gap-1.5">
                               {desp.descricao.includes("Energia") && <Zap className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
                               {desp.descricao.includes("Explosivos") && <Bomb className="h-3.5 w-3.5 text-red-500 shrink-0" />}
                               {!hasIcon && <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                              {labelExibido}
+                              <span className={isDrillable ? "group-hover:text-blue-700" : ""}>{labelExibido}</span>
+                              {isDrillable && (
+                                <Search className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-500 transition-opacity shrink-0" />
+                              )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-right text-sm font-semibold font-mono">{fmtBRL(valor)}</TableCell>
+                          <TableCell className={`text-right text-sm font-semibold font-mono ${isDrillable ? "group-hover:text-blue-700" : ""}`}>{fmtBRL(valor)}</TableCell>
                           <TableCell className="text-right text-xs text-muted-foreground">{fmtPct(pct)}</TableCell>
                         </TableRow>
                       );
@@ -394,6 +465,7 @@ export default function CustoSetorAnalitico() {
   const [location, setLocation] = useLocation();
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<number | null>(null);
   const [expandedGrupos, setExpandedGrupos] = useState<Record<string, boolean>>({});
+  const [drillDown, setDrillDown] = useState<DrillDownState | null>(null);
 
   // Ler filtros da URL
   const searchParams = useMemo(() => {
@@ -411,6 +483,78 @@ export default function CustoSetorAnalitico() {
     { periodoCustoId: selectedPeriodoId! },
     { enabled: !!selectedPeriodoId }
   );
+
+  // ─── Drill-down queries ───────────────────────────────────────────────────
+  // Itens detalhados de um equipamento por classificação
+  const { data: drillItens, isLoading: drillItensLoading } = trpc.itensDespesa.listarItensDetalhados.useQuery(
+    {
+      periodoCustoId: selectedPeriodoId!,
+      equipamentoTag: drillDown?.equipamentoTag ?? "",
+      classificacao: drillDown?.classificacao ?? "",
+    },
+    {
+      enabled: !!selectedPeriodoId && drillDown?.tipo === "equipamento_conta" && !!drillDown?.equipamentoTag && !!drillDown?.classificacao,
+    }
+  );
+
+  // Distribuição de uma despesa específica por subsetor
+  const { data: drillDespesaSetor, isLoading: drillDespesaSetorLoading } = trpc.custoSetorRas.despesasPorDescricao.useQuery(
+    {
+      periodoCustoId: selectedPeriodoId!,
+      descricao: drillDown?.despesaDescricao ?? "",
+    },
+    {
+      enabled: !!selectedPeriodoId && drillDown?.tipo === "despesa_setor" && !!drillDown?.despesaDescricao,
+    }
+  );
+
+  // ─── Drill-down export options ────────────────────────────────────────────
+  const drillDownExportOptions = useMemo((): Omit<import("@/lib/export-utils").ExportOptions, "title" | "subtitle" | "filename"> => {
+    if (!drillDown) return { columns: [], data: [] };
+    const fmtVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(v ?? "");
+    const fmtPctVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%" : String(v ?? "");
+
+    // Equipamento → itens detalhados
+    if (drillDown.tipo === "equipamento_conta" && drillItens) {
+      return {
+        columns: [
+          { header: "Data", key: "data" },
+          { header: "Produto", key: "produto" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Qtd", key: "qtd", format: fmtVal },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+        ],
+        data: drillItens.map(i => ({
+          data: i.data || "",
+          produto: i.produto,
+          grupo: i.grupoProduto || "",
+          qtd: i.quantidade,
+          valor: i.custo,
+        })),
+      };
+    }
+
+    // Despesa específica → distribuição por subsetor
+    if (drillDown.tipo === "despesa_setor" && drillDespesaSetor) {
+      const total = drillDespesaSetor.total;
+      return {
+        columns: [
+          { header: "Subsetor", key: "subsetor" },
+          { header: "Grupo", key: "grupo" },
+          { header: "Valor (R$)", key: "valor", format: fmtVal },
+          { header: "%", key: "pct", format: fmtPctVal },
+        ],
+        data: drillDespesaSetor.subsetores.map(s => ({
+          subsetor: s.subsetorNome,
+          grupo: s.grupoNome,
+          valor: s.valor,
+          pct: total > 0 ? (s.valor / total) * 100 : 0,
+        })),
+      };
+    }
+
+    return { columns: [], data: [] };
+  }, [drillDown, drillItens, drillDespesaSetor]);
 
   const periodoAtual = useMemo(
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
@@ -473,6 +617,34 @@ export default function CustoSetorAnalitico() {
     }, 300);
     return () => clearTimeout(timer);
   }, [filtroSubsetor, relatorio]);
+
+  // ─── Handlers de drill-down ───────────────────────────────────────────────
+  const handleDrillDownEquip = (equip: Equipamento, campo: string, label: string, valor: number) => {
+    const classificacao = CAMPO_PARA_CLASSIFICACAO[campo];
+    if (!classificacao) return; // salOperEncOper não tem drill-down por itens
+    const tag = extrairTag(equip.equipamentoNome);
+    setDrillDown({
+      tipo: "equipamento_conta",
+      equipamentoNome: equip.equipamentoNome,
+      equipamentoTag: tag,
+      contaCampo: campo,
+      contaLabel: label,
+      classificacao,
+      contaValor: valor,
+      nivel: 1,
+    });
+  };
+
+  const handleDrillDownDespesa = (desp: DespesaEspecifica) => {
+    const valor = parseFloat(desp.valor ?? "0");
+    if (valor <= 0) return;
+    setDrillDown({
+      tipo: "despesa_setor",
+      despesaDescricao: desp.descricao,
+      despesaValor: valor,
+      nivel: 1,
+    });
+  };
 
   // Dados para exportação
   const exportOptions = useMemo(() => {
@@ -556,6 +728,29 @@ export default function CustoSetorAnalitico() {
 
   const temFiltro = !!filtroSubsetor || !!filtroContaCampo || !!filtroGrupo;
 
+  // ─── Drill-down dialog title ──────────────────────────────────────────────
+  const drillTitle = useMemo(() => {
+    if (!drillDown) return "";
+    if (drillDown.tipo === "equipamento_conta") {
+      return `${drillDown.equipamentoNome} — ${drillDown.contaLabel}`;
+    }
+    if (drillDown.tipo === "despesa_setor") {
+      return `${drillDown.despesaDescricao} — Distribuição por Subsetor`;
+    }
+    return "";
+  }, [drillDown]);
+
+  const drillExportTitle = useMemo(() => {
+    if (!drillDown) return "";
+    if (drillDown.tipo === "equipamento_conta") {
+      return `${drillDown.contaLabel} - ${drillDown.equipamentoNome}`;
+    }
+    if (drillDown.tipo === "despesa_setor") {
+      return `${drillDown.despesaDescricao} - Distribuição por Subsetor`;
+    }
+    return "";
+  }, [drillDown]);
+
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
@@ -563,7 +758,8 @@ export default function CustoSetorAnalitico() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Relatório Analítico por Setor</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Detalhamento de custos por equipamento e despesas específicas de cada setor
+            Detalhamento de custos por equipamento e despesas específicas de cada setor.
+            <span className="ml-1 text-blue-600">Clique nas contas para ver os itens detalhados.</span>
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -739,6 +935,8 @@ export default function CustoSetorAnalitico() {
                       filtroContaCampo={filtroContaCampo || undefined}
                       isDestaque={isDestaque}
                       setRef={isDestaque ? setSubsetorRef(sub.subsetorNome) : undefined}
+                      onDrillDownEquip={handleDrillDownEquip}
+                      onDrillDownDespesa={handleDrillDownDespesa}
                     />
                   );
                 })}
@@ -761,6 +959,204 @@ export default function CustoSetorAnalitico() {
           </Card>
         );
       })}
+
+      {/* ─── Modal de Drill-Down ─────────────────────────────────────────────── */}
+      <Dialog open={!!drillDown} onOpenChange={(open) => { if (!open) setDrillDown(null); }}>
+        <DialogContent showCloseButton={false} className="!max-w-5xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+          {/* Fixed header */}
+          <div className="flex items-start justify-between px-6 pt-5 pb-3 border-b bg-background shrink-0">
+            <div className="flex flex-col gap-1 pr-10 min-w-0">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2 flex-wrap">
+                {drillDown?.tipo === "equipamento_conta" && (
+                  <>
+                    <Search className="h-4 w-4 text-blue-500 shrink-0" />
+                    <span className="truncate">{drillDown.equipamentoNome}</span>
+                    <span className="text-muted-foreground">›</span>
+                    <span className="text-blue-700">{drillDown.contaLabel}</span>
+                  </>
+                )}
+                {drillDown?.tipo === "despesa_setor" && (
+                  <>
+                    <DollarSign className="h-4 w-4 text-green-600 shrink-0" />
+                    <span>{drillDown.despesaDescricao}</span>
+                    <span className="text-muted-foreground">›</span>
+                    <span className="text-green-700">Distribuição por Subsetor</span>
+                  </>
+                )}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {drillDown?.tipo === "equipamento_conta" && (
+                  <>
+                    Valor da conta: <span className="font-mono font-semibold">R$ {fmt(drillDown.contaValor ?? 0)}</span>
+                    {periodoAtual && <span className="ml-2">| {MESES[(periodoAtual.mes ?? 1) - 1]}/{periodoAtual.ano}</span>}
+                  </>
+                )}
+                {drillDown?.tipo === "despesa_setor" && (
+                  <>
+                    Valor total: <span className="font-mono font-semibold">R$ {fmt(drillDown.despesaValor ?? 0)}</span>
+                    {periodoAtual && <span className="ml-2">| {MESES[(periodoAtual.mes ?? 1) - 1]}/{periodoAtual.ano}</span>}
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <DashboardExportMenu
+                title={drillExportTitle}
+                subtitle={periodoAtual ? `Período: ${MESES[(periodoAtual.mes ?? 1) - 1]}/${periodoAtual.ano}` : undefined}
+                filename={`drilldown-${(drillDown?.equipamentoTag || drillDown?.despesaDescricao || "dados").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}`}
+                exportOptions={drillDownExportOptions}
+              />
+              <button onClick={() => setDrillDown(null)} className="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
+                <XIcon className="h-4 w-4" />
+                <span className="sr-only">Fechar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable body */}
+          <div className="overflow-y-auto overflow-x-auto px-6 py-4 flex-1 min-h-0">
+            {/* ─── Drill-down: Itens detalhados de equipamento por classificação ── */}
+            {drillDown?.tipo === "equipamento_conta" && (
+              <div>
+                {drillItensLoading ? (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+                    Carregando itens detalhados...
+                  </div>
+                ) : drillItens && drillItens.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{drillItens.length} itens encontrados</span>
+                      <span className="font-mono font-semibold">Total: R$ {fmt(drillItens.reduce((s, i) => s + i.custo, 0))}</span>
+                    </div>
+                    <div className="rounded-md border border-border overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/50">
+                            <TableHead className="w-8 text-xs">#</TableHead>
+                            <TableHead className="w-24 text-xs">Data</TableHead>
+                            <TableHead className="text-xs">Produto</TableHead>
+                            <TableHead className="text-xs">Grupo</TableHead>
+                            <TableHead className="text-right w-20 text-xs">Qtd</TableHead>
+                            <TableHead className="text-right w-32 text-xs">Valor (R$)</TableHead>
+                            <TableHead className="text-right w-20 text-xs">%</TableHead>
+                            {drillDown.classificacao === "combustivel" && (
+                              <TableHead className="text-right w-24 text-xs">Horímetro</TableHead>
+                            )}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {drillItens.map((item, idx) => {
+                            const totalItens = drillItens.reduce((s, i) => s + i.custo, 0);
+                            const pctItem = totalItens > 0 ? (item.custo / totalItens) * 100 : 0;
+                            return (
+                              <TableRow key={item.id} className={idx % 2 === 0 ? "" : "bg-muted/20"}>
+                                <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                                <TableCell className="text-xs font-mono">{item.data || "—"}</TableCell>
+                                <TableCell className="text-sm">
+                                  <span className="font-medium">{item.produto}</span>
+                                </TableCell>
+                                <TableCell className="text-xs text-muted-foreground">{item.grupoProduto || "—"}</TableCell>
+                                <TableCell className="text-right font-mono text-xs">
+                                  {item.quantidade > 0 ? item.quantidade.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : "—"}
+                                </TableCell>
+                                <TableCell className="text-right font-mono font-medium text-sm">{fmtBRL(item.custo)}</TableCell>
+                                <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtPct(pctItem)}</TableCell>
+                                {drillDown.classificacao === "combustivel" && (
+                                  <TableCell className="text-right font-mono text-xs">{item.hodometro ?? "—"}</TableCell>
+                                )}
+                              </TableRow>
+                            );
+                          })}
+                          <TableRow className="font-semibold bg-muted/40 border-t-2">
+                            <TableCell></TableCell>
+                            <TableCell colSpan={drillDown.classificacao === "combustivel" ? 4 : 3} className="text-sm">
+                              Total ({drillItens.length} itens)
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm">{fmtBRL(drillItens.reduce((s, i) => s + i.custo, 0))}</TableCell>
+                            <TableCell className="text-right font-mono text-xs">100,0%</TableCell>
+                            {drillDown.classificacao === "combustivel" && <TableCell></TableCell>}
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium mb-1">Nenhum item detalhado encontrado</p>
+                    <p className="text-xs">
+                      Importe a planilha de despesas de equipamentos para ver os itens individuais.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─── Drill-down: Despesa específica — distribuição por subsetor ──── */}
+            {drillDown?.tipo === "despesa_setor" && (
+              <div>
+                {drillDespesaSetorLoading ? (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+                    Carregando distribuição por subsetor...
+                  </div>
+                ) : drillDespesaSetor && drillDespesaSetor.subsetores.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{drillDespesaSetor.subsetores.length} subsetores</span>
+                      <span className="font-mono font-semibold">Total: R$ {fmt(drillDespesaSetor.total)}</span>
+                    </div>
+                    <div className="rounded-md border border-border overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/50">
+                            <TableHead className="w-8 text-xs">#</TableHead>
+                            <TableHead className="text-xs">Subsetor</TableHead>
+                            <TableHead className="text-xs">Grupo</TableHead>
+                            <TableHead className="text-right w-40 text-xs">Valor (R$)</TableHead>
+                            <TableHead className="text-right w-24 text-xs">%</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {[...drillDespesaSetor.subsetores]
+                            .sort((a, b) => b.valor - a.valor)
+                            .map((sub, idx) => {
+                              const pctSub = drillDespesaSetor.total > 0 ? (sub.valor / drillDespesaSetor.total) * 100 : 0;
+                              return (
+                                <TableRow key={`${sub.grupoNome}-${sub.subsetorNome}`} className={idx % 2 === 0 ? "" : "bg-muted/20"}>
+                                  <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                                  <TableCell className="font-medium text-sm">{sub.subsetorNome}</TableCell>
+                                  <TableCell className="text-xs text-muted-foreground">{sub.grupoNome}</TableCell>
+                                  <TableCell className="text-right font-mono font-medium text-sm">{fmtBRL(sub.valor)}</TableCell>
+                                  <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtPct(pctSub)}</TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          <TableRow className="font-semibold bg-muted/40 border-t-2">
+                            <TableCell></TableCell>
+                            <TableCell colSpan={2} className="text-sm">Total ({drillDespesaSetor.subsetores.length} subsetores)</TableCell>
+                            <TableCell className="text-right font-mono text-sm">{fmtBRL(drillDespesaSetor.total)}</TableCell>
+                            <TableCell className="text-right font-mono text-xs">100,0%</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium mb-1">Nenhum dado de distribuição encontrado</p>
+                    <p className="text-xs">
+                      Esta despesa pode não ter dados importados de distribuição por subsetor (MSET) para este período.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

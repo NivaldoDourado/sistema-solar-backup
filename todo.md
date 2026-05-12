@@ -1050,3 +1050,12 @@
 - [x] Integrar exclusões dinâmicas com importação do Fluxo Realizado
 - [x] Criar interface de gerenciamento de contas excluídas no frontend
 - [x] Testar fluxo completo: 146 testes passando, exclusões dinâmicas integradas com parsePlanilhaFluxo
+
+## Drill-Down no Relatório Analítico por Setor
+- [x] Analisar estrutura atual do Relatório Analítico e backend de itens detalhados
+- [x] Criar/atualizar endpoints backend para buscar itens detalhados por conta/equipamento/setor
+- [x] Implementar drill-down clicável nas contas de equipamentos (Peças, Combustível, Lubrificantes, etc.)
+- [x] Implementar drill-down clicável nas despesas específicas de setor
+- [x] Adicionar botões de exportação Excel/PDF e impressão em cada nível de drill-down
+- [x] Garantir ordenação decrescente por valor em todos os níveis analíticos
+- [x] Testar navegação completa: 154 testes passando, drill-down verificado visualmente
