@@ -1010,3 +1010,6 @@
 - [x] 2ª página: Gráfico "Distribuição por Plano de Contas" (donut, sem legenda, rótulos com nome/valor/R$/t/%)
 - [x] 3ª página: Gráfico "Distribuição por Subsetor" (donut, sem legenda, rótulos com nome/valor/R$/t/%)
 - [x] Dados ordenados por valor decrescente
+
+## PDF Donut - Rótulos de percentual nas fatias maiores
+- [x] Adicionar rótulos de percentual diretamente sobre as fatias > 8% do donut no PDF

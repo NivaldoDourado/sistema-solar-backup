@@ -640,6 +640,22 @@ function drawDonutPage(
   doc.setDrawColor(255, 255, 255);
   doc.circle(centerX, centerY, innerRadius, "F");
 
+  // Rótulos de percentual nas fatias maiores (> 8%)
+  let labelAngle = -Math.PI / 2;
+  for (const item of data) {
+    const sliceAngle = (item.value / total) * 2 * Math.PI;
+    const pct = (item.value / total) * 100;
+    if (pct >= 8) {
+      const midAngle = labelAngle + sliceAngle / 2;
+      const labelRadius = (outerRadius + innerRadius) / 2;
+      const lx = centerX + labelRadius * Math.cos(midAngle);
+      const ly = centerY + labelRadius * Math.sin(midAngle);
+      doc.setFontSize(6.5); doc.setFont("helvetica", "bold"); doc.setTextColor(255, 255, 255);
+      doc.text(`${fmtBR(pct)}%`, lx, ly + 1, { align: "center" });
+    }
+    labelAngle += sliceAngle;
+  }
+
   // Texto central
   doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
   doc.text("Total", centerX, centerY - 2, { align: "center" });
