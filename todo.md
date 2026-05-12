@@ -1018,3 +1018,8 @@
 - [x] Excluir explosivos (DETONA) da lista de equipamentos da conta "Peças de Reposição / Itens de Consumo" no detalhamento por equipamento
 - [x] Corrigir o total da tela de detalhamento (deve ser R$ 247.219,95, não R$ 397.203,80)
 - [x] Não afetar a tela de Custo Variável que está correta
+
+## Drill-down na conta Explosivos e Acessórios
+- [x] Criar endpoint para listar itens de explosivos por período
+- [x] Implementar drill-down no frontend para a conta Explosivos e Acessórios
+- [x] Exibir itens detalhados com data, descrição, quantidade e valor (ordem decrescente)

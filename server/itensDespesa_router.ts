@@ -778,6 +778,81 @@ export const itensDespesaRouter = router({
       };
     }),
 
+  // ===== DRILL-DOWN: EXPLOSIVOS E ACESSÓRIOS =====
+  // Listar itens de explosivos agrupados por produto num período
+  itensExplosivos: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const tagsExplosivos = TAGS_CONTA_EXPLOSIVOS.map(t => t.toUpperCase());
+      if (tagsExplosivos.length === 0) return [];
+
+      const result = await db2
+        .select({
+          produto: itemDespesaImportado.produto,
+          grupoProduto: itemDespesaImportado.grupoProduto,
+          totalItens: sql<number>`COUNT(*)`.as("totalItens"),
+          totalQuantidade: sql<string>`SUM(CAST(${itemDespesaImportado.quantidade} AS DECIMAL(14,3)))`.as("totalQuantidade"),
+          totalCusto: sql<string>`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`.as("totalCusto"),
+        })
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          inArray(sql`UPPER(${itemDespesaImportado.equipamentoTag})`, tagsExplosivos),
+        ))
+        .groupBy(
+          itemDespesaImportado.produto,
+          itemDespesaImportado.grupoProduto,
+        )
+        .orderBy(desc(sql`SUM(CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2)))`));
+
+      return result.map(r => ({
+        produto: r.produto,
+        grupoProduto: r.grupoProduto,
+        totalItens: Number(r.totalItens),
+        totalQuantidade: Number(r.totalQuantidade) || 0,
+        totalCusto: Number(r.totalCusto) || 0,
+      }));
+    }),
+
+  // Listar itens detalhados de explosivos num período (todos os itens individuais)
+  itensExplosivosDetalhados: protectedProcedure
+    .input(z.object({
+      periodoCustoId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const tagsExplosivos = TAGS_CONTA_EXPLOSIVOS.map(t => t.toUpperCase());
+      if (tagsExplosivos.length === 0) return [];
+
+      const result = await db2
+        .select()
+        .from(itemDespesaImportado)
+        .where(and(
+          eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+          inArray(sql`UPPER(${itemDespesaImportado.equipamentoTag})`, tagsExplosivos),
+        ))
+        .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+
+      return result.map(r => ({
+        id: r.id,
+        sequencia: r.sequencia,
+        data: r.data,
+        produto: r.produto,
+        grupoProduto: r.grupoProduto,
+        quantidade: Number(r.quantidade) || 0,
+        custo: Number(r.custo) || 0,
+        centroCusto: r.centroCusto,
+        observacoes: r.observacoes,
+      }));
+    }),
+
   // Alterar o setor de um equipamento (para revisão de correspondências)
   alterarSetorEquipamento: protectedProcedure
     .input(z.object({

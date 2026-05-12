@@ -183,6 +183,17 @@ export default function ApuracaoCusto() {
     { enabled: !!selectedPeriodoId && !!drillDown?.classificacao && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
   );
 
+  // Drill-down Explosivos e Acessórios
+  const isExplosivos = drillDown?.contaNome === "Explosivos e Acessórios";
+  const { data: drillExplosivos, isLoading: drillExplosivosLoading } = trpc.itensDespesa.itensExplosivos.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId && isExplosivos && (drillDown?.nivel === 1 || drillDown?.nivel === 2) }
+  );
+  const { data: drillExplosivosDetalhados, isLoading: drillExplosivosDetLoading } = trpc.itensDespesa.itensExplosivosDetalhados.useQuery(
+    { periodoCustoId: selectedPeriodoId! },
+    { enabled: !!selectedPeriodoId && isExplosivos && drillDown?.nivel === 3 }
+  );
+
   // Drill-down nível 3: itens detalhados por equipamento
   const { data: drillItens, isLoading: drillItensLoading } = trpc.itensDespesa.listarItensDetalhados.useQuery(
     { periodoCustoId: selectedPeriodoId!, equipamentoTag: drillDown?.equipamentoTag ?? "", classificacao: drillDown?.classificacao ?? "" },
@@ -1743,10 +1754,19 @@ export default function ApuracaoCusto() {
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
-                  <span>{drillDown.classificacao ? "Equipamentos" : isOutrasDesp ? "Subsetores" : isSalario ? (contaSalarioId === 30004 ? "Equipamentos" : "Setores") : "Setores"}</span>
+                  <span>{drillDown.classificacao ? "Equipamentos" : isExplosivos ? "Produtos" : isOutrasDesp ? "Subsetores" : isSalario ? (contaSalarioId === 30004 ? "Equipamentos" : "Setores") : "Setores"}</span>
                 </>
               )}
-              {drillDown?.nivel === 3 && !isOutrasDesp && (
+              {drillDown?.nivel === 3 && isExplosivos && (
+                <>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1 } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
+                  <span className="text-muted-foreground">›</span>
+                  <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)} className="text-blue-600 hover:underline">Produtos</button>
+                  <span className="text-muted-foreground">›</span>
+                  <span>Itens Detalhados</span>
+                </>
+              )}
+              {drillDown?.nivel === 3 && !isOutrasDesp && !isExplosivos && (
                 <>
                   <button onClick={() => setDrillDown(d => d ? { ...d, nivel: 1, equipamentoTag: undefined, equipamentoDescricao: undefined } : null)} className="text-blue-600 hover:underline">{drillDown.contaNome}</button>
                   <span className="text-muted-foreground">›</span>
@@ -1846,6 +1866,16 @@ export default function ApuracaoCusto() {
                 >
                   <span>🏢 Ver detalhamento por Subsetor</span>
                   <span className="text-purple-500">→</span>
+                </button>
+              )}
+              {/* Botão para ver itens de Explosivos e Acessórios */}
+              {isExplosivos && (
+                <button
+                  onClick={() => setDrillDown(d => d ? { ...d, nivel: 2 } : null)}
+                  className="w-full py-3 px-4 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium text-sm flex items-center justify-between transition-colors"
+                >
+                  <span>🧨 Ver itens de Explosivos</span>
+                  <span className="text-red-500">→</span>
                 </button>
               )}
               {/* Botão para ver distribuição de salários por equipamento/setor */}
@@ -2056,6 +2086,70 @@ export default function ApuracaoCusto() {
                   )}
                 </>
               )}
+              {/* Caso 5: Explosivos e Acessórios - mostra itens agrupados por produto */}
+              {isExplosivos && (
+                <>
+                  {drillExplosivosLoading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens de explosivos...</div>
+                  ) : drillExplosivos && drillExplosivos.length > 0 ? (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-muted-foreground">Itens por Produto</h4>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-8">#</TableHead>
+                            <TableHead>Produto</TableHead>
+                            <TableHead className="text-right w-20">Qtd</TableHead>
+                            <TableHead className="text-right w-20">Itens</TableHead>
+                            <TableHead className="text-right w-40">Valor (R$)</TableHead>
+                            <TableHead className="text-right w-24">%</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {drillExplosivos.map((item, idx) => {
+                            const totalExp = drillExplosivos.reduce((s, e) => s + e.totalCusto, 0);
+                            return (
+                              <TableRow key={item.produto + idx}>
+                                <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{item.produto}</div>
+                                  {item.grupoProduto && <span className="text-xs text-muted-foreground">{item.grupoProduto}</span>}
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-muted-foreground">{item.totalQuantidade.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}</TableCell>
+                                <TableCell className="text-right font-mono text-muted-foreground">{item.totalItens}</TableCell>
+                                <TableCell className="text-right font-mono font-medium">{fmt(item.totalCusto)}</TableCell>
+                                <TableCell className="text-right font-mono text-muted-foreground">
+                                  {totalExp > 0 ? fmtPct((item.totalCusto / totalExp) * 100) : "—"}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          <TableRow className="font-semibold bg-muted/40">
+                            <TableCell></TableCell>
+                            <TableCell>Total ({drillExplosivos.length} produtos)</TableCell>
+                            <TableCell className="text-right font-mono">{drillExplosivos.reduce((s, e) => s + e.totalQuantidade, 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}</TableCell>
+                            <TableCell className="text-right font-mono">{drillExplosivos.reduce((s, e) => s + e.totalItens, 0)}</TableCell>
+                            <TableCell className="text-right font-mono">{fmt(drillExplosivos.reduce((s, e) => s + e.totalCusto, 0))}</TableCell>
+                            <TableCell className="text-right font-mono">100,0%</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                      <button
+                        onClick={() => setDrillDown(d => d ? { ...d, nivel: 3 } : null)}
+                        className="w-full py-2.5 px-4 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium text-sm flex items-center justify-between transition-colors"
+                      >
+                        <span>📋 Ver todos os itens detalhados</span>
+                        <span className="text-red-500">→</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-muted-foreground text-sm">
+                      Nenhum item de explosivos importado para este período.<br/>
+                      <span className="text-xs">Importe a planilha de despesas de equipamentos para ver o detalhamento.</span>
+                    </div>
+                  )}
+                </>
+              )}
               {isOutrasDesp && (
                 <>
                   {drillSubsetoresLoading ? (
@@ -2115,8 +2209,49 @@ export default function ApuracaoCusto() {
             </div>
           )}
 
+          {/* Nível 3: Itens detalhados de Explosivos e Acessórios */}
+          {drillDown?.nivel === 3 && isExplosivos && (
+            <div>
+              {drillExplosivosDetLoading ? (
+                <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens detalhados...</div>
+              ) : drillExplosivosDetalhados && drillExplosivosDetalhados.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{drillExplosivosDetalhados.length} itens</span>
+                    <span className="font-mono font-semibold">Total: R$ {fmt(drillExplosivosDetalhados.reduce((s, i) => s + i.custo, 0))}</span>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-20">Data</TableHead>
+                        <TableHead>Produto</TableHead>
+                        <TableHead className="text-right w-16">Qtd</TableHead>
+                        <TableHead className="text-right w-32">Valor (R$)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {drillExplosivosDetalhados.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="text-xs font-mono">{item.data || "—"}</TableCell>
+                          <TableCell className="text-sm">
+                            <span className="font-medium">{item.produto}</span>
+                            {item.grupoProduto && <span className="text-xs text-muted-foreground ml-1">({item.grupoProduto})</span>}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">{item.quantidade > 0 ? item.quantidade.toLocaleString("pt-BR") : "—"}</TableCell>
+                          <TableCell className="text-right font-mono font-medium">{fmt(item.custo)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground text-sm">Nenhum item encontrado.</div>
+              )}
+            </div>
+          )}
+
           {/* Nível 3: Itens individuais por equipamento (contas de equipamento) */}
-          {drillDown?.nivel === 3 && !isOutrasDesp && (
+          {drillDown?.nivel === 3 && !isOutrasDesp && !isExplosivos && (
             <div>
               {drillItensLoading ? (
                 <div className="py-8 text-center text-muted-foreground text-sm">Carregando itens...</div>
