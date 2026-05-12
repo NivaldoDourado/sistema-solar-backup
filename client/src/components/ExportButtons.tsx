@@ -5,10 +5,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, Printer } from "lucide-react";
 import {
   exportToExcel,
   exportToPDF,
+  printData,
   type ExportOptions,
 } from "@/lib/export-utils";
 import { toast } from "sonner";
@@ -25,18 +26,28 @@ export function ExportButtons({ options, disabled }: ExportButtonsProps) {
         toast.error("Não há dados para exportar.");
         return;
       }
-
       if (format === "excel") {
         exportToExcel(options);
       } else {
         exportToPDF(options);
       }
-
       toast.success(
         `Relatório exportado em ${format === "excel" ? "Excel" : "PDF"} com sucesso.`
       );
     } catch (error) {
       toast.error("Ocorreu um erro ao exportar o relatório.");
+    }
+  };
+
+  const handlePrint = () => {
+    try {
+      if (options.data.length === 0) {
+        toast.error("Não há dados para imprimir.");
+        return;
+      }
+      printData(options);
+    } catch (error) {
+      toast.error("Ocorreu um erro ao preparar a impressão.");
     }
   };
 
@@ -56,6 +67,10 @@ export function ExportButtons({ options, disabled }: ExportButtonsProps) {
         <DropdownMenuItem onClick={() => handleExport("pdf")}>
           <FileText className="h-4 w-4 mr-2 text-red-600" />
           Exportar PDF (.pdf)
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handlePrint}>
+          <Printer className="h-4 w-4 mr-2 text-blue-600" />
+          Imprimir
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

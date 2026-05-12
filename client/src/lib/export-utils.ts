@@ -732,3 +732,201 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 function fmtBR(value: number): string {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Impressão (window.print) com cabeçalho padronizado
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Abre uma janela de impressão com o mesmo formato dos relatórios exportados.
+ * Usa ExportOptions (mesmo formato do Excel/PDF genérico).
+ */
+export function printData(options: ExportOptions) {
+  const { title, subtitle, columns, data } = options;
+  const now = new Date();
+  const timestamp = `Gerado em: ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR")}`;
+
+  const rows = data
+    .map(
+      (row) =>
+        `<tr>${columns
+          .map((col) => {
+            const val = col.format ? col.format(row[col.key]) : (row[col.key] ?? "");
+            const isTotalGrupo = row["tipo"] === "TOTAL GRUPO";
+            const style = isTotalGrupo
+              ? 'style="background:#fee2e2;color:#991b1b;font-weight:bold;border-bottom:2px solid #b91c1c"'
+              : "";
+            return `<td ${style}>${val}</td>`;
+          })
+          .join("")}</tr>`
+    )
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <style>
+    @page { size: landscape; margin: 10mm 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #333; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .header-left { flex: 1; }
+    .system-name { font-size: 12px; font-weight: bold; color: #1e50a0; }
+    .empresa { font-size: 10px; color: #3c3c3c; margin-top: 2px; }
+    .titulo { font-size: 16px; font-weight: bold; color: #000; margin-top: 4px; }
+    .subtitulo { font-size: 11px; color: #333; margin-top: 2px; }
+    .timestamp { font-size: 8px; color: #666; font-style: italic; margin-top: 2px; }
+    .logo { width: 60px; height: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { background: #2980b3; color: #fff; font-weight: bold; font-size: 9px; padding: 4px 6px; text-align: left; }
+    td { padding: 3px 6px; font-size: 9px; border-bottom: 1px solid #e5e5e5; }
+    tr:nth-child(even) td { background: #f5f5f5; }
+    .footer { margin-top: 8px; font-size: 8px; color: #666; text-align: center; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="system-name">${SYSTEM_NAME_LINE1}</div>
+      <div class="empresa">${SYSTEM_NAME_LINE2}</div>
+      <div class="titulo">${title}</div>
+      ${subtitle ? `<div class="subtitulo">${subtitle}</div>` : ""}
+      <div class="timestamp">${timestamp}</div>
+    </div>
+    <img src="${LOGO_CDN_URL}" class="logo" crossorigin="anonymous" />
+  </div>
+  <table>
+    <thead><tr>${columns.map((c) => `<th>${c.header}</th>`).join("")}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">${SYSTEM_NAME_LINE1}</div>
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  // Wait for logo to load before printing
+  const img = printWindow.document.querySelector("img");
+  if (img && !img.complete) {
+    img.onload = () => { printWindow.print(); };
+    img.onerror = () => { printWindow.print(); };
+  } else {
+    setTimeout(() => printWindow.print(), 300);
+  }
+}
+
+/**
+ * Impressão do relatório de Apuração de Custo (multi-seção com KPIs).
+ * Usa RelatorioExportOptions (mesmo formato do PDF/Excel do relatório).
+ */
+export function printRelatorio(opts: RelatorioExportOptions) {
+  const { titulo, periodo, empresa, kpis, secoes } = opts;
+  const now = new Date();
+  const timestamp = `Gerado em: ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR")}`;
+
+  // Build KPI cards HTML
+  const kpiHtml = kpis
+    .map(
+      (k) =>
+        `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div></div>`
+    )
+    .join("");
+
+  // Build sections HTML
+  const secoesHtml = secoes
+    .map((secao) => {
+      const cor = secao.corCabecalho || [41, 128, 185];
+      const linhasHtml = secao.linhas
+        .map((l) => {
+          const isHighlight = l.isSubtotal || l.isTotal;
+          const bgStyle = isHighlight ? "background:#f0f0f0;font-weight:bold;" : "";
+          return `<tr style="${bgStyle}">
+            <td>${l.conta}</td>
+            <td>${l.divisor || ""}</td>
+            <td style="text-align:right">${l.valor}</td>
+            <td style="text-align:right">${l.custoPorTon || ""}</td>
+            <td style="text-align:right">${l.percentual || ""}</td>
+          </tr>`;
+        })
+        .join("");
+      return `
+        <tr><td colspan="5" style="background:rgb(${cor.join(",")});color:#fff;font-weight:bold;padding:5px 8px;">${secao.titulo}</td></tr>
+        ${linhasHtml}`;
+    })
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>${titulo}</title>
+  <style>
+    @page { size: landscape; margin: 10mm 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #333; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .header-left { flex: 1; }
+    .system-name { font-size: 12px; font-weight: bold; color: #1e50a0; }
+    .empresa { font-size: 10px; color: #3c3c3c; margin-top: 2px; }
+    .titulo { font-size: 16px; font-weight: bold; color: #000; margin-top: 4px; }
+    .subtitulo { font-size: 11px; color: #333; margin-top: 2px; }
+    .timestamp { font-size: 8px; color: #666; font-style: italic; margin-top: 2px; }
+    .logo { width: 60px; height: auto; }
+    .kpis { display: flex; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+    .kpi { border: 1px solid #ddd; border-radius: 4px; padding: 6px 10px; min-width: 120px; }
+    .kpi-label { font-size: 8px; color: #666; }
+    .kpi-value { font-size: 12px; font-weight: bold; color: #1e50a0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { background: #2980b3; color: #fff; font-weight: bold; font-size: 9px; padding: 4px 6px; text-align: left; }
+    td { padding: 3px 6px; font-size: 9px; border-bottom: 1px solid #e5e5e5; }
+    tr:nth-child(even) td { background: #fafafa; }
+    .footer { margin-top: 8px; font-size: 8px; color: #666; text-align: center; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="system-name">${SYSTEM_NAME_LINE1}</div>
+      <div class="empresa">${empresa || SYSTEM_NAME_LINE2}</div>
+      <div class="titulo">${titulo}</div>
+      <div class="subtitulo">Período: ${periodo}</div>
+      <div class="timestamp">${timestamp}</div>
+    </div>
+    <img src="${LOGO_CDN_URL}" class="logo" crossorigin="anonymous" />
+  </div>
+  <div class="kpis">${kpiHtml}</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Grupo / Subtotal</th>
+        <th>Setor/Processo</th>
+        <th style="text-align:right">Total Geral (R$)</th>
+        <th style="text-align:right">Custo/t (R$)</th>
+        <th style="text-align:right">%</th>
+      </tr>
+    </thead>
+    <tbody>${secoesHtml}</tbody>
+  </table>
+  <div class="footer">${SYSTEM_NAME_LINE1}</div>
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  const img = printWindow.document.querySelector("img");
+  if (img && !img.complete) {
+    img.onload = () => { printWindow.print(); };
+    img.onerror = () => { printWindow.print(); };
+  } else {
+    setTimeout(() => printWindow.print(), 300);
+  }
+}

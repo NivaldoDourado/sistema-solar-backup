@@ -28,7 +28,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { exportRelatorioToExcel, exportRelatorioToPDF, type ExportColumn } from "@/lib/export-utils";
+import { exportRelatorioToExcel, exportRelatorioToPDF, printRelatorio, type ExportColumn } from "@/lib/export-utils";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -945,6 +945,65 @@ export default function ApuracaoCusto() {
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               PDF
+            </button>
+            <button
+              onClick={() => {
+                const kpis = [
+                  { label: "Produção (t)", value: relatorio.producao > 0 ? fmt(relatorio.producao) + " t" : "-" },
+                  { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "-" },
+                  { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
+                  { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
+                  { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
+                ];
+                const secoes = [
+                  {
+                    titulo: "Custo Variável",
+                    corCabecalho: [22, 101, 52] as [number, number, number],
+                    linhas: [
+                      ...relatorio.custoVariavel.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Custo Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalCustoVariavel), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "", isSubtotal: true },
+                    ],
+                  },
+                  {
+                    titulo: "Despesa Variável",
+                    corCabecalho: [30, 64, 175] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesaVariavel.map(c => ({ conta: c.nome, divisor: "Vendas", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesa Variável", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesaVariavel), custoPorTon: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "", isSubtotal: true },
+                    ],
+                  },
+                  ...(relatorio.despesasIndiretas.length > 0 ? [{
+                    titulo: "Despesas Indiretas",
+                    corCabecalho: [124, 45, 18] as [number, number, number],
+                    linhas: [
+                      ...relatorio.despesasIndiretas.map(c => ({ conta: c.nome, divisor: "Produção", valor: "R$ " + fmt(c.valor), custoPorTon: "R$ " + fmt(c.custoPorTon), percentual: fmtPct(c.percentualGrupo) })),
+                      { conta: "SUBTOTAL Despesas Indiretas", divisor: "", valor: "R$ " + fmt(relatorio.totalDespesasIndiretas), custoPorTon: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonDespesasIndiretas) : "", isSubtotal: true },
+                    ],
+                  }] : []),
+                  {
+                    titulo: "Totais",
+                    corCabecalho: [15, 23, 42] as [number, number, number],
+                    linhas: [
+                      { conta: "TOTAL DESP. s/ DESP. INDIRETAS", valor: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel), isTotal: true },
+                      { conta: "TOTAL DESP. c/ DESPESAS INDIRETAS", valor: "R$ " + fmt(relatorio.totalGeral), isTotal: true },
+                      { conta: "C.M. s/ DESPESAS INDIRETAS", custoPorTon: "R$ " + fmt(relatorio.custoMedio), valor: "", isTotal: true },
+                      { conta: "C.M. c/ Despesas Indiretas", custoPorTon: "R$ " + fmt(relatorio.custoMedioComDI), valor: "", isTotal: true },
+                    ],
+                  },
+                ];
+                printRelatorio({
+                  titulo: `Apuração de Custo — ${periodoLabel}`,
+                  periodo: periodoLabel,
+                  kpis,
+                  secoes,
+                  filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
+                });
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
             </button>
             {whatsappMessage && destinatariosAtivos.length > 0 && (
               <button

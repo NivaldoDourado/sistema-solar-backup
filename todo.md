@@ -1037,3 +1037,8 @@
 
 ## Reduzir logomarca Dourado Gestão nos relatórios
 - [x] Reduzir logomarca para ~60% do tamanho atual em todos os relatórios existentes
+
+## Botão de Impressão ao lado dos botões de exportação
+- [x] Investigar todos os locais com botões de exportação
+- [x] Criar função de impressão com cabeçalho padronizado (GEM, empresa, período)
+- [x] Adicionar botão de impressão em todos os locais com exportação

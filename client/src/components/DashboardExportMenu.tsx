@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet, FileText, MessageCircle } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, MessageCircle, Printer } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { exportToExcel, exportToPDF, type ExportOptions } from "@/lib/export-utils";
+import { exportToExcel, exportToPDF, printData, type ExportOptions } from "@/lib/export-utils";
 
 export interface DashboardExportMenuProps {
   /** Título do card — usado como título do relatório */
@@ -45,6 +45,10 @@ export function DashboardExportMenu({
 
   const handlePDF = async () => {
     await exportToPDF({ title, subtitle, filename, ...exportOptions });
+  };
+
+  const handlePrint = () => {
+    printData({ title, subtitle, filename, ...exportOptions });
   };
 
   const handleWhatsApp = () => {
@@ -95,6 +99,11 @@ export function DashboardExportMenu({
         <DropdownMenuItem onClick={handlePDF} className="gap-2 cursor-pointer">
           <FileText className="h-4 w-4 text-red-600" />
           PDF
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handlePrint} className="gap-2 cursor-pointer">
+          <Printer className="h-4 w-4 text-blue-600" />
+          Imprimir
         </DropdownMenuItem>
         {hasWhatsApp && (
           <>
