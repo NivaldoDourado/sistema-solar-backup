@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft, Search, XIcon } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
@@ -962,7 +963,8 @@ export default function CustoSetorAnalitico() {
 
       {/* ─── Modal de Drill-Down ─────────────────────────────────────────────── */}
       <Dialog open={!!drillDown} onOpenChange={(open) => { if (!open) setDrillDown(null); }}>
-        <DialogContent showCloseButton={false} className="!max-w-5xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogContent showCloseButton={false} aria-describedby={undefined} className="!max-w-5xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <VisuallyHidden><DialogTitle>Detalhes</DialogTitle></VisuallyHidden>
           {/* Fixed header */}
           <div className="flex items-start justify-between px-6 pt-5 pb-3 border-b bg-background shrink-0">
             <div className="flex flex-col gap-1 pr-10 min-w-0">

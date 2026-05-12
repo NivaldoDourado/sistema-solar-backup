@@ -1059,3 +1059,7 @@
 - [x] Adicionar botões de exportação Excel/PDF e impressão em cada nível de drill-down
 - [x] Garantir ordenação decrescente por valor em todos os níveis analíticos
 - [x] Testar navegação completa: 154 testes passando, drill-down verificado visualmente
+
+## Bugs no Drill-Down do Relatório Analítico
+- [x] Corrigir erro "DialogContent requires DialogTitle" (adicionado VisuallyHidden DialogTitle + aria-describedby)
+- [x] Corrigir itens não carregando para 944C - Peças de Reposição (normalização de espaços na tag do equipamento no backend)

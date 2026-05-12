@@ -305,7 +305,8 @@ export const itensDespesaRouter = router({
       const db2 = await getDb();
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
-      const result = await db2
+      // Primeiro tenta match exato
+      let result = await db2
         .select()
         .from(itemDespesaImportado)
         .where(and(
@@ -314,6 +315,21 @@ export const itensDespesaRouter = router({
           eq(itemDespesaImportado.classificacao, input.classificacao),
         ))
         .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+
+      // Se não encontrou, tenta match normalizado (removendo espaços extras)
+      // Isso lida com diferenças como "944C" vs "944 C"
+      if (result.length === 0) {
+        const tagNorm = input.equipamentoTag.replace(/\s+/g, "");
+        result = await db2
+          .select()
+          .from(itemDespesaImportado)
+          .where(and(
+            eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+            sql`REPLACE(${itemDespesaImportado.equipamentoTag}, ' ', '') = ${tagNorm}`,
+            eq(itemDespesaImportado.classificacao, input.classificacao),
+          ))
+          .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+      }
 
       return result.map(r => ({
         id: r.id,

@@ -1,0 +1,70 @@
+{
+  "query": "SELECT DISTINCT equipamentoTag FROM item_despesa_importado ORDER BY equipamentoTag LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT equipamentoTag FROM item_despesa_importado ORDER BY equipamentoTag LIMIT 20;",
+  "rows": [
+    {
+      "equipamentoTag": "944 C"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO"
+    },
+    {
+      "equipamentoTag": "AVS 4001200"
+    },
+    {
+      "equipamentoTag": "BALANÇA"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO"
+    },
+    {
+      "equipamentoTag": "C100"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 01"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 02"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 03"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZT0105"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188"
+    },
+    {
+      "equipamentoTag": "CANTINA"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS"
+    },
+    {
+      "equipamentoTag": "COMPRESSOR GA160"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\n944 C\nALIMENTADOR AVS01\nALMOXARIFADO\nAVS 4001200\nBALANÇA\nBRITADOR CS440\nBRITADOR MOVEL\nBRITADOR MOVEL METSO\nC100\nCALHA VIBRATORIA 01\nCALHA VIBRATORIA 02\nCALHA VIBRATORIA 03\nCAMINHÃO AU5073\nCAMINHÃO HZK7665\nCAMINHÃO HZT0105\nCAMINHÃO NML0188\nCANTINA\nCARROS DIVERSOS\nCOMPRESSOR GA160\nDRAGA D´ÁGUA A DIESE\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

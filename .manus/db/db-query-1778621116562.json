@@ -1,0 +1,130 @@
+{
+  "query": "SELECT DISTINCT equipamentoTag FROM item_despesa_importado ORDER BY equipamentoTag LIMIT 40 OFFSET 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT equipamentoTag FROM item_despesa_importado ORDER BY equipamentoTag LIMIT 40 OFFSET 20;",
+  "rows": [
+    {
+      "equipamentoTag": "DRAGA DIESEL 02"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938"
+    },
+    {
+      "equipamentoTag": "EXPLOSIVOS"
+    },
+    {
+      "equipamentoTag": "FAZENDA"
+    },
+    {
+      "equipamentoTag": "H3800 02"
+    },
+    {
+      "equipamentoTag": "H380003"
+    },
+    {
+      "equipamentoTag": "HL 76003"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)"
+    },
+    {
+      "equipamentoTag": "HZC4975"
+    },
+    {
+      "equipamentoTag": "HZH3J61"
+    },
+    {
+      "equipamentoTag": "HZU7750"
+    },
+    {
+      "equipamentoTag": "IAD8995"
+    },
+    {
+      "equipamentoTag": "IXD6D34"
+    },
+    {
+      "equipamentoTag": "IXE1F44"
+    },
+    {
+      "equipamentoTag": "JC1200 01"
+    },
+    {
+      "equipamentoTag": "L 566"
+    },
+    {
+      "equipamentoTag": "L566 02"
+    },
+    {
+      "equipamentoTag": "MAQUINA MIG"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI"
+    },
+    {
+      "equipamentoTag": "MELOSA 01 / DIK"
+    },
+    {
+      "equipamentoTag": "MELOSA 02 BRIT.NOVA"
+    },
+    {
+      "equipamentoTag": "MOTO 02 (2003)"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA 02"
+    },
+    {
+      "equipamentoTag": "NNT 5E41"
+    },
+    {
+      "equipamentoTag": "NNT5E41"
+    },
+    {
+      "equipamentoTag": "NVH6212"
+    },
+    {
+      "equipamentoTag": "NVJ7902"
+    },
+    {
+      "equipamentoTag": "OER1B00"
+    },
+    {
+      "equipamentoTag": "OFICINABRITAGEM"
+    },
+    {
+      "equipamentoTag": "OM100"
+    },
+    {
+      "equipamentoTag": "OUTROS"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966 03"
+    },
+    {
+      "equipamentoTag": "PÁ CARREG. 966R04"
+    },
+    {
+      "equipamentoTag": "PATROL 120 B"
+    },
+    {
+      "equipamentoTag": "PC300"
+    },
+    {
+      "equipamentoTag": "PENEIRA 01 CS440"
+    },
+    {
+      "equipamentoTag": "PENEIRA 02 NOVA H 01"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\nDRAGA DIESEL 02\nESCAVADEIRA R 938 02\nESCAVADEIRA R938\nEXPLOSIVOS\nFAZENDA\nH3800 02\nH380003\nHL 76003\nHP 200 ( METSO)\nHZC4975\nHZH3J61\nHZU7750\nIAD8995\nIXD6D34\nIXE1F44\nJC1200 01\nL 566\nL566 02\nMAQUINA MIG\nMATERIAL DE CONSUMO\nMATERIAL EPI\nMELOSA 01 / DIK\nMELOSA 02 BRIT.NOVA\nMOTO 02 (2003)\nMOTOR BOMBA\nMOTOR BOMBA 02\nNNT 5E41\nNNT5E41\nNVH6212\nNVJ7902\nOER1B00\nOFICINABRITAGEM\nOM100\nOUTROS\nPÁ CARREG. 966 03\nPÁ CARREG. 966R04\nPATROL 120 B\nPC300\nPENEIRA 01 CS440\nPENEIRA 02 NOVA H 01\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

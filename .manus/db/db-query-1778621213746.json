@@ -1,0 +1,30 @@
+{
+  "query": "SELECT DISTINCT periodoCustoId, classificacao, COUNT(*) as cnt FROM item_despesa_importado WHERE equipamentoTag = '944 C' GROUP BY periodoCustoId, classificacao;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT periodoCustoId, classificacao, COUNT(*) as cnt FROM item_despesa_importado WHERE equipamentoTag = '944 C' GROUP BY periodoCustoId, classificacao;",
+  "rows": [
+    {
+      "periodoCustoId": "60001",
+      "classificacao": "outras_despesas",
+      "cnt": "3"
+    },
+    {
+      "periodoCustoId": "60001",
+      "classificacao": "combustivel",
+      "cnt": "21"
+    },
+    {
+      "periodoCustoId": "60001",
+      "classificacao": "lubrificantes",
+      "cnt": "2"
+    },
+    {
+      "periodoCustoId": "60001",
+      "classificacao": "pecas_reposicao",
+      "cnt": "12"
+    }
+  ],
+  "messages": [],
+  "stdout": "periodoCustoId\tclassificacao\tcnt\n60001\toutras_despesas\t3\n60001\tcombustivel\t21\n60001\tlubrificantes\t2\n60001\tpecas_reposicao\t12\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

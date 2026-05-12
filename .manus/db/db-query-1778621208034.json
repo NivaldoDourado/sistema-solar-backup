@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%944%' OR nomeDoEquipamento LIKE '%944%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%944%' OR nomeDoEquipamento LIKE '%944%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "19",
+      "codigoTag": "944C",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}
