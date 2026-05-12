@@ -782,6 +782,10 @@ export default function ApuracaoCusto() {
                   kpis,
                   secoes,
                   filename: `apuracao-custo-${periodoAtual.mes}-${periodoAtual.ano}`,
+                  graficosDonut: {
+                    planoContas: dadosPlanoContas.map(d => ({ name: d.name, value: d.value, pct: d.pct, custoPorTon: d.custoPorTon, fill: d.fill })),
+                    subsetor: dadosSubsetor.map(d => ({ name: d.name, value: d.value, pct: d.pct, custoPorTon: d.custoPorTon, fill: d.fill })),
+                  },
                 });
               }}
               className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"

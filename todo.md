@@ -1005,3 +1005,8 @@
   - Dados de abril/26 corrigidos no banco (lancamento_custo movido para conta 6)
 - [x] Verificar se a correção afeta os totais dos relatórios corretamente
   - Totais batem: Plano de Custo e Setores ambos R$ 2.771.022 para abril/26
+
+## PDF Apuração de Custo - Gráficos Donut nas páginas 2 e 3
+- [x] 2ª página: Gráfico "Distribuição por Plano de Contas" (donut, sem legenda, rótulos com nome/valor/R$/t/%)
+- [x] 3ª página: Gráfico "Distribuição por Subsetor" (donut, sem legenda, rótulos com nome/valor/R$/t/%)
+- [x] Dados ordenados por valor decrescente

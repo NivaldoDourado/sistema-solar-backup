@@ -291,6 +291,14 @@ export interface RelatorioSecao {
   }>;
 }
 
+export interface DonutChartItem {
+  name: string;
+  value: number;
+  pct: number;
+  custoPorTon: number;
+  fill: string;
+}
+
 export interface RelatorioExportOptions {
   titulo: string;
   periodo: string;
@@ -298,6 +306,11 @@ export interface RelatorioExportOptions {
   kpis: RelatorioKPI[];
   secoes: RelatorioSecao[];
   filename: string;
+  /** Dados opcionais para gráficos donut em páginas extras */
+  graficosDonut?: {
+    planoContas?: DonutChartItem[];
+    subsetor?: DonutChartItem[];
+  };
 }
 
 // ── Excel ─────────────────────────────────────────────────────────────────────
@@ -521,5 +534,185 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     },
   });
 
+  // ── Páginas extras com gráficos donut ──────────────────────────────────────
+  if (opts.graficosDonut) {
+    if (opts.graficosDonut.planoContas && opts.graficosDonut.planoContas.length > 0) {
+      drawDonutPage(doc, opts.graficosDonut.planoContas, "Distribuição por Plano de Contas", opts.periodo);
+    }
+    if (opts.graficosDonut.subsetor && opts.graficosDonut.subsetor.length > 0) {
+      drawDonutPage(doc, opts.graficosDonut.subsetor, "Distribuição por Subsetor", opts.periodo);
+    }
+  }
+
+  // Atualizar rodapé com total de páginas correto
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, doc.internal.pageSize.getHeight() - 12, pageWidth, 12, "F");
+    doc.setFontSize(6.5); doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
+    doc.text(`Página ${i} de ${totalPages}`, pageWidth - 28, doc.internal.pageSize.getHeight() - 7);
+    doc.text(SYSTEM_NAME_LINE1, 12, doc.internal.pageSize.getHeight() - 7);
+  }
+
   doc.save(`${filename}.pdf`);
+}
+
+// ── Função auxiliar: desenhar página de gráfico donut ──────────────────────────
+function drawDonutPage(
+  doc: jsPDF,
+  data: DonutChartItem[],
+  titulo: string,
+  periodo: string
+) {
+  doc.addPage();
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+  const _pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+
+  // Cabeçalho
+  let curY = 12;
+  doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+  doc.text(SYSTEM_NAME_LINE1, 10, curY); curY += 4;
+  doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(SYSTEM_NAME_LINE2, 10, curY); curY += 5;
+
+  doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+  doc.text(titulo, pageWidth / 2, curY, { align: "center" }); curY += 4;
+  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(80, 80, 80);
+  doc.text(`Período: ${periodo}`, pageWidth / 2, curY, { align: "center" }); curY += 8;
+
+  // Parâmetros do donut
+  const centerX = pageWidth / 2;
+  const centerY = curY + 50;
+  const outerRadius = 42;
+  const innerRadius = 20;
+
+  // Calcular total
+  const total = data.reduce((s, d) => s + d.value, 0);
+
+  // Desenhar fatias usando lines() do jsPDF (aproximação poligonal)
+  let startAngle = -Math.PI / 2; // começar do topo
+
+  for (const item of data) {
+    const sliceAngle = (item.value / total) * 2 * Math.PI;
+    if (sliceAngle < 0.001) { startAngle += sliceAngle; continue; } // pular fatias minúsculas
+
+    const color = hexToRgb(item.fill);
+    doc.setFillColor(color.r, color.g, color.b);
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.3);
+
+    // Criar path da fatia (arco externo + arco interno reverso)
+    const segments = Math.max(16, Math.ceil(Math.abs(sliceAngle) / (Math.PI / 40)));
+    const points: [number, number][] = [];
+
+    // Arco externo (sentido horário)
+    for (let i = 0; i <= segments; i++) {
+      const angle = startAngle + (sliceAngle * i) / segments;
+      points.push([
+        centerX + outerRadius * Math.cos(angle),
+        centerY + outerRadius * Math.sin(angle),
+      ]);
+    }
+    // Arco interno (sentido anti-horário)
+    for (let i = segments; i >= 0; i--) {
+      const angle = startAngle + (sliceAngle * i) / segments;
+      points.push([
+        centerX + innerRadius * Math.cos(angle),
+        centerY + innerRadius * Math.sin(angle),
+      ]);
+    }
+
+    // Desenhar o polígono usando lines()
+    if (points.length > 1) {
+      const linesArr = points.slice(1).map((p, idx) => [
+        p[0] - points[idx][0],
+        p[1] - points[idx][1],
+      ]);
+      doc.lines(linesArr, points[0][0], points[0][1], [1, 1], "FD", true);
+    }
+
+    startAngle += sliceAngle;
+  }
+
+  // Centro branco (buraco do donut)
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(255, 255, 255);
+  doc.circle(centerX, centerY, innerRadius, "F");
+
+  // Texto central
+  doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+  doc.text("Total", centerX, centerY - 2, { align: "center" });
+  doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 30, 30);
+  doc.text(`R$ ${fmtBR(total)}`, centerX, centerY + 3, { align: "center" });
+
+  // ── Tabela de legenda abaixo do gráfico ────────────────────────────────────
+  const tableStartY = centerY + outerRadius + 10;
+
+  // Colunas: cor, nome, valor, R$/t, %
+  const colWidths = [8, 62, 35, 25, 18];
+  const tableX = 10;
+  const rowH = 5.2;
+
+  // Header
+  doc.setFillColor(15, 50, 120);
+  doc.rect(tableX, tableStartY, colWidths.reduce((a, b) => a + b, 0), rowH, "F");
+  doc.setFontSize(5.8); doc.setFont("helvetica", "bold"); doc.setTextColor(255, 255, 255);
+  let hx = tableX;
+  doc.text("", hx + 2, tableStartY + 3.5); hx += colWidths[0];
+  doc.text("Conta / Subsetor", hx + 2, tableStartY + 3.5); hx += colWidths[1];
+  doc.text("Valor Total (R$)", hx + 2, tableStartY + 3.5); hx += colWidths[2];
+  doc.text("R$/t", hx + 2, tableStartY + 3.5); hx += colWidths[3];
+  doc.text("%", hx + 2, tableStartY + 3.5);
+
+  // Linhas de dados
+  let rowY = tableStartY + rowH;
+  const maxRows = Math.min(data.length, 28); // limitar para caber na página
+  for (let i = 0; i < maxRows; i++) {
+    const item = data[i];
+    const isAlt = i % 2 === 0;
+
+    if (isAlt) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(tableX, rowY, colWidths.reduce((a, b) => a + b, 0), rowH, "F");
+    }
+
+    // Quadrado de cor
+    const color = hexToRgb(item.fill);
+    doc.setFillColor(color.r, color.g, color.b);
+    doc.rect(tableX + 2, rowY + 1.3, 3, 2.8, "F");
+
+    // Textos
+    doc.setFontSize(5.5); doc.setFont("helvetica", "normal"); doc.setTextColor(30, 30, 30);
+    let cx = tableX + colWidths[0];
+    const nameText = item.name.length > 34 ? item.name.substring(0, 32) + "..." : item.name;
+    doc.text(nameText, cx + 2, rowY + 3.5); cx += colWidths[1];
+    doc.text(`R$ ${fmtBR(item.value)}`, cx + 2, rowY + 3.5); cx += colWidths[2];
+    doc.text(item.custoPorTon > 0 ? `R$ ${fmtBR(item.custoPorTon)}` : "-", cx + 2, rowY + 3.5); cx += colWidths[3];
+    doc.text(`${fmtBR(item.pct)}%`, cx + 2, rowY + 3.5);
+
+    rowY += rowH;
+  }
+
+  // Linha de total
+  doc.setFillColor(220, 230, 245);
+  doc.rect(tableX, rowY, colWidths.reduce((a, b) => a + b, 0), rowH, "F");
+  doc.setFontSize(5.8); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 50, 120);
+  let tx = tableX + colWidths[0];
+  doc.text("TOTAL", tx + 2, rowY + 3.5); tx += colWidths[1];
+  doc.text(`R$ ${fmtBR(total)}`, tx + 2, rowY + 3.5); tx += colWidths[2];
+  doc.text("", tx + 2, rowY + 3.5); tx += colWidths[3];
+  doc.text("100,00%", tx + 2, rowY + 3.5);
+}
+
+// ── Helpers para gráficos donut ──────────────────────────────────────────────────
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+    : { r: 100, g: 100, b: 100 };
+}
+
+function fmtBR(value: number): string {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
