@@ -2037,7 +2037,7 @@ export const appRouter = router({
 
         // Buscar IDs dos grupos de perfuratrizes (hidráulicas e pneumáticas)
         const gruposPerf = await db
-          .select({ id: gruposDeEquipamentos.id })
+          .select({ id: gruposDeEquipamentos.id, nome: gruposDeEquipamentos.nome })
           .from(gruposDeEquipamentos)
           .where(
             or(
@@ -2047,7 +2047,9 @@ export const appRouter = router({
               like(gruposDeEquipamentos.nome, '%PERFURATRIZES%PNEUM%'),
             )
           );
-        const gruposIds = gruposPerf.map(g => g.id);
+        // Excluir grupo MARTELOS PERFURATRIZES HIDRÁULICAS
+        const gruposFiltrados = gruposPerf.filter(g => !g.nome.toUpperCase().includes('MARTELO'));
+        const gruposIds = gruposFiltrados.map(g => g.id);
 
         // Buscar IDs dos equipamentos pertencentes a esses grupos
         let equipIds: number[] = [];

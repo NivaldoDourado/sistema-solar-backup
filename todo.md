@@ -1100,3 +1100,6 @@
 - [x] Frontend mobile: listar equipamentos com produção e % no card mobile
 - [x] Atualizar exportação Excel/WhatsApp com dados por equipamento
 - [x] Testar e validar - 166 testes passando, 0 erros TypeScript
+
+## Produção de Perfuração - Excluir MARTELOS PERFURATRIZES HIDRÁULICAS
+- [x] Ajustar filtro para excluir grupo MARTELOS, mantendo apenas PERFURATRIZES HIDRAULICAS e PNEUMÁTICAS
