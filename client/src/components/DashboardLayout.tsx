@@ -92,13 +92,13 @@ export default function DashboardLayout({
   // Definir itens do menu com controle de acesso
   // Itens de custo agrupados sob "Apropriação de Custo"
   // Organizados em subgrupos: Lançamentos (abril/26+), Apuração, Relatórios, Legado
-  const custoSubItems: Array<{ icon?: any; label: string; path?: string; module?: "custos"; separator?: boolean }> = [
-    // --- Lançamentos (abril/26 em diante) ---
-    { label: "Lançamentos", separator: true },
-    { icon: FileUp, label: "Despesas de Equipamentos", path: "/import-despesas", module: "custos" as const },
-    { icon: FileUp, label: "Fluxo Realizado", path: "/import-fluxo", module: "custos" as const },
-    { icon: Users, label: "Salários Operacionais", path: "/lancamento-salarios", module: "custos" as const },
-    { icon: Receipt, label: "Impostos e Tributos", path: "/lancamento-impostos", module: "custos" as const },
+  const custoSubItems: Array<{ icon?: any; label: string; path?: string; module?: "custos"; separator?: boolean; requireConsultoria?: boolean }> = [
+    // --- Lançamentos (abril/26 em diante) --- somente Consultoria
+    { label: "Lançamentos", separator: true, requireConsultoria: true },
+    { icon: FileUp, label: "Despesas de Equipamentos", path: "/import-despesas", module: "custos" as const, requireConsultoria: true },
+    { icon: FileUp, label: "Fluxo Realizado", path: "/import-fluxo", module: "custos" as const, requireConsultoria: true },
+    { icon: Users, label: "Salários Operacionais", path: "/lancamento-salarios", module: "custos" as const, requireConsultoria: true },
+    { icon: Receipt, label: "Impostos e Tributos", path: "/lancamento-impostos", module: "custos" as const, requireConsultoria: true },
     // --- Apuração ---
     { label: "Apuração", separator: true },
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
@@ -111,10 +111,10 @@ export default function DashboardLayout({
     { icon: BarChart3, label: "Avaliação Global", path: "/avaliacao-global", module: "custos" as const },
     { icon: TrendingUp, label: "Comparativos Históricos", path: "/comparativos-historicos", module: "custos" as const },
     { icon: Activity, label: "Simulação de Custos", path: "/simulacao-custo", module: "custos" as const },
-    // --- Legado (até março/26) ---
-    { label: "Legado (até mar/26)", separator: true },
-    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const },
-    { icon: ClipboardCheck, label: "Revisão Correspondências", path: "/revisao-correspondencias", module: "custos" as const },
+    // --- Legado (até março/26) --- somente Consultoria
+    { label: "Legado (até mar/26)", separator: true, requireConsultoria: true },
+    { icon: FileUp, label: "Importação de Planilha", path: "/importacao-custo", module: "custos" as const, requireConsultoria: true },
+    { icon: ClipboardCheck, label: "Revisão Correspondências", path: "/revisao-correspondencias", module: "custos" as const, requireConsultoria: true },
   ];
 
   const allMenuItems = [
@@ -141,7 +141,12 @@ export default function DashboardLayout({
   const isAdminRole = userRole === "admin" || userRole === "consultoria" || userRole === "diretor";
 
   // Filtrar subitens de Apropriação de Custo
-  const filteredCustoSubItems = custoSubItems.filter(() => hasModuleAccess("custos"));
+  // Blocos "Lançamentos" e "Legado" são restritos ao perfil Consultoria
+  const filteredCustoSubItems = custoSubItems.filter(item => {
+    if (!hasModuleAccess("custos")) return false;
+    if (item.requireConsultoria && userRole !== "consultoria") return false;
+    return true;
+  });
 
   // Filtrar itens do menu baseado nas permissões
   const menuItems = allMenuItems.filter(item => {

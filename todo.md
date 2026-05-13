@@ -1076,3 +1076,8 @@
 - [x] Substituir botões "Excel" isolados por DashboardExportMenu com Excel, PDF e impressão
 - [x] Garantir cabeçalho padronizado (empresa, período) nos relatórios exportados
 - [x] Testar exportação PDF e impressão em ambas as tabelas (Plano de Custo e Setores) - 154 testes passando
+
+## Controle de Acesso: Lançamentos e Legado restritos ao perfil Consultoria
+- [x] Filtrar blocos "Lançamentos" e "Legado" na sidebar para exibir apenas para perfil Consultoria (requireConsultoria flag)
+- [x] Proteger rotas frontend com ProtectedRoute requireRole="consultoria" (redireciona com toast)
+- [x] Testar - 154 testes passando, TypeScript 0 erros

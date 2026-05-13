@@ -7,17 +7,20 @@ import { useAuth } from "@/_core/hooks/useAuth";
 interface ProtectedRouteProps {
   module: Module;
   children: React.ReactNode;
+  /** Se definido, restringe o acesso apenas a usuários com esse perfil */
+  requireRole?: string;
 }
 
 /**
  * Componente que protege rotas verificando se o usuário tem acesso ao módulo.
+ * Opcionalmente, pode exigir um perfil (role) específico.
  * Se não tiver permissão, redireciona ao Dashboard com uma mensagem informativa.
  * Se o usuário ainda não estiver autenticado, renderiza os children normalmente
  * (o DashboardLayout já cuida da tela de login).
  */
-export default function ProtectedRoute({ module, children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ module, children, requireRole }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
-  const { hasModuleAccess } = usePermissions();
+  const { hasModuleAccess, userRole } = usePermissions();
   const [, setLocation] = useLocation();
   const hasRedirected = useRef(false);
 
@@ -46,16 +49,21 @@ export default function ProtectedRoute({ module, children }: ProtectedRouteProps
     outrasParadas: "Outras Paradas",
   };
 
+  const hasAccess = hasModuleAccess(module) && (!requireRole || userRole === requireRole);
+
   useEffect(() => {
     // Só verifica permissão após o carregamento e se o usuário estiver autenticado
-    if (!loading && user && !hasModuleAccess(module) && !hasRedirected.current) {
+    if (!loading && user && !hasAccess && !hasRedirected.current) {
       hasRedirected.current = true;
-      toast.error(`Acesso negado ao módulo "${moduleLabels[module]}". Você não tem permissão para acessar esta página.`, {
+      const reason = requireRole && userRole !== requireRole
+        ? `Acesso restrito ao perfil "${requireRole}". Seu perfil atual é "${userRole}".`
+        : `Acesso negado ao módulo "${moduleLabels[module]}". Você não tem permissão para acessar esta página.`;
+      toast.error(reason, {
         duration: 5000,
       });
       setLocation("/");
     }
-  }, [loading, user, module, hasModuleAccess, setLocation]);
+  }, [loading, user, hasAccess, setLocation]);
 
   // Durante carregamento ou se não autenticado, renderiza normalmente
   // (DashboardLayout cuida da tela de login)
@@ -64,7 +72,7 @@ export default function ProtectedRoute({ module, children }: ProtectedRouteProps
   }
 
   // Se não tem acesso, não renderiza nada (o useEffect vai redirecionar)
-  if (!hasModuleAccess(module)) {
+  if (!hasAccess) {
     return null;
   }
 

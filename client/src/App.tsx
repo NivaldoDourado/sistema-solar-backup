@@ -144,14 +144,14 @@ function Router() {
       </Route>
       <Route path={"/lancamento-salarios"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <LancamentoSalarios />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>
       <Route path={"/lancamento-impostos"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <LancamentoImpostos />
           </ProtectedRoute>
         </DashboardLayout>
@@ -185,7 +185,7 @@ function Router() {
       </Route>
       <Route path={"/importacao-custo"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <ImportacaoCusto />
           </ProtectedRoute>
         </DashboardLayout>
@@ -213,7 +213,7 @@ function Router() {
       </Route>
       <Route path={"/import-despesas"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <ImportDespesas />
           </ProtectedRoute>
         </DashboardLayout>
@@ -227,14 +227,14 @@ function Router() {
       </Route>
       <Route path={"/import-fluxo"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <ImportFluxo />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>
       <Route path={"/revisao-correspondencias"}>
         <DashboardLayout>
-          <ProtectedRoute module="custos">
+          <ProtectedRoute module="custos" requireRole="consultoria">
             <RevisaoCorrespondencias />
           </ProtectedRoute>
         </DashboardLayout>
