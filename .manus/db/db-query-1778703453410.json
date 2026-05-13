@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, mes, ano, producaoTotal, quantidadeVendida, fechado FROM periodo_custo WHERE mes IN (2,3,4) AND ano = 2026 ORDER BY mes DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, mes, ano, producaoTotal, quantidadeVendida, fechado FROM periodo_custo WHERE mes IN (2,3,4) AND ano = 2026 ORDER BY mes DESC;",
+  "rows": [
+    {
+      "id": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "NULL",
+      "fechado": "nao"
+    },
+    {
+      "id": "1",
+      "mes": "3",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "90236.48",
+      "fechado": "nao"
+    },
+    {
+      "id": "30001",
+      "mes": "2",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "72677.47",
+      "fechado": "nao"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmes\tano\tproducaoTotal\tquantidadeVendida\tfechado\n60001\t4\t2026\tNULL\tNULL\tnao\n1\t3\t2026\tNULL\t90236.48\tnao\n30001\t2\t2026\tNULL\t72677.47\tnao\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

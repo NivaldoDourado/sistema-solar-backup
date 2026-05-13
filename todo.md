@@ -1110,3 +1110,8 @@
 - [x] Implementar botão de envio WhatsApp com resumo da simulação
 - [x] Implementar botão de impressão da tela
 - [x] Testar e validar - 166 testes passando, 0 erros TypeScript
+
+## Bug: Histórico Recente na Simulação de Custos com dados faltantes
+- [x] Produção mostrando "0 t" e Custo/t mostrando "—" para todos os meses
+- [x] Custo mostrando R$ 0,00 para abril/2026
+- [x] Corrigido: produção usa quantidadeVendida como fallback, depois Método Caminhões; custo usa lancamento_custo quando custo_setor vazio

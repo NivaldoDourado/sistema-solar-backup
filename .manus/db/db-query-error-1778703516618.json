@@ -1,0 +1,8 @@
+{
+  "query": "SELECT periodoCustoId, producaoTotal FROM rateio_mem_calc WHERE periodoCustoId IN (1, 30001, 60001) GROUP BY periodoCustoId, producaoTotal;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT periodoCustoId, producaoTotal FROM rateio_mem_calc WHERE periodoCustoId IN (1, 30001, 60001) GROUP BY periodoCustoId, producaoTotal;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'us3q3oba5lqqatdwwyhq5k.rateio_mem_calc' doesn't exist"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "query": "SELECT pc.mes, pc.ano, pc.producaoTotal, pc.quantidadeVendida,\n  (SELECT SUM(cs.totalGeral) FROM custo_setor cs WHERE cs.periodoCustoId = pc.id) as custoSetorTotal,\n  (SELECT SUM(lc.valor) FROM lancamento_custo lc WHERE lc.periodoCustoId = pc.id) as lancamentoTotal\nFROM periodo_custo pc\nWHERE (pc.mes IN (2,3,4) AND pc.ano = 2026)\nORDER BY pc.mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, pc.producaoTotal, pc.quantidadeVendida,\n  (SELECT SUM(cs.totalGeral) FROM custo_setor cs WHERE cs.periodoCustoId = pc.id) as custoSetorTotal,\n  (SELECT SUM(lc.valor) FROM lancamento_custo lc WHERE lc.periodoCustoId = pc.id) as lancamentoTotal\nFROM periodo_custo pc\nWHERE (pc.mes IN (2,3,4) AND pc.ano = 2026)\nORDER BY pc.mes;",
+  "rows": [
+    {
+      "mes": "2",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "72677.47",
+      "custoSetorTotal": "2189100.62",
+      "lancamentoTotal": "2265362.98"
+    },
+    {
+      "mes": "3",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "90236.48",
+      "custoSetorTotal": "2837761.29",
+      "lancamentoTotal": "2907476.13"
+    },
+    {
+      "mes": "4",
+      "ano": "2026",
+      "producaoTotal": "NULL",
+      "quantidadeVendida": "NULL",
+      "custoSetorTotal": "NULL",
+      "lancamentoTotal": "1933394.44"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\tproducaoTotal\tquantidadeVendida\tcustoSetorTotal\tlancamentoTotal\n2\t2026\tNULL\t72677.47\t2189100.62\t2265362.98\n3\t2026\tNULL\t90236.48\t2837761.29\t2907476.13\n4\t2026\tNULL\tNULL\tNULL\t1933394.44\n",
+  "stderr": "",
+  "execution_time_ms": 256
+}

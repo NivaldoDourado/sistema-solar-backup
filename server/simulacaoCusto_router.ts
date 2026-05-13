@@ -173,11 +173,52 @@ export const simulacaoCustoRouter = router({
           gruposMap.set(s.grupoNome, atual + parseFloat(String(s.totalGeral || '0')));
         }
 
-        const custoTotal = Array.from(gruposMap.values()).reduce((a, b) => a + b, 0);
+        let custoTotal = Array.from(gruposMap.values()).reduce((a, b) => a + b, 0);
+
+        // Fallback: se custo_setor estiver vazio, usar lancamento_custo
+        if (custoTotal === 0) {
+          const lancamentos = await db
+            .select()
+            .from(lancamentoCusto)
+            .where(eq(lancamentoCusto.periodoCustoId, periodo.id));
+          custoTotal = lancamentos.reduce((acc, l) => acc + parseFloat(String(l.valor || '0')), 0);
+          // Agrupar lancamentos por conta para setores
+          if (custoTotal > 0) {
+            const contasIds = Array.from(new Set(lancamentos.map(l => l.contaCustoId)));
+            const contas = await db.select().from(contaCusto);
+            const contasMap = new Map(contas.map(c => [c.id, c]));
+            const lancGrupoMap = new Map<string, number>();
+            for (const l of lancamentos) {
+              const conta = contasMap.get(l.contaCustoId);
+              const grupoNome = conta?.classificacao === 'custo_variavel' || conta?.classificacao === 'despesa_variavel' ? 'CUSTO VARIÁVEL' : 'CUSTO FIXO';
+              lancGrupoMap.set(grupoNome, (lancGrupoMap.get(grupoNome) || 0) + parseFloat(String(l.valor || '0')));
+            }
+            for (const [gNome, tGeral] of Array.from(lancGrupoMap.entries())) {
+              gruposMap.set(gNome, (gruposMap.get(gNome) || 0) + tGeral);
+            }
+          }
+        }
+
+        // Produção: prioridade 1 = producaoTotal do período, 2 = quantidadeVendida, 3 = Método Caminhões
+        let producaoHist = parseFloat(String(periodo.producaoTotal || '0'));
+        if (producaoHist <= 0) {
+          producaoHist = parseFloat(String(periodo.quantidadeVendida || '0'));
+        }
+        if (producaoHist <= 0) {
+          // Calcular via Método Caminhões (partes diárias)
+          const { dataInicio: hDataInicio, dataFim: hDataFim } = getMesDates(periodo.mes, periodo.ano);
+          const itensHist = itensProducao.filter(item => {
+            if (!servicosCaminhoes.includes(item.servicoId)) return false;
+            const itemDate = item.data instanceof Date ? item.data.toISOString().split('T')[0] : String(item.data).split('T')[0];
+            return itemDate >= hDataInicio && itemDate <= hDataFim;
+          });
+          producaoHist = itensHist.reduce((acc, item) => acc + parseFloat(item.producao || '0'), 0);
+        }
+
         custoSetorHistorico.push({
           mes: periodo.mes,
           ano: periodo.ano,
-          producaoTotal: parseFloat(String(periodo.producaoTotal || '0')),
+          producaoTotal: producaoHist,
           custoTotal,
           setores: Array.from(gruposMap.entries()).map(([grupoNome, totalGeral]) => ({ grupoNome, totalGeral })),
         });

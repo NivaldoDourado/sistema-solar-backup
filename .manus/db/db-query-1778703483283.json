@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  MONTH(pd.data) as mes, \n  YEAR(pd.data) as ano, \n  SUM(pdi.producao) as producaoTotal\nFROM parte_diaria_itens pdi\nINNER JOIN parte_diaria pd ON pdi.parteDiariaId = pd.id\nINNER JOIN servicos s ON pdi.servicoId = s.id\nWHERE (s.nome LIKE '%TRANSPORTE DE PEDRA PARA O BRITADOR%' \n    OR s.nome LIKE '%ALIMENTANDO O BRITADOR PRIMARIO%' \n    OR s.nome LIKE '%TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR%'\n    OR s.nome LIKE '%TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL%')\n  AND pd.data >= '2026-02-01' AND pd.data <= '2026-04-30'\nGROUP BY MONTH(pd.data), YEAR(pd.data)\nORDER BY ano, mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT \n  MONTH(pd.data) as mes, \n  YEAR(pd.data) as ano, \n  SUM(pdi.producao) as producaoTotal\nFROM parte_diaria_itens pdi\nINNER JOIN parte_diaria pd ON pdi.parteDiariaId = pd.id\nINNER JOIN servicos s ON pdi.servicoId = s.id\nWHERE (s.nome LIKE '%TRANSPORTE DE PEDRA PARA O BRITADOR%' \n    OR s.nome LIKE '%ALIMENTANDO O BRITADOR PRIMARIO%' \n    OR s.nome LIKE '%TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR%'\n    OR s.nome LIKE '%TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL%')\n  AND pd.data >= '2026-02-01' AND pd.data <= '2026-04-30'\nGROUP BY MONTH(pd.data), YEAR(pd.data)\nORDER BY ano, mes;",
+  "rows": [
+    {
+      "mes": "4",
+      "ano": "2026",
+      "producaoTotal": "90588.68"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\tproducaoTotal\n4\t2026\t90588.68\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

@@ -1,0 +1,28 @@
+{
+  "query": "SELECT pc.mes, pc.ano, pc.quantidadeVendida,\n  (SELECT SUM(cs.totalGeral) FROM custo_setor cs WHERE cs.periodoCustoId = pc.id) as custoTotal\nFROM periodo_custo pc\nWHERE pc.mes IN (2,3,4) AND pc.ano = 2026\nORDER BY pc.mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, pc.quantidadeVendida,\n  (SELECT SUM(cs.totalGeral) FROM custo_setor cs WHERE cs.periodoCustoId = pc.id) as custoTotal\nFROM periodo_custo pc\nWHERE pc.mes IN (2,3,4) AND pc.ano = 2026\nORDER BY pc.mes;",
+  "rows": [
+    {
+      "mes": "2",
+      "ano": "2026",
+      "quantidadeVendida": "72677.47",
+      "custoTotal": "2189100.62"
+    },
+    {
+      "mes": "3",
+      "ano": "2026",
+      "quantidadeVendida": "90236.48",
+      "custoTotal": "2837761.29"
+    },
+    {
+      "mes": "4",
+      "ano": "2026",
+      "quantidadeVendida": "NULL",
+      "custoTotal": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\tquantidadeVendida\tcustoTotal\n2\t2026\t72677.47\t2189100.62\n3\t2026\t90236.48\t2837761.29\n4\t2026\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}
