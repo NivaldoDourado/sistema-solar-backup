@@ -1086,3 +1086,10 @@
 - [x] Investigar causa raiz: comparar tags no relatório analítico vs tags em item_despesa_importado
 - [x] Corrigir normalização de tags no backend (listarItensDetalhados e consumoPorEquipamento)
 - [x] Testar drill-down para todos os setores - 160 testes passando
+
+## Meta de Custo por Tonelada - Análise de Requisitos para Atingir Meta
+- [x] Backend: procedure analiseMeta com cálculos de 3 cenários (produção, custo, equilibrado)
+- [x] Frontend: card expansível com 3 cenários e tabela detalhada de contas
+- [x] Incluir produção necessária, vendas necessárias e valor máximo por conta
+- [x] Métodos matemáticos: média ponderada 3 meses + raiz quadrada para equilíbrio
+- [x] Testar e validar - 166 testes passando, 0 erros TypeScript

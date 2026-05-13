@@ -321,4 +321,236 @@ export const simulacaoCustoRouter = router({
         })(),
       };
     }),
+
+  // ========================================================
+  // ANÁLISE DE REQUISITOS PARA ATINGIR A META
+  // Calcula produção necessária, vendas necessárias e valor máximo por conta
+  // ========================================================
+  analiseMeta: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .input(z.object({
+      mes: z.number().min(1).max(12),
+      ano: z.number().min(2020),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // 1. Buscar meta atual
+      const [meta] = await db.select().from(metaCustoTonelada).orderBy(desc(metaCustoTonelada.updatedAt)).limit(1);
+      if (!meta) return null;
+      const metaValor = parseFloat(String(meta.valor));
+      if (metaValor <= 0) return null;
+
+      // 2. Buscar últimos 3 meses de histórico
+      const meses3: { mes: number; ano: number }[] = [];
+      let m = input.mes, a = input.ano;
+      for (let i = 0; i < 3; i++) {
+        const prev = mesAnterior(m, a);
+        m = prev.mes;
+        a = prev.ano;
+        meses3.push({ mes: m, ano: a });
+      }
+
+      const periodosAll = await db.select().from(periodoCusto);
+      const periodosHistoricos = meses3
+        .map(p => periodosAll.find(ph => ph.mes === p.mes && ph.ano === p.ano))
+        .filter(Boolean) as typeof periodosAll;
+
+      if (periodosHistoricos.length === 0) return null;
+
+      // 3. Buscar contas de custo ativas
+      const contasAtivas = await db.select().from(contaCusto);
+      const contasMap = new Map(contasAtivas.map(c => [c.id, c]));
+
+      // 4. Buscar lançamentos dos períodos históricos
+      const periodosIds = periodosHistoricos.map(p => p.id);
+      const lancamentos = await db
+        .select()
+        .from(lancamentoCusto)
+        .where(sql`${lancamentoCusto.periodoCustoId} IN (${sql.raw(periodosIds.join(','))})`);
+
+      // 5. Calcular média por conta nos últimos 3 meses
+      type ContaHistorico = {
+        contaCustoId: number;
+        nome: string;
+        divisor: string;
+        classificacao: string;
+        valoresPorPeriodo: number[];
+        media: number;
+        participacao: number; // % do custo total
+      };
+
+      const contaValores = new Map<number, number[]>();
+      for (const lc of lancamentos) {
+        if (!contaValores.has(lc.contaCustoId)) contaValores.set(lc.contaCustoId, []);
+        contaValores.get(lc.contaCustoId)!.push(parseFloat(String(lc.valor || '0')));
+      }
+
+      // Agrupar por período para calcular total por período
+      const totalPorPeriodo = new Map<number, number>();
+      for (const lc of lancamentos) {
+        const atual = totalPorPeriodo.get(lc.periodoCustoId) || 0;
+        totalPorPeriodo.set(lc.periodoCustoId, atual + parseFloat(String(lc.valor || '0')));
+      }
+
+      // Custo total médio dos últimos 3 meses
+      const custosTotais = Array.from(totalPorPeriodo.values());
+      const custoTotalMedio = custosTotais.length > 0
+        ? custosTotais.reduce((a, b) => a + b, 0) / custosTotais.length
+        : 0;
+
+      // Produção média (quantidadeVendida como proxy de produção quando producaoTotal é NULL)
+      const producoesHistoricas = periodosHistoricos
+        .map(p => {
+          const prod = parseFloat(String(p.producaoTotal || '0'));
+          const vendas = parseFloat(String(p.quantidadeVendida || '0'));
+          return prod > 0 ? prod : vendas; // usar vendas como proxy se produção não disponível
+        })
+        .filter(v => v > 0);
+      const producaoMedia = producoesHistoricas.length > 0
+        ? producoesHistoricas.reduce((a, b) => a + b, 0) / producoesHistoricas.length
+        : 0;
+
+      // Vendas médias (toneladas)
+      const vendasHistoricas = periodosHistoricos
+        .map(p => parseFloat(String(p.quantidadeVendida || '0')))
+        .filter(v => v > 0);
+      const vendasMedia = vendasHistoricas.length > 0
+        ? vendasHistoricas.reduce((a, b) => a + b, 0) / vendasHistoricas.length
+        : 0;
+
+      // Relação vendas/produção (para projetar vendas necessárias)
+      const relacaoVendasProducao = producaoMedia > 0 ? vendasMedia / producaoMedia : 1;
+
+      // 6. Calcular participação de cada conta no custo total
+      const contasAnalise: ContaHistorico[] = [];
+      for (const [contaId, valores] of Array.from(contaValores.entries())) {
+        const conta = contasMap.get(contaId);
+        if (!conta) continue;
+        // Média dos valores lançados para esta conta (soma por período / nº períodos)
+        // Agrupar valores por período
+        const lancamentosPorPeriodo = new Map<number, number>();
+        for (const lc of lancamentos.filter(l => l.contaCustoId === contaId)) {
+          const atual = lancamentosPorPeriodo.get(lc.periodoCustoId) || 0;
+          lancamentosPorPeriodo.set(lc.periodoCustoId, atual + parseFloat(String(lc.valor || '0')));
+        }
+        const valoresPeriodo = Array.from(lancamentosPorPeriodo.values());
+        const media = valoresPeriodo.length > 0
+          ? valoresPeriodo.reduce((a, b) => a + b, 0) / valoresPeriodo.length
+          : 0;
+        const participacao = custoTotalMedio > 0 ? (media / custoTotalMedio) * 100 : 0;
+
+        contasAnalise.push({
+          contaCustoId: contaId,
+          nome: conta.nome,
+          divisor: conta.divisor || 'producao',
+          classificacao: conta.classificacao || 'custo_variavel',
+          valoresPorPeriodo: valoresPeriodo,
+          media,
+          participacao,
+        });
+      }
+
+      // Ordenar por média decrescente
+      contasAnalise.sort((a, b) => b.media - a.media);
+
+      // ========================================================
+      // CENÁRIO 1: Produção necessária para atingir a meta
+      // Meta = CustoTotal / Produção → Produção = CustoTotal / Meta
+      // ========================================================
+      const producaoNecessaria = custoTotalMedio / metaValor;
+      const aumentoProducao = producaoMedia > 0
+        ? ((producaoNecessaria - producaoMedia) / producaoMedia) * 100
+        : 0;
+
+      // ========================================================
+      // CENÁRIO 2: Custo máximo total mantendo produção atual
+      // Meta = CustoTotal / Produção → CustoTotal = Meta × Produção
+      // ========================================================
+      const custoTotalMaximo = metaValor * producaoMedia;
+      const reducaoCustoNecessaria = custoTotalMedio > 0
+        ? ((custoTotalMedio - custoTotalMaximo) / custoTotalMedio) * 100
+        : 0;
+
+      // Distribuir o custo máximo proporcionalmente por conta
+      const contasComMeta = contasAnalise.map(conta => {
+        const valorMaximo = custoTotalMaximo * (conta.participacao / 100);
+        const reducaoNecessaria = conta.media > 0
+          ? ((conta.media - valorMaximo) / conta.media) * 100
+          : 0;
+        return {
+          ...conta,
+          valorMaximo: Math.round(valorMaximo * 100) / 100,
+          reducaoNecessaria: Math.round(reducaoNecessaria * 100) / 100,
+        };
+      });
+
+      // ========================================================
+      // CENÁRIO 3: Vendas necessárias
+      // Baseado na relação histórica vendas/produção
+      // ========================================================
+      const vendasNecessarias = producaoNecessaria * relacaoVendasProducao;
+
+      // ========================================================
+      // CENÁRIO COMBINADO: Sugestão equilibrada
+      // Dividir o gap em 50% aumento de produção + 50% redução de custo
+      // ========================================================
+      const custoTonAtual = producaoMedia > 0 ? custoTotalMedio / producaoMedia : 0;
+      const gap = custoTonAtual - metaValor;
+      const gapPercentual = custoTonAtual > 0 ? (gap / custoTonAtual) * 100 : 0;
+
+      // Cenário equilibrado: aumentar produção em X% E reduzir custo em Y%
+      // Para dividir igualmente: nova_producao * meta = custo_reduzido
+      // Se gap = 20%, podemos fazer: +10% produção e -10% custo (aproximação)
+      const fatorEquilibrio = Math.sqrt(custoTonAtual / metaValor); // raiz quadrada para distribuir
+      const producaoEquilibrada = producaoMedia * fatorEquilibrio;
+      const custoEquilibrado = custoTotalMedio / fatorEquilibrio;
+      const aumentoProducaoEquilibrado = producaoMedia > 0
+        ? ((producaoEquilibrada - producaoMedia) / producaoMedia) * 100
+        : 0;
+      const reducaoCustoEquilibrada = custoTotalMedio > 0
+        ? ((custoTotalMedio - custoEquilibrado) / custoTotalMedio) * 100
+        : 0;
+
+      return {
+        meta: metaValor,
+        situacaoAtual: {
+          custoTotalMedio: Math.round(custoTotalMedio * 100) / 100,
+          producaoMedia: Math.round(producaoMedia * 100) / 100,
+          vendasMedia: Math.round(vendasMedia * 100) / 100,
+          custoTonAtual: Math.round(custoTonAtual * 100) / 100,
+          desvioPercentual: Math.round(gapPercentual * 100) / 100,
+          periodosAnalisados: periodosHistoricos.length,
+        },
+        cenario1_producao: {
+          titulo: "Aumentar Produção (manter custos)",
+          producaoNecessaria: Math.round(producaoNecessaria * 100) / 100,
+          aumentoPercentual: Math.round(aumentoProducao * 100) / 100,
+          vendasNecessarias: Math.round(vendasNecessarias * 100) / 100,
+        },
+        cenario2_custo: {
+          titulo: "Reduzir Custos (manter produção)",
+          custoTotalMaximo: Math.round(custoTotalMaximo * 100) / 100,
+          reducaoPercentual: Math.round(reducaoCustoNecessaria * 100) / 100,
+          contasComMeta: contasComMeta.map(c => ({
+            nome: c.nome,
+            divisor: c.divisor,
+            classificacao: c.classificacao,
+            mediaAtual: Math.round(c.media * 100) / 100,
+            valorMaximo: c.valorMaximo,
+            reducaoNecessaria: c.reducaoNecessaria,
+            participacao: Math.round(c.participacao * 100) / 100,
+          })),
+        },
+        cenario3_equilibrado: {
+          titulo: "Cenário Equilibrado (produção + custos)",
+          producaoSugerida: Math.round(producaoEquilibrada * 100) / 100,
+          aumentoProducao: Math.round(aumentoProducaoEquilibrado * 100) / 100,
+          custoTotalSugerido: Math.round(custoEquilibrado * 100) / 100,
+          reducaoCusto: Math.round(reducaoCustoEquilibrada * 100) / 100,
+          vendasSugeridas: Math.round(producaoEquilibrada * relacaoVendasProducao * 100) / 100,
+        },
+      };
+    }),
 });

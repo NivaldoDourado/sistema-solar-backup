@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, Info,
   CheckCircle2, Activity, BarChart3, Fuel, Factory,
-  Calendar, Target, ArrowRight, Pencil, Save, X, ShieldAlert
+  Calendar, Target, ArrowRight, Pencil, Save, X, ShieldAlert,
+  ChevronDown, ChevronUp, Scale, Truck, DollarSign, Layers
 } from "lucide-react";
 
 const MESES = [
@@ -58,6 +59,12 @@ export default function SimulacaoCusto() {
       toast.error("Não foi possível salvar a meta.");
     },
   });
+
+  const [mostrarAnalise, setMostrarAnalise] = useState(false);
+  const { data: analiseMeta } = trpc.simulacaoCusto.analiseMeta.useQuery(
+    { mes, ano },
+    { enabled: metaData?.valor != null }
+  );
 
   const metaValor = metaData?.valor ?? null;
   const metaUltrapassada = metaValor !== null && simulacao && simulacao.custoTonProjetado > 0 && simulacao.custoTonProjetado > metaValor;
@@ -239,6 +246,167 @@ export default function SimulacaoCusto() {
               )}
             </CardContent>
           </Card>
+
+          {/* Análise de Requisitos para Atingir a Meta */}
+          {metaValor !== null && analiseMeta && (
+            <Card className="border-primary/30">
+              <CardHeader className="pb-3 cursor-pointer" onClick={() => setMostrarAnalise(!mostrarAnalise)}>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary" />
+                  O que é necessário para atingir a meta de {formatMoney(analiseMeta.meta)}/t
+                  <Badge variant={analiseMeta.situacaoAtual.desvioPercentual > 0 ? "destructive" : "default"} className="ml-2 text-xs">
+                    {analiseMeta.situacaoAtual.desvioPercentual > 0 ? "+" : ""}{formatPct(analiseMeta.situacaoAtual.desvioPercentual)} acima
+                  </Badge>
+                  <span className="ml-auto">
+                    {mostrarAnalise ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </span>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Análise baseada na média dos últimos {analiseMeta.situacaoAtual.periodosAnalisados} meses — Custo médio: {formatMoney(analiseMeta.situacaoAtual.custoTotalMedio)} | Produção média: {formatTon(analiseMeta.situacaoAtual.producaoMedia)} | Custo/t atual: {formatMoney(analiseMeta.situacaoAtual.custoTonAtual)}/t
+                </p>
+              </CardHeader>
+              {mostrarAnalise && (
+                <CardContent className="space-y-6">
+                  {/* Cenário 1: Aumentar Produção */}
+                  <div className="p-4 rounded-lg border bg-blue-50/50 border-blue-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Factory className="h-4 w-4 text-blue-600" />
+                      <h4 className="font-semibold text-sm text-blue-900">Cenário 1: Aumentar Produção (mantendo custos atuais)</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Produção Necessária</p>
+                        <p className="font-mono font-bold text-lg text-blue-700">{formatTon(analiseMeta.cenario1_producao.producaoNecessaria)}</p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {analiseMeta.cenario1_producao.aumentoPercentual > 0 ? "+" : ""}{formatPct(analiseMeta.cenario1_producao.aumentoPercentual)} vs média atual
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Vendas Necessárias</p>
+                        <p className="font-mono font-bold text-lg text-blue-700">{formatTon(analiseMeta.cenario1_producao.vendasNecessarias)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">baseado na relação histórica</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Custo Total (mantido)</p>
+                        <p className="font-mono font-bold text-lg">{formatMoney(analiseMeta.situacaoAtual.custoTotalMedio)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">sem alteração</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cenário 2: Reduzir Custos */}
+                  <div className="p-4 rounded-lg border bg-emerald-50/50 border-emerald-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <DollarSign className="h-4 w-4 text-emerald-600" />
+                      <h4 className="font-semibold text-sm text-emerald-900">Cenário 2: Reduzir Custos (mantendo produção atual)</h4>
+                      <Badge variant="outline" className="ml-auto text-xs">
+                        Redução necessária: {formatPct(analiseMeta.cenario2_custo.reducaoPercentual)}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Custo Total Máximo</p>
+                        <p className="font-mono font-bold text-lg text-emerald-700">{formatMoney(analiseMeta.cenario2_custo.custoTotalMaximo)}</p>
+                        <p className="text-xs text-emerald-600 mt-1">para atingir {formatMoney(analiseMeta.meta)}/t</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Produção (mantida)</p>
+                        <p className="font-mono font-bold text-lg">{formatTon(analiseMeta.situacaoAtual.producaoMedia)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">sem alteração</p>
+                      </div>
+                    </div>
+
+                    {/* Tabela de contas com valor máximo */}
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-emerald-800 mb-2 flex items-center gap-1">
+                        <Layers className="h-3.5 w-3.5" />
+                        Valor máximo por conta do Plano de Contas:
+                      </p>
+                      <div className="bg-white rounded-lg border overflow-hidden">
+                        <div className="grid grid-cols-12 gap-1 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b bg-muted/30">
+                          <div className="col-span-4">Conta</div>
+                          <div className="col-span-2 text-right">Média Atual</div>
+                          <div className="col-span-2 text-right">Máximo Meta</div>
+                          <div className="col-span-2 text-right">Redução</div>
+                          <div className="col-span-2 text-right">Participação</div>
+                        </div>
+                        {analiseMeta.cenario2_custo.contasComMeta.map((conta, i) => (
+                          <div
+                            key={i}
+                            className={`grid grid-cols-12 gap-1 px-3 py-2 text-xs items-center ${i % 2 === 0 ? 'bg-white' : 'bg-muted/20'} hover:bg-muted/40`}
+                          >
+                            <div className="col-span-4 font-medium truncate" title={conta.nome}>{conta.nome}</div>
+                            <div className="col-span-2 text-right font-mono">{formatMoney(conta.mediaAtual)}</div>
+                            <div className="col-span-2 text-right font-mono font-semibold text-emerald-700">{formatMoney(conta.valorMaximo)}</div>
+                            <div className="col-span-2 text-right">
+                              <span className={`font-mono ${conta.reducaoNecessaria > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                {conta.reducaoNecessaria > 0 ? "-" : ""}{formatPct(Math.abs(conta.reducaoNecessaria))}
+                              </span>
+                            </div>
+                            <div className="col-span-2 text-right font-mono text-muted-foreground">{formatPct(conta.participacao)}</div>
+                          </div>
+                        ))}
+                        {/* Total */}
+                        <div className="grid grid-cols-12 gap-1 px-3 py-2.5 text-xs font-bold border-t bg-muted/50">
+                          <div className="col-span-4">TOTAL</div>
+                          <div className="col-span-2 text-right font-mono">{formatMoney(analiseMeta.situacaoAtual.custoTotalMedio)}</div>
+                          <div className="col-span-2 text-right font-mono text-emerald-700">{formatMoney(analiseMeta.cenario2_custo.custoTotalMaximo)}</div>
+                          <div className="col-span-2 text-right font-mono text-red-600">-{formatPct(analiseMeta.cenario2_custo.reducaoPercentual)}</div>
+                          <div className="col-span-2 text-right font-mono">100,0%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cenário 3: Equilibrado */}
+                  <div className="p-4 rounded-lg border bg-purple-50/50 border-purple-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Target className="h-4 w-4 text-purple-600" />
+                      <h4 className="font-semibold text-sm text-purple-900">Cenário 3: Equilibrado (aumentar produção + reduzir custos)</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Distribuição proporcional do esforço entre aumento de produção e redução de custos (método da raiz quadrada).
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Produção Sugerida</p>
+                        <p className="font-mono font-bold text-lg text-purple-700">{formatTon(analiseMeta.cenario3_equilibrado.producaoSugerida)}</p>
+                        <p className="text-xs text-purple-600 mt-1">
+                          +{formatPct(analiseMeta.cenario3_equilibrado.aumentoProducao)} vs atual
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Custo Total Sugerido</p>
+                        <p className="font-mono font-bold text-lg text-purple-700">{formatMoney(analiseMeta.cenario3_equilibrado.custoTotalSugerido)}</p>
+                        <p className="text-xs text-purple-600 mt-1">
+                          -{formatPct(analiseMeta.cenario3_equilibrado.reducaoCusto)} vs atual
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Vendas Sugeridas</p>
+                        <p className="font-mono font-bold text-lg text-purple-700">{formatTon(analiseMeta.cenario3_equilibrado.vendasSugeridas)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">baseado na relação histórica</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Nota metodológica */}
+                  <div className="p-3 rounded-lg bg-muted/30 border-dashed border">
+                    <p className="text-xs text-muted-foreground flex items-start gap-2">
+                      <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Metodologia:</strong> Os cenários são calculados com base na média ponderada dos últimos 3 meses.
+                        O Cenário 1 mantém o custo total e calcula a produção necessária (Produção = Custo / Meta).
+                        O Cenário 2 mantém a produção e distribui o custo máximo proporcionalmente pela participação histórica de cada conta.
+                        O Cenário 3 usa a raiz quadrada do desvio para equilibrar o esforço entre produção e custo.
+                        As vendas são estimadas pela relação histórica vendas/produção.
+                      </span>
+                    </p>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
 
           {/* Progresso do período */}
           <Card>

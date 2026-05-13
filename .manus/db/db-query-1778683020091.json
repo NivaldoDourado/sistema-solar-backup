@@ -1,0 +1,265 @@
+{
+  "query": "SELECT lc.periodoCustoId, c.nome AS conta, SUM(CAST(lc.valor AS DECIMAL(12,2))) AS totalValor FROM lancamento_custo lc JOIN conta_custo c ON lc.contaCustoId = c.id WHERE lc.periodoCustoId IN (1, 30001, 30002) GROUP BY lc.periodoCustoId, c.nome ORDER BY lc.periodoCustoId, totalValor DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.periodoCustoId, c.nome AS conta, SUM(CAST(lc.valor AS DECIMAL(12,2))) AS totalValor FROM lancamento_custo lc JOIN conta_custo c ON lc.contaCustoId = c.id WHERE lc.periodoCustoId IN (1, 30001, 30002) GROUP BY lc.periodoCustoId, c.nome ORDER BY lc.periodoCustoId, totalValor DESC;",
+  "rows": [
+    {
+      "periodoCustoId": "1",
+      "conta": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "totalValor": "814756.44"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Impostos, CEFEM e Outras Taxas",
+      "totalValor": "360677.47"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Combustível",
+      "totalValor": "300587.26"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Peças de Desgaste",
+      "totalValor": "189315.42"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Peças de Reposição / Itens de Consumo",
+      "totalValor": "172159.71"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Sal.Oper./Enc. Oper.",
+      "totalValor": "159521.58"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Energia Elétrica",
+      "totalValor": "147079.94"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Explosivos e Acessórios",
+      "totalValor": "129806.49"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Despesas Administrativas",
+      "totalValor": "117508.81"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Frota/Man.Pat./Seg./Out.",
+      "totalValor": "113863.47"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Consultorias Especializadas",
+      "totalValor": "95745.65"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Despesas Indiretas",
+      "totalValor": "69714.82"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Comissão de Vendas",
+      "totalValor": "61009.00"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Equipamentos de Apoio",
+      "totalValor": "49704.54"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Lubrificantes",
+      "totalValor": "45208.53"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Outras Despesas dos Equipamentos",
+      "totalValor": "42842.89"
+    },
+    {
+      "periodoCustoId": "1",
+      "conta": "Outras Despesas de Setores",
+      "totalValor": "37974.11"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "totalValor": "699918.07"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Impostos, CEFEM e Outras Taxas",
+      "totalValor": "268531.29"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Combustível",
+      "totalValor": "241099.75"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Peças de Reposição / Itens de Consumo",
+      "totalValor": "178044.22"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Sal.Oper./Enc. Oper.",
+      "totalValor": "141186.31"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Explosivos e Acessórios",
+      "totalValor": "120951.87"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Consultorias Especializadas",
+      "totalValor": "111657.16"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Peças de Desgaste",
+      "totalValor": "83415.84"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Despesas Indiretas",
+      "totalValor": "76262.37"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Despesas Administrativas",
+      "totalValor": "71482.70"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Energia Elétrica",
+      "totalValor": "68163.41"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Outras Despesas dos Equipamentos",
+      "totalValor": "49223.24"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Lubrificantes",
+      "totalValor": "42607.18"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Outras Despesas de Setores",
+      "totalValor": "42150.41"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Comissão de Vendas",
+      "totalValor": "34747.00"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Equipamentos de Apoio",
+      "totalValor": "18077.18"
+    },
+    {
+      "periodoCustoId": "30001",
+      "conta": "Frota/Man.Pat./Seg./Out.",
+      "totalValor": "17844.98"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "totalValor": "624948.58"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Impostos, CEFEM e Outras Taxas",
+      "totalValor": "400545.99"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Despesas Indiretas",
+      "totalValor": "319788.47"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Combustível",
+      "totalValor": "255862.84"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Peças de Desgaste",
+      "totalValor": "195824.94"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Sal.Oper./Enc. Oper.",
+      "totalValor": "175514.33"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Peças de Reposição / Itens de Consumo",
+      "totalValor": "146120.18"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Explosivos e Acessórios",
+      "totalValor": "143419.70"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Despesas Administrativas",
+      "totalValor": "127714.61"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Energia Elétrica",
+      "totalValor": "107276.25"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Consultorias Especializadas",
+      "totalValor": "96052.21"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Lubrificantes",
+      "totalValor": "51234.92"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Outras Despesas dos Equipamentos",
+      "totalValor": "33867.54"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Equipamentos de Apoio",
+      "totalValor": "31784.34"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Outras Despesas de Setores",
+      "totalValor": "15324.10"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Comissão de Vendas",
+      "totalValor": "14084.00"
+    },
+    {
+      "periodoCustoId": "30002",
+      "conta": "Frota/Man.Pat./Seg./Out.",
+      "totalValor": "4668.34"
+    }
+  ],
+  "messages": [],
+  "stdout": "periodoCustoId\tconta\ttotalValor\n1\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t814756.44\n1\tImpostos, CEFEM e Outras Taxas\t360677.47\n1\tCombustível\t300587.26\n1\tPeças de Desgaste\t189315.42\n1\tPeças de Reposição / Itens de Consumo\t172159.71\n1\tSal.Oper./Enc. Oper.\t159521.58\n1\tEnergia Elétrica\t147079.94\n1\tExplosivos e Acessórios\t129806.49\n1\tDespesas Administrativas\t117508.81\n1\tFrota/Man.Pat./Seg./Out.\t113863.47\n1\tConsultorias Especializadas\t95745.65\n1\tDespesas Indiretas\t69714.82\n1\tComissão de Vendas\t61009.00\n1\tEquipamentos de Apoio\t49704.54\n1\tLubrificantes\t45208.53\n1\tOutras Despesas dos Equipamentos\t42842.89\n1\tOutras Despesas de Setores\t37974.11\n30001\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t699918.07\n30001\tImpostos, CEFEM e Outras Taxas\t268531.29\n30001\tCombustível\t241099.75\n30001\tPeças de Reposição / Itens de Consumo\t178044.22\n30001\tSal.Oper./Enc. Oper.\t141186.31\n30001\tExplosivos e Acessórios\t120951.87\n30001\tConsultorias Especializadas\t111657.16\n30001\tPeças de Desgaste\t83415.84\n30001\tDespesas Indiretas\t76262.37\n30001\tDespesas Administrativas\t71482.70\n30001\tEnergia Elétrica\t68163.41\n30001\tOutras Despesas dos Equipamentos\t49223.24\n30001\tLubrificantes\t42607.18\n30001\tOutras Despesas de Setores\t42150.41\n30001\tComissão de Vendas\t34747.00\n30001\tEquipamentos de Apoio\t18077.18\n30001\tFrota/Man.Pat./Seg./Out.\t17844.98\n30002\tSal.Adm./Almox./Ofic./Serv.Aux./Encargos\t624948.58\n30002\tImpostos, CEFEM e Outras Taxas\t400545.99\n30002\tDespesas Indiretas\t319788.47\n30002\tCombustível\t255862.84\n30002\tPeças de Desgaste\t195824.94\n30002\tSal.Oper./Enc. Oper.\t175514.33\n30002\tPeças de Reposição / Itens de Consumo\t146120.18\n30002\tExplosivos e Acessórios\t143419.70\n30002\tDespesas Administrativas\t127714.61\n30002\tEnergia Elétrica\t107276.25\n30002\tConsultorias Especializadas\t96052.21\n30002\tLubrificantes\t51234.92\n30002\tOutras Despesas dos Equipamentos\t33867.54\n30002\tEquipamentos de Apoio\t31784.34\n30002\tOutras Despesas de Setores\t15324.10\n30002\tComissão de Vendas\t14084.00\n30002\tFrota/Man.Pat./Seg./Out.\t4668.34\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

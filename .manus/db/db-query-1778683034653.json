@@ -1,0 +1,17 @@
+{
+  "query": "SELECT * FROM meta_custo_tonelada ORDER BY updatedAt DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT * FROM meta_custo_tonelada ORDER BY updatedAt DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "1",
+      "valor": "29.00",
+      "userId": "1",
+      "createdAt": "2026-05-06 14:41:50",
+      "updatedAt": "2026-05-13 13:44:37"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tvalor\tuserId\tcreatedAt\tupdatedAt\n1\t29.00\t1\t2026-05-06 14:41:50\t2026-05-13 13:44:37\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}
