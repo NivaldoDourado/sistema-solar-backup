@@ -1093,3 +1093,10 @@
 - [x] Incluir produção necessária, vendas necessárias e valor máximo por conta
 - [x] Métodos matemáticos: média ponderada 3 meses + raiz quadrada para equilíbrio
 - [x] Testar e validar - 166 testes passando, 0 erros TypeScript
+
+## Card Produção de Perfuração - Detalhamento por Equipamento
+- [x] Backend: retornar produção por equipamento (nome, furos, metros, percentual)
+- [x] Frontend web: listar equipamentos com produção e % no card
+- [x] Frontend mobile: listar equipamentos com produção e % no card mobile
+- [x] Atualizar exportação Excel/WhatsApp com dados por equipamento
+- [x] Testar e validar - 166 testes passando, 0 erros TypeScript

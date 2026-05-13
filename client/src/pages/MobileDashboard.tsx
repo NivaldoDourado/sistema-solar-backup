@@ -1089,6 +1089,21 @@ export default function MobileDashboard() {
             <p className="text-amber-400/70 text-xs">{formatNumber(totalFuros)} furos</p>
             <p className="text-amber-400/70 text-xs">{formatNumber(totalMetrosPerfurados, 2)} m perfurados</p>
           </div>
+          {/* Detalhamento por equipamento */}
+          {producaoPerfuracao.data?.porEquipamento && producaoPerfuracao.data.porEquipamento.length > 0 && (
+            <div className="mt-3 space-y-1.5 border-t border-amber-700/50 pt-3">
+              {producaoPerfuracao.data.porEquipamento.map((equip, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs">
+                  <span className="text-amber-300 font-medium truncate mr-2">{equip.nome}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-amber-400/70">{formatNumber(equip.furos)} furos</span>
+                    <span className="font-semibold text-white">{formatNumber(equip.producao, 2)}</span>
+                    <span className="text-amber-500 w-12 text-right">{formatNumber(equip.percentual, 1)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         )}
       </div>

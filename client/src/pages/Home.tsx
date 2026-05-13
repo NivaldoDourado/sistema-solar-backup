@@ -438,7 +438,7 @@ export default function Home() {
         label: 'Produção de Perfuração',
         temDados: totalPerfuracao > 0,
         mensagem: totalPerfuracao > 0
-          ? `⛏️ *Produção de Perfuração*\nTotal: ${fmt(totalPerfuracao)} m\nFuros: ${fmtInt(totalFuros)} | Metros: ${fmt(totalMetrosPerfurados)} m\n`
+          ? `⛏️ *Produção de Perfuração*\nTotal: ${fmt(totalPerfuracao)} m\nFuros: ${fmtInt(totalFuros)} | Metros: ${fmt(totalMetrosPerfurados)} m\n${(producaoPerfuracao?.porEquipamento || []).map(e => `  • ${e.nome}: ${fmt(e.producao)} m (${fmtNum(e.percentual, 1)}%)`).join('\n')}\n`
           : undefined,
       },
       {
@@ -1861,9 +1861,13 @@ export default function Home() {
                     { indicador: 'Total (m)', valor: fmtNum(totalPerfuracao) },
                     { indicador: 'Furos', valor: fmtNum(totalFuros, 0) },
                     { indicador: 'Metros Perfurados', valor: fmtNum(totalMetrosPerfurados) },
+                    ...((producaoPerfuracao?.porEquipamento || []).map(e => ({
+                      indicador: e.nome,
+                      valor: `${fmtNum(e.producao)} m (${fmtNum(e.percentual, 1)}%)`,
+                    }))),
                   ],
                 }}
-                whatsappMessage={totalPerfuracao > 0 ? `⛏️ *Produção de Perfuração*\nTotal: ${fmtNum(totalPerfuracao)} m\nFuros: ${fmtNum(totalFuros, 0)} | Metros: ${fmtNum(totalMetrosPerfurados)} m` : undefined}
+                whatsappMessage={totalPerfuracao > 0 ? `⛏️ *Produção de Perfuração*\nTotal: ${fmtNum(totalPerfuracao)} m\nFuros: ${fmtNum(totalFuros, 0)} | Metros: ${fmtNum(totalMetrosPerfurados)} m\n${(producaoPerfuracao?.porEquipamento || []).map(e => `  • ${e.nome}: ${fmtNum(e.producao)} m (${fmtNum(e.percentual, 1)}%)`).join('\n')}` : undefined}
                 whatsappDestinatarios={(destinatariosWpp || []).filter(d => d.ativo === 'sim').map(d => d.telefone)}
               />
               <Settings2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -1881,6 +1885,21 @@ export default function Home() {
                 {fmtNum(totalMetrosPerfurados)} m perfurados
               </p>
             </div>
+            {/* Detalhamento por equipamento */}
+            {producaoPerfuracao?.porEquipamento && producaoPerfuracao.porEquipamento.length > 0 && (
+              <div className="mt-4 space-y-1.5">
+                {producaoPerfuracao.porEquipamento.map((equip, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span className="text-amber-700 dark:text-amber-300 font-medium truncate mr-2">{equip.nome}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-amber-600 dark:text-amber-400">{fmtNum(equip.furos, 0)} furos</span>
+                      <span className="font-semibold text-amber-800 dark:text-amber-200">{fmtNum(equip.producao)}</span>
+                      <span className="text-amber-500 dark:text-amber-500 w-12 text-right">{fmtNum(equip.percentual, 1)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
           </>)}
         </Card>

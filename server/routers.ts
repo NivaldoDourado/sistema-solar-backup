@@ -2033,7 +2033,7 @@ export const appRouter = router({
       }).optional())
       .query(async ({ input }) => {
         const db = await getDb();
-        if (!db) return { total: 0, totalFuros: 0, totalMetros: 0 };
+        if (!db) return { total: 0, totalFuros: 0, totalMetros: 0, porEquipamento: [] as { nome: string; furos: number; metros: number; producao: number; percentual: number }[] };
 
         // Buscar IDs dos grupos de perfuratrizes (hidráulicas e pneumáticas)
         const gruposPerf = await db
@@ -2060,10 +2060,18 @@ export const appRouter = router({
         }
 
         // Se não há equipamentos nos grupos, retornar zeros
-        if (equipIds.length === 0) return { total: 0, totalFuros: 0, totalMetros: 0 };
+        if (equipIds.length === 0) return { total: 0, totalFuros: 0, totalMetros: 0, porEquipamento: [] as { nome: string; furos: number; metros: number; producao: number; percentual: number }[] };
+
+        // Buscar nomes dos equipamentos
+        const equipsComNome = await db
+          .select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento })
+          .from(equipamentos)
+          .where(inArray(equipamentos.id, equipIds));
+        const equipNomeMap = new Map(equipsComNome.map(e => [e.id, e.nome]));
 
         const registros = await db
           .select({
+            equipamentoId: parteDiaria.equipamentoId,
             qtdFuros: parteDiaria.qtdFuros,
             profundidadeFuros: parteDiaria.profundidadeFuros,
             producaoPerfuracao: parteDiaria.producaoPerfuracao,
@@ -2085,7 +2093,22 @@ export const appRouter = router({
         const total = filtrados.reduce((acc, item) => acc + parseFloat(item.producaoPerfuracao || '0'), 0);
         const totalFuros = filtrados.reduce((acc, item) => acc + parseFloat(item.qtdFuros || '0'), 0);
         const totalMetros = filtrados.reduce((acc, item) => acc + parseFloat(item.profundidadeFuros || '0'), 0);
-        return { total, totalFuros, totalMetros };
+
+        // Agrupar por equipamento
+        const porEquipMap = new Map<number, { nome: string; furos: number; metros: number; producao: number }>();
+        for (const item of filtrados) {
+          const eId = item.equipamentoId!;
+          const existing = porEquipMap.get(eId) || { nome: equipNomeMap.get(eId) || `Equip. ${eId}`, furos: 0, metros: 0, producao: 0 };
+          existing.furos += parseFloat(item.qtdFuros || '0');
+          existing.metros += parseFloat(item.profundidadeFuros || '0');
+          existing.producao += parseFloat(item.producaoPerfuracao || '0');
+          porEquipMap.set(eId, existing);
+        }
+        const porEquipamento = Array.from(porEquipMap.values())
+          .map(e => ({ ...e, percentual: total > 0 ? (e.producao / total) * 100 : 0 }))
+          .sort((a, b) => b.producao - a.producao);
+
+        return { total, totalFuros, totalMetros, porEquipamento };
       }),
 
     // Produção dos Motoristas - viagens, produção por motorista/serviço, totais e percentuais
