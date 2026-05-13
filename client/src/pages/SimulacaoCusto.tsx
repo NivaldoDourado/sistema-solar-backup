@@ -14,6 +14,7 @@ import {
   Calendar, Target, ArrowRight, Pencil, Save, X, ShieldAlert,
   ChevronDown, ChevronUp, Scale, Truck, DollarSign, Layers
 } from "lucide-react";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -61,6 +62,7 @@ export default function SimulacaoCusto() {
   });
 
   const [mostrarAnalise, setMostrarAnalise] = useState(false);
+  const { data: destinatariosWpp } = trpc.destinatariosWhatsapp.list.useQuery();
   const { data: analiseMeta } = trpc.simulacaoCusto.analiseMeta.useQuery(
     { mes, ano },
     { enabled: metaData?.valor != null }
@@ -96,6 +98,101 @@ export default function SimulacaoCusto() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {simulacao && (() => {
+            const periodoLabel = `${MESES[mes - 1]}/${ano}`;
+            const exportData: Record<string, any>[] = [];
+            // Resumo principal
+            exportData.push({ indicador: '--- RESUMO DA PROJEÇÃO ---', valor: '' });
+            exportData.push({ indicador: 'Período', valor: periodoLabel });
+            exportData.push({ indicador: 'Dias Transcorridos', valor: `${simulacao.diasTranscorridos} de ${simulacao.diasNoMes}` });
+            exportData.push({ indicador: 'Produção Acumulada', valor: formatTon(simulacao.producaoAcumulada) });
+            exportData.push({ indicador: 'Produção Projetada', valor: formatTon(simulacao.producaoProjetada) });
+            exportData.push({ indicador: 'Produção Média 3 Meses', valor: formatTon(simulacao.producaoMedia3Meses) });
+            exportData.push({ indicador: 'Combustível Acumulado', valor: formatMoney(simulacao.combustivelAcumulado) });
+            exportData.push({ indicador: 'Combustível Projetado', valor: formatMoney(simulacao.combustivelProjetado) });
+            exportData.push({ indicador: 'Custo Total Projetado', valor: formatMoney(simulacao.custoTotalProjetado) });
+            exportData.push({ indicador: 'Custo Total Média 3m', valor: formatMoney(simulacao.custoTotalMedio3Meses) });
+            exportData.push({ indicador: 'Variação Custo vs Média', valor: `${simulacao.variacaoCusto > 0 ? '+' : ''}${formatPct(simulacao.variacaoCusto)}` });
+            exportData.push({ indicador: 'Custo/Tonelada Projetado', valor: simulacao.custoTonProjetado > 0 ? `${formatMoney(simulacao.custoTonProjetado)}/t` : '—' });
+            exportData.push({ indicador: 'Custo/Tonelada Média 3m', valor: simulacao.custoTonMedio3Meses > 0 ? `${formatMoney(simulacao.custoTonMedio3Meses)}/t` : '—' });
+            // Meta
+            if (metaValor !== null) {
+              exportData.push({ indicador: '', valor: '' });
+              exportData.push({ indicador: '--- META DE CUSTO/TONELADA ---', valor: '' });
+              exportData.push({ indicador: 'Meta', valor: `${formatMoney(metaValor)}/t` });
+              exportData.push({ indicador: 'Projeção', valor: `${formatMoney(simulacao.custoTonProjetado)}/t` });
+              const desvio = metaValor > 0 ? ((simulacao.custoTonProjetado - metaValor) / metaValor) * 100 : 0;
+              exportData.push({ indicador: 'Desvio', valor: `${desvio > 0 ? '+' : ''}${formatPct(desvio)}` });
+              exportData.push({ indicador: 'Situação', valor: metaUltrapassada ? 'ULTRAPASSADA' : 'DENTRO DA META' });
+            }
+            // Análise de Meta (cenários)
+            if (analiseMeta) {
+              exportData.push({ indicador: '', valor: '' });
+              exportData.push({ indicador: '--- CENÁRIO 1: AUMENTAR PRODUÇÃO ---', valor: '' });
+              exportData.push({ indicador: 'Produção Necessária', valor: formatTon(analiseMeta.cenario1_producao.producaoNecessaria) });
+              exportData.push({ indicador: 'Aumento', valor: `+${formatPct(analiseMeta.cenario1_producao.aumentoPercentual)}` });
+              exportData.push({ indicador: 'Vendas Necessárias', valor: formatTon(analiseMeta.cenario1_producao.vendasNecessarias) });
+              exportData.push({ indicador: '', valor: '' });
+              exportData.push({ indicador: '--- CENÁRIO 2: REDUZIR CUSTOS ---', valor: '' });
+              exportData.push({ indicador: 'Custo Total Máximo', valor: formatMoney(analiseMeta.cenario2_custo.custoTotalMaximo) });
+              exportData.push({ indicador: 'Redução Necessária', valor: `-${formatPct(analiseMeta.cenario2_custo.reducaoPercentual)}` });
+              analiseMeta.cenario2_custo.contasComMeta.forEach(c => {
+                exportData.push({ indicador: `  ${c.nome}`, valor: `Máx: ${formatMoney(c.valorMaximo)} (${formatPct(c.participacao)})` });
+              });
+              exportData.push({ indicador: '', valor: '' });
+              exportData.push({ indicador: '--- CENÁRIO 3: EQUILIBRADO ---', valor: '' });
+              exportData.push({ indicador: 'Produção Sugerida', valor: formatTon(analiseMeta.cenario3_equilibrado.producaoSugerida) });
+              exportData.push({ indicador: 'Custo Total Sugerido', valor: formatMoney(analiseMeta.cenario3_equilibrado.custoTotalSugerido) });
+              exportData.push({ indicador: 'Vendas Sugeridas', valor: formatTon(analiseMeta.cenario3_equilibrado.vendasSugeridas) });
+            }
+            // Projeção por Setor
+            exportData.push({ indicador: '', valor: '' });
+            exportData.push({ indicador: '--- PROJEÇÃO POR SETOR ---', valor: '' });
+            simulacao.setoresProjetados.forEach(s => {
+              const pct = simulacao.custoTotalProjetado > 0 ? (s.projetado / simulacao.custoTotalProjetado) * 100 : 0;
+              exportData.push({ indicador: s.grupoNome, valor: `${formatMoney(s.projetado)} (${formatPct(pct)}) | Média 3m: ${formatMoney(s.media3Meses)} | ${s.tendencia}` });
+            });
+            exportData.push({ indicador: 'TOTAL PROJETADO', valor: formatMoney(simulacao.custoTotalProjetado) });
+            // Histórico
+            if (simulacao.historico.length > 0) {
+              exportData.push({ indicador: '', valor: '' });
+              exportData.push({ indicador: '--- HISTÓRICO RECENTE ---', valor: '' });
+              simulacao.historico.forEach(h => {
+                exportData.push({ indicador: `${MESES[h.mes - 1]}/${h.ano}`, valor: `Custo: ${formatMoney(h.custoTotal)} | Prod: ${formatTon(h.producaoTotal)} | Custo/t: ${h.custoTon > 0 ? formatMoney(h.custoTon) + '/t' : '—'}` });
+              });
+            }
+            // WhatsApp message
+            let wppMsg = `📊 *Simulação de Custos - ${periodoLabel}*\n`;
+            wppMsg += `\n📅 Progresso: ${simulacao.diasTranscorridos}/${simulacao.diasNoMes} dias\n`;
+            wppMsg += `\n🏭 *Produção:* ${formatTon(simulacao.producaoProjetada)} (proj.) | ${formatTon(simulacao.producaoAcumulada)} (acum.)\n`;
+            wppMsg += `⛽ *Combustível:* ${formatMoney(simulacao.combustivelProjetado)} (proj.)\n`;
+            wppMsg += `💰 *Custo Total:* ${formatMoney(simulacao.custoTotalProjetado)} (${simulacao.variacaoCusto > 0 ? '+' : ''}${formatPct(simulacao.variacaoCusto)} vs média)\n`;
+            wppMsg += `🎯 *Custo/t:* ${simulacao.custoTonProjetado > 0 ? formatMoney(simulacao.custoTonProjetado) + '/t' : '—'}\n`;
+            if (metaValor !== null) {
+              const desvio = metaValor > 0 ? ((simulacao.custoTonProjetado - metaValor) / metaValor) * 100 : 0;
+              wppMsg += `\n🏷️ *Meta:* ${formatMoney(metaValor)}/t | ${metaUltrapassada ? '❌ ULTRAPASSADA' : '✅ Dentro'} (${desvio > 0 ? '+' : ''}${formatPct(desvio)})\n`;
+            }
+            wppMsg += `\n📊 *Por Setor:*\n`;
+            simulacao.setoresProjetados.forEach(s => {
+              wppMsg += `  • ${s.grupoNome}: ${formatMoney(s.projetado)} (${s.tendencia})\n`;
+            });
+            return (
+              <DashboardExportMenu
+                title="Simulação de Custos"
+                subtitle={`Período: ${periodoLabel} | Gerado em ${new Date().toLocaleDateString('pt-BR')}`}
+                filename={`simulacao-custos-${MESES[mes - 1].toLowerCase()}-${ano}`}
+                exportOptions={{
+                  columns: [
+                    { header: 'Indicador', key: 'indicador', width: 35 },
+                    { header: 'Valor', key: 'valor', width: 50 },
+                  ],
+                  data: exportData,
+                }}
+                whatsappMessage={wppMsg}
+                whatsappDestinatarios={(destinatariosWpp || []).filter((d: any) => d.ativo === 'sim').map((d: any) => d.telefone)}
+              />
+            );
+          })()}
           <Select value={String(mes)} onValueChange={(v) => setMes(Number(v))}>
             <SelectTrigger className="w-36">
               <SelectValue />

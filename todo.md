@@ -1103,3 +1103,10 @@
 
 ## Produção de Perfuração - Excluir MARTELOS PERFURATRIZES HIDRÁULICAS
 - [x] Ajustar filtro para excluir grupo MARTELOS, mantendo apenas PERFURATRIZES HIDRAULICAS e PNEUMÁTICAS
+
+## Simulação de Custos - Exportação Excel, PDF, WhatsApp e Impressão
+- [x] Implementar botão de exportação Excel com dados completos da simulação
+- [x] Implementar botão de exportação PDF com layout formatado
+- [x] Implementar botão de envio WhatsApp com resumo da simulação
+- [x] Implementar botão de impressão da tela
+- [x] Testar e validar - 166 testes passando, 0 erros TypeScript
