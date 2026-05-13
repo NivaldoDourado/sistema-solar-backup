@@ -1071,3 +1071,8 @@
 - [x] Incluir dados de consumo (litros, média Lt/Hr, R$/Hr) no drill-down de combustível
 - [x] Adicionar botões de exportação/impressão no drill-down de combustível
 - [x] Testar drill-down de combustível para diferentes equipamentos (944C: 21 abast., PC300: 6 abast.)
+
+## Exportação PDF e Impressão nos Comparativos Históricos
+- [x] Substituir botões "Excel" isolados por DashboardExportMenu com Excel, PDF e impressão
+- [x] Garantir cabeçalho padronizado (empresa, período) nos relatórios exportados
+- [x] Testar exportação PDF e impressão em ambas as tabelas (Plano de Custo e Setores) - 154 testes passando

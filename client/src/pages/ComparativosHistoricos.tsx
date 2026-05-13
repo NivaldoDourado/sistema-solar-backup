@@ -14,6 +14,7 @@ import {
   Factory, ShoppingCart, AlertCircle, Download, FileText, CalendarDays, X, Plus
 } from "lucide-react";
 import { exportToExcel, exportToPDF } from "@/lib/export-utils";
+import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 import { MessageCircle } from "lucide-react";
 
 const ANO_ATUAL = new Date().getFullYear();
@@ -627,147 +628,62 @@ export default function ComparativosHistoricos() {
                   <CardTitle className="text-base">Tabela Resumo por Período</CardTitle>
                   <CardDescription>Todos os indicadores consolidados em uma visão tabular</CardDescription>
                 </div>
-                {serie.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={() => {
-                        const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
-                        const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
-                        const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
-                        const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
-
-                        const dataRows = serie.map(p => ({
-                          periodo: p.label,
-                          faturamento: p.faturamento,
-                          frete: p.frete,
-                          recProdutos: p.faturamento - p.frete,
-                          custoTotal: p.custoTotal,
-                          saldoBruto: p.saldoBruto,
-                          margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
-                          producao: p.producaoTotal,
-                          custoTon: p.custoTon,
-                          combustivel: p.combustivelLitros,
-                        }));
-
-                        // Adicionar linha de totais
-                        dataRows.push({
-                          periodo: "TOTAL",
-                          faturamento: totalFaturamento,
-                          frete: totalFrete,
-                          recProdutos: totalRecProdutos,
-                          custoTotal: totalCusto,
-                          saldoBruto: totalSaldoBruto,
-                          margemBruta: null,
-                          producao: totalProducao,
-                          custoTon: totalCustoTon,
-                          combustivel: totalCombustivel,
-                        });
-
-                        exportToExcel({
-                          title: "Comparativos Históricos — Tabela Resumo",
-                          subtitle: `Período: ${anoInicio} a ${anoFim}`,
-                          filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
-                          columns: [
-                            { header: "Período", key: "periodo", width: 12 },
-                            { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
-                            { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
-                            { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                            { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
-                            { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                          ],
-                          data: dataRows,
-                        });
+                {serie.length > 0 && (() => {
+                  const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
+                  const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
+                  const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
+                  const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
+                  const dataRows = [
+                    ...serie.map(p => ({
+                      periodo: p.label,
+                      faturamento: p.faturamento,
+                      frete: p.frete,
+                      recProdutos: p.faturamento - p.frete,
+                      custoTotal: p.custoTotal,
+                      saldoBruto: p.saldoBruto,
+                      margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
+                      producao: p.producaoTotal,
+                      custoTon: p.custoTon,
+                      combustivel: p.combustivelLitros,
+                    })),
+                    {
+                      periodo: "TOTAL",
+                      faturamento: totalFaturamento,
+                      frete: totalFrete,
+                      recProdutos: totalRecProdutos,
+                      custoTotal: totalCusto,
+                      saldoBruto: totalSaldoBruto,
+                      margemBruta: null,
+                      producao: totalProducao,
+                      custoTon: totalCustoTon,
+                      combustivel: totalCombustivel,
+                    },
+                  ];
+                  return (
+                    <DashboardExportMenu
+                      title="Comparativos Históricos — Tabela Resumo"
+                      subtitle={`Período: ${anoInicio} a ${anoFim}`}
+                      filename={`comparativos_historicos_${anoInicio}_${anoFim}`}
+                      exportOptions={{
+                        columns: [
+                          { header: "Período", key: "periodo", width: 12 },
+                          { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
+                          { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
+                          { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
+                          { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                          { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
+                          { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
+                        ],
+                        data: dataRows,
                       }}
-                    >
-                      <Download className="h-4 w-4" />
-                      Excel
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={async () => {
-                        const totalFrete = serie.reduce((s, p) => s + p.frete, 0);
-                        const totalRecProdutos = serie.reduce((s, p) => s + (p.faturamento - p.frete), 0);
-                        const totalSaldoBruto = serie.reduce((s, p) => s + p.saldoBruto, 0);
-                        const totalCustoTon = totalProducao > 0 ? totalCusto / totalProducao : 0;
-
-                        const dataRows = serie.map(p => ({
-                          periodo: p.label,
-                          faturamento: p.faturamento,
-                          frete: p.frete,
-                          recProdutos: p.faturamento - p.frete,
-                          custoTotal: p.custoTotal,
-                          saldoBruto: p.saldoBruto,
-                          margemBruta: p.temCusto && p.temVendas ? p.margemBruta : null,
-                          producao: p.producaoTotal,
-                          custoTon: p.custoTon,
-                          combustivel: p.combustivelLitros,
-                        }));
-
-                        // Adicionar linha de totais
-                        dataRows.push({
-                          periodo: "TOTAL",
-                          faturamento: totalFaturamento,
-                          frete: totalFrete,
-                          recProdutos: totalRecProdutos,
-                          custoTotal: totalCusto,
-                          saldoBruto: totalSaldoBruto,
-                          margemBruta: null,
-                          producao: totalProducao,
-                          custoTon: totalCustoTon,
-                          combustivel: totalCombustivel,
-                        });
-
-                        await exportToPDF({
-                          title: "Comparativos Históricos — Tabela Resumo",
-                          subtitle: `Período: ${anoInicio} a ${anoFim}`,
-                          filename: `comparativos_historicos_${anoInicio}_${anoFim}`,
-                          columns: [
-                            { header: "Período", key: "periodo", width: 12 },
-                            { header: "Faturamento (R$)", key: "faturamento", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Frete (R$)", key: "frete", width: 16, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Rec. Produtos (R$)", key: "recProdutos", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Custo Total (R$)", key: "custoTotal", width: 18, format: (v: number) => v > 0 ? fmt(v) : "—" },
-                            { header: "Saldo Bruto (R$)", key: "saldoBruto", width: 18, format: (v: number) => fmt(v) },
-                            { header: "Mg. Bruta (%)", key: "margemBruta", width: 14, format: (v: number | null) => v !== null ? fmtPct(v) : "—" },
-                            { header: "Produção (t)", key: "producao", width: 14, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                            { header: "Custo/t (R$)", key: "custoTon", width: 14, format: (v: number) => v > 0 ? fmt(v, 2) : "—" },
-                            { header: "Combustível (L)", key: "combustivel", width: 16, format: (v: number) => v > 0 ? fmt(v, 0) : "—" },
-                          ],
-                          data: dataRows,
-                        });
-                      }}
-                    >
-                      <FileText className="h-4 w-4" />
-                      PDF
-                    </Button>
-                    {whatsappMessage && destinatariosAtivos.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50"
-                        onClick={() => {
-                          const encoded = encodeURIComponent(whatsappMessage);
-                          destinatariosAtivos.forEach((tel: string, idx: number) => {
-                            const numero = tel.replace(/\D/g, "");
-                            setTimeout(() => window.open(`https://wa.me/${numero}?text=${encoded}`, "_blank"), idx * 800);
-                          });
-                        }}
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        WhatsApp
-                      </Button>
-                    )}
-                  </div>
-                )}
+                      whatsappMessage={whatsappMessage}
+                      whatsappDestinatarios={destinatariosAtivos}
+                    />
+                  );
+                })()}
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto">
@@ -910,36 +826,33 @@ export default function ComparativosHistoricos() {
                   <CardTitle className="text-base">Comparativo por Plano de Custo</CardTitle>
                   <CardDescription>Valores acumulados de cada conta nos períodos selecionados</CardDescription>
                 </div>
-                {planoCustoData && planoCustoData.contas.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => {
-                      const labels = planoCustoData.labels;
-                      const cols = [
-                        { header: "Conta / Descrição", key: "descricao", width: 30 },
-                        ...labels.map((l, i) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
-                        { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
-                      ];
-                      const data = planoCustoData.contas.map(c => {
-                        const row: Record<string, any> = { descricao: c.descricao, total: c.total };
-                        c.valores.forEach((v, i) => { row[`p${i}`] = v; });
-                        return row;
-                      });
-                      // Linha de total
-                      const totalRow: Record<string, any> = { descricao: "TOTAL GERAL" };
-                      labels.forEach((_, i) => {
-                        totalRow[`p${i}`] = planoCustoData.contas.reduce((s, c) => s + c.valores[i], 0);
-                      });
-                      totalRow.total = planoCustoData.contas.reduce((s, c) => s + c.total, 0);
-                      data.push(totalRow);
-                      exportToExcel({ title: "Comparativo por Plano de Custo", subtitle: `Períodos: ${labels.join(", ")}`, filename: "comparativo_plano_custo", columns: cols, data });
-                    }}
-                  >
-                    <Download className="h-4 w-4" /> Excel
-                  </Button>
-                )}
+                {planoCustoData && planoCustoData.contas.length > 0 && (() => {
+                  const labels = planoCustoData.labels;
+                  const cols = [
+                    { header: "Conta / Descrição", key: "descricao", width: 30 },
+                    ...labels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+                    { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+                  ];
+                  const data = planoCustoData.contas.map(c => {
+                    const row: Record<string, any> = { descricao: c.descricao, total: c.total };
+                    c.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+                    return row;
+                  });
+                  const totalRow: Record<string, any> = { descricao: "TOTAL GERAL" };
+                  labels.forEach((_: string, i: number) => {
+                    totalRow[`p${i}`] = planoCustoData.contas.reduce((s, c) => s + c.valores[i], 0);
+                  });
+                  totalRow.total = planoCustoData.contas.reduce((s, c) => s + c.total, 0);
+                  data.push(totalRow);
+                  return (
+                    <DashboardExportMenu
+                      title="Comparativo por Plano de Custo"
+                      subtitle={`Períodos: ${labels.join(", ")}`}
+                      filename="comparativo_plano_custo"
+                      exportOptions={{ columns: cols, data }}
+                    />
+                  );
+                })()}
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto">
@@ -1001,36 +914,33 @@ export default function ComparativosHistoricos() {
                   <CardTitle className="text-base">Comparativo por Setores</CardTitle>
                   <CardDescription>Valores acumulados de cada setor/grupo nos períodos selecionados</CardDescription>
                 </div>
-                {setoresData && setoresData.setores.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => {
-                      const labels = setoresData.labels;
-                      const cols = [
-                        { header: "Setor / Grupo", key: "grupoNome", width: 25 },
-                        ...labels.map((l, i) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
-                        { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
-                      ];
-                      const data = setoresData.setores.map(s => {
-                        const row: Record<string, any> = { grupoNome: s.grupoNome, total: s.total };
-                        s.valores.forEach((v, i) => { row[`p${i}`] = v; });
-                        return row;
-                      });
-                      // Linha de total
-                      const totalRow: Record<string, any> = { grupoNome: "TOTAL GERAL" };
-                      labels.forEach((_, i) => {
-                        totalRow[`p${i}`] = setoresData.setores.reduce((s, c) => s + c.valores[i], 0);
-                      });
-                      totalRow.total = setoresData.setores.reduce((s, c) => s + c.total, 0);
-                      data.push(totalRow);
-                      exportToExcel({ title: "Comparativo por Setores", subtitle: `Períodos: ${labels.join(", ")}`, filename: "comparativo_setores", columns: cols, data });
-                    }}
-                  >
-                    <Download className="h-4 w-4" /> Excel
-                  </Button>
-                )}
+                {setoresData && setoresData.setores.length > 0 && (() => {
+                  const labels = setoresData.labels;
+                  const cols = [
+                    { header: "Setor / Grupo", key: "grupoNome", width: 25 },
+                    ...labels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+                    { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+                  ];
+                  const data = setoresData.setores.map(s => {
+                    const row: Record<string, any> = { grupoNome: s.grupoNome, total: s.total };
+                    s.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+                    return row;
+                  });
+                  const totalRow: Record<string, any> = { grupoNome: "TOTAL GERAL" };
+                  labels.forEach((_: string, i: number) => {
+                    totalRow[`p${i}`] = setoresData.setores.reduce((s, c) => s + c.valores[i], 0);
+                  });
+                  totalRow.total = setoresData.setores.reduce((s, c) => s + c.total, 0);
+                  data.push(totalRow);
+                  return (
+                    <DashboardExportMenu
+                      title="Comparativo por Setores"
+                      subtitle={`Períodos: ${labels.join(", ")}`}
+                      filename="comparativo_setores"
+                      exportOptions={{ columns: cols, data }}
+                    />
+                  );
+                })()}
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto">
