@@ -1115,3 +1115,8 @@
 - [x] Produção mostrando "0 t" e Custo/t mostrando "—" para todos os meses
 - [x] Custo mostrando R$ 0,00 para abril/2026
 - [x] Corrigido: produção usa quantidadeVendida como fallback, depois Método Caminhões; custo usa lancamento_custo quando custo_setor vazio
+
+## Bug: Custo Total Projetado e Custo/t inflados na Simulação de Custos
+- [x] Custo Total Projetado mostrando R$ 4.4M - corrigido dupla contagem por nomes de grupos diferentes entre meses
+- [x] Custo/t mostrando R$ 61,56 - corrigido, agora usa média do custo total mensal
+- [x] Causa raiz: abril usava lancamento_custo com nomes "CUSTO VARIÁVEL/FIXO" vs fev/mar com nomes de setores

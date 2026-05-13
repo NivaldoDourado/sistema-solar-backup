@@ -1,0 +1,82 @@
+{
+  "query": "SELECT cs.periodoCustoId, pc.mes, cs.grupoNome, SUM(cs.totalGeral) as total \nFROM custo_setor cs \nINNER JOIN periodo_custo pc ON cs.periodoCustoId = pc.id\nWHERE pc.mes IN (2,3) AND pc.ano = 2026 \nGROUP BY cs.periodoCustoId, pc.mes, cs.grupoNome \nORDER BY pc.mes, total DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT cs.periodoCustoId, pc.mes, cs.grupoNome, SUM(cs.totalGeral) as total \nFROM custo_setor cs \nINNER JOIN periodo_custo pc ON cs.periodoCustoId = pc.id\nWHERE pc.mes IN (2,3) AND pc.ano = 2026 \nGROUP BY cs.periodoCustoId, pc.mes, cs.grupoNome \nORDER BY pc.mes, total DESC;",
+  "rows": [
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "ADMINISTRAÇÃO",
+      "total": "653026.37"
+    },
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "EXPEDIÇÃO",
+      "total": "440549.31"
+    },
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "SERVIÇOS AUXILIARES",
+      "total": "424740.97"
+    },
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "CARGA E TRANSPORTE",
+      "total": "239040.87"
+    },
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "total": "217773.79"
+    },
+    {
+      "periodoCustoId": "30001",
+      "mes": "2",
+      "grupoNome": "BRITAGEM",
+      "total": "213969.31"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "ADMINISTRAÇÃO",
+      "total": "745129.55"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "EXPEDIÇÃO",
+      "total": "558107.70"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "SERVIÇOS AUXILIARES",
+      "total": "551022.73"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "BRITAGEM",
+      "total": "381427.83"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "CARGA E TRANSPORTE",
+      "total": "332816.75"
+    },
+    {
+      "periodoCustoId": "1",
+      "mes": "3",
+      "grupoNome": "DESMONTE DE ROCHA",
+      "total": "269256.73"
+    }
+  ],
+  "messages": [],
+  "stdout": "periodoCustoId\tmes\tgrupoNome\ttotal\n30001\t2\tADMINISTRAÇÃO\t653026.37\n30001\t2\tEXPEDIÇÃO\t440549.31\n30001\t2\tSERVIÇOS AUXILIARES\t424740.97\n30001\t2\tCARGA E TRANSPORTE\t239040.87\n30001\t2\tDESMONTE DE ROCHA\t217773.79\n30001\t2\tBRITAGEM\t213969.31\n1\t3\tADMINISTRAÇÃO\t745129.55\n1\t3\tEXPEDIÇÃO\t558107.70\n1\t3\tSERVIÇOS AUXILIARES\t551022.73\n1\t3\tBRITAGEM\t381427.83\n1\t3\tCARGA E TRANSPORTE\t332816.75\n1\t3\tDESMONTE DE ROCHA\t269256.73\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

@@ -274,21 +274,37 @@ export const simulacaoCustoRouter = router({
       // ========================================================
       // 5. PROJEÇÃO FINAL: combinar dados parciais + média histórica
       // ========================================================
-      // Para combustível: usar projeção direta (dados reais do período)
-      // Para outros setores: usar média dos últimos 3 meses (pois não temos dados parciais)
-      // Custo total projetado = combustível projetado + (média outros setores)
-      
-      // Separar combustível da média
+      // Estratégia: usar média do custo TOTAL mensal (não por grupo) para evitar
+      // dupla contagem quando nomes de grupos diferem entre meses (ex: custo_setor
+      // usa nomes de setores, lancamento_custo usa classificações contábeis).
+      // Se há dados reais de combustível no período, substituir a parcela de
+      // combustível da média pela projeção real.
+
+      // Verificar se há combustível separado no histórico
       const combustivelHistorico = mediaSetores.find(s => 
         s.grupoNome.toUpperCase().includes('COMBUST')
       );
+      
+      let custoTotalProjetado: number;
+      if (combustivelHistorico && combustivelAcumulado > 0) {
+        // Cenário com combustível separado: substituir parcela de combustível
+        // pela projeção real baseada em dados do período
+        const outrosSetoresMedia = mediaSetores.filter(s => 
+          !s.grupoNome.toUpperCase().includes('COMBUST')
+        );
+        const totalOutrosSetoresMedia = outrosSetoresMedia.reduce((acc, s) => acc + s.media3Meses, 0);
+        custoTotalProjetado = combustivelProjetado + totalOutrosSetoresMedia;
+      } else {
+        // Cenário sem combustível separado ou sem dados reais de combustível:
+        // usar média do custo total mensal diretamente
+        custoTotalProjetado = custoTotalMedio3Meses;
+      }
+
+      // Separar para exibição nos setores projetados
       const outrosSetoresMedia = mediaSetores.filter(s => 
         !s.grupoNome.toUpperCase().includes('COMBUST')
       );
       const totalOutrosSetoresMedia = outrosSetoresMedia.reduce((acc, s) => acc + s.media3Meses, 0);
-
-      // Custo total projetado: combustível real projetado + média dos outros setores
-      const custoTotalProjetado = combustivelProjetado + totalOutrosSetoresMedia;
       
       // Custo por tonelada projetado
       const custoTonProjetado = producaoProjetada > 0 ? custoTotalProjetado / producaoProjetada : 0;
