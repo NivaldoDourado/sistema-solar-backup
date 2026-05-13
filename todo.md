@@ -1081,3 +1081,8 @@
 - [x] Filtrar blocos "Lançamentos" e "Legado" na sidebar para exibir apenas para perfil Consultoria (requireConsultoria flag)
 - [x] Proteger rotas frontend com ProtectedRoute requireRole="consultoria" (redireciona com toast)
 - [x] Testar - 154 testes passando, TypeScript 0 erros
+
+## Bug: Drill-down não carrega itens para DESMONTE DE ROCHA e PEDRA PARA BRITADOR
+- [x] Investigar causa raiz: comparar tags no relatório analítico vs tags em item_despesa_importado
+- [x] Corrigir normalização de tags no backend (listarItensDetalhados e consumoPorEquipamento)
+- [x] Testar drill-down para todos os setores - 160 testes passando

@@ -1,0 +1,46 @@
+{
+  "query": "\n-- The relatório analítico uses rateioMem which maps equipment to subsetores via SETOR_PARA_SUBSETOR_MEM\n-- Let's check what codigoTag the equipamentos have that are assigned to setorId 9 (DESMONTE PRIMÁRIO) or 10 (DESMONTE SECUNDÁRIO)\nSELECT id, codigoTag, nomeDoEquipamento, setorId FROM equipamentos WHERE setorId IN (9, 10, 7) ORDER BY setorId, codigoTag LIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- The relatório analítico uses rateioMem which maps equipment to subsetores via SETOR_PARA_SUBSETOR_MEM\n-- Let's check what codigoTag the equipamentos have that are assigned to setorId 9 (DESMONTE PRIMÁRIO) or 10 (DESMONTE SECUNDÁRIO)\nSELECT id, codigoTag, nomeDoEquipamento, setorId FROM equipamentos WHERE setorId IN (9, 10, 7) ORDER BY setorId, codigoTag LIMIT 30;\n",
+  "rows": [
+    {
+      "id": "19",
+      "codigoTag": "944C",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "setorId": "7"
+    },
+    {
+      "id": "120018",
+      "codigoTag": "PA CARREG. 966R04",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLAR 966R - 04",
+      "setorId": "7"
+    },
+    {
+      "id": "75",
+      "codigoTag": "MAR001",
+      "nomeDoEquipamento": "MARTELO PERFURATRIZ FOX 8-20",
+      "setorId": "9"
+    },
+    {
+      "id": "120024",
+      "codigoTag": "PIPA ALUGADO KIB9971",
+      "nomeDoEquipamento": "CAMINHAO PIPA ALUGADO KIB9971",
+      "setorId": "9"
+    },
+    {
+      "id": "120034",
+      "codigoTag": "SHV 6A57",
+      "nomeDoEquipamento": "FIAT STRADA ENDURANCE CS (SHV 6A57)",
+      "setorId": "9"
+    },
+    {
+      "id": "17",
+      "codigoTag": "PICÃO",
+      "nomeDoEquipamento": "ROMPEDOR HIDRÁULICO STONE 2180",
+      "setorId": "10"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\tsetorId\n19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\t7\n120018\tPA CARREG. 966R04\tPA CARREGADEIRA CATERPILLAR 966R - 04\t7\n75\tMAR001\tMARTELO PERFURATRIZ FOX 8-20\t9\n120024\tPIPA ALUGADO KIB9971\tCAMINHAO PIPA ALUGADO KIB9971\t9\n120034\tSHV 6A57\tFIAT STRADA ENDURANCE CS (SHV 6A57)\t9\n17\tPICÃO\tROMPEDOR HIDRÁULICO STONE 2180\t10\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

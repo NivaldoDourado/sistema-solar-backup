@@ -1,0 +1,20 @@
+{
+  "query": "\n-- The screenshot shows \"FOX 8-20 - PERFURATRIZ HIDRAULICA WOLF FOX8 -20\" in DESMONTE DE ROCHA\n-- Let's check what tag is stored in item_despesa_importado for this equipment\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND (equipamentoTag LIKE '%FOX%' OR equipamentoTag LIKE '%WOLF%' OR equipamentoTag LIKE '%PERFURATRIZ%')\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- The screenshot shows \"FOX 8-20 - PERFURATRIZ HIDRAULICA WOLF FOX8 -20\" in DESMONTE DE ROCHA\n-- Let's check what tag is stored in item_despesa_importado for this equipment\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND (equipamentoTag LIKE '%FOX%' OR equipamentoTag LIKE '%WOLF%' OR equipamentoTag LIKE '%PERFURATRIZ%')\nLIMIT 10;\n",
+  "rows": [
+    {
+      "equipamentoTag": "PERFURATRIZ 01",
+      "equipamentoDescricao": "CARRETA PERFURATRIZ PW",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "equipamentoDescricao": "PERFURATRIZ HIDRAULICA FOX 8 - 20 01",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\nPERFURATRIZ 01\tCARRETA PERFURATRIZ PW\tNULL\nPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

@@ -1,0 +1,15 @@
+{
+  "query": "\nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%PATROL%' LIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%PATROL%' LIMIT 10;\n",
+  "rows": [
+    {
+      "id": "120019",
+      "codigoTag": "PATROL 120 B",
+      "nomeDoEquipamento": "PATROL CATERPILLAR 120B"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n120019\tPATROL 120 B\tPATROL CATERPILLAR 120B\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

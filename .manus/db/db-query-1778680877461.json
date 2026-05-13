@@ -1,0 +1,15 @@
+{
+  "query": "\n-- Screenshot shows \"PATROL 120 B - PATROL CATERPILLAR 120B\" in OUTROS SERVIÇOS - this one WORKS\n-- Tag extracted would be \"PATROL 120 B\"\n-- Let's check item_despesa_importado for PATROL\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND equipamentoTag LIKE '%PATROL%'\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Screenshot shows \"PATROL 120 B - PATROL CATERPILLAR 120B\" in OUTROS SERVIÇOS - this one WORKS\n-- Tag extracted would be \"PATROL 120 B\"\n-- Let's check item_despesa_importado for PATROL\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND equipamentoTag LIKE '%PATROL%'\nLIMIT 10;\n",
+  "rows": [
+    {
+      "equipamentoTag": "PATROL 120 B",
+      "equipamentoDescricao": "PATROL CATERPILLAR 120B",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\nPATROL 120 B\tPATROL CATERPILLAR 120B\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

@@ -1,0 +1,260 @@
+{
+  "query": "\n-- Let's get ALL distinct tags in item_despesa_importado for period 60001\n-- and check which ones DON'T have a direct match with equipamentos.codigoTag\nSELECT DISTINCT i.equipamentoTag, i.equipamentoSistemaId, e.codigoTag as cadastroTag\nFROM item_despesa_importado i\nLEFT JOIN equipamentos e ON e.id = i.equipamentoSistemaId\nWHERE i.periodoCustoId = 60001\nAND i.equipamentoSistemaId IS NULL\nORDER BY i.equipamentoTag\nLIMIT 50;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Let's get ALL distinct tags in item_despesa_importado for period 60001\n-- and check which ones DON'T have a direct match with equipamentos.codigoTag\nSELECT DISTINCT i.equipamentoTag, i.equipamentoSistemaId, e.codigoTag as cadastroTag\nFROM item_despesa_importado i\nLEFT JOIN equipamentos e ON e.id = i.equipamentoSistemaId\nWHERE i.periodoCustoId = 60001\nAND i.equipamentoSistemaId IS NULL\nORDER BY i.equipamentoTag\nLIMIT 50;\n",
+  "rows": [
+    {
+      "equipamentoTag": "944 C",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ALIMENTADOR AVS01",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "AVS 4001200",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "BALANÇA",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "C100",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 01",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 03",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZT0105",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "CARROS DIVERSOS",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "COMPRESSOR GA160",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "DRAGA DIESEL 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "FAZENDA",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "H3800 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "H380003",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "HZC4975",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "HZH3J61",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "HZU7750",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "IAD8995",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "IXD6D34",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "IXE1F44",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "L566 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MAQUINA MIG",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MATERIAL DE CONSUMO",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MATERIAL EPI",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MELOSA 01 / DIK",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MELOSA 02 BRIT.NOVA",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MOTO 02 (2003)",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "MOTOR BOMBA 02",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "NNT 5E41",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "NNT5E41",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "NVH6212",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    },
+    {
+      "equipamentoTag": "NVJ7902",
+      "equipamentoSistemaId": "NULL",
+      "cadastroTag": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoSistemaId\tcadastroTag\n944 C\tNULL\tNULL\nALIMENTADOR AVS01\tNULL\tNULL\nALMOXARIFADO\tNULL\tNULL\nAVS 4001200\tNULL\tNULL\nBALANÇA\tNULL\tNULL\nBRITADOR CS440\tNULL\tNULL\nBRITADOR MOVEL\tNULL\tNULL\nBRITADOR MOVEL METSO\tNULL\tNULL\nC100\tNULL\tNULL\nCALHA VIBRATORIA 01\tNULL\tNULL\nCALHA VIBRATORIA 02\tNULL\tNULL\nCALHA VIBRATORIA 03\tNULL\tNULL\nCAMINHÃO AU5073\tNULL\tNULL\nCAMINHÃO HZK7665\tNULL\tNULL\nCAMINHÃO HZT0105\tNULL\tNULL\nCAMINHÃO NML0188\tNULL\tNULL\nCANTINA\tNULL\tNULL\nCARROS DIVERSOS\tNULL\tNULL\nCOMPRESSOR GA160\tNULL\tNULL\nDRAGA D´ÁGUA A DIESE\tNULL\tNULL\nDRAGA DIESEL 02\tNULL\tNULL\nESCAVADEIRA R 938 02\tNULL\tNULL\nESCAVADEIRA R938\tNULL\tNULL\nEXPLOSIVOS\tNULL\tNULL\nFAZENDA\tNULL\tNULL\nH3800 02\tNULL\tNULL\nH380003\tNULL\tNULL\nHL 76003\tNULL\tNULL\nHP 200 ( METSO)\tNULL\tNULL\nHZC4975\tNULL\tNULL\nHZH3J61\tNULL\tNULL\nHZU7750\tNULL\tNULL\nIAD8995\tNULL\tNULL\nIXD6D34\tNULL\tNULL\nIXE1F44\tNULL\tNULL\nJC1200 01\tNULL\tNULL\nL 566\tNULL\tNULL\nL566 02\tNULL\tNULL\nMAQUINA MIG\tNULL\tNULL\nMATERIAL DE CONSUMO\tNULL\tNULL\nMATERIAL EPI\tNULL\tNULL\nMELOSA 01 / DIK\tNULL\tNULL\nMELOSA 02 BRIT.NOVA\tNULL\tNULL\nMOTO 02 (2003)\tNULL\tNULL\nMOTOR BOMBA\tNULL\tNULL\nMOTOR BOMBA 02\tNULL\tNULL\nNNT 5E41\tNULL\tNULL\nNNT5E41\tNULL\tNULL\nNVH6212\tNULL\tNULL\nNVJ7902\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

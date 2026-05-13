@@ -1,0 +1,110 @@
+{
+  "query": "\n-- ALL items have equipamentoSistemaId = NULL!\n-- So the drill-down ONLY works when the codigoTag in equipamentos table \n-- exactly matches the equipamentoTag in item_despesa_importado\n-- Let's verify: PATROL 120 B works because it's the same in both tables\n\n-- Now let's see which equipamentos have codigoTag that matches item_despesa_importado.equipamentoTag\nSELECT e.id, e.codigoTag, i.equipamentoTag\nFROM equipamentos e\nINNER JOIN (SELECT DISTINCT equipamentoTag FROM item_despesa_importado WHERE periodoCustoId = 60001) i\nON e.codigoTag = i.equipamentoTag\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- ALL items have equipamentoSistemaId = NULL!\n-- So the drill-down ONLY works when the codigoTag in equipamentos table \n-- exactly matches the equipamentoTag in item_despesa_importado\n-- Let's verify: PATROL 120 B works because it's the same in both tables\n\n-- Now let's see which equipamentos have codigoTag that matches item_despesa_importado.equipamentoTag\nSELECT e.id, e.codigoTag, i.equipamentoTag\nFROM equipamentos e\nINNER JOIN (SELECT DISTINCT equipamentoTag FROM item_despesa_importado WHERE periodoCustoId = 60001) i\nON e.codigoTag = i.equipamentoTag\nLIMIT 20;\n",
+  "rows": [
+    {
+      "id": "10",
+      "codigoTag": "OM100",
+      "equipamentoTag": "OM100"
+    },
+    {
+      "id": "20",
+      "codigoTag": "PC300",
+      "equipamentoTag": "PC300"
+    },
+    {
+      "id": "29",
+      "codigoTag": "IXE1F44",
+      "equipamentoTag": "IXE1F44"
+    },
+    {
+      "id": "37",
+      "codigoTag": "NVJ7902",
+      "equipamentoTag": "NVJ7902"
+    },
+    {
+      "id": "38",
+      "codigoTag": "NVH6212",
+      "equipamentoTag": "NVH6212"
+    },
+    {
+      "id": "40",
+      "codigoTag": "OER1B00",
+      "equipamentoTag": "OER1B00"
+    },
+    {
+      "id": "50",
+      "codigoTag": "PIPA HZH 3961",
+      "equipamentoTag": "PIPA HZH 3961"
+    },
+    {
+      "id": "86",
+      "codigoTag": "QMO6E54",
+      "equipamentoTag": "QMO6E54"
+    },
+    {
+      "id": "87",
+      "codigoTag": "QMN1F10",
+      "equipamentoTag": "QMN1F10"
+    },
+    {
+      "id": "91",
+      "codigoTag": "PENEIRA NW200",
+      "equipamentoTag": "PENEIRA NW200"
+    },
+    {
+      "id": "120001",
+      "codigoTag": "AVS 4001200",
+      "equipamentoTag": "AVS 4001200"
+    },
+    {
+      "id": "120002",
+      "codigoTag": "C100",
+      "equipamentoTag": "C100"
+    },
+    {
+      "id": "120003",
+      "codigoTag": "CALHA VIBRATORIA 01",
+      "equipamentoTag": "CALHA VIBRATORIA 01"
+    },
+    {
+      "id": "120004",
+      "codigoTag": "CALHA VIBRATORIA 02",
+      "equipamentoTag": "CALHA VIBRATORIA 02"
+    },
+    {
+      "id": "120005",
+      "codigoTag": "CALHA VIBRATORIA 03",
+      "equipamentoTag": "CALHA VIBRATORIA 03"
+    },
+    {
+      "id": "120007",
+      "codigoTag": "DRAGA DIESEL 02",
+      "equipamentoTag": "DRAGA DIESEL 02"
+    },
+    {
+      "id": "120008",
+      "codigoTag": "HZC4975",
+      "equipamentoTag": "HZC4975"
+    },
+    {
+      "id": "120009",
+      "codigoTag": "HZU7750",
+      "equipamentoTag": "HZU7750"
+    },
+    {
+      "id": "120010",
+      "codigoTag": "IAD8995",
+      "equipamentoTag": "IAD8995"
+    },
+    {
+      "id": "120011",
+      "codigoTag": "MAQUINA MIG",
+      "equipamentoTag": "MAQUINA MIG"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tequipamentoTag\n10\tOM100\tOM100\n20\tPC300\tPC300\n29\tIXE1F44\tIXE1F44\n37\tNVJ7902\tNVJ7902\n38\tNVH6212\tNVH6212\n40\tOER1B00\tOER1B00\n50\tPIPA HZH 3961\tPIPA HZH 3961\n86\tQMO6E54\tQMO6E54\n87\tQMN1F10\tQMN1F10\n91\tPENEIRA NW200\tPENEIRA NW200\n120001\tAVS 4001200\tAVS 4001200\n120002\tC100\tC100\n120003\tCALHA VIBRATORIA 01\tCALHA VIBRATORIA 01\n120004\tCALHA VIBRATORIA 02\tCALHA VIBRATORIA 02\n120005\tCALHA VIBRATORIA 03\tCALHA VIBRATORIA 03\n120007\tDRAGA DIESEL 02\tDRAGA DIESEL 02\n120008\tHZC4975\tHZC4975\n120009\tHZU7750\tHZU7750\n120010\tIAD8995\tIAD8995\n120011\tMAQUINA MIG\tMAQUINA MIG\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

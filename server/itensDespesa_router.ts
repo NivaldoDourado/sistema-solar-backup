@@ -9,7 +9,71 @@ import {
   periodoCusto,
   equipamentoExcluidoTag,
 } from "../drizzle/schema";
-import { TAGS_OUTRAS_DESP_SETOR, TAGS_CONTA_EXPLOSIVOS } from "./importDespesas_correspondencias";
+import { TAGS_OUTRAS_DESP_SETOR, TAGS_CONTA_EXPLOSIVOS, CORRESPONDENCIAS_APROVADAS, CORRESPONDENCIAS_FORCADAS } from "./importDespesas_correspondencias";
+
+/**
+ * Build a reverse mapping: equipamentoId → list of planilha tags that map to it.
+ * Also builds codigoTag → equipamentoId from the correspondências.
+ * This is needed because the relatório analítico shows equipment by codigoTag (from equipamentos table),
+ * but item_despesa_importado stores the planilha tag (which can be completely different).
+ * 
+ * Example: codigoTag "FOX 8-20" → equipamentoId 48 → planilha tag "PERFURATRIZ HIDR. 01"
+ */
+function buildReverseTagMap(): { idToTags: Map<number, string[]>; tagToId: Map<string, number> } {
+  const tagToId = new Map<string, number>();
+  const idToTags = new Map<number, string[]>();
+
+  // From CORRESPONDENCIAS_APROVADAS: planilha_tag → equipamentoId
+  for (const [tag, id] of Object.entries(CORRESPONDENCIAS_APROVADAS)) {
+    tagToId.set(tag.toUpperCase(), id);
+    if (!idToTags.has(id)) idToTags.set(id, []);
+    idToTags.get(id)!.push(tag);
+  }
+
+  // From CORRESPONDENCIAS_FORCADAS: planilha_tag → equipamentoId
+  for (const [tag, info] of Object.entries(CORRESPONDENCIAS_FORCADAS)) {
+    tagToId.set(tag.toUpperCase(), info.equipamentoId);
+    if (!idToTags.has(info.equipamentoId)) idToTags.set(info.equipamentoId, []);
+    idToTags.get(info.equipamentoId)!.push(tag);
+  }
+
+  return { idToTags, tagToId };
+}
+
+/**
+ * Given a codigoTag from the equipamentos table, find all planilha tags that could match.
+ * Strategy:
+ * 1. The codigoTag itself (direct match)
+ * 2. Look up equipamentoId by codigoTag in the correspondências, then get all planilha tags for that ID
+ * 3. Look up equipamentoId from the equipamentos table, then get all planilha tags for that ID
+ */
+async function findPlanilhaTagsForCodigoTag(codigoTag: string): Promise<string[]> {
+  const { idToTags, tagToId } = buildReverseTagMap();
+  const tags = new Set<string>();
+  tags.add(codigoTag); // Always include the codigoTag itself
+
+  // Check if codigoTag is directly in correspondências
+  const idFromCorr = tagToId.get(codigoTag.toUpperCase());
+  if (idFromCorr && idToTags.has(idFromCorr)) {
+    for (const t of idToTags.get(idFromCorr)!) tags.add(t);
+  }
+
+  // Look up the equipamentoId from the equipamentos table by codigoTag
+  const db2 = await getDb();
+  if (db2) {
+    const rows = await db2
+      .select({ id: equipamentos.id })
+      .from(equipamentos)
+      .where(eq(equipamentos.codigoTag, codigoTag));
+    for (const row of rows) {
+      if (idToTags.has(row.id)) {
+        for (const t of idToTags.get(row.id)!) tags.add(t);
+      }
+    }
+  }
+
+  return Array.from(tags);
+}
 
 const CLASSIFICACAO_LABELS: Record<string, string> = {
   combustivel: "Combustível",
@@ -331,6 +395,25 @@ export const itensDespesaRouter = router({
           .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
       }
 
+      // Se ainda não encontrou, usa o mapa de correspondências para resolver a tag
+      // Isso lida com tags completamente diferentes: codigoTag "FOX 8-20" → planilha tag "PERFURATRIZ HIDR. 01"
+      if (result.length === 0) {
+        const possibleTags = await findPlanilhaTagsForCodigoTag(input.equipamentoTag);
+        // Remove the original tag (already tried) and try all alternatives
+        const altTags = possibleTags.filter(t => t !== input.equipamentoTag);
+        if (altTags.length > 0) {
+          result = await db2
+            .select()
+            .from(itemDespesaImportado)
+            .where(and(
+              eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+              inArray(itemDespesaImportado.equipamentoTag, altTags),
+              eq(itemDespesaImportado.classificacao, input.classificacao),
+            ))
+            .orderBy(desc(sql`CAST(${itemDespesaImportado.custo} AS DECIMAL(14,2))`));
+        }
+      }
+
       return result.map(r => ({
         id: r.id,
         sequencia: r.sequencia,
@@ -429,7 +512,7 @@ export const itensDespesaRouter = router({
 
       // Normalizar tag removendo espaços para match flexível (ex: "944C" vs "944 C")
       const tagNorm = input.equipamentoTag.replace(/\s+/g, "");
-      const result = await db2
+      let result = await db2
         .select()
         .from(itemDespesaImportado)
         .where(and(
@@ -438,6 +521,24 @@ export const itensDespesaRouter = router({
           eq(itemDespesaImportado.classificacao, "combustivel"),
         ))
         .orderBy(asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`));
+
+      // Se não encontrou, usa o mapa de correspondências para resolver a tag
+      // Isso lida com tags completamente diferentes: codigoTag "FOX 8-20" → planilha tag "PERFURATRIZ HIDR. 01"
+      if (result.length === 0) {
+        const possibleTags = await findPlanilhaTagsForCodigoTag(input.equipamentoTag);
+        const altTags = possibleTags.filter(t => t !== input.equipamentoTag);
+        if (altTags.length > 0) {
+          result = await db2
+            .select()
+            .from(itemDespesaImportado)
+            .where(and(
+              eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
+              inArray(itemDespesaImportado.equipamentoTag, altTags),
+              eq(itemDespesaImportado.classificacao, "combustivel"),
+            ))
+            .orderBy(asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`));
+        }
+      }
 
       const itens = result.map(r => ({
         id: r.id,

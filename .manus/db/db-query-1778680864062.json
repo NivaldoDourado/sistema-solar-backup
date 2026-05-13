@@ -1,0 +1,20 @@
+{
+  "query": "\n-- Screenshot shows \"R938 - 01 - ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\"\n-- Tag extracted would be \"R938 - 01\" (everything before first \" - \" which is at position 8)\n-- Actually wait - \"R938 - 01 - ESCAVADEIRA...\" - the first \" - \" is between \"R938\" and \"01\"\n-- So tag = \"R938\"\n-- Let's check what's in item_despesa_importado for R938\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND (equipamentoTag LIKE '%R938%' OR equipamentoTag LIKE '%938%')\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- Screenshot shows \"R938 - 01 - ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\"\n-- Tag extracted would be \"R938 - 01\" (everything before first \" - \" which is at position 8)\n-- Actually wait - \"R938 - 01 - ESCAVADEIRA...\" - the first \" - \" is between \"R938\" and \"01\"\n-- So tag = \"R938\"\n-- Let's check what's in item_despesa_importado for R938\nSELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 \nAND (equipamentoTag LIKE '%R938%' OR equipamentoTag LIKE '%938%')\nLIMIT 10;\n",
+  "rows": [
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "equipamentoDescricao": "ESCAVADEIRA R 938",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "equipamentoDescricao": "ESCAVADEIRA LIEBHER R938",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\nESCAVADEIRA R 938 02\tESCAVADEIRA R 938\tNULL\nESCAVADEIRA R938\tESCAVADEIRA LIEBHER R938\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

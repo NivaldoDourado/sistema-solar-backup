@@ -1,0 +1,9 @@
+{
+  "query": "\n-- The key insight: most items have equipamentoSistemaId = NULL\n-- The drill-down uses codigoTag from the equipamentos table (via rateioMem_calc)\n-- but the items are stored with the planilha tag (which is different)\n-- We need to build a reverse mapping: equipamentoId → planilha tags\n\n-- Let's check: for items WITH equipamentoSistemaId set, does the drill-down work?\nSELECT DISTINCT equipamentoTag, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 AND equipamentoSistemaId IS NOT NULL\nORDER BY equipamentoTag\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- The key insight: most items have equipamentoSistemaId = NULL\n-- The drill-down uses codigoTag from the equipamentos table (via rateioMem_calc)\n-- but the items are stored with the planilha tag (which is different)\n-- We need to build a reverse mapping: equipamentoId → planilha tags\n\n-- Let's check: for items WITH equipamentoSistemaId set, does the drill-down work?\nSELECT DISTINCT equipamentoTag, equipamentoSistemaId \nFROM item_despesa_importado \nWHERE periodoCustoId = 60001 AND equipamentoSistemaId IS NOT NULL\nORDER BY equipamentoTag\nLIMIT 20;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 264
+}

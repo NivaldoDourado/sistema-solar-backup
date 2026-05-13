@@ -1,0 +1,20 @@
+{
+  "query": "\n-- The relatório analítico shows \"FOX 8-20 - PERFURATRIZ HIDRAULICA WOLF FOX8 -20\"\n-- The tag extracted by extrairTag() would be \"FOX 8-20\"\n-- But in item_despesa_importado the tag is \"PERFURATRIZ HIDR. 01\"\n-- Let's check the equipamentos table for FOX 8-20\nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%FOX%' OR nomeDoEquipamento LIKE '%FOX%' LIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \n-- The relatório analítico shows \"FOX 8-20 - PERFURATRIZ HIDRAULICA WOLF FOX8 -20\"\n-- The tag extracted by extrairTag() would be \"FOX 8-20\"\n-- But in item_despesa_importado the tag is \"PERFURATRIZ HIDR. 01\"\n-- Let's check the equipamentos table for FOX 8-20\nSELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE codigoTag LIKE '%FOX%' OR nomeDoEquipamento LIKE '%FOX%' LIMIT 10;\n",
+  "rows": [
+    {
+      "id": "48",
+      "codigoTag": "FOX 8-20",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20"
+    },
+    {
+      "id": "75",
+      "codigoTag": "MAR001",
+      "nomeDoEquipamento": "MARTELO PERFURATRIZ FOX 8-20"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n48\tFOX 8-20\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\n75\tMAR001\tMARTELO PERFURATRIZ FOX 8-20\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}
