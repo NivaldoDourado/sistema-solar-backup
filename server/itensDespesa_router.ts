@@ -427,12 +427,14 @@ export const itensDespesaRouter = router({
       const db2 = await getDb();
       if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
+      // Normalizar tag removendo espaços para match flexível (ex: "944C" vs "944 C")
+      const tagNorm = input.equipamentoTag.replace(/\s+/g, "");
       const result = await db2
         .select()
         .from(itemDespesaImportado)
         .where(and(
           eq(itemDespesaImportado.periodoCustoId, input.periodoCustoId),
-          eq(itemDespesaImportado.equipamentoTag, input.equipamentoTag),
+          sql`REPLACE(${itemDespesaImportado.equipamentoTag}, ' ', '') = ${tagNorm}`,
           eq(itemDespesaImportado.classificacao, "combustivel"),
         ))
         .orderBy(asc(sql`CAST(${itemDespesaImportado.hodometro} AS DECIMAL(12,2))`));

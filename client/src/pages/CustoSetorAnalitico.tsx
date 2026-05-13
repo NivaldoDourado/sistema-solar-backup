@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft, Search, XIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Factory, Wrench, DollarSign, BarChart3, Zap, Bomb, X, Filter, ArrowLeft, Search, XIcon, Fuel, Gauge, AlertTriangle } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
 // ─── Formatadores ────────────────────────────────────────────────────────────
@@ -498,6 +498,18 @@ export default function CustoSetorAnalitico() {
     }
   );
 
+  // Consumo de combustível detalhado de um equipamento (para drill-down de combustível)
+  const isCombustivelDrill = drillDown?.tipo === "equipamento_conta" && drillDown?.classificacao === "combustivel";
+  const { data: drillCombustivel, isLoading: drillCombustivelLoading } = trpc.itensDespesa.consumoPorEquipamento.useQuery(
+    {
+      periodoCustoId: selectedPeriodoId!,
+      equipamentoTag: drillDown?.equipamentoTag ?? "",
+    },
+    {
+      enabled: !!selectedPeriodoId && isCombustivelDrill && !!drillDown?.equipamentoTag,
+    }
+  );
+
   // Distribuição de uma despesa específica por subsetor
   const { data: drillDespesaSetor, isLoading: drillDespesaSetorLoading } = trpc.custoSetorRas.despesasPorDescricao.useQuery(
     {
@@ -515,7 +527,33 @@ export default function CustoSetorAnalitico() {
     const fmtVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(v ?? "");
     const fmtPctVal = (v: any) => typeof v === "number" ? v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%" : String(v ?? "");
 
-    // Equipamento → itens detalhados
+    // Equipamento → combustível detalhado (abastecimentos)
+    if (drillDown.tipo === "equipamento_conta" && drillDown.classificacao === "combustivel" && drillCombustivel) {
+      return {
+        columns: [
+          { header: "Data", key: "data" },
+          { header: "Produto", key: "produto" },
+          { header: "Litros", key: "litros", format: fmtVal },
+          { header: "Custo (R$)", key: "custo", format: fmtVal },
+          { header: "Horímetro", key: "horimetro", format: fmtVal },
+          { header: "Intervalo (h)", key: "intervalo", format: fmtVal },
+          { header: "Lt/Hr Calc.", key: "ltHrCalc", format: fmtVal },
+          { header: "Lt/Hr Plan.", key: "ltHrPlan", format: fmtVal },
+        ],
+        data: drillCombustivel.itens.map(i => ({
+          data: i.data || "",
+          produto: i.produto,
+          litros: i.quantidade,
+          custo: i.custo,
+          horimetro: i.hodometro ?? "",
+          intervalo: i.horasCalculadas ?? "",
+          ltHrCalc: i.consumoCalculado ?? "",
+          ltHrPlan: i.ltHrPlanilha ?? "",
+        })),
+      };
+    }
+
+    // Equipamento → itens detalhados (outras classificações)
     if (drillDown.tipo === "equipamento_conta" && drillItens) {
       return {
         columns: [
@@ -555,7 +593,7 @@ export default function CustoSetorAnalitico() {
     }
 
     return { columns: [], data: [] };
-  }, [drillDown, drillItens, drillDespesaSetor]);
+  }, [drillDown, drillItens, drillCombustivel, drillDespesaSetor]);
 
   const periodoAtual = useMemo(
     () => periodos?.find((p) => p.id === selectedPeriodoId) ?? null,
@@ -1017,8 +1055,165 @@ export default function CustoSetorAnalitico() {
 
           {/* Scrollable body */}
           <div className="overflow-y-auto overflow-x-auto px-6 py-4 flex-1 min-h-0">
-            {/* ─── Drill-down: Itens detalhados de equipamento por classificação ── */}
-            {drillDown?.tipo === "equipamento_conta" && (
+            {/* ─── Drill-down: Combustível — abastecimentos com consumo ──────────── */}
+            {drillDown?.tipo === "equipamento_conta" && isCombustivelDrill && (
+              <div>
+                {drillCombustivelLoading ? (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+                    Carregando abastecimentos...
+                  </div>
+                ) : drillCombustivel && drillCombustivel.itens.length > 0 ? (
+                  <div className="space-y-4">
+                    {/* Cards de resumo do combustível */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                      <Card className="border">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1"><Fuel className="h-3 w-3" /> Abastecimentos</div>
+                          <div className="text-base font-bold">{drillCombustivel.resumo.totalAbastecimentos}</div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5">Total Litros</div>
+                          <div className="text-base font-bold">{drillCombustivel.resumo.totalLitros.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} L</div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5">Total Custo</div>
+                          <div className="text-base font-bold">{fmtBRL(drillCombustivel.resumo.totalCusto)}</div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5">Horímetro</div>
+                          <div className="text-sm font-bold">
+                            {drillCombustivel.resumo.horimetroInicial != null
+                              ? `${Number(drillCombustivel.resumo.horimetroInicial).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} → ${Number(drillCombustivel.resumo.horimetroFinal).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`
+                              : "—"}
+                          </div>
+                          {drillCombustivel.resumo.totalHorasTrabalhadas != null && (
+                            <div className="text-[10px] text-muted-foreground">{drillCombustivel.resumo.totalHorasTrabalhadas.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} hrs trab.</div>
+                          )}
+                        </CardContent>
+                      </Card>
+                      <Card className="border bg-blue-50 dark:bg-blue-950">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1"><Gauge className="h-3 w-3" /> Média Lt/Hr</div>
+                          <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                            {drillCombustivel.resumo.mediaGeral != null ? fmt(drillCombustivel.resumo.mediaGeral) : "—"}
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border">
+                        <CardContent className="pt-2.5 pb-2.5 px-3">
+                          <div className="text-[10px] text-muted-foreground mb-0.5">R$/Lt | R$/Hr</div>
+                          <div className="text-sm font-bold">
+                            {drillCombustivel.resumo.custoMedioPorLitro != null ? fmtBRL(drillCombustivel.resumo.custoMedioPorLitro) : "—"}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {drillCombustivel.resumo.custoMedioPorHora != null ? `${fmtBRL(drillCombustivel.resumo.custoMedioPorHora)}/hr` : ""}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Tabela de abastecimentos */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{drillCombustivel.itens.length} abastecimentos</span>
+                      <span>
+                        {drillCombustivel.resumo.consumoMinimo != null && drillCombustivel.resumo.consumoMaximo != null && (
+                          <span className="mr-3">Consumo: {fmt(drillCombustivel.resumo.consumoMinimo)} — {fmt(drillCombustivel.resumo.consumoMaximo)} lt/hr</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="rounded-md border border-border overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/50">
+                            <TableHead className="w-8 text-xs">#</TableHead>
+                            <TableHead className="w-24 text-xs">Data</TableHead>
+                            <TableHead className="text-xs">Produto</TableHead>
+                            <TableHead className="text-right w-20 text-xs">Litros</TableHead>
+                            <TableHead className="text-right w-28 text-xs">Custo (R$)</TableHead>
+                            <TableHead className="text-right w-24 text-xs">Horímetro</TableHead>
+                            <TableHead className="text-right w-20 text-xs">Interv.(h)</TableHead>
+                            <TableHead className="text-right w-24 text-xs">
+                              <span className="flex items-center justify-end gap-1">
+                                <Gauge className="h-3 w-3" /> Lt/Hr
+                              </span>
+                            </TableHead>
+                            <TableHead className="text-right w-20 text-xs">Lt/Hr Plan.</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {drillCombustivel.itens.map((item, idx) => {
+                            const media = drillCombustivel.resumo.mediaGeral;
+                            const isAnomalo = media && item.consumoCalculado
+                              ? (item.consumoCalculado > media * 2 || item.consumoCalculado < media * 0.3)
+                              : false;
+                            return (
+                              <TableRow key={item.id} className={`${idx % 2 === 0 ? "" : "bg-muted/20"} ${isAnomalo ? "bg-red-50 dark:bg-red-950/30" : ""}`}>
+                                <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                                <TableCell className="text-xs font-mono">{item.data || "—"}</TableCell>
+                                <TableCell className="text-sm">{item.produto}</TableCell>
+                                <TableCell className="text-right font-mono text-sm font-medium">
+                                  {item.quantidade > 0 ? item.quantidade.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "—"}
+                                </TableCell>
+                                <TableCell className="text-right font-mono font-semibold text-sm">{fmtBRL(item.custo)}</TableCell>
+                                <TableCell className="text-right font-mono text-xs">
+                                  {item.hodometro != null ? item.hodometro.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "—"}
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-xs">
+                                  {item.horasCalculadas != null ? `${item.horasCalculadas.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}h` : "—"}
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-sm">
+                                  <span className="flex items-center justify-end gap-1">
+                                    {item.consumoCalculado != null ? (
+                                      <span className={`font-bold ${isAnomalo ? "text-red-600 dark:text-red-400" : "text-blue-700 dark:text-blue-300"}`}>
+                                        {fmt(item.consumoCalculado)}
+                                      </span>
+                                    ) : (
+                                      <span className="text-muted-foreground">—</span>
+                                    )}
+                                    {isAnomalo && <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                                  {item.ltHrPlanilha != null ? fmt(item.ltHrPlanilha) : "—"}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          <TableRow className="font-semibold bg-muted/40 border-t-2">
+                            <TableCell></TableCell>
+                            <TableCell className="text-sm">Total</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell className="text-right font-mono text-sm">
+                              {drillCombustivel.resumo.totalLitros.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} L
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm">{fmtBRL(drillCombustivel.resumo.totalCusto)}</TableCell>
+                            <TableCell colSpan={4}></TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground text-sm">
+                    <Fuel className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium mb-1">Nenhum abastecimento encontrado</p>
+                    <p className="text-xs">
+                      Importe a planilha de despesas de equipamentos para ver os abastecimentos individuais.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─── Drill-down: Itens detalhados de equipamento (não-combustível) ─── */}
+            {drillDown?.tipo === "equipamento_conta" && !isCombustivelDrill && (
               <div>
                 {drillItensLoading ? (
                   <div className="py-12 text-center text-muted-foreground text-sm">
@@ -1042,9 +1237,6 @@ export default function CustoSetorAnalitico() {
                             <TableHead className="text-right w-20 text-xs">Qtd</TableHead>
                             <TableHead className="text-right w-32 text-xs">Valor (R$)</TableHead>
                             <TableHead className="text-right w-20 text-xs">%</TableHead>
-                            {drillDown.classificacao === "combustivel" && (
-                              <TableHead className="text-right w-24 text-xs">Horímetro</TableHead>
-                            )}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1064,20 +1256,16 @@ export default function CustoSetorAnalitico() {
                                 </TableCell>
                                 <TableCell className="text-right font-mono font-medium text-sm">{fmtBRL(item.custo)}</TableCell>
                                 <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtPct(pctItem)}</TableCell>
-                                {drillDown.classificacao === "combustivel" && (
-                                  <TableCell className="text-right font-mono text-xs">{item.hodometro ?? "—"}</TableCell>
-                                )}
                               </TableRow>
                             );
                           })}
                           <TableRow className="font-semibold bg-muted/40 border-t-2">
                             <TableCell></TableCell>
-                            <TableCell colSpan={drillDown.classificacao === "combustivel" ? 4 : 3} className="text-sm">
+                            <TableCell colSpan={3} className="text-sm">
                               Total ({drillItens.length} itens)
                             </TableCell>
                             <TableCell className="text-right font-mono text-sm">{fmtBRL(drillItens.reduce((s, i) => s + i.custo, 0))}</TableCell>
                             <TableCell className="text-right font-mono text-xs">100,0%</TableCell>
-                            {drillDown.classificacao === "combustivel" && <TableCell></TableCell>}
                           </TableRow>
                         </TableBody>
                       </Table>

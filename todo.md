@@ -1063,3 +1063,11 @@
 ## Bugs no Drill-Down do Relatório Analítico
 - [x] Corrigir erro "DialogContent requires DialogTitle" (adicionado VisuallyHidden DialogTitle + aria-describedby)
 - [x] Corrigir itens não carregando para 944C - Peças de Reposição (normalização de espaços na tag do equipamento no backend)
+
+## Drill-Down Combustível no Relatório Analítico
+- [x] Analisar endpoints existentes de consumo de combustível e abastecimentos
+- [x] Criar/atualizar endpoint backend para buscar abastecimentos por equipamento e período
+- [x] Implementar drill-down de Combustível no CustoSetorAnalitico.tsx com abastecimentos individuais
+- [x] Incluir dados de consumo (litros, média Lt/Hr, R$/Hr) no drill-down de combustível
+- [x] Adicionar botões de exportação/impressão no drill-down de combustível
+- [x] Testar drill-down de combustível para diferentes equipamentos (944C: 21 abast., PC300: 6 abast.)
