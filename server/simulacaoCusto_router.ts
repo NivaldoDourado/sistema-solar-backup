@@ -11,9 +11,15 @@ import {
   parteDiariaItens,
   servicos,
   lancamentoCusto,
+  lancamentoSalario,
   contaCusto,
   metaCustoTonelada,
+  producao,
 } from "../drizzle/schema";
+
+// Data de corte para Método Caminhões (igual ao periodoCusto_router)
+const CORTE_ANO = 2026;
+const CORTE_MES = 4; // Abril
 
 // Helper para calcular primeiro e último dia do mês
 function getMesDates(mes: number, ano: number) {
@@ -175,16 +181,29 @@ export const simulacaoCustoRouter = router({
 
         let custoTotal = Array.from(gruposMap.values()).reduce((a, b) => a + b, 0);
 
-        // Fallback: se custo_setor estiver vazio, usar lancamento_custo
+        // Fallback: se custo_setor estiver vazio, usar lancamento_custo + lancamento_salario
+        // (mesma lógica da Apuração de Custo via listByPeriodo)
         if (custoTotal === 0) {
           const lancamentos = await db
             .select()
             .from(lancamentoCusto)
             .where(eq(lancamentoCusto.periodoCustoId, periodo.id));
-          custoTotal = lancamentos.reduce((acc, l) => acc + parseFloat(String(l.valor || '0')), 0);
+          let custoLancamentos = lancamentos.reduce((acc, l) => acc + parseFloat(String(l.valor || '0')), 0);
+
+          // Adicionar salários agregados (mesma lógica do lancamentoCusto_router.listByPeriodo)
+          const salariosAgregados = await db
+            .select({
+              contaCustoId: lancamentoSalario.contaCustoId,
+              totalValor: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))`,
+            })
+            .from(lancamentoSalario)
+            .where(eq(lancamentoSalario.periodoCustoId, periodo.id))
+            .groupBy(lancamentoSalario.contaCustoId);
+          const totalSalarios = salariosAgregados.reduce((acc, s) => acc + parseFloat(s.totalValor ?? '0'), 0);
+          custoTotal = custoLancamentos + totalSalarios;
+
           // Agrupar lancamentos por conta para setores
           if (custoTotal > 0) {
-            const contasIds = Array.from(new Set(lancamentos.map(l => l.contaCustoId)));
             const contas = await db.select().from(contaCusto);
             const contasMap = new Map(contas.map(c => [c.id, c]));
             const lancGrupoMap = new Map<string, number>();
@@ -193,19 +212,27 @@ export const simulacaoCustoRouter = router({
               const grupoNome = conta?.classificacao === 'custo_variavel' || conta?.classificacao === 'despesa_variavel' ? 'CUSTO VARIÁVEL' : 'CUSTO FIXO';
               lancGrupoMap.set(grupoNome, (lancGrupoMap.get(grupoNome) || 0) + parseFloat(String(l.valor || '0')));
             }
+            // Adicionar salários ao grupo CUSTO VARIÁVEL
+            for (const s of salariosAgregados) {
+              const val = parseFloat(s.totalValor ?? '0');
+              if (val > 0) {
+                lancGrupoMap.set('CUSTO VARIÁVEL', (lancGrupoMap.get('CUSTO VARIÁVEL') || 0) + val);
+              }
+            }
             for (const [gNome, tGeral] of Array.from(lancGrupoMap.entries())) {
               gruposMap.set(gNome, (gruposMap.get(gNome) || 0) + tGeral);
             }
           }
         }
 
-        // Produção: prioridade 1 = producaoTotal do período, 2 = quantidadeVendida, 3 = Método Caminhões
-        let producaoHist = parseFloat(String(periodo.producaoTotal || '0'));
-        if (producaoHist <= 0) {
-          producaoHist = parseFloat(String(periodo.quantidadeVendida || '0'));
-        }
-        if (producaoHist <= 0) {
-          // Calcular via Método Caminhões (partes diárias)
+        // Produção: mesma lógica do getProducaoDoModulo (periodoCusto_router)
+        // Abril/2026+: Método Caminhões (partes diárias)
+        // Antes de abril/2026: tabela producao (legado)
+        let producaoHist = 0;
+        const usarMetodoCaminhoes = periodo.ano > CORTE_ANO || (periodo.ano === CORTE_ANO && periodo.mes >= CORTE_MES);
+
+        if (usarMetodoCaminhoes) {
+          // Método Caminhões: soma de toneladas transportadas
           const { dataInicio: hDataInicio, dataFim: hDataFim } = getMesDates(periodo.mes, periodo.ano);
           const itensHist = itensProducao.filter(item => {
             if (!servicosCaminhoes.includes(item.servicoId)) return false;
@@ -213,6 +240,24 @@ export const simulacaoCustoRouter = router({
             return itemDate >= hDataInicio && itemDate <= hDataFim;
           });
           producaoHist = itensHist.reduce((acc, item) => acc + parseFloat(item.producao || '0'), 0);
+        } else {
+          // Legado: tabela producao
+          const { dataInicio: hDataInicio, dataFim: hDataFim } = getMesDates(periodo.mes, periodo.ano);
+          const dtInicioH = new Date(hDataInicio + "T00:00:00");
+          const dtFimH = new Date(hDataFim + "T23:59:59");
+          const [resultProd] = await db
+            .select({ total: sql<string>`COALESCE(SUM(${producao.quantidade}), 0)` })
+            .from(producao)
+            .where(and(gte(producao.data, dtInicioH), lte(producao.data, dtFimH)));
+          producaoHist = parseFloat(String(resultProd?.total ?? "0"));
+        }
+
+        // Fallback: se ainda zero, tentar producaoTotal do período ou quantidadeVendida
+        if (producaoHist <= 0) {
+          producaoHist = parseFloat(String(periodo.producaoTotal || '0'));
+        }
+        if (producaoHist <= 0) {
+          producaoHist = parseFloat(String(periodo.quantidadeVendida || '0'));
         }
 
         custoSetorHistorico.push({

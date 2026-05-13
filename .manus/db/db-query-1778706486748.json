@@ -1,0 +1,1365 @@
+{
+  "query": "\nSELECT \n  cc.nome as conta_nome,\n  cc.classificacao,\n  CAST(lc.valor AS DECIMAL(15,2)) as valor\nFROM lancamento_custo lc\nJOIN conta_custo cc ON cc.id = lc.contaCustoId\nWHERE lc.periodoCustoId = 60001\nORDER BY CAST(lc.valor AS DECIMAL(15,2)) DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT \n  cc.nome as conta_nome,\n  cc.classificacao,\n  CAST(lc.valor AS DECIMAL(15,2)) as valor\nFROM lancamento_custo lc\nJOIN conta_custo cc ON cc.id = lc.contaCustoId\nWHERE lc.periodoCustoId = 60001\nORDER BY CAST(lc.valor AS DECIMAL(15,2)) DESC;\n",
+  "rows": [
+    {
+      "conta_nome": "Impostos, CEFEM e Outras Taxas",
+      "classificacao": "custo_variavel",
+      "valor": "309340.07"
+    },
+    {
+      "conta_nome": "Explosivos e Acessórios",
+      "classificacao": "custo_variavel",
+      "valor": "136668.83"
+    },
+    {
+      "conta_nome": "Despesas Administrativas",
+      "classificacao": "custo_variavel",
+      "valor": "99119.93"
+    },
+    {
+      "conta_nome": "Energia Elétrica",
+      "classificacao": "custo_variavel",
+      "valor": "96429.96"
+    },
+    {
+      "conta_nome": "Frota/Man.Pat./Seg./Out.",
+      "classificacao": "custo_variavel",
+      "valor": "74246.37"
+    },
+    {
+      "conta_nome": "Consultorias Especializadas",
+      "classificacao": "custo_variavel",
+      "valor": "66279.62"
+    },
+    {
+      "conta_nome": "Despesas Indiretas",
+      "classificacao": "despesa_variavel",
+      "valor": "60663.09"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "44500.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "42068.92"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "40047.58"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "39330.00"
+    },
+    {
+      "conta_nome": "Comissão de Vendas",
+      "classificacao": "despesa_variavel",
+      "valor": "38728.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "33405.16"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "32788.42"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "31742.53"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "27899.59"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "26799.35"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "24975.25"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "24408.71"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "21744.25"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "21094.39"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "20688.26"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "20639.78"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "18378.38"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "18050.02"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "17710.44"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "17554.66"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "16869.68"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "15871.46"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "15000.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "14460.13"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "13962.94"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "13634.06"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "12872.39"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "12322.66"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "12090.69"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "11600.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "11250.93"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "10655.40"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "10249.67"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "9144.11"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "9001.18"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "8962.34"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "8714.29"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "8550.34"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "8368.29"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "8356.00"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "8269.76"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "8079.99"
+    },
+    {
+      "conta_nome": "Impostos, CEFEM e Outras Taxas",
+      "classificacao": "custo_variavel",
+      "valor": "8033.24"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "8000.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "7801.95"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "7774.92"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "7583.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "7407.38"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "7167.08"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "6455.85"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "6164.15"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "6045.61"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "5908.25"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "5800.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "5665.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "5608.15"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "5147.62"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "4987.07"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "4944.24"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "4680.55"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "4530.01"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "4525.79"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "4362.69"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "4345.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "4217.47"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "3960.77"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "3758.09"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "3413.01"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "3365.05"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "3072.30"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "3053.95"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "3038.29"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "2975.97"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "2969.41"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "2920.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "2866.68"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "2653.46"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "2613.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "2449.92"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "2255.76"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "2242.61"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "2195.63"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "2163.41"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "2100.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "2044.19"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1898.95"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1858.59"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1826.80"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "1701.03"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1641.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1590.22"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "1581.66"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1538.67"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1470.13"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1464.70"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1460.00"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1460.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1347.36"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1333.66"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1297.07"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1284.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1274.61"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1183.91"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "1168.21"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "1159.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1141.15"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "1137.11"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "1128.90"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1113.05"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "1099.54"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1062.59"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "1058.74"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "1046.10"
+    },
+    {
+      "conta_nome": "Explosivos e Acessórios",
+      "classificacao": "custo_variavel",
+      "valor": "1041.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "999.99"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "940.82"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "934.32"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "919.99"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "883.06"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "876.25"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "807.20"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "789.36"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "777.50"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "750.00"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "750.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "737.05"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "721.89"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "717.19"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "695.36"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "689.70"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "667.39"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "656.91"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "640.08"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "632.28"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "630.31"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "626.03"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "616.65"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "614.12"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "613.54"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "604.23"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "598.06"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "597.50"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "583.06"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "580.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "575.73"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "550.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "527.00"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "526.15"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "510.84"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "507.21"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "501.12"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "500.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "499.19"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "490.15"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "489.81"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "478.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "458.12"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "456.13"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "425.01"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "417.47"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "416.92"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "410.02"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "409.20"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "403.50"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "400.00"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "386.32"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "379.77"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "374.82"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "371.51"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "369.46"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "354.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "334.08"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "334.07"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "331.15"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "317.37"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "315.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "310.04"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "307.92"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "300.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "291.53"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "282.63"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "281.58"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "280.00"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "279.48"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "258.64"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "254.00"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "232.53"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "221.58"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "220.00"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "217.61"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "212.16"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "210.98"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "209.24"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "208.23"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "207.81"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "207.19"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "200.00"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "194.74"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "194.74"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "187.41"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "187.41"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "184.73"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "184.73"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "179.42"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "170.65"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "166.59"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "166.59"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "163.35"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "153.54"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "150.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "149.93"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "149.93"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "145.76"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "142.60"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "134.83"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "134.32"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "134.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "133.90"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "127.80"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "125.74"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "124.94"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "124.22"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "124.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "121.39"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "120.06"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "120.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "118.10"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "115.57"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "108.90"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "106.25"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "104.12"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "102.44"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "94.08"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "90.96"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "90.01"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "83.29"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "83.29"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "83.29"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "82.78"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "77.95"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "75.91"
+    },
+    {
+      "conta_nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "valor": "75.79"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "63.01"
+    },
+    {
+      "conta_nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "valor": "60.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "58.80"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "57.88"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "50.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "44.74"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "41.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "39.56"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "35.50"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "34.00"
+    },
+    {
+      "conta_nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "valor": "28.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "26.45"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "25.80"
+    },
+    {
+      "conta_nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "valor": "19.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "8.60"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "8.50"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "6.56"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "5.40"
+    },
+    {
+      "conta_nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "valor": "3.00"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1.65"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1.39"
+    },
+    {
+      "conta_nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "valor": "1.30"
+    }
+  ],
+  "messages": [],
+  "stdout": "conta_nome\tclassificacao\tvalor\nImpostos, CEFEM e Outras Taxas\tcusto_variavel\t309340.07\nExplosivos e Acessórios\tcusto_variavel\t136668.83\nDespesas Administrativas\tcusto_variavel\t99119.93\nEnergia Elétrica\tcusto_variavel\t96429.96\nFrota/Man.Pat./Seg./Out.\tcusto_variavel\t74246.37\nConsultorias Especializadas\tcusto_variavel\t66279.62\nDespesas Indiretas\tdespesa_variavel\t60663.09\nPeças de Desgaste\tcusto_variavel\t44500.00\nCombustível\tcusto_variavel\t42068.92\nPeças de Desgaste\tcusto_variavel\t40047.58\nPeças de Desgaste\tcusto_variavel\t39330.00\nComissão de Vendas\tdespesa_variavel\t38728.00\nCombustível\tcusto_variavel\t33405.16\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t32788.42\nPeças de Desgaste\tcusto_variavel\t31742.53\nCombustível\tcusto_variavel\t27899.59\nPeças de Desgaste\tcusto_variavel\t26799.35\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t24975.25\nOutras Despesas de Setores\tcusto_variavel\t24408.71\nCombustível\tcusto_variavel\t21744.25\nCombustível\tcusto_variavel\t21094.39\nOutras Despesas dos Equipamentos\tcusto_variavel\t20688.26\nCombustível\tcusto_variavel\t20639.78\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t18378.38\nCombustível\tcusto_variavel\t18050.02\nCombustível\tcusto_variavel\t17710.44\nCombustível\tcusto_variavel\t17554.66\nCombustível\tcusto_variavel\t16869.68\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t15871.46\nOutras Despesas dos Equipamentos\tcusto_variavel\t15000.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t14460.13\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t13962.94\nPeças de Desgaste\tcusto_variavel\t13634.06\nCombustível\tcusto_variavel\t12872.39\nCombustível\tcusto_variavel\t12322.66\nCombustível\tcusto_variavel\t12090.69\nOutras Despesas dos Equipamentos\tcusto_variavel\t11600.00\nCombustível\tcusto_variavel\t11250.93\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t10655.40\nPeças de Desgaste\tcusto_variavel\t10249.67\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t9144.11\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t9001.18\nOutras Despesas dos Equipamentos\tcusto_variavel\t8962.34\nLubrificantes\tcusto_variavel\t8714.29\nOutras Despesas de Setores\tcusto_variavel\t8550.34\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t8368.29\nOutras Despesas dos Equipamentos\tcusto_variavel\t8356.00\nOutras Despesas dos Equipamentos\tcusto_variavel\t8269.76\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t8079.99\nImpostos, CEFEM e Outras Taxas\tcusto_variavel\t8033.24\nOutras Despesas dos Equipamentos\tcusto_variavel\t8000.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t7801.95\nCombustível\tcusto_variavel\t7774.92\nCombustível\tcusto_variavel\t7583.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t7407.38\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t7167.08\nCombustível\tcusto_variavel\t6455.85\nCombustível\tcusto_variavel\t6164.15\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t6045.61\nLubrificantes\tcusto_variavel\t5908.25\nLubrificantes\tcusto_variavel\t5800.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t5665.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t5608.15\nLubrificantes\tcusto_variavel\t5147.62\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t4987.07\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t4944.24\nCombustível\tcusto_variavel\t4680.55\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t4530.01\nOutras Despesas de Setores\tcusto_variavel\t4525.79\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t4362.69\nPeças de Desgaste\tcusto_variavel\t4345.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t4217.47\nOutras Despesas dos Equipamentos\tcusto_variavel\t3960.77\nOutras Despesas de Setores\tcusto_variavel\t3758.09\nLubrificantes\tcusto_variavel\t3413.01\nPeças de Desgaste\tcusto_variavel\t3365.05\nCombustível\tcusto_variavel\t3072.30\nCombustível\tcusto_variavel\t3053.95\nOutras Despesas dos Equipamentos\tcusto_variavel\t3038.29\nLubrificantes\tcusto_variavel\t2975.97\nCombustível\tcusto_variavel\t2969.41\nOutras Despesas dos Equipamentos\tcusto_variavel\t2920.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t2866.68\nCombustível\tcusto_variavel\t2653.46\nPeças de Desgaste\tcusto_variavel\t2613.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t2449.92\nLubrificantes\tcusto_variavel\t2255.76\nCombustível\tcusto_variavel\t2242.61\nCombustível\tcusto_variavel\t2195.63\nOutras Despesas de Setores\tcusto_variavel\t2163.41\nPeças de Desgaste\tcusto_variavel\t2100.00\nLubrificantes\tcusto_variavel\t2044.19\nLubrificantes\tcusto_variavel\t1898.95\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1858.59\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1826.80\nCombustível\tcusto_variavel\t1701.03\nLubrificantes\tcusto_variavel\t1641.00\nLubrificantes\tcusto_variavel\t1590.22\nCombustível\tcusto_variavel\t1581.66\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1538.67\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1470.13\nOutras Despesas dos Equipamentos\tcusto_variavel\t1464.70\nOutras Despesas dos Equipamentos\tcusto_variavel\t1460.00\nOutras Despesas dos Equipamentos\tcusto_variavel\t1460.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1347.36\nLubrificantes\tcusto_variavel\t1333.66\nOutras Despesas dos Equipamentos\tcusto_variavel\t1297.07\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1284.00\nLubrificantes\tcusto_variavel\t1274.61\nOutras Despesas dos Equipamentos\tcusto_variavel\t1183.91\nCombustível\tcusto_variavel\t1168.21\nOutras Despesas de Setores\tcusto_variavel\t1159.00\nLubrificantes\tcusto_variavel\t1141.15\nCombustível\tcusto_variavel\t1137.11\nCombustível\tcusto_variavel\t1128.90\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1113.05\nOutras Despesas dos Equipamentos\tcusto_variavel\t1099.54\nLubrificantes\tcusto_variavel\t1062.59\nLubrificantes\tcusto_variavel\t1058.74\nPeças de Desgaste\tcusto_variavel\t1046.10\nExplosivos e Acessórios\tcusto_variavel\t1041.00\nCombustível\tcusto_variavel\t999.99\nOutras Despesas dos Equipamentos\tcusto_variavel\t940.82\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t934.32\nOutras Despesas dos Equipamentos\tcusto_variavel\t919.99\nCombustível\tcusto_variavel\t883.06\nOutras Despesas dos Equipamentos\tcusto_variavel\t876.25\nOutras Despesas dos Equipamentos\tcusto_variavel\t807.20\nOutras Despesas dos Equipamentos\tcusto_variavel\t789.36\nPeças de Desgaste\tcusto_variavel\t777.50\nOutras Despesas dos Equipamentos\tcusto_variavel\t750.00\nOutras Despesas dos Equipamentos\tcusto_variavel\t750.00\nCombustível\tcusto_variavel\t737.05\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t721.89\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t717.19\nPeças de Desgaste\tcusto_variavel\t695.36\nCombustível\tcusto_variavel\t689.70\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t667.39\nLubrificantes\tcusto_variavel\t656.91\nOutras Despesas dos Equipamentos\tcusto_variavel\t640.08\nLubrificantes\tcusto_variavel\t632.28\nPeças de Desgaste\tcusto_variavel\t630.31\nOutras Despesas dos Equipamentos\tcusto_variavel\t626.03\nLubrificantes\tcusto_variavel\t616.65\nLubrificantes\tcusto_variavel\t614.12\nOutras Despesas dos Equipamentos\tcusto_variavel\t613.54\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t604.23\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t598.06\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t597.50\nLubrificantes\tcusto_variavel\t583.06\nOutras Despesas dos Equipamentos\tcusto_variavel\t580.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t575.73\nOutras Despesas dos Equipamentos\tcusto_variavel\t550.00\nCombustível\tcusto_variavel\t527.00\nOutras Despesas de Setores\tcusto_variavel\t526.15\nLubrificantes\tcusto_variavel\t510.84\nCombustível\tcusto_variavel\t507.21\nLubrificantes\tcusto_variavel\t501.12\nCombustível\tcusto_variavel\t500.00\nLubrificantes\tcusto_variavel\t499.19\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t490.15\nLubrificantes\tcusto_variavel\t489.81\nPeças de Desgaste\tcusto_variavel\t478.00\nLubrificantes\tcusto_variavel\t458.12\nOutras Despesas dos Equipamentos\tcusto_variavel\t456.13\nCombustível\tcusto_variavel\t425.01\nPeças de Desgaste\tcusto_variavel\t417.47\nOutras Despesas de Setores\tcusto_variavel\t416.92\nCombustível\tcusto_variavel\t410.02\nLubrificantes\tcusto_variavel\t409.20\nLubrificantes\tcusto_variavel\t403.50\nLubrificantes\tcusto_variavel\t400.00\nOutras Despesas de Setores\tcusto_variavel\t386.32\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t379.77\nLubrificantes\tcusto_variavel\t374.82\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t371.51\nPeças de Desgaste\tcusto_variavel\t369.46\nLubrificantes\tcusto_variavel\t354.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t334.08\nCombustível\tcusto_variavel\t334.07\nCombustível\tcusto_variavel\t331.15\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t317.37\nLubrificantes\tcusto_variavel\t315.00\nCombustível\tcusto_variavel\t310.04\nOutras Despesas dos Equipamentos\tcusto_variavel\t307.92\nOutras Despesas dos Equipamentos\tcusto_variavel\t300.00\nLubrificantes\tcusto_variavel\t291.53\nLubrificantes\tcusto_variavel\t282.63\nCombustível\tcusto_variavel\t281.58\nOutras Despesas dos Equipamentos\tcusto_variavel\t280.00\nPeças de Desgaste\tcusto_variavel\t279.48\nOutras Despesas dos Equipamentos\tcusto_variavel\t258.64\nLubrificantes\tcusto_variavel\t254.00\nCombustível\tcusto_variavel\t232.53\nOutras Despesas de Setores\tcusto_variavel\t221.58\nLubrificantes\tcusto_variavel\t220.00\nPeças de Desgaste\tcusto_variavel\t217.61\nOutras Despesas dos Equipamentos\tcusto_variavel\t212.16\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t210.98\nOutras Despesas dos Equipamentos\tcusto_variavel\t209.24\nLubrificantes\tcusto_variavel\t208.23\nLubrificantes\tcusto_variavel\t207.81\nOutras Despesas dos Equipamentos\tcusto_variavel\t207.19\nOutras Despesas dos Equipamentos\tcusto_variavel\t200.00\nOutras Despesas dos Equipamentos\tcusto_variavel\t194.74\nOutras Despesas dos Equipamentos\tcusto_variavel\t194.74\nLubrificantes\tcusto_variavel\t187.41\nLubrificantes\tcusto_variavel\t187.41\nPeças de Desgaste\tcusto_variavel\t184.73\nPeças de Desgaste\tcusto_variavel\t184.73\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t179.42\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t170.65\nLubrificantes\tcusto_variavel\t166.59\nLubrificantes\tcusto_variavel\t166.59\nLubrificantes\tcusto_variavel\t163.35\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t153.54\nOutras Despesas dos Equipamentos\tcusto_variavel\t150.00\nLubrificantes\tcusto_variavel\t149.93\nLubrificantes\tcusto_variavel\t149.93\nLubrificantes\tcusto_variavel\t145.76\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t142.60\nPeças de Desgaste\tcusto_variavel\t134.83\nOutras Despesas de Setores\tcusto_variavel\t134.32\nPeças de Desgaste\tcusto_variavel\t134.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t133.90\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t127.80\nPeças de Desgaste\tcusto_variavel\t125.74\nLubrificantes\tcusto_variavel\t124.94\nLubrificantes\tcusto_variavel\t124.22\nLubrificantes\tcusto_variavel\t124.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t121.39\nCombustível\tcusto_variavel\t120.06\nOutras Despesas dos Equipamentos\tcusto_variavel\t120.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t118.10\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t115.57\nLubrificantes\tcusto_variavel\t108.90\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t106.25\nLubrificantes\tcusto_variavel\t104.12\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t102.44\nCombustível\tcusto_variavel\t94.08\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t90.96\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t90.01\nLubrificantes\tcusto_variavel\t83.29\nLubrificantes\tcusto_variavel\t83.29\nLubrificantes\tcusto_variavel\t83.29\nPeças de Desgaste\tcusto_variavel\t82.78\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t77.95\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t75.91\nCombustível\tcusto_variavel\t75.79\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t63.01\nOutras Despesas dos Equipamentos\tcusto_variavel\t60.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t58.80\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t57.88\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t50.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t44.74\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t41.00\nLubrificantes\tcusto_variavel\t39.56\nPeças de Desgaste\tcusto_variavel\t35.50\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t34.00\nLubrificantes\tcusto_variavel\t28.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t26.45\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t25.80\nPeças de Desgaste\tcusto_variavel\t19.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t8.60\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t8.50\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t6.56\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t5.40\nOutras Despesas de Setores\tcusto_variavel\t3.00\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1.65\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1.39\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t1.30\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

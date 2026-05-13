@@ -1,0 +1,20 @@
+{
+  "query": "\nSELECT \n  cc.classificacao,\n  SUM(CAST(lc.valor AS DECIMAL(15,2))) as total,\n  COUNT(*) as qtd\nFROM lancamento_custo lc\nJOIN conta_custo cc ON cc.id = lc.contaCustoId\nWHERE lc.periodoCustoId = 60001\nGROUP BY cc.classificacao;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT \n  cc.classificacao,\n  SUM(CAST(lc.valor AS DECIMAL(15,2))) as total,\n  COUNT(*) as qtd\nFROM lancamento_custo lc\nJOIN conta_custo cc ON cc.id = lc.contaCustoId\nWHERE lc.periodoCustoId = 60001\nGROUP BY cc.classificacao;\n",
+  "rows": [
+    {
+      "classificacao": "custo_variavel",
+      "total": "1834003.35",
+      "qtd": "269"
+    },
+    {
+      "classificacao": "despesa_variavel",
+      "total": "99391.09",
+      "qtd": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "classificacao\ttotal\tqtd\ncusto_variavel\t1834003.35\t269\ndespesa_variavel\t99391.09\t2\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

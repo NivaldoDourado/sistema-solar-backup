@@ -1120,3 +1120,8 @@
 - [x] Custo Total Projetado mostrando R$ 4.4M - corrigido dupla contagem por nomes de grupos diferentes entre meses
 - [x] Custo/t mostrando R$ 61,56 - corrigido, agora usa média do custo total mensal
 - [x] Causa raiz: abril usava lancamento_custo com nomes "CUSTO VARIÁVEL/FIXO" vs fev/mar com nomes de setores
+
+## Bug: Histórico Recente usa fontes diferentes da Apuração de Custo
+- [x] Abril: custo agora inclui lancamento_custo + lancamento_salario (igual Apuração)
+- [x] Fev/Mar: produção agora usa tabela producao (legado) via CORTE_ANO/CORTE_MES
+- [x] Corrigido: mesma lógica de getProducaoDoModulo + listByPeriodo - 166 testes passando

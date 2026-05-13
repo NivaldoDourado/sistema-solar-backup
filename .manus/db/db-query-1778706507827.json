@@ -1,0 +1,125 @@
+{
+  "query": "\nSELECT cc.nome, cc.classificacao, \n  COALESCE((SELECT SUM(CAST(lc.valor AS DECIMAL(15,2))) FROM lancamento_custo lc WHERE lc.periodoCustoId = 60001 AND lc.contaCustoId = cc.id), 0) as total_abril\nFROM conta_custo cc\nORDER BY total_abril DESC;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute \nSELECT cc.nome, cc.classificacao, \n  COALESCE((SELECT SUM(CAST(lc.valor AS DECIMAL(15,2))) FROM lancamento_custo lc WHERE lc.periodoCustoId = 60001 AND lc.contaCustoId = cc.id), 0) as total_abril\nFROM conta_custo cc\nORDER BY total_abril DESC;\n",
+  "rows": [
+    {
+      "nome": "Combustível",
+      "classificacao": "custo_variavel",
+      "total_abril": "348594.64"
+    },
+    {
+      "nome": "Impostos, CEFEM e Outras Taxas",
+      "classificacao": "custo_variavel",
+      "total_abril": "317373.31"
+    },
+    {
+      "nome": "Peças de Reposição / Itens de Consumo",
+      "classificacao": "custo_variavel",
+      "total_abril": "253939.14"
+    },
+    {
+      "nome": "Peças de Desgaste",
+      "classificacao": "custo_variavel",
+      "total_abril": "224538.84"
+    },
+    {
+      "nome": "Explosivos e Acessórios",
+      "classificacao": "custo_variavel",
+      "total_abril": "137709.83"
+    },
+    {
+      "nome": "Outras Despesas dos Equipamentos",
+      "classificacao": "custo_variavel",
+      "total_abril": "110754.67"
+    },
+    {
+      "nome": "Despesas Administrativas",
+      "classificacao": "custo_variavel",
+      "total_abril": "99119.93"
+    },
+    {
+      "nome": "Energia Elétrica",
+      "classificacao": "custo_variavel",
+      "total_abril": "96429.96"
+    },
+    {
+      "nome": "Frota/Man.Pat./Seg./Out.",
+      "classificacao": "custo_variavel",
+      "total_abril": "74246.37"
+    },
+    {
+      "nome": "Consultorias Especializadas",
+      "classificacao": "custo_variavel",
+      "total_abril": "66279.62"
+    },
+    {
+      "nome": "Despesas Indiretas",
+      "classificacao": "despesa_variavel",
+      "total_abril": "60663.09"
+    },
+    {
+      "nome": "Lubrificantes",
+      "classificacao": "custo_variavel",
+      "total_abril": "58763.41"
+    },
+    {
+      "nome": "Outras Despesas de Setores",
+      "classificacao": "custo_variavel",
+      "total_abril": "46253.63"
+    },
+    {
+      "nome": "Comissão de Vendas",
+      "classificacao": "despesa_variavel",
+      "total_abril": "38728.00"
+    },
+    {
+      "nome": "Pneus",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Equipamentos de Apoio",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Entrega de Material",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "RH - Salários da Operação",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Depreciação",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Sal.Oper./Enc. Oper.",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Encargos de Movimentação Financeira",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    },
+    {
+      "nome": "Sal. Diretoria/Pró-Labore",
+      "classificacao": "custo_variavel",
+      "total_abril": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "nome\tclassificacao\ttotal_abril\nCombustível\tcusto_variavel\t348594.64\nImpostos, CEFEM e Outras Taxas\tcusto_variavel\t317373.31\nPeças de Reposição / Itens de Consumo\tcusto_variavel\t253939.14\nPeças de Desgaste\tcusto_variavel\t224538.84\nExplosivos e Acessórios\tcusto_variavel\t137709.83\nOutras Despesas dos Equipamentos\tcusto_variavel\t110754.67\nDespesas Administrativas\tcusto_variavel\t99119.93\nEnergia Elétrica\tcusto_variavel\t96429.96\nFrota/Man.Pat./Seg./Out.\tcusto_variavel\t74246.37\nConsultorias Especializadas\tcusto_variavel\t66279.62\nDespesas Indiretas\tdespesa_variavel\t60663.09\nLubrificantes\tcusto_variavel\t58763.41\nOutras Despesas de Setores\tcusto_variavel\t46253.63\nComissão de Vendas\tdespesa_variavel\t38728.00\nPneus\tcusto_variavel\t0\nEquipamentos de Apoio\tcusto_variavel\t0\nEntrega de Material\tcusto_variavel\t0\nRH - Salários da Operação\tcusto_variavel\t0\nDepreciação\tcusto_variavel\t0\nSal.Adm./Almox./Ofic./Serv.Aux./Encargos\tcusto_variavel\t0\nSal.Oper./Enc. Oper.\tcusto_variavel\t0\nEncargos de Movimentação Financeira\tcusto_variavel\t0\nSal. Diretoria/Pró-Labore\tcusto_variavel\t0\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}
