@@ -22,6 +22,7 @@ import { impostosRouter } from "./impostos_router";
 import { rateioMemRouter } from "./rateioMem_router";
 import { validacaoFechamentoRouter } from "./validacaoFechamento_router";
 import { contaExcluidaRouter } from "./contaExcluida_router";
+import { dashboardConfigRouter } from "./dashboardConfig_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3520,6 +3521,7 @@ export const appRouter = router({
    usuarios: usuariosRouter,
   vendas: vendasRouter,
   permissoes: permissoesRouter,
+  dashboardConfig: dashboardConfigRouter,
   periodoCusto: periodoCustoRouter,
   lancamentoCusto: lancamentoCustoRouter,
   custoSetor: custoSetorRouter,

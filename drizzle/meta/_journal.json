@@ -134,6 +134,13 @@
       "when": 1778617272790,
       "tag": "0018_wonderful_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1779656354964,
+      "tag": "0019_demonic_yellowjacket",
+      "breakpoints": true
     }
   ]
 }

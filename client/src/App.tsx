@@ -49,6 +49,7 @@ import MobileDashboard from "./pages/MobileDashboard";
 import MetasAlertas from "./pages/MetasAlertas";
 import OutrasParadas from "./pages/OutrasParadas";
 import Rotinas from "./pages/Rotinas";
+import DashboardConfig from "./pages/DashboardConfig";
 import ItensDespesa from "./pages/ItensDespesa";
 import LancamentoSalarios from "./pages/LancamentoSalarios";
 import LancamentoImpostos from "./pages/LancamentoImpostos";
@@ -344,6 +345,13 @@ function Router() {
       <Route path={"/permissoes"}>
         <DashboardLayout>
           <Permissoes />
+        </DashboardLayout>
+      </Route>
+
+      {/* Configuração do Dashboard - acesso restrito a Consultoria */}
+      <Route path={"/dashboard-config"}>
+        <DashboardLayout>
+          <DashboardConfig />
         </DashboardLayout>
       </Route>
 

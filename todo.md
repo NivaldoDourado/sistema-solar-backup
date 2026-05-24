@@ -1125,3 +1125,12 @@
 - [x] Abril: custo agora inclui lancamento_custo + lancamento_salario (igual Apuração)
 - [x] Fev/Mar: produção agora usa tabela producao (legado) via CORTE_ANO/CORTE_MES
 - [x] Corrigido: mesma lógica de getProducaoDoModulo + listByPeriodo - 166 testes passando
+
+## Dashboard Personalizado por Perfil (Opção 2)
+- [x] Criar tabela dashboard_cards_config no schema
+- [x] Criar router backend dashboardConfig (getByRole, save, resetToDefault, myConfig)
+- [x] Criar tela admin para Consultoria configurar cards visíveis por perfil
+- [x] Integrar filtro de cards no Dashboard web (Home.tsx)
+- [x] Integrar filtro de cards no Dashboard mobile (MobileDashboard.tsx)
+- [x] Adicionar link no menu lateral (DashboardLayout)
+- [x] Testes vitest

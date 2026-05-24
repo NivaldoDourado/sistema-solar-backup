@@ -266,6 +266,13 @@ export default function MobileDashboard() {
 
   const filtroParams = useMemo(() => ({ dataInicio, dataFim }), [dataInicio, dataFim]);
 
+  // Dashboard config: cards visíveis por perfil
+  const { data: dashboardConfig } = trpc.dashboardConfig.myConfig.useQuery();
+  const isCardVisible = (cardId: string) => {
+    if (!dashboardConfig) return true;
+    return dashboardConfig.visibleCards.includes(cardId);
+  };
+
   // ---- Queries ----
   const abastecimentoTotais = trpc.abastecimento.totais.useQuery(filtroParams);
   const custosTotais = trpc.custos.totais.useQuery(filtroParams);
@@ -578,8 +585,8 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* KPIs Grid - Cards Básicos */}
       {/* ============================================================ */}
-      {/* Card Status dos Lançamentos - substitui Equipamentos Ativos */}
-      {rotinasStatus.data && rotinasStatus.data.length > 0 && (
+      {/* Card Status dos Lançamentos */}
+      {isCardVisible("status_lancamentos") && rotinasStatus.data && rotinasStatus.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="rounded-2xl bg-slate-800 border border-slate-700 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -658,6 +665,7 @@ export default function MobileDashboard() {
       )}
 
       <div className="px-4 mt-4 grid grid-cols-2 gap-3">
+        {isCardVisible("combustivel") && (
         <KpiCard
           icon={<Fuel className="w-5 h-5 text-white" />}
           label="Combustível (L)"
@@ -666,7 +674,8 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-orange-600 to-orange-800"
         />
-        {/* Card Produção (m³) temporariamente desabilitado */}
+        )}
+        {isCardVisible("custos_totais") && (
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custos Totais"
@@ -675,7 +684,8 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-red-600 to-red-800"
         />
-        {/* Card Manutenções temporariamente desabilitado */}
+        )}
+        {isCardVisible("combustivel") && (
         <KpiCard
           icon={<DollarSign className="w-5 h-5 text-white" />}
           label="Custo Combustível"
@@ -684,12 +694,13 @@ export default function MobileDashboard() {
           color="text-white"
           bgColor="bg-gradient-to-br from-yellow-600 to-yellow-800"
         />
+        )}
       </div>
 
       {/* ============================================================ */}
       {/* Estoque Mínimo de Peças */}
       {/* ============================================================ */}
-      {estoqueMinimoPecas.data && estoqueMinimoPecas.data.length > 0 && (() => {
+      {isCardVisible("estoque_minimo") && estoqueMinimoPecas.data && estoqueMinimoPecas.data.length > 0 && (() => {
         const abaixoMinimo = estoqueMinimoPecas.data!.filter((p: any) => p.abaixoMinimo);
         return (
           <div className="px-4 mt-4">
@@ -730,7 +741,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Cards de Vendas por Tipo */}
       {/* ============================================================ */}
-      {(vendasPorTipo.venda.totalM3 > 0 || vendasPorTipo.amortizacao.totalM3 > 0 || vendasPorTipo.doacao.totalM3 > 0) && (
+      {isCardVisible("vendas") && (vendasPorTipo.venda.totalM3 > 0 || vendasPorTipo.amortizacao.totalM3 > 0 || vendasPorTipo.doacao.totalM3 > 0) && (
         <div className="px-4 mt-4">
           <h3 className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-2">Vendas por Tipo</h3>
           <div className="space-y-3">
@@ -801,6 +812,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção Método Caminhões */}
       {/* ============================================================ */}
+      {isCardVisible("producao_caminhoes") && (
       <div className="px-4 mt-4">
         {producaoMetodoCaminhoes.isLoading ? (
           <div className="bg-green-900/70 rounded-2xl border border-green-700 overflow-hidden">
@@ -933,11 +945,12 @@ export default function MobileDashboard() {
         </div>
         )}
       </div>
+      )}
 
       {/* ============================================================ */}
       {/* Medição das Pilhas */}
       {/* ============================================================ */}
-      {medicaoPilhasData.data && ((medicaoPilhasData.data as any).produtos?.length ?? 0) > 0 && (
+      {isCardVisible("medicao_pilhas") && medicaoPilhasData.data && ((medicaoPilhasData.data as any).produtos?.length ?? 0) > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-teal-900/70 rounded-2xl p-4 border border-teal-700">
             <div className="flex items-center justify-between mb-3">
@@ -980,6 +993,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção Último Dia Caminhões */}
       {/* ============================================================ */}
+      {isCardVisible("producao_ultimo_dia") && (
       <div className="px-4 mt-4">
         {producaoUltimoDia.isLoading ? (
           <div className="bg-cyan-900/70 rounded-2xl border border-cyan-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div>
@@ -1050,10 +1064,12 @@ export default function MobileDashboard() {
         </div>
         )}
       </div>
+      )}
 
       {/* ============================================================ */}
       {/* Produção de Perfuração */}
       {/* ============================================================ */}
+      {isCardVisible("producao_perfuracao") && (
       <div className="px-4 mt-4">
         {producaoPerfuracao.isLoading ? (
           <div className="bg-amber-900/70 rounded-2xl border border-amber-700 overflow-hidden"><CardSkeletonMobile rows={2} /></div>
@@ -1107,11 +1123,12 @@ export default function MobileDashboard() {
         </div>
         )}
       </div>
+      )}
 
       {/* ============================================================ */}
       {/* Revisões Preventivas */}
       {/* ============================================================ */}
-      {revisoesPreventivas.data && revisoesPreventivas.data.length > 0 && (
+      {isCardVisible("revisoes_preventivas") && revisoesPreventivas.data && revisoesPreventivas.data.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
@@ -1172,7 +1189,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção dos Motoristas */}
       {/* ============================================================ */}
-      {producaoMotoristasData.isLoading ? (
+      {isCardVisible("producao_motoristas") && (producaoMotoristasData.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-cyan-900/70 rounded-2xl border border-cyan-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div></div>
       ) : (producaoMotoristasData.data?.motoristas && producaoMotoristasData.data.motoristas.length > 0) ? (
         <div className="px-4 mt-4">
@@ -1229,12 +1246,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Balanças Integradoras */}
       {/* ============================================================ */}
-      {producaoBalancasData.data && producaoBalancasData.data.equipamentos.length > 0 && (
+      {isCardVisible("producao_balancas") && producaoBalancasData.data && producaoBalancasData.data.equipamentos.length > 0 && (
         <div className="px-4 mt-4">
           <div className="bg-teal-900/80 rounded-2xl p-4 border border-teal-700">
             <div className="flex items-center justify-between mb-3">
@@ -1308,7 +1325,7 @@ export default function MobileDashboard() {
       {/* ============================================================ */}
       {/* Produção por Setor */}
       {/* ============================================================ */}
-      {producaoPorSetor.isLoading ? (
+      {isCardVisible("producao_setor") && (producaoPorSetor.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
       ) : producaoPorSetor.data && producaoPorSetor.data.length > 0 ? (
         <div className="px-4 mt-4">
@@ -1354,12 +1371,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Produção por Serviço */}
       {/* ============================================================ */}
-      {producaoPorServico.isLoading ? (
+      {isCardVisible("producao_servico") && (producaoPorServico.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
       ) : producaoPorServico.data && producaoPorServico.data.length > 0 ? (
         <div className="px-4 mt-4">
@@ -1405,12 +1422,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Produção por Equipamento */}
       {/* ============================================================ */}
-      {producaoPorEquipamento.isLoading ? (
+      {isCardVisible("producao_equipamento") && (producaoPorEquipamento.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><CardSkeletonMobile rows={5} /></div></div>
       ) : producaoPorEquipamento.data && producaoPorEquipamento.data.length > 0 ? (
         <div className="px-4 mt-4">
@@ -1466,12 +1483,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Horas Trabalhadas */}
       {/* ============================================================ */}
-      {horasTrabalhadasMobile.isLoading ? (
+      {isCardVisible("horas_trabalhadas") && (horasTrabalhadasMobile.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-amber-900/70 rounded-2xl border border-amber-700 overflow-hidden"><CardSkeletonMobile rows={4} /></div></div>
       ) : (horasTrabalhadasMobile.data?.equipamentos && horasTrabalhadasMobile.data.equipamentos.length > 0) ? (
         <div className="px-4 mt-4">
@@ -1522,12 +1539,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Km Rodado */}
       {/* ============================================================ */}
-      {kmRodadoMobile.isLoading ? (
+      {isCardVisible("km_rodado") && (kmRodadoMobile.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl p-4 animate-pulse"><div className="h-4 bg-slate-700 rounded w-1/3 mb-3" /><div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-8 bg-slate-700 rounded-xl" />)}</div></div></div>
       ) : (kmRodadoMobile.data?.equipamentos && kmRodadoMobile.data.equipamentos.length > 0) ? (
         <div className="px-4 mt-4">
@@ -1577,12 +1594,12 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Horas Trabalhadas por Setor */}
       {/* ============================================================ */}
-      {horasPorSetorMobile.isLoading ? (
+      {isCardVisible("horas_por_setor") && (horasPorSetorMobile.isLoading ? (
         <div className="px-4 mt-4"><div className="bg-slate-800 rounded-2xl p-4 animate-pulse"><div className="h-4 bg-slate-700 rounded w-1/3 mb-3" /><div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-8 bg-slate-700 rounded-xl" />)}</div></div></div>
       ) : (horasPorSetorMobile.data?.setores && horasPorSetorMobile.data.setores.length > 0) ? (
         <div className="px-4 mt-4">
@@ -1650,7 +1667,7 @@ export default function MobileDashboard() {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null)}
 
       {/* ============================================================ */}
       {/* Metas configuradas */}

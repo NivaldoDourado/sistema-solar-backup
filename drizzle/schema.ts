@@ -1081,3 +1081,17 @@ export const contaExcluidaFluxo = mysqlTable("conta_excluida_fluxo", {
 });
 export type ContaExcluidaFluxo = typeof contaExcluidaFluxo.$inferSelect;
 export type InsertContaExcluidaFluxo = typeof contaExcluidaFluxo.$inferInsert;
+
+// ============================================================================
+// CONFIGURAÇÃO DO DASHBOARD POR PERFIL
+// ============================================================================
+export const dashboardCardsConfig = mysqlTable("dashboard_cards_config", {
+  id: int("id").autoincrement().primaryKey(),
+  perfil: mysqlEnum("perfil", ["admin", "diretor", "gerente", "consultoria", "coordenador", "usuario", "controle", "operador"]).notNull(),
+  cardId: varchar("cardId", { length: 100 }).notNull(),
+  visivel: mysqlEnum("visivel", ["sim", "nao"]).default("sim").notNull(),
+  ordem: int("ordem").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type DashboardCardConfig = typeof dashboardCardsConfig.$inferSelect;
+export type InsertDashboardCardConfig = typeof dashboardCardsConfig.$inferInsert;

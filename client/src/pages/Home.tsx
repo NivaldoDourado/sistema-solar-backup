@@ -116,6 +116,13 @@ export default function Home() {
     return { dataInicio: dataInicio || undefined, dataFim: dataFim || undefined };
   }, [dataInicio, dataFim]);
 
+  // Dashboard config: cards visíveis por perfil
+  const { data: dashboardConfig } = trpc.dashboardConfig.myConfig.useQuery();
+  const isCardVisible = (cardId: string) => {
+    if (!dashboardConfig) return true; // Enquanto carrega, mostra tudo
+    return dashboardConfig.visibleCards.includes(cardId);
+  };
+
   const { data: equipamentos } = trpc.equipamentos.list.useQuery(undefined, { enabled: hasModuleAccess("equipamentos") });
   const { data: parteDiaria } = trpc.parteDiaria.list.useQuery(undefined, { enabled: hasModuleAccess("parteDiaria") });
   const dashboardFiltro = useMemo(() => ({ dataInicio: dataInicio || undefined, dataFim: dataFim || undefined }), [dataInicio, dataFim]);
@@ -820,7 +827,8 @@ export default function Home() {
 
       {/* Cards de Resumo */}
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Card Status dos Lançamentos - substitui Equipamentos Ativos */}
+        {/* Card Status dos Lançamentos */}
+        {isCardVisible("status_lancamentos") && (
         <Card className="md:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -900,7 +908,9 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
+        )}
 
+        {isCardVisible("custos_totais") && (
         <Card>
           {loadingCustos ? <CardSkeletonSimple /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -934,7 +944,9 @@ export default function Home() {
           </CardContent>
           </>)}
         </Card>
+        )}
 
+        {isCardVisible("combustivel") && (
         <Card>
           {loadingAbastecimento ? <CardSkeletonSimple /> : (<>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -968,9 +980,10 @@ export default function Home() {
           </CardContent>
           </>)}
         </Card>
+        )}
 
         {/* Card Estoque Mínimo de Peças */}
-        {hasModuleAccess("pecasDesgaste") && estoqueMinimoPecas && estoqueMinimoPecas.length > 0 && (() => {
+        {isCardVisible("estoque_minimo") && hasModuleAccess("pecasDesgaste") && estoqueMinimoPecas && estoqueMinimoPecas.length > 0 && (() => {
           const abaixoMinimo = estoqueMinimoPecas.filter(p => p.abaixoMinimo);
           return (
             <Card className={abaixoMinimo.length > 0 ? "border-orange-400 dark:border-orange-600 border-2" : ""}>
@@ -1036,7 +1049,7 @@ export default function Home() {
       </div>
 
       {/* Cards de Vendas por Tipo */}
-      {hasModuleAccess("vendas") && (
+      {isCardVisible("vendas") && hasModuleAccess("vendas") && (
         <div className="grid gap-4 md:grid-cols-3">
           {/* Card Vendas */}
           <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 border-l-4 border-l-blue-500">
@@ -1223,7 +1236,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Card Medição das Pilhas - ao lado do Produção Método Caminhões */}
+      {/* Card Produção Caminhões + Medição das Pilhas */}
+      {(isCardVisible("producao_caminhoes") || isCardVisible("medicao_pilhas")) && (
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
           {loadingCaminhoes ? <CardSkeletonTable rows={5} /> : (<>
@@ -1577,9 +1591,10 @@ export default function Home() {
           </>)}
         </Card>
       </div>
+      )}
 
       {/* Card Produção Balanças Integradoras */}
-      {producaoBalancasData && producaoBalancasData.equipamentos.length > 0 && (
+      {isCardVisible("producao_balancas") && producaoBalancasData && producaoBalancasData.equipamentos.length > 0 && (
         <Card className="bg-teal-50 dark:bg-teal-950 border-teal-200 dark:border-teal-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
@@ -1663,6 +1678,7 @@ export default function Home() {
       )}
 
       {/* Card Produção Último Dia Caminhões */}
+      {isCardVisible("producao_ultimo_dia") && (
       <Card className="bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
         {loadingUltimoDia ? <CardSkeletonKpi /> : (<>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1837,8 +1853,10 @@ export default function Home() {
         </CardContent>
         </>)}
       </Card>
+      )}
 
       {/* Cards Perfuração e Revisões Preventivas lado a lado */}
+      {(isCardVisible("producao_perfuracao") || isCardVisible("revisoes_preventivas")) && (
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Card de Produção de Perfuração (diminuido) */}
         <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
@@ -2032,8 +2050,10 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Card Produção dos Motoristas */}
+      {isCardVisible("producao_motoristas") && (
       <Card className="bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
         {loadingMotoristas ? <CardSkeletonTable rows={5} /> : (<>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -2127,8 +2147,10 @@ export default function Home() {
         </CardContent>
         </>)}
       </Card>
+      )}
 
       {/* Gráficos de Produção */}
+      {(isCardVisible("producao_setor") || isCardVisible("producao_servico") || isCardVisible("producao_equipamento") || isCardVisible("horas_trabalhadas") || isCardVisible("km_rodado")) && (
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Produção por Setor */}
         <Card>
@@ -2514,9 +2536,10 @@ export default function Home() {
           </>)}
         </Card>
       </div>
+      )}
 
       {/* Horas Trabalhadas por Setor */}
-      {hasModuleAccess("parteDiaria") && (
+      {isCardVisible("horas_por_setor") && hasModuleAccess("parteDiaria") && (
       <div className="grid gap-4 md:grid-cols-1">
         <Card>
           {loadingHorasPorSetor ? <CardSkeletonBars rows={5} /> : (<>
@@ -2613,6 +2636,7 @@ export default function Home() {
       )}
 
       {/* Módulos Rápidos */}
+      {isCardVisible("acesso_rapido") && (
       <div>
         <h2 className="text-2xl font-bold mb-4">Acesso Rápido aos Módulos</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -2639,8 +2663,10 @@ export default function Home() {
           })}
         </div>
       </div>
+      )}
 
       {/* Visão Geral */}
+      {isCardVisible("visao_geral") && (
       <Card>
         <CardHeader>
           <CardTitle>Visão Geral do Sistema</CardTitle>
@@ -2666,6 +2692,7 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Modal de Relatório WhatsApp */}
       {destinatariosWpp && (
