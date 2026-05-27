@@ -1148,3 +1148,11 @@
 - [x] Corrigido parsePlanilhaFluxo em importFluxo_router.ts: mesma correção aplicada ao importador oficial
 - [x] Validado localmente: 144 contas parseadas, 52 itens após filtro, R$ 363.690,64 total
 - [x] 183 testes passando
+## Bug: Projeção de Custo Total muito abaixo da média após importação parcial
+- [x] Corrigida lógica de projeção: dados parciais não substituem mais a média histórica completamente
+- [x] Nova abordagem: média ponderada (60% histórico + 40% projeção baseada em parciais)
+- [x] Proporções dinâmicas: despesas equip ~56%, fluxo admin ~14% do custo total
+- [x] Corrigido bug de data inválida no fluxo: 'Maio/2026' → formato ISO correto
+- [x] Adicionado mínimo de 5 dias para aceitar dados parciais como válidos
+- [x] Validado: projeção com ambos parciais = R$ 2.604.785 (+0.2% vs média R$ 2.598.991)
+- [x] 183 testes passando

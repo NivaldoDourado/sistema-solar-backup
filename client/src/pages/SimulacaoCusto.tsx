@@ -489,8 +489,8 @@ export default function SimulacaoCusto() {
                             fileBase64: base64,
                             fileName: fluxoFile!.name,
                             mes, ano,
-                            dataInicio: fluxoPreview.periodo?.split(' a ')[0] || `${ano}-${String(mes).padStart(2,'0')}-01`,
-                            dataFim: fluxoPreview.periodo?.split(' a ')[1] || `${ano}-${String(mes).padStart(2,'0')}-28`,
+                            dataInicio: `${ano}-${String(mes).padStart(2,'0')}-01`,
+                            dataFim: `${ano}-${String(mes).padStart(2,'0')}-${new Date(ano, mes, 0).getDate()}`,
                           });
                         } catch (e: any) {
                           toast.error(e.message || 'Erro ao importar');

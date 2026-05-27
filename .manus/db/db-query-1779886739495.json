@@ -1,0 +1,25 @@
+{
+  "query": "SELECT pc.mes, pc.ano, SUM(CAST(lc.valor AS DECIMAL(14,2))) as total_lancamentos FROM lancamento_custo lc JOIN periodo_custo pc ON lc.periodoCustoId = pc.id WHERE (pc.mes = 4 AND pc.ano = 2026) OR (pc.mes = 3 AND pc.ano = 2026) OR (pc.mes = 2 AND pc.ano = 2026) GROUP BY pc.mes, pc.ano ORDER BY pc.ano, pc.mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, SUM(CAST(lc.valor AS DECIMAL(14,2))) as total_lancamentos FROM lancamento_custo lc JOIN periodo_custo pc ON lc.periodoCustoId = pc.id WHERE (pc.mes = 4 AND pc.ano = 2026) OR (pc.mes = 3 AND pc.ano = 2026) OR (pc.mes = 2 AND pc.ano = 2026) GROUP BY pc.mes, pc.ano ORDER BY pc.ano, pc.mes;",
+  "rows": [
+    {
+      "mes": "2",
+      "ano": "2026",
+      "total_lancamentos": "2265362.98"
+    },
+    {
+      "mes": "3",
+      "ano": "2026",
+      "total_lancamentos": "2907476.13"
+    },
+    {
+      "mes": "4",
+      "ano": "2026",
+      "total_lancamentos": "1933394.44"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\ttotal_lancamentos\n2\t2026\t2265362.98\n3\t2026\t2907476.13\n4\t2026\t1933394.44\n",
+  "stderr": "",
+  "execution_time_ms": 279
+}

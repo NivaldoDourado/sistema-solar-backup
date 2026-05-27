@@ -1,0 +1,14 @@
+{
+  "query": "SELECT MIN(createdAt) as first_created, MAX(createdAt) as last_created FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT MIN(createdAt) as first_created, MAX(createdAt) as last_created FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026;",
+  "rows": [
+    {
+      "first_created": "2026-05-27 12:23:31",
+      "last_created": "2026-05-27 12:23:36"
+    }
+  ],
+  "messages": [],
+  "stdout": "first_created\tlast_created\n2026-05-27 12:23:31\t2026-05-27 12:23:36\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

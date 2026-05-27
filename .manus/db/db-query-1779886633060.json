@@ -1,0 +1,22 @@
+{
+  "query": "SELECT COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(14,2))) as total_custo FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026; SELECT COUNT(*) as cnt, SUM(CAST(valor AS DECIMAL(14,2))) as total_valor FROM simulacao_fluxo_parcial WHERE mes=5 AND ano=2026;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(14,2))) as total_custo FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026; SELECT COUNT(*) as cnt, SUM(CAST(valor AS DECIMAL(14,2))) as total_valor FROM simulacao_fluxo_parcial WHERE mes=5 AND ano=2026;",
+  "rows": [
+    {
+      "cnt": "1075",
+      "total_custo": "898358.28"
+    },
+    {
+      "cnt": "cnt",
+      "total_custo": "total_valor"
+    },
+    {
+      "cnt": "52",
+      "total_custo": "363690.64"
+    }
+  ],
+  "messages": [],
+  "stdout": "cnt\ttotal_custo\n1075\t898358.28\ncnt\ttotal_valor\n52\t363690.64\n",
+  "stderr": "",
+  "execution_time_ms": 325
+}

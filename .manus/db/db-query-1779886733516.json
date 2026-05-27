@@ -1,0 +1,30 @@
+{
+  "query": "SELECT classificacao, SUM(CAST(custo AS DECIMAL(14,2))) as total FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026 GROUP BY classificacao;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT classificacao, SUM(CAST(custo AS DECIMAL(14,2))) as total FROM simulacao_despesa_parcial WHERE mes=5 AND ano=2026 GROUP BY classificacao;",
+  "rows": [
+    {
+      "classificacao": "outras_despesas",
+      "total": "85497.42"
+    },
+    {
+      "classificacao": "combustivel",
+      "total": "208016.77"
+    },
+    {
+      "classificacao": "pecas_reposicao",
+      "total": "338665.31"
+    },
+    {
+      "classificacao": "lubrificantes",
+      "total": "69572.60"
+    },
+    {
+      "classificacao": "pecas_desgaste",
+      "total": "196606.18"
+    }
+  ],
+  "messages": [],
+  "stdout": "classificacao\ttotal\noutras_despesas\t85497.42\ncombustivel\t208016.77\npecas_reposicao\t338665.31\nlubrificantes\t69572.60\npecas_desgaste\t196606.18\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

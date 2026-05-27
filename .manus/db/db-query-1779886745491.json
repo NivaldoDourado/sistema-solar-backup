@@ -1,0 +1,15 @@
+{
+  "query": "SELECT pc.mes, pc.ano, SUM(CAST(ls.valor AS DECIMAL(14,2))) as total_salarios FROM lancamento_salario ls JOIN periodo_custo pc ON ls.periodoCustoId = pc.id WHERE (pc.mes = 4 AND pc.ano = 2026) OR (pc.mes = 3 AND pc.ano = 2026) OR (pc.mes = 2 AND pc.ano = 2026) GROUP BY pc.mes, pc.ano ORDER BY pc.ano, pc.mes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, SUM(CAST(ls.valor AS DECIMAL(14,2))) as total_salarios FROM lancamento_salario ls JOIN periodo_custo pc ON ls.periodoCustoId = pc.id WHERE (pc.mes = 4 AND pc.ano = 2026) OR (pc.mes = 3 AND pc.ano = 2026) OR (pc.mes = 2 AND pc.ano = 2026) GROUP BY pc.mes, pc.ano ORDER BY pc.ano, pc.mes;",
+  "rows": [
+    {
+      "mes": "4",
+      "ano": "2026",
+      "total_salarios": "836716.76"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\ttotal_salarios\n4\t2026\t836716.76\n",
+  "stderr": "",
+  "execution_time_ms": 256
+}

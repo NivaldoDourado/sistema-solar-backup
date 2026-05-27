@@ -368,10 +368,14 @@ export const simulacaoCustoRouter = router({
       // ========================================================
       // 5. PROJEÇÃO FINAL: combinar dados parciais + média histórica
       // ========================================================
-      // Estratégia MELHORADA:
-      // Se há dados parciais importados (despesas de equipamentos e/ou fluxo),
-      // projetar esses dados reais para o mês inteiro e substituir a média histórica.
-      // Caso contrário, manter a lógica original (combustível real + média 3 meses).
+      // Estratégia CORRIGIDA:
+      // A média histórica dos últimos 3 meses é SEMPRE a base da projeção.
+      // Dados parciais (despesas de equipamentos e/ou fluxo) servem como INDICADORES
+      // para refinar a projeção, mas NUNCA substituem completamente a média histórica,
+      // porque cada importação parcial cobre apenas um SUBCONJUNTO dos custos totais:
+      // - Despesas de Equipamentos: cobre combustível, peças, lubrificantes (~35% do total)
+      // - Fluxo Realizado: cobre consultorias, energia, admin, indiretas (~15% do total)
+      // - NÃO COBERTOS: salários (~30%), fretes, impostos, investimentos (~20%)
 
       // Verificar se há combustível separado no histórico
       const combustivelHistorico = mediaSetores.find(s => 
@@ -386,53 +390,62 @@ export const simulacaoCustoRouter = router({
       let fluxoProjetado = 0;
 
       if (temDadosParciais) {
-        // MODO AVANÇADO: usar dados parciais reais projetados
-        fonteDados = "parcial_projetado";
+        // MODO MISTO: média histórica como BASE, dados parciais como INDICADORES
+        // A média histórica é sempre a referência principal.
+        // Dados parciais apenas refinam a projeção proporcionalmente.
+        fonteDados = "misto";
 
-        if (despesasParciais.length > 0) {
+        if (despesasParciais.length > 0 && despesasParcialDias >= 5) {
           const fatorDespesas = diasNoMes / despesasParcialDias;
           despesasProjetadas = despesasParcialTotal * fatorDespesas;
         }
 
-        if (fluxoParcial.length > 0) {
+        if (fluxoParcial.length > 0 && fluxoParcialDias >= 5) {
           const fatorFluxo = diasNoMes / fluxoParcialDias;
           fluxoProjetado = fluxoParcialTotal * fatorFluxo;
         }
 
-        // Combinar: despesas projetadas + fluxo projetado + combustível real
-        // Se não tem despesas parciais, usar média histórica para essa parcela
-        // Se não tem fluxo parcial, usar média histórica para essa parcela
-        const parcelaDespesas = despesasParciais.length > 0
-          ? despesasProjetadas
-          : (custoTotalMedio3Meses * 0.4); // Estimativa: despesas equip = ~40% do custo total
-
-        const parcelaFluxo = fluxoParcial.length > 0
-          ? fluxoProjetado
-          : (custoTotalMedio3Meses * 0.3); // Estimativa: fluxo = ~30% do custo total
-
-        // Combustível: sempre usar dado real se disponível
-        const parcelaCombustivel = combustivelAcumulado > 0
-          ? combustivelProjetado
-          : (custoTotalMedio3Meses * 0.15); // Estimativa: combustível = ~15% do custo total
-
-        // Salários e impostos: usar média histórica (não vem nos parciais)
-        // Verificar se fluxo parcial já inclui salários
-        const salarioNoFluxo = fluxoParcialPorConta['Salários Operacionais'] ||
-          fluxoParcialPorConta['Salários Não Operacionais'] || 0;
-        const parcelaResidual = salarioNoFluxo > 0 ? 0 : (custoTotalMedio3Meses * 0.15);
-
-        if (despesasParciais.length > 0 && fluxoParcial.length > 0) {
-          // Ambos disponíveis: usar dados reais projetados + combustível real
-          custoTotalProjetado = despesasProjetadas + fluxoProjetado + combustivelProjetado;
-          fonteDados = "parcial_projetado";
-        } else if (despesasParciais.length > 0) {
-          // Só despesas: projetar despesas + combustível real + média para fluxo
-          custoTotalProjetado = despesasProjetadas + combustivelProjetado + parcelaFluxo + parcelaResidual;
-          fonteDados = "misto";
+        // Abordagem: média ponderada entre histórico e projeção parcial
+        // Os dados parciais (despesas equip + fluxo) cobrem ~70% do custo total.
+        // Salários, impostos e outros (~30%) não vêm nas importações parciais.
+        // Usamos a proporção real: despesas+fluxo projetados vs média histórica
+        // para calcular um fator de escala que aplica ao total.
+        
+        const totalParcialProjetado = despesasProjetadas + fluxoProjetado;
+        
+        if (totalParcialProjetado > 0 && custoTotalMedio3Meses > 0) {
+          // Proporção dinâmica baseada em quais fontes estão disponíveis:
+          // - Despesas de equipamentos representam ~56% do custo total
+          // - Fluxo administrativo representa ~14% do custo total
+          const PROP_DESPESAS = 0.56;
+          const PROP_FLUXO = 0.14;
+          let propCoberta = 0;
+          if (despesasProjetadas > 0) propCoberta += PROP_DESPESAS;
+          if (fluxoProjetado > 0) propCoberta += PROP_FLUXO;
+          if (propCoberta === 0) propCoberta = 0.70; // fallback
+          
+          const parcelaEsperada = custoTotalMedio3Meses * propCoberta;
+          
+          // Fator de escala: quanto os dados reais diferem do esperado
+          const fatorEscala = totalParcialProjetado / parcelaEsperada;
+          
+          // Projeção baseada em dados parciais (escalando o total)
+          const projecaoParcial = custoTotalMedio3Meses * fatorEscala;
+          
+          // Média ponderada: 60% histórico + 40% projeção parcial
+          // Isso garante que a projeção fique próxima da média mas reflita tendências reais
+          custoTotalProjetado = custoTotalMedio3Meses * 0.60 + projecaoParcial * 0.40;
         } else {
-          // Só fluxo: projetar fluxo + combustível real + média para despesas
-          custoTotalProjetado = fluxoProjetado + combustivelProjetado + parcelaDespesas + parcelaResidual;
-          fonteDados = "misto";
+          // Dados parciais insuficientes: usar apenas média histórica
+          custoTotalProjetado = custoTotalMedio3Meses;
+          fonteDados = "media_historica";
+        }
+
+        // Se combustível real disponível (da tabela abastecimento), ajuste fino
+        if (combustivelAcumulado > 0) {
+          // Substituir parcela de combustível histórica pelo dado real projetado
+          const combustivelHistoricoMedia = custoTotalMedio3Meses * 0.08;
+          custoTotalProjetado = custoTotalProjetado - combustivelHistoricoMedia + combustivelProjetado;
         }
       } else if (combustivelHistorico && combustivelAcumulado > 0) {
         // Cenário original com combustível separado: substituir parcela de combustível
