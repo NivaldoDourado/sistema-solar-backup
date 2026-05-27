@@ -10,6 +10,7 @@ import {
   periodoCusto,
   contaCusto,
   itemDespesaImportado,
+  simulacaoDespesaParcial,
 } from "../drizzle/schema";
 import * as XLSX from "xlsx";
 import {
@@ -609,6 +610,14 @@ export const importDespesasRouter = router({
         }
       }
 
+      // Descartar dados parciais de simulação para este período (importação oficial substitui)
+      await db2.delete(simulacaoDespesaParcial).where(
+        and(
+          eq(simulacaoDespesaParcial.mes, input.mes),
+          eq(simulacaoDespesaParcial.ano, input.ano),
+        )
+      );
+
       return {
         sucesso: true,
         periodoId,
@@ -617,7 +626,7 @@ export const importDespesasRouter = router({
         totalItensDetalhados: itensDetalhados.length,
         totalImportado,
         resumo: { lubrificantes: totalLubrificantes, pecasDesgaste: totalPecasDesgaste, pecasReposicao: totalPecasReposicao, outrasDespesas: totalOutrasDespesas },
-      };;
+      };
     }),
 
   salvarRevisaoCorrespondencias: protectedProcedure

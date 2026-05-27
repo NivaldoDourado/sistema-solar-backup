@@ -15,6 +15,8 @@ import {
   contaCusto,
   metaCustoTonelada,
   producao,
+  simulacaoDespesaParcial,
+  simulacaoFluxoParcial,
 } from "../drizzle/schema";
 
 // Data de corte para Método Caminhões (igual ao periodoCusto_router)
@@ -138,6 +140,53 @@ export const simulacaoCustoRouter = router({
         (acc, item) => acc + parseFloat(String(item.valorTotal || '0')), 0
       );
       const combustivelProjetado = combustivelAcumulado * fatorProjecao;
+
+      // ========================================================
+      // 2.5 DADOS PARCIAIS IMPORTADOS (Simulação Avançada)
+      // ========================================================
+      const despesasParciais = await db.select().from(simulacaoDespesaParcial)
+        .where(and(
+          eq(simulacaoDespesaParcial.mes, input.mes),
+          eq(simulacaoDespesaParcial.ano, input.ano),
+        ));
+
+      const fluxoParcial = await db.select().from(simulacaoFluxoParcial)
+        .where(and(
+          eq(simulacaoFluxoParcial.mes, input.mes),
+          eq(simulacaoFluxoParcial.ano, input.ano),
+        ));
+
+      // Agregar despesas parciais por classificação
+      const despesasParcialPorClassificacao: Record<string, number> = {};
+      let despesasParcialTotal = 0;
+      let despesasParcialDias = 0;
+      if (despesasParciais.length > 0) {
+        const dtI = new Date(despesasParciais[0].dataInicio);
+        const dtF = new Date(despesasParciais[0].dataFim);
+        despesasParcialDias = Math.max(1, Math.floor((dtF.getTime() - dtI.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+        for (const d of despesasParciais) {
+          const val = parseFloat(String(d.custo || '0'));
+          despesasParcialPorClassificacao[d.classificacao] = (despesasParcialPorClassificacao[d.classificacao] || 0) + val;
+          despesasParcialTotal += val;
+        }
+      }
+
+      // Agregar fluxo parcial por conta
+      const fluxoParcialPorConta: Record<string, number> = {};
+      let fluxoParcialTotal = 0;
+      let fluxoParcialDias = 0;
+      if (fluxoParcial.length > 0) {
+        const dtI = new Date(fluxoParcial[0].dataInicio);
+        const dtF = new Date(fluxoParcial[0].dataFim);
+        fluxoParcialDias = Math.max(1, Math.floor((dtF.getTime() - dtI.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+        for (const f of fluxoParcial) {
+          const val = parseFloat(String(f.valor || '0'));
+          fluxoParcialPorConta[f.contaSistema] = (fluxoParcialPorConta[f.contaSistema] || 0) + val;
+          fluxoParcialTotal += val;
+        }
+      }
+
+      const temDadosParciais = despesasParciais.length > 0 || fluxoParcial.length > 0;
 
       // ========================================================
       // 3. HISTÓRICO DOS ÚLTIMOS 3 MESES (custos por setor)
@@ -319,29 +368,81 @@ export const simulacaoCustoRouter = router({
       // ========================================================
       // 5. PROJEÇÃO FINAL: combinar dados parciais + média histórica
       // ========================================================
-      // Estratégia: usar média do custo TOTAL mensal (não por grupo) para evitar
-      // dupla contagem quando nomes de grupos diferem entre meses (ex: custo_setor
-      // usa nomes de setores, lancamento_custo usa classificações contábeis).
-      // Se há dados reais de combustível no período, substituir a parcela de
-      // combustível da média pela projeção real.
+      // Estratégia MELHORADA:
+      // Se há dados parciais importados (despesas de equipamentos e/ou fluxo),
+      // projetar esses dados reais para o mês inteiro e substituir a média histórica.
+      // Caso contrário, manter a lógica original (combustível real + média 3 meses).
 
       // Verificar se há combustível separado no histórico
       const combustivelHistorico = mediaSetores.find(s => 
         s.grupoNome.toUpperCase().includes('COMBUST')
       );
-      
+
       let custoTotalProjetado: number;
-      if (combustivelHistorico && combustivelAcumulado > 0) {
-        // Cenário com combustível separado: substituir parcela de combustível
-        // pela projeção real baseada em dados do período
-        const outrosSetoresMedia = mediaSetores.filter(s => 
+      let fonteDados: "media_historica" | "parcial_projetado" | "misto" = "media_historica";
+
+      // Dados parciais de despesas projetados para o mês inteiro
+      let despesasProjetadas = 0;
+      let fluxoProjetado = 0;
+
+      if (temDadosParciais) {
+        // MODO AVANÇADO: usar dados parciais reais projetados
+        fonteDados = "parcial_projetado";
+
+        if (despesasParciais.length > 0) {
+          const fatorDespesas = diasNoMes / despesasParcialDias;
+          despesasProjetadas = despesasParcialTotal * fatorDespesas;
+        }
+
+        if (fluxoParcial.length > 0) {
+          const fatorFluxo = diasNoMes / fluxoParcialDias;
+          fluxoProjetado = fluxoParcialTotal * fatorFluxo;
+        }
+
+        // Combinar: despesas projetadas + fluxo projetado + combustível real
+        // Se não tem despesas parciais, usar média histórica para essa parcela
+        // Se não tem fluxo parcial, usar média histórica para essa parcela
+        const parcelaDespesas = despesasParciais.length > 0
+          ? despesasProjetadas
+          : (custoTotalMedio3Meses * 0.4); // Estimativa: despesas equip = ~40% do custo total
+
+        const parcelaFluxo = fluxoParcial.length > 0
+          ? fluxoProjetado
+          : (custoTotalMedio3Meses * 0.3); // Estimativa: fluxo = ~30% do custo total
+
+        // Combustível: sempre usar dado real se disponível
+        const parcelaCombustivel = combustivelAcumulado > 0
+          ? combustivelProjetado
+          : (custoTotalMedio3Meses * 0.15); // Estimativa: combustível = ~15% do custo total
+
+        // Salários e impostos: usar média histórica (não vem nos parciais)
+        // Verificar se fluxo parcial já inclui salários
+        const salarioNoFluxo = fluxoParcialPorConta['Salários Operacionais'] ||
+          fluxoParcialPorConta['Salários Não Operacionais'] || 0;
+        const parcelaResidual = salarioNoFluxo > 0 ? 0 : (custoTotalMedio3Meses * 0.15);
+
+        if (despesasParciais.length > 0 && fluxoParcial.length > 0) {
+          // Ambos disponíveis: usar dados reais projetados + combustível real
+          custoTotalProjetado = despesasProjetadas + fluxoProjetado + combustivelProjetado;
+          fonteDados = "parcial_projetado";
+        } else if (despesasParciais.length > 0) {
+          // Só despesas: projetar despesas + combustível real + média para fluxo
+          custoTotalProjetado = despesasProjetadas + combustivelProjetado + parcelaFluxo + parcelaResidual;
+          fonteDados = "misto";
+        } else {
+          // Só fluxo: projetar fluxo + combustível real + média para despesas
+          custoTotalProjetado = fluxoProjetado + combustivelProjetado + parcelaDespesas + parcelaResidual;
+          fonteDados = "misto";
+        }
+      } else if (combustivelHistorico && combustivelAcumulado > 0) {
+        // Cenário original com combustível separado: substituir parcela de combustível
+        const outrosMedia = mediaSetores.filter(s => 
           !s.grupoNome.toUpperCase().includes('COMBUST')
         );
-        const totalOutrosSetoresMedia = outrosSetoresMedia.reduce((acc, s) => acc + s.media3Meses, 0);
-        custoTotalProjetado = combustivelProjetado + totalOutrosSetoresMedia;
+        const totalOutrosMedia = outrosMedia.reduce((acc, s) => acc + s.media3Meses, 0);
+        custoTotalProjetado = combustivelProjetado + totalOutrosMedia;
       } else {
-        // Cenário sem combustível separado ou sem dados reais de combustível:
-        // usar média do custo total mensal diretamente
+        // Cenário sem dados parciais e sem combustível separado:
         custoTotalProjetado = custoTotalMedio3Meses;
       }
 
@@ -375,6 +476,28 @@ export const simulacaoCustoRouter = router({
         // Combustível (dado real parcial)
         combustivelAcumulado,
         combustivelProjetado,
+
+        // Dados parciais importados
+        dadosParciais: {
+          temDadosParciais,
+          fonteDados,
+          despesas: despesasParciais.length > 0 ? {
+            totalAcumulado: despesasParcialTotal,
+            totalProjetado: despesasProjetadas,
+            diasAbrangidos: despesasParcialDias,
+            porClassificacao: despesasParcialPorClassificacao,
+            dataInicio: despesasParciais[0]?.dataInicio || '',
+            dataFim: despesasParciais[0]?.dataFim || '',
+          } : null,
+          fluxo: fluxoParcial.length > 0 ? {
+            totalAcumulado: fluxoParcialTotal,
+            totalProjetado: fluxoProjetado,
+            diasAbrangidos: fluxoParcialDias,
+            porConta: fluxoParcialPorConta,
+            dataInicio: fluxoParcial[0]?.dataInicio || '',
+            dataFim: fluxoParcial[0]?.dataFim || '',
+          } : null,
+        },
 
         // Projeção total
         custoTotalProjetado,

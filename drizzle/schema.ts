@@ -1095,3 +1095,68 @@ export const dashboardCardsConfig = mysqlTable("dashboard_cards_config", {
 });
 export type DashboardCardConfig = typeof dashboardCardsConfig.$inferSelect;
 export type InsertDashboardCardConfig = typeof dashboardCardsConfig.$inferInsert;
+
+// ============================================================================
+// SIMULAÇÃO DE CUSTOS - DESPESAS PARCIAIS
+// Tabelas temporárias para importação parcial de despesas usadas na simulação
+// Os dados são descartados automaticamente quando a importação oficial é feita
+// ============================================================================
+
+// Despesas de Equipamentos Parciais (para simulação)
+export const simulacaoDespesaParcial = mysqlTable("simulacao_despesa_parcial", {
+  id: int("id").autoincrement().primaryKey(),
+  mes: int("mes").notNull(),
+  ano: int("ano").notNull(),
+  // Período parcial coberto
+  dataInicio: varchar("dataInicio", { length: 10 }).notNull(), // YYYY-MM-DD
+  dataFim: varchar("dataFim", { length: 10 }).notNull(),       // YYYY-MM-DD
+  // Equipamento
+  equipamentoTag: varchar("equipamentoTag", { length: 100 }).notNull(),
+  equipamentoDescricao: varchar("equipamentoDescricao", { length: 255 }),
+  equipamentoSistemaId: int("equipamentoSistemaId"),
+  // Classificação
+  classificacao: varchar("classificacao", { length: 50 }).notNull(), // lubrificantes, pecas_desgaste, pecas_reposicao, outras_despesas, combustivel
+  // Item
+  sequencia: varchar("sequencia", { length: 20 }),
+  data: varchar("data", { length: 20 }),
+  produto: varchar("produto", { length: 500 }).notNull(),
+  grupoProduto: varchar("grupoProduto", { length: 255 }),
+  quantidade: decimal("quantidade", { precision: 12, scale: 3 }).default("0"),
+  custo: decimal("custo", { precision: 12, scale: 2 }).notNull().default("0"),
+  centroCusto: varchar("centroCusto", { length: 20 }),
+  observacoes: text("observacoes"),
+  // Metadata
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SimulacaoDespesaParcial = typeof simulacaoDespesaParcial.$inferSelect;
+export type InsertSimulacaoDespesaParcial = typeof simulacaoDespesaParcial.$inferInsert;
+
+// Fluxo Realizado Parcial (para simulação)
+export const simulacaoFluxoParcial = mysqlTable("simulacao_fluxo_parcial", {
+  id: int("id").autoincrement().primaryKey(),
+  mes: int("mes").notNull(),
+  ano: int("ano").notNull(),
+  // Período parcial coberto
+  dataInicio: varchar("dataInicio", { length: 10 }).notNull(), // YYYY-MM-DD
+  dataFim: varchar("dataFim", { length: 10 }).notNull(),       // YYYY-MM-DD
+  // Conta do fluxo
+  contaPrincipalCodigo: varchar("contaPrincipalCodigo", { length: 20 }).notNull(),
+  contaPrincipalNome: varchar("contaPrincipalNome", { length: 255 }).notNull(),
+  contaSistema: varchar("contaSistema", { length: 255 }).notNull(),
+  setor: varchar("setor", { length: 100 }).notNull(),
+  // Subconta
+  contaCodigo: varchar("contaCodigo", { length: 20 }),
+  contaNome: varchar("contaNome", { length: 255 }),
+  nivel: int("nivel").notNull().default(2),
+  // Valor
+  valor: decimal("valor", { precision: 12, scale: 2 }).notNull().default("0"),
+  observacoes: text("observacoes"),
+  // Metadata
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SimulacaoFluxoParcial = typeof simulacaoFluxoParcial.$inferSelect;
+export type InsertSimulacaoFluxoParcial = typeof simulacaoFluxoParcial.$inferInsert;

@@ -12,7 +12,8 @@ import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, Info,
   CheckCircle2, Activity, BarChart3, Fuel, Factory,
   Calendar, Target, ArrowRight, Pencil, Save, X, ShieldAlert,
-  ChevronDown, ChevronUp, Scale, Truck, DollarSign, Layers
+  ChevronDown, ChevronUp, Scale, Truck, DollarSign, Layers,
+  Upload, FileSpreadsheet, Trash2, RefreshCw, Database
 } from "lucide-react";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
 
@@ -47,6 +48,11 @@ export default function SimulacaoCusto() {
   const [ano, setAno] = useState(ANO_ATUAL);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [metaInput, setMetaInput] = useState("");
+  const [mostrarImportParcial, setMostrarImportParcial] = useState(false);
+  const [despesaFile, setDespesaFile] = useState<File | null>(null);
+  const [fluxoFile, setFluxoFile] = useState<File | null>(null);
+  const [despesaPreview, setDespesaPreview] = useState<any>(null);
+  const [fluxoPreview, setFluxoPreview] = useState<any>(null);
   const { data: simulacao, isLoading } = trpc.simulacaoCusto.simular.useQuery({ mes, ano });
   const { data: metaData } = trpc.simulacaoCusto.getMeta.useQuery();
   const utils = trpc.useUtils();
@@ -58,6 +64,32 @@ export default function SimulacaoCusto() {
     },
     onError: () => {
       toast.error("Não foi possível salvar a meta.");
+    },
+  });
+
+  // Mutations para importação parcial
+  const parseDespesasMutation = trpc.simulacaoParcial.parseDespesas.useMutation();
+  const confirmarDespesasMutation = trpc.simulacaoParcial.confirmarDespesas.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.totalItens} itens importados com sucesso!`);
+      setDespesaFile(null);
+      setDespesaPreview(null);
+      utils.simulacaoCusto.simular.invalidate();
+    },
+  });
+  const parseFluxoMutation = trpc.simulacaoParcial.parseFluxo.useMutation();
+  const confirmarFluxoMutation = trpc.simulacaoParcial.confirmarFluxo.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.totalItens} itens importados com sucesso!`);
+      setFluxoFile(null);
+      setFluxoPreview(null);
+      utils.simulacaoCusto.simular.invalidate();
+    },
+  });
+  const limparMutation = trpc.simulacaoParcial.limpar.useMutation({
+    onSuccess: () => {
+      toast.success('Dados parciais removidos.');
+      utils.simulacaoCusto.simular.invalidate();
     },
   });
 
@@ -215,6 +247,282 @@ export default function SimulacaoCusto() {
           </Select>
         </div>
       </div>
+
+      {/* Card de Importação Parcial */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader className="pb-2 cursor-pointer" onClick={() => setMostrarImportParcial(!mostrarImportParcial)}>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Database className="h-4 w-4 text-primary" />
+            Despesas Parciais para Simulação
+            {simulacao?.dadosParciais?.temDadosParciais && (
+              <Badge variant="default" className="ml-2 text-xs bg-emerald-600">Dados importados</Badge>
+            )}
+            <span className="ml-auto">
+              {mostrarImportParcial ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </span>
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Importe relatórios parciais do período para melhorar a assertividade da projeção
+          </p>
+        </CardHeader>
+        {mostrarImportParcial && (
+          <CardContent className="space-y-4">
+            {/* Status dos dados parciais existentes */}
+            {simulacao?.dadosParciais?.temDadosParciais && (
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 space-y-2">
+                <p className="text-sm font-semibold text-emerald-800 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Dados parciais ativos nesta simulação
+                </p>
+                {simulacao.dadosParciais.despesas && (
+                  <div className="text-xs text-emerald-700">
+                    <strong>Despesas Equip.:</strong> {formatMoney(simulacao.dadosParciais.despesas.totalAcumulado)} acumulado
+                    ({simulacao.dadosParciais.despesas.diasAbrangidos} dias: {simulacao.dadosParciais.despesas.dataInicio} a {simulacao.dadosParciais.despesas.dataFim})
+                    → Projetado: <strong>{formatMoney(simulacao.dadosParciais.despesas.totalProjetado)}</strong>
+                  </div>
+                )}
+                {simulacao.dadosParciais.fluxo && (
+                  <div className="text-xs text-emerald-700">
+                    <strong>Fluxo Realizado:</strong> {formatMoney(simulacao.dadosParciais.fluxo.totalAcumulado)} acumulado
+                    ({simulacao.dadosParciais.fluxo.diasAbrangidos} dias: {simulacao.dadosParciais.fluxo.dataInicio} a {simulacao.dadosParciais.fluxo.dataFim})
+                    → Projetado: <strong>{formatMoney(simulacao.dadosParciais.fluxo.totalProjetado)}</strong>
+                  </div>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={async () => {
+                      if (!confirm('Deseja remover todos os dados parciais deste período?')) return;
+                      try {
+                        await limparMutation.mutateAsync({ mes, ano, tipo: 'ambos' });
+                      } catch (e: any) {
+                        toast.error(e.message || 'Erro ao limpar dados');
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Limpar Dados Parciais
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Upload Despesas de Equipamentos */}
+            <div className="p-4 rounded-lg border bg-background space-y-3">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-semibold">Despesas de Equipamentos (parcial)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Mesma planilha usada na importação oficial, mas com dados parciais do período (ex: 01/{String(mes).padStart(2,'0')} a 20/{String(mes).padStart(2,'0')})
+              </p>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed cursor-pointer hover:bg-muted/50 transition-colors">
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {despesaFile ? despesaFile.name : 'Selecionar planilha .xlsx'}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) { setDespesaFile(f); setDespesaPreview(null); }
+                    }}
+                  />
+                </label>
+                {despesaFile && !despesaPreview && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={parseDespesasMutation.isPending}
+                    onClick={async () => {
+                      const buf = await despesaFile.arrayBuffer();
+                      const base64 = btoa(Array.from(new Uint8Array(buf), b => String.fromCharCode(b)).join(''));
+                      try {
+                        const result = await parseDespesasMutation.mutateAsync({
+                          fileBase64: base64,
+                          fileName: despesaFile.name,
+                          mes, ano,
+                        });
+                        setDespesaPreview(result);
+                      } catch (e: any) {
+                        toast.error(e.message || 'Erro ao processar planilha');
+                      }
+                    }}
+                  >
+                    {parseDespesasMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : 'Analisar'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Preview Despesas */}
+              {despesaPreview && (
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 space-y-2">
+                  <p className="text-sm font-semibold text-blue-800">Prévia da Importação</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                    <div><span className="text-muted-foreground">Total:</span> <strong>{formatMoney(despesaPreview.totalGeral)}</strong></div>
+                    <div><span className="text-muted-foreground">Itens:</span> <strong>{despesaPreview.totalItens}</strong></div>
+                    <div><span className="text-muted-foreground">Equipamentos:</span> <strong>{despesaPreview.equipamentosEncontrados}</strong></div>
+                    <div><span className="text-muted-foreground">Período:</span> <strong>{despesaPreview.dataMinima} a {despesaPreview.dataMaxima}</strong></div>
+                  </div>
+                  {despesaPreview.totalPorClassificacao && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(despesaPreview.totalPorClassificacao).map(([cls, val]) => (
+                        <Badge key={cls} variant="outline" className="text-xs">
+                          {cls}: {formatMoney(val as number)}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      disabled={confirmarDespesasMutation.isPending}
+                      onClick={async () => {
+                        const buf = await despesaFile!.arrayBuffer();
+                        const base64 = btoa(Array.from(new Uint8Array(buf), b => String.fromCharCode(b)).join(''));
+                        try {
+                          await confirmarDespesasMutation.mutateAsync({
+                            fileBase64: base64,
+                            fileName: despesaFile!.name,
+                            mes, ano,
+                            dataInicio: despesaPreview.dataMinima,
+                            dataFim: despesaPreview.dataMaxima,
+                          });
+                        } catch (e: any) {
+                          toast.error(e.message || 'Erro ao importar');
+                        }
+                      }}
+                    >
+                      {confirmarDespesasMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1" />}
+                      Confirmar Importação Parcial
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setDespesaFile(null); setDespesaPreview(null); }}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Upload Fluxo Realizado */}
+            <div className="p-4 rounded-lg border bg-background space-y-3">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-purple-600" />
+                <span className="text-sm font-semibold">Fluxo Realizado (parcial)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Mesma planilha usada na importação oficial do fluxo de caixa, com dados parciais do período
+              </p>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed cursor-pointer hover:bg-muted/50 transition-colors">
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {fluxoFile ? fluxoFile.name : 'Selecionar planilha .xlsx'}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) { setFluxoFile(f); setFluxoPreview(null); }
+                    }}
+                  />
+                </label>
+                {fluxoFile && !fluxoPreview && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={parseFluxoMutation.isPending}
+                    onClick={async () => {
+                      const buf = await fluxoFile.arrayBuffer();
+                      const base64 = btoa(Array.from(new Uint8Array(buf), b => String.fromCharCode(b)).join(''));
+                      try {
+                        const result = await parseFluxoMutation.mutateAsync({
+                          fileBase64: base64,
+                          fileName: fluxoFile.name,
+                          mes, ano,
+                        });
+                        setFluxoPreview(result);
+                      } catch (e: any) {
+                        toast.error(e.message || 'Erro ao processar planilha');
+                      }
+                    }}
+                  >
+                    {parseFluxoMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : 'Analisar'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Preview Fluxo */}
+              {fluxoPreview && (
+                <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 space-y-2">
+                  <p className="text-sm font-semibold text-purple-800">Prévia da Importação</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                    <div><span className="text-muted-foreground">Total:</span> <strong>{formatMoney(fluxoPreview.totalGeral)}</strong></div>
+                    <div><span className="text-muted-foreground">Itens:</span> <strong>{fluxoPreview.totalItens}</strong></div>
+                    <div><span className="text-muted-foreground">Contas:</span> <strong>{fluxoPreview.contasEncontradas}</strong></div>
+                  </div>
+                  {fluxoPreview.totalPorConta && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(fluxoPreview.totalPorConta).map(([conta, val]) => (
+                        <Badge key={conta} variant="outline" className="text-xs">
+                          {conta}: {formatMoney(val as number)}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      disabled={confirmarFluxoMutation.isPending}
+                      onClick={async () => {
+                        const buf = await fluxoFile!.arrayBuffer();
+                        const base64 = btoa(Array.from(new Uint8Array(buf), b => String.fromCharCode(b)).join(''));
+                        try {
+                          await confirmarFluxoMutation.mutateAsync({
+                            fileBase64: base64,
+                            fileName: fluxoFile!.name,
+                            mes, ano,
+                            dataInicio: fluxoPreview.periodo?.split(' a ')[0] || `${ano}-${String(mes).padStart(2,'0')}-01`,
+                            dataFim: fluxoPreview.periodo?.split(' a ')[1] || `${ano}-${String(mes).padStart(2,'0')}-28`,
+                          });
+                        } catch (e: any) {
+                          toast.error(e.message || 'Erro ao importar');
+                        }
+                      }}
+                    >
+                      {confirmarFluxoMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1" />}
+                      Confirmar Importação Parcial
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setFluxoFile(null); setFluxoPreview(null); }}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Nota explicativa */}
+            <div className="p-3 rounded-lg bg-muted/30 border-dashed border">
+              <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Como funciona:</strong> Os dados parciais importados aqui substituem a média histórica na projeção.
+                  O sistema projeta os valores acumulados para o mês inteiro (regra de três pelo número de dias).
+                  Quando a importação oficial do período for realizada, estes dados parciais serão automaticamente descartados.
+                  Você pode reimportar a qualquer momento — os dados anteriores serão substituídos.
+                </span>
+              </p>
+            </div>
+          </CardContent>
+        )}
+      </Card>
 
       {isLoading && (
         <div className="flex items-center justify-center py-20">

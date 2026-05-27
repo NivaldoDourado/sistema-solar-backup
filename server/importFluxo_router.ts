@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { lancamentoFluxo, periodoCusto, lancamentoCusto, contaCusto, contaExcluidaFluxo } from "../drizzle/schema";
+import { lancamentoFluxo, periodoCusto, lancamentoCusto, contaCusto, contaExcluidaFluxo, simulacaoFluxoParcial } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import {
@@ -488,6 +488,17 @@ export const importFluxoRouter = router({
           userId,
         });
         totalLancamentosCusto++;
+      }
+
+      // Descartar dados parciais de simulação de fluxo para este período (importação oficial substitui)
+      const periodoInfo = await db.select().from(periodoCusto).where(eq(periodoCusto.id, input.periodoCustoId)).limit(1);
+      if (periodoInfo.length > 0) {
+        await db.delete(simulacaoFluxoParcial).where(
+          and(
+            eq(simulacaoFluxoParcial.mes, periodoInfo[0].mes),
+            eq(simulacaoFluxoParcial.ano, periodoInfo[0].ano),
+          )
+        );
       }
 
       return { totalInseridos, totalLancamentosCusto };

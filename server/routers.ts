@@ -23,6 +23,7 @@ import { rateioMemRouter } from "./rateioMem_router";
 import { validacaoFechamentoRouter } from "./validacaoFechamento_router";
 import { contaExcluidaRouter } from "./contaExcluida_router";
 import { dashboardConfigRouter } from "./dashboardConfig_router";
+import { simulacaoParcialRouter } from "./simulacaoParcial_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3529,6 +3530,7 @@ export const appRouter = router({
   avaliacaoGlobal: avaliacaoGlobalRouter,
   comparativos: comparativosRouter,
   simulacaoCusto: simulacaoCustoRouter,
+  simulacaoParcial: simulacaoParcialRouter,
   importDespesas: importDespesasRouter,
   importFluxo: importFluxoRouter,
   itensDespesa: itensDespesaRouter,

@@ -1,0 +1,42 @@
+CREATE TABLE `simulacao_despesa_parcial` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`mes` int NOT NULL,
+	`ano` int NOT NULL,
+	`dataInicio` varchar(10) NOT NULL,
+	`dataFim` varchar(10) NOT NULL,
+	`equipamentoTag` varchar(100) NOT NULL,
+	`equipamentoDescricao` varchar(255),
+	`equipamentoSistemaId` int,
+	`classificacao` varchar(50) NOT NULL,
+	`sequencia` varchar(20),
+	`data` varchar(20),
+	`produto` varchar(500) NOT NULL,
+	`grupoProduto` varchar(255),
+	`quantidade` decimal(12,3) DEFAULT '0',
+	`custo` decimal(12,2) NOT NULL DEFAULT '0',
+	`centroCusto` varchar(20),
+	`observacoes` text,
+	`userId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `simulacao_despesa_parcial_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `simulacao_fluxo_parcial` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`mes` int NOT NULL,
+	`ano` int NOT NULL,
+	`dataInicio` varchar(10) NOT NULL,
+	`dataFim` varchar(10) NOT NULL,
+	`contaPrincipalCodigo` varchar(20) NOT NULL,
+	`contaPrincipalNome` varchar(255) NOT NULL,
+	`contaSistema` varchar(255) NOT NULL,
+	`setor` varchar(100) NOT NULL,
+	`contaCodigo` varchar(20),
+	`contaNome` varchar(255),
+	`nivel` int NOT NULL DEFAULT 2,
+	`valor` decimal(12,2) NOT NULL DEFAULT '0',
+	`observacoes` text,
+	`userId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `simulacao_fluxo_parcial_id` PRIMARY KEY(`id`)
+);

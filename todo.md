@@ -1134,3 +1134,12 @@
 - [x] Integrar filtro de cards no Dashboard mobile (MobileDashboard.tsx)
 - [x] Adicionar link no menu lateral (DashboardLayout)
 - [x] Testes vitest
+
+## Simulação de Custos - Importação de Despesas Parciais
+- [x] Criar tabela simulacao_despesas_parciais no schema
+- [x] Criar tabela simulacao_fluxo_parcial no schema
+- [x] Criar router backend para importação parcial (parse + confirmar para ambos os relatórios)
+- [x] Integrar dados parciais na lógica de projeção do simulacaoCusto.simular
+- [x] Criar UI de importação parcial na página de Simulação de Custos
+- [x] Implementar descarte automático ao importar oficialmente (despesas e fluxo)
+- [x] Testes vitest
