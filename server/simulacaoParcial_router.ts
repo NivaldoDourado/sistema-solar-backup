@@ -299,7 +299,16 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
     const parsed = extrairCodigoNome(trimmed);
     if (!parsed) continue;
 
-    const valor = typeof row[1] === "number" ? row[1] : null;
+    // Handle both numeric values and Brazilian-formatted string values (e.g., "18.900,00")
+    let valor: number | null = null;
+    if (typeof row[1] === "number") {
+      valor = row[1];
+    } else if (typeof row[1] === "string" && row[1].trim() !== "" && row[1].trim() !== "Valor") {
+      // Parse Brazilian format: "18.900,00" -> 18900.00
+      const cleaned = row[1].trim().replace(/\./g, "").replace(",", ".");
+      const parsed2 = parseFloat(cleaned);
+      if (!isNaN(parsed2)) valor = parsed2;
+    }
     const obs = typeof row[2] === "string" ? row[2].trim() : null;
 
     if (nivel === 1) {

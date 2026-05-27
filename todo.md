@@ -1143,3 +1143,8 @@
 - [x] Criar UI de importação parcial na página de Simulação de Custos
 - [x] Implementar descarte automático ao importar oficialmente (despesas e fluxo)
 - [x] Testes vitest
+## Bug: Parser de Fluxo não reconhece valores em formato brasileiro (string)
+- [x] Corrigido parseFluxo em simulacaoParcial_router.ts: valores como "18.900,00" (string) agora são convertidos para número
+- [x] Corrigido parsePlanilhaFluxo em importFluxo_router.ts: mesma correção aplicada ao importador oficial
+- [x] Validado localmente: 144 contas parseadas, 52 itens após filtro, R$ 363.690,64 total
+- [x] 183 testes passando
