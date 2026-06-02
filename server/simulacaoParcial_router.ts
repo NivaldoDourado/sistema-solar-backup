@@ -31,11 +31,11 @@ import {
 
 // ===== REGRAS DE CLASSIFICAÇÃO (reutilizadas do importDespesas) =====
 
-const LUBRIFICANTES_KEYWORDS = [
-  "oleo", "óleo", "graxa", "lubrificante", "lub ", "lub.",
-  "graxas", "oleos", "óleos", "fluido hidraulico", "fluído hidráulico",
-  "fluido de freio", "fluído de freio", "atf", "sae ", "15w", "20w", "10w",
-  "hidraulico", "hidráulico", "transmissao", "transmissão"
+// Termos que SEMPRE indicam lubrificante (sem precisar de "óleo" no nome)
+const LUBRIFICANTES_KEYWORDS_DIRETOS = [
+  "graxa", "graxas", "lubrificante", "lub ", "lub.",
+  "fluido hidraulico", "fluído hidráulico",
+  "fluido de freio", "fluído de freio", "atf", "sae ", "15w", "20w", "10w"
 ];
 
 const OUTRAS_DESPESAS_KEYWORDS = [
@@ -80,7 +80,13 @@ function classificarDespesa(
   if (grupo.includes("combustível") || grupo.includes("combustivel")) return "combustivel";
   if (COMBUSTIVEL_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "combustivel";
   if (grupo === "lubrificantes") return "lubrificantes";
-  if (LUBRIFICANTES_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
+  // Termos diretos (graxa, fluido hidráulico, etc.) -> lubrificante sem precisar de "óleo"
+  if (LUBRIFICANTES_KEYWORDS_DIRETOS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
+  // Se contém "óleo/oleo" no nome: é lubrificante (combustível já foi tratado acima)
+  // Exceções: filtro, reparo, mangueira, bomba, sensor, retentor, junta (são peças)
+  const contemOleo = desc.includes("oleo") || desc.includes("oleos");
+  const ehPecaNaoOleo = desc.includes("filtro") || desc.includes("reparo") || desc.includes("vedacao") || desc.includes("mangueira") || desc.includes("junta") || desc.includes("bomba") || desc.includes("sensor") || desc.includes("retentor");
+  if (contemOleo && !ehPecaNaoOleo) return "lubrificantes";
   if (OUTRAS_DESPESAS_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "outras_despesas";
   if (PECAS_DESGASTE_GERAL.some(kw => desc.includes(kw))) return "pecas_desgaste";
 

@@ -1160,3 +1160,12 @@
 - [x] Modal de detalhamento: ao clicar na classificação (Lub/Rep/Outras/Comb/Desg), abrir modal com lista dos itens individuais
 - [x] Reclassificação no modal: permitir mover itens para outra conta (ex: de Lubrificante para Peças de Reposição)
 - [x] EXPLOSIVOS direto na conta: alocar despesas de EXPLOSIVOS diretamente em "Explosivos e Acessórios" sem sub-classificação
+
+## Bug: Reclassificação manual no modal não funciona
+- [x] Corrigir Select no modal de detalhamento que não salva a reclassificação ao selecionar outra conta
+- [x] Garantir que item reclassificado seja contabilizado na conta escolhida pelo usuário
+
+## Melhoria: Regra de classificação de Lubrificantes
+- [x] Para ser classificado como "Lubrificante", o item deve conter "óleo/oleo" no nome (exceto "Óleo Diesel" que é combustível)
+- [x] Graxa, fluido hidráulico e demais termos continuam como lubrificante normalmente
+- [x] Itens que contêm "óleo/oleo" mas não são lubrificantes (ex: "Óleo Diesel") devem ir para Combustível

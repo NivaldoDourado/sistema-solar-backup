@@ -229,13 +229,13 @@ export default function ImportDespesas() {
     });
   };
 
-  // Get items for the modal (filtered by classification, considering reclassifications)
+  // Get items for the modal (filtered by ORIGINAL classification so reclassified items stay visible)
   const modalItems = useMemo(() => {
     if (!modalEquip || !modalClassificacao) return [];
     return modalEquip.despesas
-      .filter(d => getEffectiveClassificacao(modalEquip.codigoTag, d.sequencia, d.classificacao) === modalClassificacao)
+      .filter(d => d.classificacao === modalClassificacao)
       .sort((a, b) => b.custo - a.custo);
-  }, [modalEquip, modalClassificacao, reclassificacoes]);
+  }, [modalEquip, modalClassificacao]);
 
   // Resumo dos selecionados (considering reclassifications)
   const resumoSelecionados = useMemo(() => {
@@ -668,7 +668,8 @@ export default function ImportDespesas() {
                   {CLASSIFICACAO_LABELS[modalClassificacao]}
                 </span>
               )}
-              {" "}— {modalItems.length} itens, Total: {formatCurrency(modalItems.reduce((s, i) => s + i.custo, 0))}
+              {" "}— {modalItems.length} itens, Total original: {formatCurrency(modalItems.reduce((s, i) => s + i.custo, 0))}
+              {reclassificacoes.size > 0 && " (itens reclassificados aparecem destacados em amarelo)"}
             </DialogDescription>
           </DialogHeader>
 

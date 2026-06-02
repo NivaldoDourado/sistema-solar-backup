@@ -25,10 +25,24 @@ import {
 
 // ===== REGRAS DE CLASSIFICAÇÃO =====
 
+// Termos que SEMPRE indicam lubrificante (sem precisar de "óleo" no nome)
+const LUBRIFICANTES_KEYWORDS_DIRETOS = [
+  "graxa", "graxas", "lubrificante", "lub ", "lub.",
+  "fluido hidraulico", "fluído hidráulico",
+  "fluido de freio", "fluído de freio", "atf", "sae ", "15w", "20w", "10w"
+];
+
+// Termos que combinados com "óleo/oleo" indicam lubrificante (NÃO diesel)
+const OLEO_LUBRIFICANTE_KEYWORDS = [
+  "hidraulico", "hidráulico", "transmissao", "transmissão",
+  "motor", "engrenagem", "compressor", "redutor", "lubrificante",
+  "sae", "15w", "20w", "10w", "atf"
+];
+
+// Para retrocompatibilidade
 const LUBRIFICANTES_KEYWORDS = [
-  "oleo", "óleo", "graxa", "lubrificante", "lub ", "lub.",
-  "graxas", "oleos", "óleos", "fluido hidraulico", "fluído hidráulico",
-  "fluido de freio", "fluído de freio", "atf", "sae ", "15w", "20w", "10w",
+  ...LUBRIFICANTES_KEYWORDS_DIRETOS,
+  "oleo", "óleo", "oleos", "óleos",
   "hidraulico", "hidráulico", "transmissao", "transmissão"
 ];
 
@@ -99,8 +113,16 @@ function classificarDespesa(
   if (grupo.includes("combustível") || grupo.includes("combustivel")) return "combustivel";
   if (COMBUSTIVEL_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "combustivel";
   // 1. LUBRIFICANTE
+  // Regra: grupo "lubrificantes" -> direto
   if (grupo === "lubrificantes") return "lubrificantes";
-  if (LUBRIFICANTES_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
+  // Termos diretos (graxa, fluido hidráulico, etc.) -> lubrificante sem precisar de "óleo"
+  if (LUBRIFICANTES_KEYWORDS_DIRETOS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
+  // Se contém "óleo/oleo" no nome: verificar se é o produto principal (não apenas referenciado)
+  // Combustível já foi tratado acima no passo 0, então se chegou aqui com "óleo" é lubrificante
+  // Exceções: filtro de óleo, reparo, vedacao, mangueira, junta (são peças, não óleo)
+  const contemOleo = desc.includes("oleo") || desc.includes("óleo") || desc.includes("oleos") || desc.includes("óleos");
+  const ehPecaNaoOleo = desc.includes("filtro") || desc.includes("reparo") || desc.includes("vedacao") || desc.includes("vedacão") || desc.includes("mangueira") || desc.includes("junta") || desc.includes("bomba") || desc.includes("sensor") || desc.includes("retentor");
+  if (contemOleo && !ehPecaNaoOleo) return "lubrificantes";
 
   // 2. OUTRAS DESPESAS
   if (OUTRAS_DESPESAS_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "outras_despesas";
