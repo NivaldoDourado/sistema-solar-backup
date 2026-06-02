@@ -1169,3 +1169,18 @@
 - [x] Para ser classificado como "Lubrificante", o item deve conter "óleo/oleo" no nome (exceto "Óleo Diesel" que é combustível)
 - [x] Graxa, fluido hidráulico e demais termos continuam como lubrificante normalmente
 - [x] Itens que contêm "óleo/oleo" mas não são lubrificantes (ex: "Óleo Diesel") devem ir para Combustível
+
+## Novas Correspondências e Funcionalidade de Mapeamento
+- [x] Cadastrar equipamento: PERFURATRIZ PWH5000 02
+- [x] Cadastrar equipamento: RDR 1G90 — CARRO RAFAEL
+- [x] Cadastrar equipamento: TRANSPORTADOR DE CORREIA TC - 12
+- [x] Cadastrar equipamento: TRANSPORTADOR DE CORREIA TC - 13
+- [x] Cadastrar equipamento: TRANSPORTADOR DE CORREIA TC - 18
+- [x] Correspondência: GEORGE MACHADO -> Outras Despesas de Setor -> ADMINISTRAÇÃO
+- [x] Correspondência: PERFURATRIZ 02 -> PERFURATRIZ PWH5000 02
+- [x] Correspondência: RDR 1G90 — CARRO RAFAEL -> RDR 1G90 — CARRO RAFAEL
+- [x] Correspondência: TC12 — TRANSPORTADOR DE CORREIA TC - 12 -> TRANSPORTADOR DE CORREIA TC - 12
+- [x] Correspondência: TC13 — TRANSPORTADOR DE CORREIA TC - 13 -> TRANSPORTADOR DE CORREIA TC - 13
+- [x] Correspondência: TC18 — TRANSPORTADOR DE CORREIA TC - 18 -> TRANSPORTADOR DE CORREIA TC - 18
+- [x] Correspondência: TNZ8B89 — DONA MARGARIDA -> Outras Despesas de Setor -> ADMINISTRAÇÃO
+- [x] Funcionalidade: UI em "Revisão Correspondências" para mapear novos centros de custo desconhecidos

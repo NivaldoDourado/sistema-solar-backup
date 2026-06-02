@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO equipamentos (id, codigoTag, nomeDoEquipamento, grupoId, setorId, ativo) VALUES\n(420004, 'ROCK 02B', 'PERFURATRIZ PWH5000 02', 13, NULL, 'sim'),\n(420005, 'RDR 1G90', 'RDR 1G90 — CARRO RAFAEL', 4, NULL, 'sim'),\n(420006, 'TC12', 'TRANSPORTADOR DE CORREIA TC - 12', 20, 5, 'sim'),\n(420007, 'TC13', 'TRANSPORTADOR DE CORREIA TC - 13', 20, 5, 'sim'),\n(420008, 'TC18', 'TRANSPORTADOR DE CORREIA TC - 18', 20, 5, 'sim')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute INSERT INTO equipamentos (id, codigoTag, nomeDoEquipamento, grupoId, setorId, ativo) VALUES\n(420004, 'ROCK 02B', 'PERFURATRIZ PWH5000 02', 13, NULL, 'sim'),\n(420005, 'RDR 1G90', 'RDR 1G90 — CARRO RAFAEL', 4, NULL, 'sim'),\n(420006, 'TC12', 'TRANSPORTADOR DE CORREIA TC - 12', 20, 5, 'sim'),\n(420007, 'TC13', 'TRANSPORTADOR DE CORREIA TC - 13', 20, 5, 'sim'),\n(420008, 'TC18', 'TRANSPORTADOR DE CORREIA TC - 18', 20, 5, 'sim')",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 271
+}

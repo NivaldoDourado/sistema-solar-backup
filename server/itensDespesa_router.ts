@@ -8,6 +8,8 @@ import {
   equipamentos,
   periodoCusto,
   equipamentoExcluidoTag,
+  correspondenciaTag,
+  setores,
 } from "../drizzle/schema";
 import { TAGS_OUTRAS_DESP_SETOR, TAGS_CONTA_EXPLOSIVOS, CORRESPONDENCIAS_APROVADAS, CORRESPONDENCIAS_FORCADAS } from "./importDespesas_correspondencias";
 
@@ -986,6 +988,71 @@ export const itensDespesaRouter = router({
         .set({ setorId: input.setorId })
         .where(eq(equipamentos.id, input.equipamentoId));
 
+      return { sucesso: true };
+    }),
+
+  // ===== CORRESPONDÊNCIAS DINÂMICAS (TAG → EQUIPAMENTO/SETOR) =====
+  listarCorrespondenciasTags: protectedProcedure
+    .query(async () => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const correspondencias = await db2.select().from(correspondenciaTag);
+      const equipList = await db2.select({ id: equipamentos.id, nome: equipamentos.nomeDoEquipamento, tag: equipamentos.codigoTag }).from(equipamentos);
+      const setoresList = await db2.select({ id: setores.id, nome: setores.nome }).from(setores);
+      return { correspondencias, equipamentos: equipList, setores: setoresList };
+    }),
+
+  criarCorrespondenciaTag: protectedProcedure
+    .input(z.object({
+      tag: z.string().min(1),
+      tipo: z.enum(["equipamento", "setor", "explosivos", "excluir", "nao_lancar"]),
+      equipamentoId: z.number().nullable().optional(),
+      setorDestino: z.string().nullable().optional(),
+      descricao: z.string().nullable().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      await db2.insert(correspondenciaTag).values({
+        tag: input.tag.trim(),
+        tipo: input.tipo,
+        equipamentoId: input.equipamentoId ?? null,
+        setorDestino: input.setorDestino ?? null,
+        descricao: input.descricao ?? null,
+        userId: ctx.user.id,
+      });
+      return { sucesso: true };
+    }),
+
+  editarCorrespondenciaTag: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      tag: z.string().min(1).optional(),
+      tipo: z.enum(["equipamento", "setor", "explosivos", "excluir", "nao_lancar"]).optional(),
+      equipamentoId: z.number().nullable().optional(),
+      setorDestino: z.string().nullable().optional(),
+      descricao: z.string().nullable().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const { id, ...updates } = input;
+      const setData: any = {};
+      if (updates.tag !== undefined) setData.tag = updates.tag.trim();
+      if (updates.tipo !== undefined) setData.tipo = updates.tipo;
+      if (updates.equipamentoId !== undefined) setData.equipamentoId = updates.equipamentoId;
+      if (updates.setorDestino !== undefined) setData.setorDestino = updates.setorDestino;
+      if (updates.descricao !== undefined) setData.descricao = updates.descricao;
+      await db2.update(correspondenciaTag).set(setData).where(eq(correspondenciaTag.id, id));
+      return { sucesso: true };
+    }),
+
+  excluirCorrespondenciaTag: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db2 = await getDb();
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      await db2.delete(correspondenciaTag).where(eq(correspondenciaTag.id, input.id));
       return { sucesso: true };
     }),
 });

@@ -11,6 +11,7 @@ import {
   contaCusto,
   itemDespesaImportado,
   simulacaoDespesaParcial,
+  correspondenciaTag,
 } from "../drizzle/schema";
 import * as XLSX from "xlsx";
 import {
@@ -359,10 +360,28 @@ export const importDespesasRouter = router({
         .select({ id: gruposDeEquipamentos.id, nome: gruposDeEquipamentos.nome })
         .from(gruposDeEquipamentos);
 
+      // Carregar correspondências dinâmicas do banco
+      const correspondenciasDinamicas = await db2.select().from(correspondenciaTag);
       const equipamentosComCorrespondencia = parsed.equipamentos.map(ep => {
-        // Se é item de Explosivos e Acessórios (conta específica de setor)
+        // 0. Verificar correspondências dinâmicas (banco) primeiro
+        const dinamica = correspondenciasDinamicas.find(c => c.tag.toUpperCase() === ep.codigoTag.toUpperCase());
+        if (dinamica) {
+          if (dinamica.tipo === "excluir" || dinamica.tipo === "nao_lancar") {
+            return { ...ep, correspondencia: null as any, selecionado: false, excluirDefault: true };
+          }
+          if (dinamica.tipo === "explosivos") {
+            return { ...ep, correspondencia: { id: -2, nome: `Conta Específica → Explosivos e Acessórios`, score: 100 }, selecionado: !ep.excluirDefault && ep.despesas.length > 0 };
+          }
+          if (dinamica.tipo === "setor" && dinamica.setorDestino) {
+            return { ...ep, correspondencia: { id: -1, nome: `Outras Desp. Setor → ${dinamica.setorDestino}`, score: 100 }, selecionado: !ep.excluirDefault && ep.despesas.length > 0 };
+          }
+          if (dinamica.tipo === "equipamento" && dinamica.equipamentoId) {
+            const equip = equipSistema.find(e => e.id === dinamica.equipamentoId);
+            if (equip) return { ...ep, correspondencia: { id: equip.id, nome: equip.nomeDoEquipamento, score: 100 }, selecionado: !ep.excluirDefault && ep.despesas.length > 0 };
+          }
+        }
+        // 1. Verificar listas hardcoded (legado)
         const isExplosivos = TAGS_CONTA_EXPLOSIVOS.some(t => ep.codigoTag.toUpperCase() === t.toUpperCase());
-        // Se é item de Outras Desp. Setor, não buscar correspondência com equipamento
         const setorDesp = TAGS_OUTRAS_DESP_SETOR[ep.codigoTag];
         const match = isExplosivos
           ? { id: -2, nome: `Conta Específica → Explosivos e Acessórios`, score: 100 }
@@ -380,6 +399,8 @@ export const importDespesasRouter = router({
         equipamentos: equipamentosComDespesas.map(e => {
           const isExplosivosItem = TAGS_CONTA_EXPLOSIVOS.some(t => e.codigoTag.toUpperCase() === t.toUpperCase());
           const isSetorItem = !!TAGS_OUTRAS_DESP_SETOR[e.codigoTag];
+          const dinamicaItem = correspondenciasDinamicas.find(c => c.tag.toUpperCase() === e.codigoTag.toUpperCase());
+          const isDinamicaEspecifica = dinamicaItem ? (dinamicaItem.tipo === 'setor' || dinamicaItem.tipo === 'explosivos') : false;
           return {
             nomeCompleto: e.nomeCompleto,
             codigoTag: e.codigoTag,
@@ -395,7 +416,7 @@ export const importDespesasRouter = router({
             correspondencia: e.correspondencia,
             excluirDefault: e.excluirDefault,
             selecionado: e.selecionado,
-            isContaEspecifica: isExplosivosItem || isSetorItem,
+            isContaEspecifica: isExplosivosItem || isSetorItem || isDinamicaEspecifica,
             despesas: e.despesas.map(d => ({
               sequencia: d.sequencia,
               data: d.data,

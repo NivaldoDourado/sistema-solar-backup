@@ -1160,3 +1160,23 @@ export const simulacaoFluxoParcial = mysqlTable("simulacao_fluxo_parcial", {
 
 export type SimulacaoFluxoParcial = typeof simulacaoFluxoParcial.$inferSelect;
 export type InsertSimulacaoFluxoParcial = typeof simulacaoFluxoParcial.$inferInsert;
+
+// Correspondências dinâmicas de tags da planilha → equipamento/setor
+// Permite ao usuário mapear novos centros de custo sem alterar o código
+export const correspondenciaTag = mysqlTable("correspondencia_tag", {
+  id: int("id").autoincrement().primaryKey(),
+  tag: varchar("tag", { length: 255 }).notNull(), // Tag como aparece na planilha (ex: "TC12 — TRANSPORTADOR DE CORREIA TC")
+  tipo: mysqlEnum("tipo", ["equipamento", "setor", "explosivos", "excluir", "nao_lancar"]).notNull(),
+  // Se tipo = "equipamento": ID do equipamento destino
+  equipamentoId: int("equipamentoId"),
+  // Se tipo = "setor": nome do setor destino (ex: "ADMINISTRAÇÃO")
+  setorDestino: varchar("setorDestino", { length: 255 }),
+  // Descrição/motivo da correspondência
+  descricao: varchar("descricao", { length: 500 }),
+  // Metadata
+  userId: int("userId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CorrespondenciaTag = typeof correspondenciaTag.$inferSelect;
+export type InsertCorrespondenciaTag = typeof correspondenciaTag.$inferInsert;

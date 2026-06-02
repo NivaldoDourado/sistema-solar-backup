@@ -46,6 +46,15 @@ export const CORRESPONDENCIAS_APROVADAS: Record<string, number> = {
   // Corrigidas na revisão:
   "ESCAVADEIRA R 938 02": 93,     // ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02
   "PERFURATRIZ 01": 90001,        // PERFURATRIZ WOLF PW5000 - 01
+  "PERFURATRIZ 02": 420004,        // PERFURATRIZ PWH5000 02
+  "RDR 1G90": 420005,              // RDR 1G90 — CARRO RAFAEL
+  "TC12": 420006,                   // TRANSPORTADOR DE CORREIA TC - 12
+  "TC12 — TRANSPORTADOR DE CORREIA TC": 420006, // variante com descrição
+  "TC13": 420007,                   // TRANSPORTADOR DE CORREIA TC - 13
+  "TC13 — TRANSPORTADOR DE CORREIA TC": 420007, // variante com descrição
+  "TC18": 420008,                   // TRANSPORTADOR DE CORREIA TC - 18
+  "TC18 — TRANSPORTADOR DE CORREIA TC": 420008, // variante com descrição
+  "RDR 1G90 — CARRO RAFAEL": 420005, // variante com descrição
   // Adicionadas na resolução de tags sem correspondência (Maio/2026):
   "BRITADOR MOVEL METSO": 120060, // BRITADOR MOVEL METSO NW200 HPS (OUY 9579)
   "BRITADOR MOVEL": 120059,       // BRITADOR MOVEL METSO NW 100 (OLC 5612)
@@ -75,7 +84,7 @@ export const TAGS_NOVOS_EQUIPAMENTOS: string[] = [
 export const TAGS_NAO_LANCAR: string[] = [
   "HL760 7A 02",          // CD Muribeca - não faz parte do custo
   "PENEIRA 05 OM100",     // Cadastrar equipamento mas não lançar despesa
-  "GEORGE MACHADO",       // Não lançar
+  // "GEORGE MACHADO" removido - agora é Outras Desp. Setor / ADMINISTRAÇÃO
   // "OBRAS" removido - agora é Outras Desp. Setor / OUTROS SERVIÇOS
   "TC04 (H3800 01 RM)",   // Não lançar
   "TRANSPORTADOR RM",     // Não lançar
@@ -84,6 +93,9 @@ export const TAGS_NAO_LANCAR: string[] = [
 // ===== TAGS QUE DEVEM SER LANÇADAS COMO "OUTRAS DESPESAS DE SETOR" =====
 export const TAGS_OUTRAS_DESP_SETOR: Record<string, string> = {
   "OUTROS": "OUTROS SERVIÇOS",
+  "GEORGE MACHADO": "ADMINISTRAÇÃO",
+  "TNZ8B89": "ADMINISTRAÇÃO",
+  "TNZ8B89 — DONA MARGARIDA": "ADMINISTRAÇÃO",
   "SETOR RH": "ADMINISTRAÇÃO",
   "ALMOXARIFADO": "ALMOXARIFADO",
   "CANTINA": "REFEITÓRIO",

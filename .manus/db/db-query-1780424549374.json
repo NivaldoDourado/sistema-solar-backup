@@ -1,0 +1,150 @@
+{
+  "query": "SELECT id, codigoTag, nomeDoEquipamento, grupoId, setorId FROM equipamentos WHERE nomeDoEquipamento LIKE '%PERFURATRIZ%' OR nomeDoEquipamento LIKE '%TRANSPORTADOR%' OR nomeDoEquipamento LIKE '%TRANSP%' LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, codigoTag, nomeDoEquipamento, grupoId, setorId FROM equipamentos WHERE nomeDoEquipamento LIKE '%PERFURATRIZ%' OR nomeDoEquipamento LIKE '%TRANSPORTADOR%' OR nomeDoEquipamento LIKE '%TRANSP%' LIMIT 20",
+  "rows": [
+    {
+      "id": "2",
+      "codigoTag": "ROCK 02",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 02",
+      "grupoId": "13",
+      "setorId": "NULL"
+    },
+    {
+      "id": "48",
+      "codigoTag": "FOX 8-20",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "grupoId": "19",
+      "setorId": "NULL"
+    },
+    {
+      "id": "75",
+      "codigoTag": "MAR001",
+      "nomeDoEquipamento": "MARTELO PERFURATRIZ FOX 8-20",
+      "grupoId": "21",
+      "setorId": "9"
+    },
+    {
+      "id": "90001",
+      "codigoTag": "ROCK 01",
+      "nomeDoEquipamento": "PERFURATRIZ WOLF PW5000 - 01",
+      "grupoId": "13",
+      "setorId": "NULL"
+    },
+    {
+      "id": "120035",
+      "codigoTag": "TC01",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-01 (JC1200)",
+      "grupoId": "20",
+      "setorId": "3"
+    },
+    {
+      "id": "120036",
+      "codigoTag": "TC01 OM100 RM",
+      "nomeDoEquipamento": "TRANSP CORREIA TC01 (OM-100 RM)",
+      "grupoId": "20",
+      "setorId": "6"
+    },
+    {
+      "id": "120037",
+      "codigoTag": "TC01 MOVEL",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-01 (MOVEL)",
+      "grupoId": "20",
+      "setorId": "30002"
+    },
+    {
+      "id": "120038",
+      "codigoTag": "TC02",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-02 (JC1200)",
+      "grupoId": "20",
+      "setorId": "3"
+    },
+    {
+      "id": "120039",
+      "codigoTag": "TC03",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-03 (PEN.01 CS440)",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120040",
+      "codigoTag": "TC04",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-04 (PEN.01 CS440)",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120041",
+      "codigoTag": "TC05",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-05",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120042",
+      "codigoTag": "TC05 B.MOVEL",
+      "nomeDoEquipamento": "TRANSP CORREIA TC-05 (B.MOVEL)",
+      "grupoId": "20",
+      "setorId": "30002"
+    },
+    {
+      "id": "120043",
+      "codigoTag": "TC06",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-06",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120044",
+      "codigoTag": "TC07",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-07",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120045",
+      "codigoTag": "TC08",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-08",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120046",
+      "codigoTag": "TC09",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-09",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120047",
+      "codigoTag": "TC10",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-10",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120048",
+      "codigoTag": "TC11",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-11",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120049",
+      "codigoTag": "TC14",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-14",
+      "grupoId": "20",
+      "setorId": "5"
+    },
+    {
+      "id": "120050",
+      "codigoTag": "TC15",
+      "nomeDoEquipamento": "TRANSPORTADOR DE CORREIA TC-15",
+      "grupoId": "20",
+      "setorId": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\tgrupoId\tsetorId\n2\tROCK 02\tPERFURATRIZ WOLF PW5000 - 02\t13\tNULL\n48\tFOX 8-20\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\t19\tNULL\n75\tMAR001\tMARTELO PERFURATRIZ FOX 8-20\t21\t9\n90001\tROCK 01\tPERFURATRIZ WOLF PW5000 - 01\t13\tNULL\n120035\tTC01\tTRANSP CORREIA TC-01 (JC1200)\t20\t3\n120036\tTC01 OM100 RM\tTRANSP CORREIA TC01 (OM-100 RM)\t20\t6\n120037\tTC01 MOVEL\tTRANSP CORREIA TC-01 (MOVEL)\t20\t30002\n120038\tTC02\tTRANSP CORREIA TC-02 (JC1200)\t20\t3\n120039\tTC03\tTRANSP CORREIA TC-03 (PEN.01 CS440)\t20\t5\n120040\tTC04\tTRANSP CORREIA TC-04 (PEN.01 CS440)\t20\t5\n120041\tTC05\tTRANSPORTADOR DE CORREIA TC-05\t20\t5\n120042\tTC05 B.MOVEL\tTRANSP CORREIA TC-05 (B.MOVEL)\t20\t30002\n120043\tTC06\tTRANSPORTADOR DE CORREIA TC-06\t20\t5\n120044\tTC07\tTRANSPORTADOR DE CORREIA TC-07\t20\t5\n120045\tTC08\tTRANSPORTADOR DE CORREIA TC-08\t20\t5\n120046\tTC09\tTRANSPORTADOR DE CORREIA TC-09\t20\t5\n120047\tTC10\tTRANSPORTADOR DE CORREIA TC-10\t20\t5\n120048\tTC11\tTRANSPORTADOR DE CORREIA TC-11\t20\t5\n120049\tTC14\tTRANSPORTADOR DE CORREIA TC-14\t20\t5\n120050\tTC15\tTRANSPORTADOR DE CORREIA TC-15\t20\t5\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}
