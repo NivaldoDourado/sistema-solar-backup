@@ -1184,3 +1184,10 @@
 - [x] Correspondência: TC18 — TRANSPORTADOR DE CORREIA TC - 18 -> TRANSPORTADOR DE CORREIA TC - 18
 - [x] Correspondência: TNZ8B89 — DONA MARGARIDA -> Outras Despesas de Setor -> ADMINISTRAÇÃO
 - [x] Funcionalidade: UI em "Revisão Correspondências" para mapear novos centros de custo desconhecidos
+
+## Reajuste Percentual de Salários de Operadores/Motoristas
+- [x] Criar tabela no banco para armazenar percentual de reajuste por período de custo
+- [x] Criar procedures tRPC para consultar/definir o percentual de reajuste
+- [x] Integrar o reajuste no cálculo de custo: aplicar % sobre salários do mês anterior (somente equipamentos)
+- [x] Criar UI para o usuário informar o percentual de reajuste no módulo de Apropriação de Custo
+- [x] Garantir que salários de setores (Diretoria, Administração, etc.) NÃO sejam afetados pelo reajuste

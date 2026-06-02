@@ -1180,3 +1180,20 @@ export const correspondenciaTag = mysqlTable("correspondencia_tag", {
 });
 export type CorrespondenciaTag = typeof correspondenciaTag.$inferSelect;
 export type InsertCorrespondenciaTag = typeof correspondenciaTag.$inferInsert;
+
+
+// ============================================================================
+// REAJUSTE SALARIAL DE OPERADORES/MOTORISTAS
+// ============================================================================
+export const reajusteSalario = mysqlTable("reajuste_salario", {
+  id: int("id").autoincrement().primaryKey(),
+  periodoCustoId: int("periodoCustoId").notNull(), // Período de custo ao qual o reajuste se aplica
+  percentual: decimal("percentual", { precision: 6, scale: 2 }).notNull(), // Ex: 15.00 ou -15.00
+  aplicado: mysqlEnum("aplicado", ["sim", "nao"]).default("nao").notNull(), // Se já foi aplicado (gerou lançamentos)
+  observacoes: text("observacoes"),
+  userId: int("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ReajusteSalario = typeof reajusteSalario.$inferSelect;
+export type InsertReajusteSalario = typeof reajusteSalario.$inferInsert;

@@ -1,0 +1,230 @@
+{
+  "query": "SELECT ls.id, ls.periodoCustoId, pc.mes, pc.ano, ls.contaCustoId, ls.valor, ls.equipamentoId, e.nomeDoEquipamento, ls.setorId\nFROM lancamento_salario ls\nJOIN periodo_custo pc ON pc.id = ls.periodoCustoId\nLEFT JOIN equipamentos e ON e.id = ls.equipamentoId\nWHERE ls.contaCustoId = 30004\nORDER BY pc.ano DESC, pc.mes DESC, ls.valor DESC\nLIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT ls.id, ls.periodoCustoId, pc.mes, pc.ano, ls.contaCustoId, ls.valor, ls.equipamentoId, e.nomeDoEquipamento, ls.setorId\nFROM lancamento_salario ls\nJOIN periodo_custo pc ON pc.id = ls.periodoCustoId\nLEFT JOIN equipamentos e ON e.id = ls.equipamentoId\nWHERE ls.contaCustoId = 30004\nORDER BY pc.ano DESC, pc.mes DESC, ls.valor DESC\nLIMIT 20",
+  "rows": [
+    {
+      "id": "10",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "8476.03",
+      "equipamentoId": "19",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C",
+      "setorId": "NULL"
+    },
+    {
+      "id": "9",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "8200.09",
+      "equipamentoId": "93",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02",
+      "setorId": "NULL"
+    },
+    {
+      "id": "8",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "7978.86",
+      "equipamentoId": "51",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01",
+      "setorId": "NULL"
+    },
+    {
+      "id": "12",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "7753.66",
+      "equipamentoId": "22",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 01",
+      "setorId": "NULL"
+    },
+    {
+      "id": "3",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "7625.16",
+      "equipamentoId": "3",
+      "nomeDoEquipamento": "BRITADOR FURLAN JC1200 - 01",
+      "setorId": "NULL"
+    },
+    {
+      "id": "2",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "6987.29",
+      "equipamentoId": "48",
+      "nomeDoEquipamento": "PERFURATRIZ HIDRAULICA WOLF FOX8 -20",
+      "setorId": "NULL"
+    },
+    {
+      "id": "13",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "6386.49",
+      "equipamentoId": "45",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 02",
+      "setorId": "NULL"
+    },
+    {
+      "id": "17",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "6123.21",
+      "equipamentoId": "52",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / PZE 8D13",
+      "setorId": "NULL"
+    },
+    {
+      "id": "14",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5911.99",
+      "equipamentoId": "82",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03",
+      "setorId": "NULL"
+    },
+    {
+      "id": "19",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5871.62",
+      "equipamentoId": "29",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXE-1F44",
+      "setorId": "NULL"
+    },
+    {
+      "id": "16",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5801.19",
+      "equipamentoId": "88",
+      "nomeDoEquipamento": "CAMINHAO BASCULANTE MB/ RUC 4F80",
+      "setorId": "NULL"
+    },
+    {
+      "id": "4",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5630.17",
+      "equipamentoId": "92",
+      "nomeDoEquipamento": "BRITADOR CONICO CS440",
+      "setorId": "NULL"
+    },
+    {
+      "id": "21",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5524.95",
+      "equipamentoId": "41",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NML-0188",
+      "setorId": "NULL"
+    },
+    {
+      "id": "24",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5178.35",
+      "equipamentoId": "40",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE OER1B00",
+      "setorId": "NULL"
+    },
+    {
+      "id": "22",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5127.03",
+      "equipamentoId": "37",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE  NVJ-7902",
+      "setorId": "NULL"
+    },
+    {
+      "id": "18",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "5118.22",
+      "equipamentoId": "30",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE MERC. BENS / IXD-6334",
+      "setorId": "NULL"
+    },
+    {
+      "id": "15",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "4133.05",
+      "equipamentoId": "73",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04",
+      "setorId": "NULL"
+    },
+    {
+      "id": "34",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "3500.45",
+      "equipamentoId": "89",
+      "nomeDoEquipamento": "BRITADOR PRIMARIO MOVEL METSO NW-100",
+      "setorId": "NULL"
+    },
+    {
+      "id": "35",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "3500.45",
+      "equipamentoId": "90",
+      "nomeDoEquipamento": "BRITADOR CÔNICO MOVEL METSO NW-200",
+      "setorId": "NULL"
+    },
+    {
+      "id": "20",
+      "periodoCustoId": "60001",
+      "mes": "4",
+      "ano": "2026",
+      "contaCustoId": "30004",
+      "valor": "3418.02",
+      "equipamentoId": "38",
+      "nomeDoEquipamento": "CAMINHÃO BASCULANTE NVH-6212",
+      "setorId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tperiodoCustoId\tmes\tano\tcontaCustoId\tvalor\tequipamentoId\tnomeDoEquipamento\tsetorId\n10\t60001\t4\t2026\t30004\t8476.03\t19\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\tNULL\n9\t60001\t4\t2026\t30004\t8200.09\t93\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\tNULL\n8\t60001\t4\t2026\t30004\t7978.86\t51\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\tNULL\n12\t60001\t4\t2026\t30004\t7753.66\t22\tPÁ CARREGADEIRA LIEBHERR L566 - 01\tNULL\n3\t60001\t4\t2026\t30004\t7625.16\t3\tBRITADOR FURLAN JC1200 - 01\tNULL\n2\t60001\t4\t2026\t30004\t6987.29\t48\tPERFURATRIZ HIDRAULICA WOLF FOX8 -20\tNULL\n13\t60001\t4\t2026\t30004\t6386.49\t45\tPÁ CARREGADEIRA LIEBHERR L566 - 02\tNULL\n17\t60001\t4\t2026\t30004\t6123.21\t52\tCAMINHÃO BASCULANTE MERC. BENS / PZE 8D13\tNULL\n14\t60001\t4\t2026\t30004\t5911.99\t82\tPÁ CARREGADEIRA HYUNDAI HL760 03\tNULL\n19\t60001\t4\t2026\t30004\t5871.62\t29\tCAMINHÃO BASCULANTE MERC. BENS / IXE-1F44\tNULL\n16\t60001\t4\t2026\t30004\t5801.19\t88\tCAMINHAO BASCULANTE MB/ RUC 4F80\tNULL\n4\t60001\t4\t2026\t30004\t5630.17\t92\tBRITADOR CONICO CS440\tNULL\n21\t60001\t4\t2026\t30004\t5524.95\t41\tCAMINHÃO BASCULANTE NML-0188\tNULL\n24\t60001\t4\t2026\t30004\t5178.35\t40\tCAMINHÃO BASCULANTE OER1B00\tNULL\n22\t60001\t4\t2026\t30004\t5127.03\t37\tCAMINHÃO BASCULANTE  NVJ-7902\tNULL\n18\t60001\t4\t2026\t30004\t5118.22\t30\tCAMINHÃO BASCULANTE MERC. BENS / IXD-6334\tNULL\n15\t60001\t4\t2026\t30004\t4133.05\t73\tPÁ CARREGADEIRA CARTEPILAR 966R 04\tNULL\n34\t60001\t4\t2026\t30004\t3500.45\t89\tBRITADOR PRIMARIO MOVEL METSO NW-100\tNULL\n35\t60001\t4\t2026\t30004\t3500.45\t90\tBRITADOR CÔNICO MOVEL METSO NW-200\tNULL\n20\t60001\t4\t2026\t30004\t3418.02\t38\tCAMINHÃO BASCULANTE NVH-6212\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 290
+}
