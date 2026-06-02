@@ -352,22 +352,36 @@ export const importDespesasRouter = router({
       const equipamentosComDespesas = equipamentosComCorrespondencia.filter(e => e.despesas.length > 0);
 
       return {
-        equipamentos: equipamentosComDespesas.map(e => ({
-          nomeCompleto: e.nomeCompleto,
-          codigoTag: e.codigoTag,
-          descricao: e.descricao,
-          grupoPlanilha: e.grupoPlanilha,
-          totalGeral: e.totalGeral,
-          totalLubrificantes: e.totalLubrificantes,
-          totalPecasDesgaste: e.totalPecasDesgaste,
-          totalOutrasDespesas: e.totalOutrasDespesas,
-          totalPecasReposicao: e.totalPecasReposicao,
-          totalCombustivel: e.totalCombustivel,
-          qtdDespesas: e.despesas.length,
-          correspondencia: e.correspondencia,
-          excluirDefault: e.excluirDefault,
-          selecionado: e.selecionado,
-        })),
+        equipamentos: equipamentosComDespesas.map(e => {
+          const isExplosivosItem = TAGS_CONTA_EXPLOSIVOS.some(t => e.codigoTag.toUpperCase() === t.toUpperCase());
+          const isSetorItem = !!TAGS_OUTRAS_DESP_SETOR[e.codigoTag];
+          return {
+            nomeCompleto: e.nomeCompleto,
+            codigoTag: e.codigoTag,
+            descricao: e.descricao,
+            grupoPlanilha: e.grupoPlanilha,
+            totalGeral: e.totalGeral,
+            totalLubrificantes: e.totalLubrificantes,
+            totalPecasDesgaste: e.totalPecasDesgaste,
+            totalOutrasDespesas: e.totalOutrasDespesas,
+            totalPecasReposicao: e.totalPecasReposicao,
+            totalCombustivel: e.totalCombustivel,
+            qtdDespesas: e.despesas.length,
+            correspondencia: e.correspondencia,
+            excluirDefault: e.excluirDefault,
+            selecionado: e.selecionado,
+            isContaEspecifica: isExplosivosItem || isSetorItem,
+            despesas: e.despesas.map(d => ({
+              sequencia: d.sequencia,
+              data: d.data,
+              produto: d.produto,
+              grupoProduto: d.grupoProduto,
+              quantidade: d.quantidade,
+              custo: d.custo,
+              classificacao: d.classificacao,
+            })),
+          };
+        }),
         totalGeral: parsed.totalGeral,
         totalEquipamentos: equipamentosComDespesas.length,
         equipamentosSistema: equipSistema.map(e => ({ id: e.id, nome: e.nomeDoEquipamento, tag: e.codigoTag })),
@@ -385,6 +399,11 @@ export const importDespesasRouter = router({
         codigoTag: z.string(),
         equipamentoSistemaId: z.number().optional(),
       })),
+      reclassificacoes: z.array(z.object({
+        codigoTag: z.string(),
+        sequencia: z.string(),
+        novaClassificacao: z.enum(["lubrificantes", "pecas_desgaste", "outras_despesas", "pecas_reposicao", "combustivel"]),
+      })).optional().default([]),
     }))
     .mutation(async ({ input, ctx }) => {
       const db2 = await getDb();
@@ -509,9 +528,18 @@ export const importDespesasRouter = router({
           fatorCorrecao = VALOR_CORRECAO_TRANSPORTADORA / equip.totalGeral;
         }
 
+        // Build reclassification map for this equipment
+        const reclassMap = new Map<string, string>();
+        for (const r of (input.reclassificacoes || [])) {
+          if (r.codigoTag === equip.codigoTag) {
+            reclassMap.set(r.sequencia, r.novaClassificacao);
+          }
+        }
+
         const porClassificacao = { lubrificantes: 0, pecas_desgaste: 0, pecas_reposicao: 0, outras_despesas: 0, combustivel: 0 };
         for (const desp of equip.despesas) {
-          porClassificacao[desp.classificacao] += desp.custo * fatorCorrecao;
+          const effectiveClass = (reclassMap.get(desp.sequencia) || desp.classificacao) as keyof typeof porClassificacao;
+          porClassificacao[effectiveClass] += desp.custo * fatorCorrecao;
         }
 
         if (porClassificacao.lubrificantes > 0) {
@@ -578,13 +606,22 @@ export const importDespesasRouter = router({
         if (equip.codigoTag === "TRANSPORTADORA" && equip.totalGeral > 10000) {
           fator = VALOR_CORRECAO_TRANSPORTADORA / equip.totalGeral;
         }
+        // Build reclassification map for this equipment (for detailed items)
+        const reclassMapDetail = new Map<string, string>();
+        for (const r of (input.reclassificacoes || [])) {
+          if (r.codigoTag === equip.codigoTag) {
+            reclassMapDetail.set(r.sequencia, r.novaClassificacao);
+          }
+        }
+
         for (const desp of equip.despesas) {
+          const effectiveClassDetail = reclassMapDetail.get(desp.sequencia) || desp.classificacao;
           itensDetalhados.push({
             periodoCustoId: periodoId,
             equipamentoTag: equip.codigoTag,
             equipamentoDescricao: equip.descricao || null,
             equipamentoSistemaId: sistemaId && sistemaId > 0 ? sistemaId : null,
-            classificacao: desp.classificacao,
+            classificacao: effectiveClassDetail,
             sequencia: desp.sequencia || null,
             data: desp.data || null,
             produto: desp.produto,

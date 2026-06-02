@@ -1156,3 +1156,7 @@
 - [x] Adicionado mínimo de 5 dias para aceitar dados parciais como válidos
 - [x] Validado: projeção com ambos parciais = R$ 2.604.785 (+0.2% vs média R$ 2.598.991)
 - [x] 183 testes passando
+## Despesas de Equipamentos - Melhorias na Importação
+- [x] Modal de detalhamento: ao clicar na classificação (Lub/Rep/Outras/Comb/Desg), abrir modal com lista dos itens individuais
+- [x] Reclassificação no modal: permitir mover itens para outra conta (ex: de Lubrificante para Peças de Reposição)
+- [x] EXPLOSIVOS direto na conta: alocar despesas de EXPLOSIVOS diretamente em "Explosivos e Acessórios" sem sub-classificação

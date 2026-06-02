@@ -1,39 +1,74 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle, ArrowRight, ArrowLeft, Loader2, Info } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, Loader2, Info, Eye, ArrowRightLeft } from "lucide-react";
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-type ClassificacaoLabel = {
-  lubrificantes: string;
-  pecas_desgaste: string;
-  outras_despesas: string;
-  pecas_reposicao: string;
-};
+type Classificacao = "lubrificantes" | "pecas_desgaste" | "outras_despesas" | "pecas_reposicao" | "combustivel";
 
-const CLASSIFICACAO_LABELS: ClassificacaoLabel = {
+const CLASSIFICACAO_LABELS: Record<Classificacao, string> = {
   lubrificantes: "Lubrificantes",
   pecas_desgaste: "Peças de Desgaste",
   outras_despesas: "Outras Despesas",
   pecas_reposicao: "Peças de Reposição / Itens de Consumo",
+  combustivel: "Combustível",
 };
 
-const CLASSIFICACAO_COLORS: ClassificacaoLabel = {
-  lubrificantes: "bg-blue-100 text-blue-800",
-  pecas_desgaste: "bg-orange-100 text-orange-800",
-  outras_despesas: "bg-purple-100 text-purple-800",
-  pecas_reposicao: "bg-green-100 text-green-800",
+const CLASSIFICACAO_COLORS: Record<Classificacao, string> = {
+  lubrificantes: "bg-blue-100 text-blue-700 hover:bg-blue-200",
+  pecas_desgaste: "bg-orange-100 text-orange-700 hover:bg-orange-200",
+  outras_despesas: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+  pecas_reposicao: "bg-green-100 text-green-700 hover:bg-green-200",
+  combustivel: "bg-red-100 text-red-700 hover:bg-red-200",
+};
+
+const CLASSIFICACAO_SHORT: Record<Classificacao, string> = {
+  lubrificantes: "Lub",
+  pecas_desgaste: "Desg",
+  outras_despesas: "Outras",
+  pecas_reposicao: "Rep",
+  combustivel: "Comb",
 };
 
 function formatCurrency(value: number): string {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+interface DespesaItem {
+  sequencia: string;
+  data: string;
+  produto: string;
+  grupoProduto: string;
+  quantidade: number;
+  custo: number;
+  classificacao: Classificacao;
+}
+
+interface EquipamentoPreview {
+  nomeCompleto: string;
+  codigoTag: string;
+  descricao: string;
+  grupoPlanilha: string;
+  totalGeral: number;
+  totalLubrificantes: number;
+  totalPecasDesgaste: number;
+  totalOutrasDespesas: number;
+  totalPecasReposicao: number;
+  totalCombustivel: number;
+  qtdDespesas: number;
+  correspondencia: { id: number; nome: string; score: number } | null;
+  excluirDefault: boolean;
+  selecionado: boolean;
+  isContaEspecifica: boolean;
+  despesas: DespesaItem[];
 }
 
 export default function ImportDespesas() {
@@ -45,6 +80,14 @@ export default function ImportDespesas() {
   const [parseResult, setParseResult] = useState<any>(null);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [importResult, setImportResult] = useState<any>(null);
+
+  // Modal state for item details
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalEquip, setModalEquip] = useState<EquipamentoPreview | null>(null);
+  const [modalClassificacao, setModalClassificacao] = useState<Classificacao | null>(null);
+
+  // Reclassification overrides: Map<"codigoTag:sequencia", newClassificacao>
+  const [reclassificacoes, setReclassificacoes] = useState<Map<string, Classificacao>>(new Map());
 
   const parseMutation = trpc.importDespesas.parsePlanilha.useMutation();
   const importMutation = trpc.importDespesas.confirmarImportacao.useMutation();
@@ -84,7 +127,7 @@ export default function ImportDespesas() {
         ano,
       });
       setParseResult(result);
-      // Inicializar seleção com os equipamentos que não são excluídos
+      setReclassificacoes(new Map()); // Reset reclassifications
       const inicialSelecionados = new Set<string>();
       result.equipamentos.forEach((e: any) => {
         if (e.selecionado) inicialSelecionados.add(e.codigoTag);
@@ -100,12 +143,19 @@ export default function ImportDespesas() {
   const handleImport = async () => {
     if (!fileBase64 || !file) return;
     try {
+      // Build reclassification payload
+      const reclassificacoesPayload = Array.from(reclassificacoes.entries()).map(([key, novaClassificacao]) => {
+        const [codigoTag, sequencia] = key.split(":");
+        return { codigoTag, sequencia, novaClassificacao };
+      });
+
       const result = await importMutation.mutateAsync({
         fileBase64,
         fileName: file.name,
         mes,
         ano,
         equipamentosSelecionados: Array.from(selecionados).map(tag => ({ codigoTag: tag })),
+        reclassificacoes: reclassificacoesPayload,
       });
       setImportResult(result);
       setStep(3);
@@ -132,20 +182,81 @@ export default function ImportDespesas() {
     }
   };
 
-  // Resumo dos selecionados
+  // Get effective classification for an item (considering reclassifications)
+  const getEffectiveClassificacao = (codigoTag: string, sequencia: string, original: Classificacao): Classificacao => {
+    const key = `${codigoTag}:${sequencia}`;
+    return reclassificacoes.get(key) || original;
+  };
+
+  // Calculate totals considering reclassifications
+  const getEquipTotals = (equip: EquipamentoPreview) => {
+    const totals: Record<Classificacao, number> = {
+      lubrificantes: 0,
+      pecas_desgaste: 0,
+      outras_despesas: 0,
+      pecas_reposicao: 0,
+      combustivel: 0,
+    };
+    for (const d of equip.despesas) {
+      const effectiveClass = getEffectiveClassificacao(equip.codigoTag, d.sequencia, d.classificacao);
+      totals[effectiveClass] += d.custo;
+    }
+    return totals;
+  };
+
+  // Open modal for a specific classification of an equipment
+  const openDetailModal = (equip: EquipamentoPreview, classificacao: Classificacao) => {
+    setModalEquip(equip);
+    setModalClassificacao(classificacao);
+    setModalOpen(true);
+  };
+
+  // Reclassify an item
+  const reclassificarItem = (codigoTag: string, sequencia: string, novaClassificacao: Classificacao) => {
+    setReclassificacoes(prev => {
+      const next = new Map(prev);
+      const key = `${codigoTag}:${sequencia}`;
+      // Find original classification
+      const equip = parseResult?.equipamentos.find((e: EquipamentoPreview) => e.codigoTag === codigoTag);
+      const item = equip?.despesas.find((d: DespesaItem) => d.sequencia === sequencia);
+      if (item && item.classificacao === novaClassificacao) {
+        // If reclassifying back to original, remove the override
+        next.delete(key);
+      } else {
+        next.set(key, novaClassificacao);
+      }
+      return next;
+    });
+  };
+
+  // Get items for the modal (filtered by classification, considering reclassifications)
+  const modalItems = useMemo(() => {
+    if (!modalEquip || !modalClassificacao) return [];
+    return modalEquip.despesas
+      .filter(d => getEffectiveClassificacao(modalEquip.codigoTag, d.sequencia, d.classificacao) === modalClassificacao)
+      .sort((a, b) => b.custo - a.custo);
+  }, [modalEquip, modalClassificacao, reclassificacoes]);
+
+  // Resumo dos selecionados (considering reclassifications)
   const resumoSelecionados = useMemo(() => {
     if (!parseResult) return null;
-    const selected = parseResult.equipamentos.filter((e: any) => selecionados.has(e.codigoTag));
-    return {
-      total: selected.length,
-      valor: selected.reduce((sum: number, e: any) => sum + e.totalGeral, 0),
-      lubrificantes: selected.reduce((sum: number, e: any) => sum + e.totalLubrificantes, 0),
-      pecasDesgaste: selected.reduce((sum: number, e: any) => sum + e.totalPecasDesgaste, 0),
-      pecasReposicao: selected.reduce((sum: number, e: any) => sum + e.totalPecasReposicao, 0),
-      outrasDespesas: selected.reduce((sum: number, e: any) => sum + e.totalOutrasDespesas, 0),
-      combustivel: selected.reduce((sum: number, e: any) => sum + (e.totalCombustivel || 0), 0),
-    };
-  }, [parseResult, selecionados]);
+    const selected = parseResult.equipamentos.filter((e: EquipamentoPreview) => selecionados.has(e.codigoTag));
+    const totals = { total: selected.length, valor: 0, lubrificantes: 0, pecasDesgaste: 0, pecasReposicao: 0, outrasDespesas: 0, combustivel: 0 };
+    for (const equip of selected) {
+      if (equip.isContaEspecifica) {
+        totals.valor += equip.totalGeral;
+        continue;
+      }
+      const t = getEquipTotals(equip);
+      totals.valor += equip.totalGeral;
+      totals.lubrificantes += t.lubrificantes;
+      totals.pecasDesgaste += t.pecas_desgaste;
+      totals.pecasReposicao += t.pecas_reposicao;
+      totals.outrasDespesas += t.outras_despesas;
+      totals.combustivel += t.combustivel;
+    }
+    return totals;
+  }, [parseResult, selecionados, reclassificacoes]);
 
   return (
     <div className="space-y-6">
@@ -264,6 +375,7 @@ export default function ImportDespesas() {
                     <li><strong>Peças de Reposição / Itens de Consumo:</strong> Tudo que não se enquadra nas categorias anteriores (residual)</li>
                     <li><strong>Combustível:</strong> Óleo diesel, gasolina e álcool</li>
                   </ul>
+                  <p className="mt-2 text-blue-700"><strong>Dica:</strong> Clique nas etiquetas de classificação (Lub, Desg, Rep, etc.) para ver os itens e reclassificar se necessário.</p>
                 </div>
               </div>
             </CardContent>
@@ -331,6 +443,11 @@ export default function ImportDespesas() {
                     <p className="text-lg font-bold text-red-900">{formatCurrency(resumoSelecionados.combustivel)}</p>
                   </div>
                 </div>
+                {reclassificacoes.size > 0 && (
+                  <p className="text-xs text-amber-600 mt-2 font-medium">
+                    * {reclassificacoes.size} item(ns) reclassificado(s) manualmente
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -352,68 +469,114 @@ export default function ImportDespesas() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                {parseResult.equipamentos.map((equip: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                      selecionados.has(equip.codigoTag)
-                        ? "border-primary/30 bg-primary/5"
-                        : equip.excluirDefault
-                        ? "border-red-200 bg-red-50/50"
-                        : "border-border"
-                    }`}
-                  >
-                    <Checkbox
-                      checked={selecionados.has(equip.codigoTag)}
-                      onCheckedChange={() => toggleEquipamento(equip.codigoTag)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm">{equip.codigoTag}</span>
-                        <span className="text-sm text-muted-foreground">—</span>
-                        <span className="text-sm">{equip.descricao}</span>
-                        <Badge variant="outline" className="text-xs">{equip.grupoPlanilha}</Badge>
-                        {equip.excluirDefault && (
-                          <Badge variant="destructive" className="text-xs">Excluído (outro negócio)</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 mt-1 flex-wrap">
-                        <span className="text-sm font-medium">{formatCurrency(equip.totalGeral)}</span>
-                        <span className="text-xs text-muted-foreground">({equip.qtdDespesas} itens)</span>
-                        {equip.correspondencia ? (
-                          <Badge variant="secondary" className="text-xs gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            {equip.correspondencia.score >= 80 ? "Correspondência exata" : "Correspondência parcial"}: {equip.correspondencia.nome}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-xs gap-1 border-yellow-300 text-yellow-700">
-                            <AlertTriangle className="w-3 h-3" />
-                            Sem correspondência no sistema
-                          </Badge>
-                        )}
-                      </div>
-                      {/* Mini breakdown */}
-                      <div className="flex gap-2 mt-1.5 flex-wrap">
-                        {equip.totalLubrificantes > 0 && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">Lub: {formatCurrency(equip.totalLubrificantes)}</span>
-                        )}
-                        {equip.totalPecasDesgaste > 0 && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">Desg: {formatCurrency(equip.totalPecasDesgaste)}</span>
-                        )}
-                        {equip.totalPecasReposicao > 0 && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700">Rep: {formatCurrency(equip.totalPecasReposicao)}</span>
-                        )}
-                        {equip.totalOutrasDespesas > 0 && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">Outras: {formatCurrency(equip.totalOutrasDespesas)}</span>
-                        )}
-                        {equip.totalCombustivel > 0 && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700">Comb: {formatCurrency(equip.totalCombustivel)}</span>
+                {parseResult.equipamentos.map((equip: EquipamentoPreview, idx: number) => {
+                  const totals = equip.isContaEspecifica ? null : getEquipTotals(equip);
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                        selecionados.has(equip.codigoTag)
+                          ? "border-primary/30 bg-primary/5"
+                          : equip.excluirDefault
+                          ? "border-red-200 bg-red-50/50"
+                          : "border-border"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={selecionados.has(equip.codigoTag)}
+                        onCheckedChange={() => toggleEquipamento(equip.codigoTag)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{equip.codigoTag}</span>
+                          <span className="text-sm text-muted-foreground">—</span>
+                          <span className="text-sm">{equip.descricao}</span>
+                          <Badge variant="outline" className="text-xs">{equip.grupoPlanilha}</Badge>
+                          {equip.excluirDefault && (
+                            <Badge variant="destructive" className="text-xs">Excluído (outro negócio)</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <span className="text-sm font-medium">{formatCurrency(equip.totalGeral)}</span>
+                          <span className="text-xs text-muted-foreground">({equip.qtdDespesas} itens)</span>
+                          {equip.correspondencia ? (
+                            <Badge variant="secondary" className="text-xs gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              {equip.correspondencia.score >= 80 ? "Correspondência exata" : "Correspondência parcial"}: {equip.correspondencia.nome}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs gap-1 border-yellow-300 text-yellow-700">
+                              <AlertTriangle className="w-3 h-3" />
+                              Sem correspondência no sistema
+                            </Badge>
+                          )}
+                        </div>
+                        {/* Classification badges - clickable for details */}
+                        {equip.isContaEspecifica ? (
+                          <div className="flex gap-2 mt-1.5 flex-wrap">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium">
+                              Total: {formatCurrency(equip.totalGeral)} (Conta Específica — sem sub-classificação)
+                            </span>
+                          </div>
+                        ) : totals && (
+                          <div className="flex gap-2 mt-1.5 flex-wrap">
+                            {totals.lubrificantes > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(equip, "lubrificantes")}
+                                className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" />
+                                Lub: {formatCurrency(totals.lubrificantes)}
+                              </button>
+                            )}
+                            {totals.pecas_desgaste > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(equip, "pecas_desgaste")}
+                                className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 hover:bg-orange-200 cursor-pointer transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" />
+                                Desg: {formatCurrency(totals.pecas_desgaste)}
+                              </button>
+                            )}
+                            {totals.pecas_reposicao > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(equip, "pecas_reposicao")}
+                                className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" />
+                                Rep: {formatCurrency(totals.pecas_reposicao)}
+                              </button>
+                            )}
+                            {totals.outras_despesas > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(equip, "outras_despesas")}
+                                className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" />
+                                Outras: {formatCurrency(totals.outras_despesas)}
+                              </button>
+                            )}
+                            {totals.combustivel > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(equip, "combustivel")}
+                                className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" />
+                                Comb: {formatCurrency(totals.combustivel)}
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -480,7 +643,7 @@ export default function ImportDespesas() {
           </Card>
 
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => { setStep(1); setFile(null); setFileBase64(""); setParseResult(null); setImportResult(null); }}>
+            <Button variant="outline" onClick={() => { setStep(1); setFile(null); setFileBase64(""); setParseResult(null); setImportResult(null); setReclassificacoes(new Map()); }}>
               <Upload className="w-4 h-4 mr-2" /> Importar Outro Arquivo
             </Button>
             <Button variant="outline" onClick={() => window.location.href = "/apuracao-custo"}>
@@ -489,6 +652,91 @@ export default function ImportDespesas() {
           </div>
         </div>
       )}
+
+      {/* Modal de Detalhamento de Classificação */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span>{modalEquip?.codigoTag}</span>
+              <span className="text-muted-foreground">—</span>
+              <span>{modalEquip?.descricao}</span>
+            </DialogTitle>
+            <DialogDescription>
+              {modalClassificacao && (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${CLASSIFICACAO_COLORS[modalClassificacao]}`}>
+                  {CLASSIFICACAO_LABELS[modalClassificacao]}
+                </span>
+              )}
+              {" "}— {modalItems.length} itens, Total: {formatCurrency(modalItems.reduce((s, i) => s + i.custo, 0))}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px]">Seq</TableHead>
+                  <TableHead className="w-[80px]">Data</TableHead>
+                  <TableHead>Produto</TableHead>
+                  <TableHead className="w-[120px]">Grupo</TableHead>
+                  <TableHead className="w-[60px] text-right">Qtd</TableHead>
+                  <TableHead className="w-[100px] text-right">Valor</TableHead>
+                  <TableHead className="w-[160px] text-center">Reclassificar</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {modalItems.map((item, idx) => {
+                  const key = `${modalEquip?.codigoTag}:${item.sequencia}`;
+                  const isReclassified = reclassificacoes.has(key);
+                  return (
+                    <TableRow key={idx} className={isReclassified ? "bg-amber-50" : ""}>
+                      <TableCell className="text-xs">{item.sequencia}</TableCell>
+                      <TableCell className="text-xs">{item.data}</TableCell>
+                      <TableCell className="text-xs font-medium">{item.produto}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{item.grupoProduto}</TableCell>
+                      <TableCell className="text-xs text-right">{item.quantidade}</TableCell>
+                      <TableCell className="text-xs text-right font-medium">{formatCurrency(item.custo)}</TableCell>
+                      <TableCell className="text-center">
+                        <Select
+                          value={getEffectiveClassificacao(modalEquip?.codigoTag || "", item.sequencia, item.classificacao)}
+                          onValueChange={(v) => {
+                            if (modalEquip) {
+                              reclassificarItem(modalEquip.codigoTag, item.sequencia, v as Classificacao);
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-xs w-[140px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(Object.keys(CLASSIFICACAO_LABELS) as Classificacao[]).map(c => (
+                              <SelectItem key={c} value={c} className="text-xs">
+                                {CLASSIFICACAO_SHORT[c]}: {CLASSIFICACAO_LABELS[c]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t">
+            <p className="text-xs text-muted-foreground">
+              {reclassificacoes.size > 0 && (
+                <span className="text-amber-600 font-medium">{reclassificacoes.size} item(ns) reclassificado(s)</span>
+              )}
+            </p>
+            <Button onClick={() => setModalOpen(false)} size="sm">
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
