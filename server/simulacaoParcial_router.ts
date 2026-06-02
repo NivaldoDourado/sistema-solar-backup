@@ -79,14 +79,16 @@ function classificarDespesa(
   const grupo = grupoProduto.toLowerCase();
   if (grupo.includes("combustível") || grupo.includes("combustivel")) return "combustivel";
   if (COMBUSTIVEL_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "combustivel";
-  if (grupo === "lubrificantes") return "lubrificantes";
-  // Termos diretos (graxa, fluido hidráulico, etc.) -> lubrificante sem precisar de "óleo"
-  if (LUBRIFICANTES_KEYWORDS_DIRETOS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
-  // Se contém "óleo/oleo" no nome: é lubrificante (combustível já foi tratado acima)
-  // Exceções: filtro, reparo, mangueira, bomba, sensor, retentor, junta (são peças)
-  const contemOleo = desc.includes("oleo") || desc.includes("oleos");
-  const ehPecaNaoOleo = desc.includes("filtro") || desc.includes("reparo") || desc.includes("vedacao") || desc.includes("mangueira") || desc.includes("junta") || desc.includes("bomba") || desc.includes("sensor") || desc.includes("retentor");
-  if (contemOleo && !ehPecaNaoOleo) return "lubrificantes";
+  // Primeiro: verificar se é claramente uma peça/componente (não é lubrificante mesmo com termos similares)
+  const ehPecaComponente = desc.includes("mangueira") || desc.includes("filtro") || desc.includes("reparo") || desc.includes("vedacao") || desc.includes("junta") || desc.includes("bomba") || desc.includes("sensor") || desc.includes("retentor") || desc.includes("conexao") || desc.includes("acoplamento") || desc.includes("adaptador hidr");
+  if (ehPecaComponente) {
+    // Não é lubrificante - pular para próximas regras
+  } else {
+    if (grupo === "lubrificantes") return "lubrificantes";
+    if (LUBRIFICANTES_KEYWORDS_DIRETOS.some(kw => desc.includes(norm(kw)))) return "lubrificantes";
+    const contemOleo = desc.includes("oleo") || desc.includes("oleos");
+    if (contemOleo) return "lubrificantes";
+  }
   if (OUTRAS_DESPESAS_KEYWORDS.some(kw => desc.includes(norm(kw)))) return "outras_despesas";
   if (PECAS_DESGASTE_GERAL.some(kw => desc.includes(kw))) return "pecas_desgaste";
 
