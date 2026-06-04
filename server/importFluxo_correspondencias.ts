@@ -112,7 +112,7 @@ export const CONTAS_IMPORTAR: ContaFluxoConfig[] = [
     codigo: "2185",
     nome: "IMPOSTO",
     contaSistema: "Imp., Trib., Taxas e CEFEM",
-    setor: "ADMINISTRAÇÃO",
+    setor: "EXPEDIÇÃO",
   },
 ];
 
