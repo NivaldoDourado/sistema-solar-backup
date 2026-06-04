@@ -1217,3 +1217,6 @@
 ## Melhoria Relatório Analítico - Separação de Subsetores
 - [x] Mover subtotal de cada subsetor para o final da lista (não no início)
 - [x] Adicionar separador visual claro entre subsetores
+
+## Fix: Separador visual entre subsetores na exportação PDF/Excel
+- [x] Adicionar linha separadora entre subsetores no relatório exportado (PDF/Excel)

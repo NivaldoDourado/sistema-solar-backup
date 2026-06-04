@@ -180,13 +180,16 @@ export async function exportToPDF(options: ExportOptions) {
     columns.map((col) => formatValue(row[col.key], col))
   );
 
-  // Identificar linhas de "TOTAL GRUPO" para destaque vermelho
+  // Identificar linhas de "TOTAL GRUPO" e "SUBTOTAL SETOR" para destaque
   const totalGrupoRowIndices = new Set<number>();
+  const subtotalSetorRowIndices = new Set<number>();
   const tipoColIndex = columns.findIndex(c => c.key === "tipo");
   if (tipoColIndex >= 0) {
     data.forEach((row, idx) => {
       if (row["tipo"] === "TOTAL GRUPO") {
         totalGrupoRowIndices.add(idx);
+      } else if (row["tipo"] === "SUBTOTAL SETOR") {
+        subtotalSetorRowIndices.add(idx);
       }
     });
   }
@@ -210,19 +213,34 @@ export async function exportToPDF(options: ExportOptions) {
     },
     margin: { left: 14, right: 14 },
     didParseCell: (hookData: any) => {
-      if (hookData.section === "body" && totalGrupoRowIndices.has(hookData.row.index)) {
-        hookData.cell.styles.fillColor = [254, 226, 226]; // red-100
-        hookData.cell.styles.textColor = [153, 27, 27]; // red-800
-        hookData.cell.styles.fontStyle = "bold";
+      if (hookData.section === "body") {
+        if (totalGrupoRowIndices.has(hookData.row.index)) {
+          hookData.cell.styles.fillColor = [254, 226, 226]; // red-100
+          hookData.cell.styles.textColor = [153, 27, 27]; // red-800
+          hookData.cell.styles.fontStyle = "bold";
+        } else if (subtotalSetorRowIndices.has(hookData.row.index)) {
+          hookData.cell.styles.fillColor = [219, 234, 254]; // blue-100
+          hookData.cell.styles.textColor = [30, 64, 175]; // blue-800
+          hookData.cell.styles.fontStyle = "bold";
+        }
       }
     },
     didDrawCell: (hookData: any) => {
-      // Desenhar borda inferior vermelha grossa nas linhas de TOTAL GRUPO
-      if (hookData.section === "body" && totalGrupoRowIndices.has(hookData.row.index)) {
-        const cell = hookData.cell;
-        doc.setDrawColor(185, 28, 28); // red-700
-        doc.setLineWidth(0.8);
-        doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
+      if (hookData.section === "body") {
+        // Desenhar borda inferior vermelha grossa nas linhas de TOTAL GRUPO
+        if (totalGrupoRowIndices.has(hookData.row.index)) {
+          const cell = hookData.cell;
+          doc.setDrawColor(185, 28, 28); // red-700
+          doc.setLineWidth(0.8);
+          doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
+        }
+        // Desenhar borda inferior azul nas linhas de SUBTOTAL SETOR (separador entre subsetores)
+        if (subtotalSetorRowIndices.has(hookData.row.index)) {
+          const cell = hookData.cell;
+          doc.setDrawColor(37, 99, 235); // blue-600
+          doc.setLineWidth(0.6);
+          doc.line(cell.x, cell.y + cell.height, cell.x + cell.width, cell.y + cell.height);
+        }
       }
     },
     didDrawPage: (data: any) => {
