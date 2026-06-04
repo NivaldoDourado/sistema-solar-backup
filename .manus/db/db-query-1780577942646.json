@@ -1,0 +1,66 @@
+{
+  "query": "SELECT lc.id, lc.periodoCustoId, lc.contaCustoId, lc.valor, lc.observacoes, cc.nome as contaNome FROM lancamento_custo lc JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.observacoes LIKE '%Fluxo%' AND lc.periodoCustoId = (SELECT id FROM periodo_custo WHERE ano = 2026 AND mes = 5 LIMIT 1) ORDER BY lc.contaCustoId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.id, lc.periodoCustoId, lc.contaCustoId, lc.valor, lc.observacoes, cc.nome as contaNome FROM lancamento_custo lc JOIN conta_custo cc ON lc.contaCustoId = cc.id WHERE lc.observacoes LIKE '%Fluxo%' AND lc.periodoCustoId = (SELECT id FROM periodo_custo WHERE ano = 2026 AND mes = 5 LIMIT 1) ORDER BY lc.contaCustoId;",
+  "rows": [
+    {
+      "id": "210003",
+      "periodoCustoId": "90001",
+      "contaCustoId": "2",
+      "valor": "11441.12",
+      "observacoes": "[Fluxo] 5540-DESPESAS FINANCEIRAS",
+      "contaNome": "Impostos, CEFEM e Outras Taxas"
+    },
+    {
+      "id": "210002",
+      "periodoCustoId": "90001",
+      "contaCustoId": "4",
+      "valor": "70969.35",
+      "observacoes": "[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS",
+      "contaNome": "Despesas Administrativas"
+    },
+    {
+      "id": "210005",
+      "periodoCustoId": "90001",
+      "contaCustoId": "5",
+      "valor": "158933.48",
+      "observacoes": "[Fluxo] 2183-ENERGIA ELÉTRICA",
+      "contaNome": "Energia Elétrica"
+    },
+    {
+      "id": "210004",
+      "periodoCustoId": "90001",
+      "contaCustoId": "9",
+      "valor": "74021.83",
+      "observacoes": "[Fluxo] 3006-DESPESAS INDIRETAS",
+      "contaNome": "Despesas Indiretas"
+    },
+    {
+      "id": "210001",
+      "periodoCustoId": "90001",
+      "contaCustoId": "10",
+      "valor": "73004.14",
+      "observacoes": "[Fluxo] 5537-CONSULTORIA",
+      "contaNome": "Consultorias Especializadas"
+    },
+    {
+      "id": "210006",
+      "periodoCustoId": "90001",
+      "contaCustoId": "30002",
+      "valor": "2444.12",
+      "observacoes": "[Fluxo] 2160-FROTA",
+      "contaNome": "Frota/Man.Pat./Seg./Out."
+    },
+    {
+      "id": "210007",
+      "periodoCustoId": "90001",
+      "contaCustoId": "30003",
+      "valor": "32000.00",
+      "observacoes": "[Fluxo] 2184-COMISSÃO DE VENDAS",
+      "contaNome": "Comissão de Vendas"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tperiodoCustoId\tcontaCustoId\tvalor\tobservacoes\tcontaNome\n210003\t90001\t2\t11441.12\t[Fluxo] 5540-DESPESAS FINANCEIRAS\tImpostos, CEFEM e Outras Taxas\n210002\t90001\t4\t70969.35\t[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS\tDespesas Administrativas\n210005\t90001\t5\t158933.48\t[Fluxo] 2183-ENERGIA ELÉTRICA\tEnergia Elétrica\n210004\t90001\t9\t74021.83\t[Fluxo] 3006-DESPESAS INDIRETAS\tDespesas Indiretas\n210001\t90001\t10\t73004.14\t[Fluxo] 5537-CONSULTORIA\tConsultorias Especializadas\n210006\t90001\t30002\t2444.12\t[Fluxo] 2160-FROTA\tFrota/Man.Pat./Seg./Out.\n210007\t90001\t30003\t32000.00\t[Fluxo] 2184-COMISSÃO DE VENDAS\tComissão de Vendas\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

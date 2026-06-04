@@ -1,0 +1,106 @@
+{
+  "query": "SELECT id, contaSistema, setor, contaPrincipalCodigo, contaPrincipalNome, valor FROM lancamento_fluxo WHERE periodoCustoId = 90001 AND (contaPrincipalCodigo = '2185' OR contaSistema LIKE '%Imp%' OR contaSistema LIKE '%Taxas%') LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaSistema, setor, contaPrincipalCodigo, contaPrincipalNome, valor FROM lancamento_fluxo WHERE periodoCustoId = 90001 AND (contaPrincipalCodigo = '2185' OR contaSistema LIKE '%Imp%' OR contaSistema LIKE '%Taxas%') LIMIT 20;",
+  "rows": [
+    {
+      "id": "60036",
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "5540",
+      "contaPrincipalNome": "DESPESAS FINANCEIRAS",
+      "valor": "4710.00"
+    },
+    {
+      "id": "60037",
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "5540",
+      "contaPrincipalNome": "DESPESAS FINANCEIRAS",
+      "valor": "467.17"
+    },
+    {
+      "id": "60038",
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "5540",
+      "contaPrincipalNome": "DESPESAS FINANCEIRAS",
+      "valor": "6130.68"
+    },
+    {
+      "id": "60039",
+      "contaSistema": "Impostos, CEFEM e Outras Taxas",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "5540",
+      "contaPrincipalNome": "DESPESAS FINANCEIRAS",
+      "valor": "133.27"
+    },
+    {
+      "id": "60057",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "50352.59"
+    },
+    {
+      "id": "60058",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "214159.86"
+    },
+    {
+      "id": "60059",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "982.70"
+    },
+    {
+      "id": "60060",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "56418.63"
+    },
+    {
+      "id": "60061",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "9328.86"
+    },
+    {
+      "id": "60062",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "9379.41"
+    },
+    {
+      "id": "60063",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "46401.30"
+    },
+    {
+      "id": "60064",
+      "contaSistema": "Imp., Trib., Taxas e CEFEM",
+      "setor": "EXPEDIÇÃO",
+      "contaPrincipalCodigo": "2185",
+      "contaPrincipalNome": "IMPOSTO",
+      "valor": "1230.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaSistema\tsetor\tcontaPrincipalCodigo\tcontaPrincipalNome\tvalor\n60036\tImpostos, CEFEM e Outras Taxas\tEXPEDIÇÃO\t5540\tDESPESAS FINANCEIRAS\t4710.00\n60037\tImpostos, CEFEM e Outras Taxas\tEXPEDIÇÃO\t5540\tDESPESAS FINANCEIRAS\t467.17\n60038\tImpostos, CEFEM e Outras Taxas\tEXPEDIÇÃO\t5540\tDESPESAS FINANCEIRAS\t6130.68\n60039\tImpostos, CEFEM e Outras Taxas\tEXPEDIÇÃO\t5540\tDESPESAS FINANCEIRAS\t133.27\n60057\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t50352.59\n60058\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t214159.86\n60059\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t982.70\n60060\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t56418.63\n60061\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t9328.86\n60062\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t9379.41\n60063\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t46401.30\n60064\tImp., Trib., Taxas e CEFEM\tEXPEDIÇÃO\t2185\tIMPOSTO\t1230.00\n",
+  "stderr": "",
+  "execution_time_ms": 276
+}

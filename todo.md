@@ -1202,3 +1202,8 @@
 - [x] Adicionar Grupo 2185 IMPOSTO ao mapeamento de contas do Fluxo Realizado -> conta "Imp., Trib., Taxas e CEFEM"
 - [x] Incluir subgrupos: 2188-CEFEM, 5519-COFINS, 6003-CUSTAS PROCESSOS, 2187-ICMS SOUZA, 2100-ICMS SUBSTITUIÇÃO, 5508-IMPOSTO SIMPLES, 5518-PIS, 2269-TAXA
 - [x] Excluir subgrupo 2081-GNRE da importação (adicionar à lista de contas excluídas)
+
+## Bug: IMPOSTO (2185) não contabilizado na Apuração de Custo
+- [x] Corrigir contaSistema do grupo 2185-IMPOSTO de "Imp., Trib., Taxas e CEFEM" para "Impostos, CEFEM e Outras Taxas" (nome correto da conta no banco)
+- [x] Corrigir registros existentes em lancamento_fluxo com contaSistema errado
+- [x] Atualizar lancamento_custo para incluir os R$ 388.253,35 do IMPOSTO (total agora R$ 399.694,47)
