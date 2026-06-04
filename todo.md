@@ -1196,3 +1196,9 @@
 - [x] Substituir pdftotext (binário do sistema) por biblioteca Node.js para leitura de PDF
 - [x] Extrair período automaticamente do conteúdo do PDF (campo "Período: DD/MM/YYYY a DD/MM/YYYY")
 - [x] Remover necessidade de selecionar período manualmente antes de importar
+
+## Impostos via Fluxo Realizado (a partir de maio/26)
+
+- [x] Adicionar Grupo 2185 IMPOSTO ao mapeamento de contas do Fluxo Realizado -> conta "Imp., Trib., Taxas e CEFEM"
+- [x] Incluir subgrupos: 2188-CEFEM, 5519-COFINS, 6003-CUSTAS PROCESSOS, 2187-ICMS SOUZA, 2100-ICMS SUBSTITUIÇÃO, 5508-IMPOSTO SIMPLES, 5518-PIS, 2269-TAXA
+- [x] Excluir subgrupo 2081-GNRE da importação (adicionar à lista de contas excluídas)

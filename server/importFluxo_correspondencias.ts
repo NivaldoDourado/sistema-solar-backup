@@ -108,6 +108,12 @@ export const CONTAS_IMPORTAR: ContaFluxoConfig[] = [
     contaSistema: "Comissão de Vendas",
     setor: "EXPEDIÇÃO",
   },
+  {
+    codigo: "2185",
+    nome: "IMPOSTO",
+    contaSistema: "Imp., Trib., Taxas e CEFEM",
+    setor: "ADMINISTRAÇÃO",
+  },
 ];
 
 /**
@@ -115,7 +121,6 @@ export const CONTAS_IMPORTAR: ContaFluxoConfig[] = [
  */
 export const CONTAS_EXCLUIR: string[] = [
   "2114", // FRETES
-  "2185", // IMPOSTO
   "2196", // INVESTIMENTOS/EMPRESTIMOS
   "2169", // PRODUÇÃO-BRITAGEM / MANUTENÇÃO-OFICINA (já importado pela outra planilha)
   "2149", // SALARIO E ENCARGOS PESSOAL (será lançado manualmente - Passo 2)
@@ -129,6 +134,7 @@ export const CONTAS_EXCLUIR: string[] = [
 export const CONTAS_INDIVIDUAIS_EXCLUIR: string[] = [
   "2068", // OUTRAS DESP. ADM (compra de areia, não entra no custo)
   "2304", // PAGAMENTO EMPRESTIMO
+  "2081", // GNRE (excluído por decisão da diretoria - mai/26)
 ];
 
 /**
