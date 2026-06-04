@@ -76,11 +76,34 @@ export function parseResumoVendasPDF(text: string): { cabecalho: CabecalhoPDF; l
   let periodoFim = "";
   let setor = "";
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Caso 1: "Período: 01/05/2026 a 31/05/2026" na mesma linha
     const mPeriodo = line.match(/Per[ií]odo[:\s]+(\d{2}\/\d{2}\/\d{4})\s+a\s+(\d{2}\/\d{2}\/\d{4})/i);
     if (mPeriodo) {
       periodoInicio = parseDateBR(mPeriodo[1]);
       periodoFim = parseDateBR(mPeriodo[2]);
+    }
+    // Caso 2: "Período:" numa linha e "01/05/2026 a 31/05/2026" na próxima (pdf-parse v2)
+    if (!periodoInicio && /Per[ií]odo\s*:?\s*$/i.test(line.trim())) {
+      // Procurar nas próximas 3 linhas
+      for (let j = 1; j <= 3 && i + j < lines.length; j++) {
+        const nextLine = lines[i + j].trim();
+        const mNext = nextLine.match(/(\d{2}\/\d{2}\/\d{4})\s+a\s+(\d{2}\/\d{2}\/\d{4})/);
+        if (mNext) {
+          periodoInicio = parseDateBR(mNext[1]);
+          periodoFim = parseDateBR(mNext[2]);
+          break;
+        }
+      }
+    }
+    // Caso 3: linha solta com formato de período (fallback)
+    if (!periodoInicio) {
+      const mSolta = line.trim().match(/^(\d{2}\/\d{2}\/\d{4})\s+a\s+(\d{2}\/\d{2}\/\d{4})$/);
+      if (mSolta) {
+        periodoInicio = parseDateBR(mSolta[1]);
+        periodoFim = parseDateBR(mSolta[2]);
+      }
     }
     const mSetor = line.match(/Setor[:\s]+(.+?)(?:\s{2,}|$)/i);
     if (mSetor) setor = mSetor[1].trim();
