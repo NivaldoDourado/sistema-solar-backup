@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE nomeDoEquipamento LIKE '%PA CARREGADEIRA%' OR nomeDoEquipamento LIKE '%ESCAVADEIRA%' OR nomeDoEquipamento LIKE '%LIEBHERR%' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, codigoTag, nomeDoEquipamento FROM equipamentos WHERE nomeDoEquipamento LIKE '%PA CARREGADEIRA%' OR nomeDoEquipamento LIKE '%ESCAVADEIRA%' OR nomeDoEquipamento LIKE '%LIEBHERR%' LIMIT 20;",
+  "rows": [
+    {
+      "id": "16",
+      "codigoTag": "FH200",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA FIATALLIS FH200"
+    },
+    {
+      "id": "18",
+      "codigoTag": "FX215",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA FIATALLIS FX215"
+    },
+    {
+      "id": "19",
+      "codigoTag": "944C",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR 944C"
+    },
+    {
+      "id": "20",
+      "codigoTag": "PC300",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA KOMATSU PC300"
+    },
+    {
+      "id": "21",
+      "codigoTag": "R320",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA HYNDAI R320"
+    },
+    {
+      "id": "22",
+      "codigoTag": "L566 - 01",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 01"
+    },
+    {
+      "id": "45",
+      "codigoTag": "L566 - 02",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA LIEBHERR L566 - 02"
+    },
+    {
+      "id": "51",
+      "codigoTag": "R938 - 01",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01"
+    },
+    {
+      "id": "73",
+      "codigoTag": "966R 04",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA CARTEPILAR 966R 04"
+    },
+    {
+      "id": "81",
+      "codigoTag": "HL757-9",
+      "nomeDoEquipamento": "PA CARREGADEIRA HYUNDAI HL757-9"
+    },
+    {
+      "id": "82",
+      "codigoTag": "HL760-9",
+      "nomeDoEquipamento": "PÁ CARREGADEIRA HYUNDAI HL760 03"
+    },
+    {
+      "id": "93",
+      "codigoTag": "R938-02",
+      "nomeDoEquipamento": "ESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02"
+    },
+    {
+      "id": "120017",
+      "codigoTag": "PA CARREG. 966 03",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLER 966C - 03"
+    },
+    {
+      "id": "120018",
+      "codigoTag": "PA CARREG. 966R04",
+      "nomeDoEquipamento": "PA CARREGADEIRA CATERPILLAR 966R - 04"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoTag\tnomeDoEquipamento\n16\tFH200\tESCAVADEIRA HIDRÁULICA FIATALLIS FH200\n18\tFX215\tESCAVADEIRA HIDRÁULICA FIATALLIS FX215\n19\t944C\tESCAVADEIRA HIDRÁULICA LIEBHERR 944C\n20\tPC300\tESCAVADEIRA HIDRÁULICA KOMATSU PC300\n21\tR320\tESCAVADEIRA HIDRÁULICA HYNDAI R320\n22\tL566 - 01\tPÁ CARREGADEIRA LIEBHERR L566 - 01\n45\tL566 - 02\tPÁ CARREGADEIRA LIEBHERR L566 - 02\n51\tR938 - 01\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 01\n73\t966R 04\tPÁ CARREGADEIRA CARTEPILAR 966R 04\n81\tHL757-9\tPA CARREGADEIRA HYUNDAI HL757-9\n82\tHL760-9\tPÁ CARREGADEIRA HYUNDAI HL760 03\n93\tR938-02\tESCAVADEIRA HIDRÁULICA LIEBHERR R938 - 02\n120017\tPA CARREG. 966 03\tPA CARREGADEIRA CATERPILLER 966C - 03\n120018\tPA CARREG. 966R04\tPA CARREGADEIRA CATERPILLAR 966R - 04\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

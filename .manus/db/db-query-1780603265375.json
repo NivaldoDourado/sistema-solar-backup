@@ -1,0 +1,70 @@
+{
+  "query": "SELECT equipamentoTag, equipamentoDescricao, COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(14,2))) as total FROM item_despesa_importado WHERE periodoCustoId = 90001 AND classificacao IN ('lubrificantes','pecas_desgaste','pecas_reposicao','outras_despesas') GROUP BY equipamentoTag, equipamentoDescricao ORDER BY total DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, equipamentoDescricao, COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(14,2))) as total FROM item_despesa_importado WHERE periodoCustoId = 90001 AND classificacao IN ('lubrificantes','pecas_desgaste','pecas_reposicao','outras_despesas') GROUP BY equipamentoTag, equipamentoDescricao ORDER BY total DESC LIMIT 10;",
+  "rows": [
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "cnt": "28",
+      "total": "141644.43"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "equipamentoDescricao": "PA CARREGADEIRA LIEBHER",
+      "cnt": "53",
+      "total": "77855.43"
+    },
+    {
+      "equipamentoTag": "944 C",
+      "equipamentoDescricao": "ESCAVADEIRA LIEBHERR",
+      "cnt": "33",
+      "total": "75129.34"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "equipamentoDescricao": "BRITADOR DE MANDIBULAS",
+      "cnt": "43",
+      "total": "49150.85"
+    },
+    {
+      "equipamentoTag": "H380003",
+      "equipamentoDescricao": "CONE CH430",
+      "cnt": "38",
+      "total": "46812.46"
+    },
+    {
+      "equipamentoTag": "H3800 02",
+      "equipamentoDescricao": "REBRITADOR HYDROCONE",
+      "cnt": "22",
+      "total": "40582.20"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoDescricao": "BRITADOR HYDROCONE S4800",
+      "cnt": "35",
+      "total": "37137.22"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "equipamentoDescricao": "BRITADOR CONE HP 200 (METSO)",
+      "cnt": "16",
+      "total": "35106.98"
+    },
+    {
+      "equipamentoTag": "PERFURATRIZ HIDR. 01",
+      "equipamentoDescricao": "PERFURATRIZ HIDRAULICA FOX 8 - 20 01",
+      "cnt": "32",
+      "total": "27080.81"
+    },
+    {
+      "equipamentoTag": "C100",
+      "equipamentoDescricao": "BRITADOR METSO C100 - PRIMARIO",
+      "cnt": "17",
+      "total": "25390.71"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tcnt\ttotal\nEXPLOSIVOS\tDETONA\t28\t141644.43\nL 566\tPA CARREGADEIRA LIEBHER\t53\t77855.43\n944 C\tESCAVADEIRA LIEBHERR\t33\t75129.34\nJC1200 01\tBRITADOR DE MANDIBULAS\t43\t49150.85\nH380003\tCONE CH430\t38\t46812.46\nH3800 02\tREBRITADOR HYDROCONE\t22\t40582.20\nBRITADOR CS440\tBRITADOR HYDROCONE S4800\t35\t37137.22\nHP 200 ( METSO)\tBRITADOR CONE HP 200 (METSO)\t16\t35106.98\nPERFURATRIZ HIDR. 01\tPERFURATRIZ HIDRAULICA FOX 8 - 20 01\t32\t27080.81\nC100\tBRITADOR METSO C100 - PRIMARIO\t17\t25390.71\n",
+  "stderr": "",
+  "execution_time_ms": 275
+}

@@ -164,7 +164,10 @@ export default function ImportDespesas() {
         fileName: file.name,
         mes,
         ano,
-        equipamentosSelecionados: Array.from(selecionados).map(tag => ({ codigoTag: tag })),
+        equipamentosSelecionados: Array.from(selecionados).map(tag => {
+          const equip = parseResult?.equipamentos?.find((e: EquipamentoPreview) => e.codigoTag === tag);
+          return { codigoTag: tag, equipamentoSistemaId: equip?.correspondencia?.id };
+        }),
         reclassificacoes: reclassificacoesPayload,
         itensExcluidos: itensExcluidosPayload,
       });

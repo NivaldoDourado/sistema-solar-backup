@@ -111,9 +111,32 @@ export const rankingEquipamentosRouter = router({
       });
 
       // Buscar info do equipamento cadastrado (setor, nome)
-      const equipIds = filtered.filter(r => r.equipamentoSistemaId).map(r => r.equipamentoSistemaId!);
+      // Also resolve via CORRESPONDENCIAS_APROVADAS/FORCADAS for items without equipamentoSistemaId
+      const resolvedIds = new Set<number>();
+      const tagToResolvedId = new Map<string, number>();
+      for (const r of filtered) {
+        if (r.equipamentoSistemaId) {
+          resolvedIds.add(r.equipamentoSistemaId);
+          tagToResolvedId.set(r.equipamentoTag, r.equipamentoSistemaId);
+        } else {
+          // Try to resolve from correspondencias
+          const tagUpper = r.equipamentoTag.toUpperCase();
+          const fromAprovadas = Object.entries(CORRESPONDENCIAS_APROVADAS).find(([k]) => k.toUpperCase() === tagUpper);
+          if (fromAprovadas) {
+            resolvedIds.add(fromAprovadas[1]);
+            tagToResolvedId.set(r.equipamentoTag, fromAprovadas[1]);
+          } else {
+            const fromForcadas = Object.entries(CORRESPONDENCIAS_FORCADAS).find(([k]) => k.toUpperCase() === tagUpper);
+            if (fromForcadas) {
+              resolvedIds.add(fromForcadas[1].equipamentoId);
+              tagToResolvedId.set(r.equipamentoTag, fromForcadas[1].equipamentoId);
+            }
+          }
+        }
+      }
       let equipMap = new Map<number, { nome: string; setor: string; codigoTag: string }>();
-      if (equipIds.length > 0) {
+      const equipIdsArr = Array.from(resolvedIds);
+      if (equipIdsArr.length > 0) {
         const equipRows = await db2
           .select({
             id: equipamentos.id,
@@ -122,7 +145,7 @@ export const rankingEquipamentosRouter = router({
             setorId: equipamentos.setorId,
           })
           .from(equipamentos)
-          .where(inArray(equipamentos.id, equipIds));
+          .where(inArray(equipamentos.id, equipIdsArr));
         // Get setor names
         const { setores } = await import("../drizzle/schema");
         const setorRows = await db2.select({ id: setores.id, nome: setores.nome }).from(setores);
@@ -130,7 +153,7 @@ export const rankingEquipamentosRouter = router({
         for (const e of equipRows) {
           equipMap.set(e.id, {
             nome: e.nome,
-            setor: e.setorId ? (setorMap.get(e.setorId) || "—") : "—",
+            setor: e.setorId ? (setorMap.get(e.setorId) || "\u2014") : "\u2014",
             codigoTag: e.codigoTag || "",
           });
         }
@@ -141,15 +164,16 @@ export const rankingEquipamentosRouter = router({
 
       return {
         equipamentos: filtered.map((r, idx) => {
-          const info = r.equipamentoSistemaId ? equipMap.get(r.equipamentoSistemaId) : null;
+          const resolvedId = r.equipamentoSistemaId || tagToResolvedId.get(r.equipamentoTag);
+          const info = resolvedId ? equipMap.get(resolvedId) : null;
           const custo = Number(r.totalCusto) || 0;
           return {
             posicao: idx + 1,
             equipamentoTag: r.equipamentoTag,
             equipamentoDescricao: r.equipamentoDescricao || r.equipamentoTag,
-            equipamentoSistemaId: r.equipamentoSistemaId,
+            equipamentoSistemaId: resolvedId || null,
             nomeEquipamento: info?.nome || r.equipamentoDescricao || r.equipamentoTag,
-            setor: info?.setor || "—",
+            setor: info?.setor || "\u2014",
             codigoTag: info?.codigoTag || r.equipamentoTag,
             totalItens: Number(r.totalItens),
             totalCusto: custo,

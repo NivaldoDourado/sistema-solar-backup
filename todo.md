@@ -1250,3 +1250,9 @@
 - [x] Impressão do relatório
 - [x] Envio por WhatsApp
 - [x] Registrar rota e adicionar ao menu de navegação no grupo Apuração
+
+## Ranking Equipamentos: Nomes completos via correspondências
+- [x] Corrigir TypeScript error em ImportDespesas.tsx (EquipamentoData → EquipamentoPreview)
+- [x] Enviar equipamentoSistemaId na importação de despesas (correspondencia.id)
+- [x] Resolver nomes completos no Ranking via CORRESPONDENCIAS_APROVADAS/FORCADAS quando equipamentoSistemaId é NULL no banco
+- [x] Usar tagToResolvedId para buscar nome completo do equipamento cadastrado (ex: "PÁ CARREGADEIRA LIEBHERR L566 - 01" vs "- 02")

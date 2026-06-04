@@ -1,0 +1,160 @@
+{
+  "query": "SELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId FROM item_despesa_importado WHERE periodoCustoId = 90001 ORDER BY equipamentoTag LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT DISTINCT equipamentoTag, equipamentoDescricao, equipamentoSistemaId FROM item_despesa_importado WHERE periodoCustoId = 90001 ORDER BY equipamentoTag LIMIT 30;",
+  "rows": [
+    {
+      "equipamentoTag": "944 C",
+      "equipamentoDescricao": "ESCAVADEIRA LIEBHERR",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "ALMOXARIFADO",
+      "equipamentoDescricao": "ALMOXARIFADO",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "BALANÇA",
+      "equipamentoDescricao": "LIDER BALANÇA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR CS440",
+      "equipamentoDescricao": "BRITADOR HYDROCONE S4800",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL",
+      "equipamentoDescricao": "METSO NW 100  (OLC 5612) CARRETA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "BRITADOR MOVEL METSO",
+      "equipamentoDescricao": "NW200 HPS (OUY 9579)PENEIRAS/CARRETA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "C100",
+      "equipamentoDescricao": "BRITADOR METSO C100 - PRIMARIO",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 01",
+      "equipamentoDescricao": "CALHA VIBRATORIA 01 (CS440)",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 02",
+      "equipamentoDescricao": "CALHA VIBRATORIA 02 (CS440)",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CALHA VIBRATORIA 03",
+      "equipamentoDescricao": "CALHA VIBRATORIA 03 (H3800 - 03)",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO AU5073",
+      "equipamentoDescricao": "MERCEDEZ  2213",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZK7665",
+      "equipamentoDescricao": "FORD CARGO 2422",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO HZT0105",
+      "equipamentoDescricao": "FORD CARGO 1722",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CAMINHÃO NML0188",
+      "equipamentoDescricao": "FORD CARGO TRAÇADO 2628",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "CANTINA",
+      "equipamentoDescricao": "CANTINA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "DRAGA D´ÁGUA A DIESE",
+      "equipamentoDescricao": "DRAGA D´ÁGUA A DIESEL",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "DRAGA DIESEL 02",
+      "equipamentoDescricao": "DRAGA DIESEL  02",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R 938 02",
+      "equipamentoDescricao": "ESCAVADEIRA R 938",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "equipamentoDescricao": "ESCAVADEIRA LIEBHER R938",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "equipamentoDescricao": "DETONA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "GEORGE MACHADO",
+      "equipamentoDescricao": "GEORGE MACHADO",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "GRELHA NOVA",
+      "equipamentoDescricao": "GRELHA (PENEIRA 01) C100 NW100",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "GUGA",
+      "equipamentoDescricao": "GUGA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "H3800 02",
+      "equipamentoDescricao": "REBRITADOR HYDROCONE",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "H380003",
+      "equipamentoDescricao": "CONE CH430",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HL 76003",
+      "equipamentoDescricao": "HYUNDAI HL760 - 9",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HP 200 ( METSO)",
+      "equipamentoDescricao": "BRITADOR CONE HP 200 (METSO)",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HZC4975",
+      "equipamentoDescricao": "FORD F1000",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HZH3J61",
+      "equipamentoDescricao": "M.BENZ/L 1113 PIPA",
+      "equipamentoSistemaId": "NULL"
+    },
+    {
+      "equipamentoTag": "HZU7750",
+      "equipamentoDescricao": "ESCOLT",
+      "equipamentoSistemaId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tequipamentoDescricao\tequipamentoSistemaId\n944 C\tESCAVADEIRA LIEBHERR\tNULL\nALMOXARIFADO\tALMOXARIFADO\tNULL\nBALANÇA\tLIDER BALANÇA\tNULL\nBRITADOR CS440\tBRITADOR HYDROCONE S4800\tNULL\nBRITADOR MOVEL\tMETSO NW 100  (OLC 5612) CARRETA\tNULL\nBRITADOR MOVEL METSO\tNW200 HPS (OUY 9579)PENEIRAS/CARRETA\tNULL\nC100\tBRITADOR METSO C100 - PRIMARIO\tNULL\nCALHA VIBRATORIA 01\tCALHA VIBRATORIA 01 (CS440)\tNULL\nCALHA VIBRATORIA 02\tCALHA VIBRATORIA 02 (CS440)\tNULL\nCALHA VIBRATORIA 03\tCALHA VIBRATORIA 03 (H3800 - 03)\tNULL\nCAMINHÃO AU5073\tMERCEDEZ  2213\tNULL\nCAMINHÃO HZK7665\tFORD CARGO 2422\tNULL\nCAMINHÃO HZT0105\tFORD CARGO 1722\tNULL\nCAMINHÃO NML0188\tFORD CARGO TRAÇADO 2628\tNULL\nCANTINA\tCANTINA\tNULL\nDRAGA D´ÁGUA A DIESE\tDRAGA D´ÁGUA A DIESEL\tNULL\nDRAGA DIESEL 02\tDRAGA DIESEL  02\tNULL\nESCAVADEIRA R 938 02\tESCAVADEIRA R 938\tNULL\nESCAVADEIRA R938\tESCAVADEIRA LIEBHER R938\tNULL\nEXPLOSIVOS\tDETONA\tNULL\nGEORGE MACHADO\tGEORGE MACHADO\tNULL\nGRELHA NOVA\tGRELHA (PENEIRA 01) C100 NW100\tNULL\nGUGA\tGUGA\tNULL\nH3800 02\tREBRITADOR HYDROCONE\tNULL\nH380003\tCONE CH430\tNULL\nHL 76003\tHYUNDAI HL760 - 9\tNULL\nHP 200 ( METSO)\tBRITADOR CONE HP 200 (METSO)\tNULL\nHZC4975\tFORD F1000\tNULL\nHZH3J61\tM.BENZ/L 1113 PIPA\tNULL\nHZU7750\tESCOLT\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 275
+}
