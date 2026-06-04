@@ -193,29 +193,9 @@ export default function RankingEquipamentos() {
     });
     // NOTA DE DESTAQUE
     data.push({
-      posicao: "⚠️",
-      equipamento: "ATENÇÃO: Este relatório apresenta apenas os 10 equipamentos com maiores gastos.",
-      classificacao: "",
-      sequencia: "",
-      data: "",
-      produto: "",
-      valor: "",
-      _isNota: true,
-    });
-    data.push({
-      posicao: "",
-      equipamento: `Para consultar o ranking completo (${dadosExport.equipamentos.length} equipamentos), acesse:`,
-      classificacao: "",
-      sequencia: "",
-      data: "",
-      produto: "",
-      valor: "",
-      _isNota: true,
-    });
-    data.push({
-      posicao: "",
-      equipamento: `Sistema GEM → Apuração de Custo → Ranking Equipamentos`,
-      classificacao: "",
+      posicao: "NOTA",
+      equipamento: "Este relatorio apresenta apenas os 10 equipamentos com maiores gastos.",
+      classificacao: `Ranking completo (${dadosExport.equipamentos.length} equip.): Sistema GEM > Apuracao de Custo > Ranking Equipamentos`,
       sequencia: "",
       data: "",
       produto: "",

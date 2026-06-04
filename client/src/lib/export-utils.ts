@@ -230,10 +230,10 @@ export async function exportToPDF(options: ExportOptions) {
           hookData.cell.styles.textColor = [30, 64, 175]; // blue-800
           hookData.cell.styles.fontStyle = "bold";
         } else if (notaRowIndices.has(hookData.row.index)) {
-          hookData.cell.styles.fillColor = [255, 251, 235]; // amber-50
-          hookData.cell.styles.textColor = [146, 64, 14]; // amber-800
+          hookData.cell.styles.fillColor = [254, 226, 226]; // red-100
+          hookData.cell.styles.textColor = [153, 27, 27]; // red-800
           hookData.cell.styles.fontStyle = "bold";
-          hookData.cell.styles.fontSize = 9;
+          hookData.cell.styles.fontSize = 11;
         }
       }
     },
