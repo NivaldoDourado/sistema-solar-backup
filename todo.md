@@ -1256,3 +1256,7 @@
 - [x] Enviar equipamentoSistemaId na importação de despesas (correspondencia.id)
 - [x] Resolver nomes completos no Ranking via CORRESPONDENCIAS_APROVADAS/FORCADAS quando equipamentoSistemaId é NULL no banco
 - [x] Usar tagToResolvedId para buscar nome completo do equipamento cadastrado (ex: "PÁ CARREGADEIRA LIEBHERR L566 - 01" vs "- 02")
+
+## Ranking Equipamentos: Limitar exportação a 10 primeiros
+- [x] Limitar exportação PDF/Excel para apenas os 10 primeiros equipamentos do ranking
+- [x] Adicionar nota de destaque no final do relatório informando que demais equipamentos podem ser consultados em "Apuração de Custo" → "Ranking Equipamentos" no sistema GEM

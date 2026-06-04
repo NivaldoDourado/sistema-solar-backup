@@ -180,9 +180,10 @@ export async function exportToPDF(options: ExportOptions) {
     columns.map((col) => formatValue(row[col.key], col))
   );
 
-  // Identificar linhas de "TOTAL GRUPO" e "SUBTOTAL SETOR" para destaque
+  // Identificar linhas de "TOTAL GRUPO", "SUBTOTAL SETOR" e "_isNota" para destaque
   const totalGrupoRowIndices = new Set<number>();
   const subtotalSetorRowIndices = new Set<number>();
+  const notaRowIndices = new Set<number>();
   const tipoColIndex = columns.findIndex(c => c.key === "tipo");
   if (tipoColIndex >= 0) {
     data.forEach((row, idx) => {
@@ -193,6 +194,12 @@ export async function exportToPDF(options: ExportOptions) {
       }
     });
   }
+  // Detectar linhas de nota (flag _isNota)
+  data.forEach((row, idx) => {
+    if (row._isNota) {
+      notaRowIndices.add(idx);
+    }
+  });
 
   autoTable(doc, {
     head: [headers],
@@ -222,6 +229,11 @@ export async function exportToPDF(options: ExportOptions) {
           hookData.cell.styles.fillColor = [219, 234, 254]; // blue-100
           hookData.cell.styles.textColor = [30, 64, 175]; // blue-800
           hookData.cell.styles.fontStyle = "bold";
+        } else if (notaRowIndices.has(hookData.row.index)) {
+          hookData.cell.styles.fillColor = [255, 251, 235]; // amber-50
+          hookData.cell.styles.textColor = [146, 64, 14]; // amber-800
+          hookData.cell.styles.fontStyle = "bold";
+          hookData.cell.styles.fontSize = 9;
         }
       }
     },

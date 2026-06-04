@@ -93,7 +93,7 @@ export default function RankingEquipamentos() {
     return msg;
   }, [ranking, periodoLabel]);
 
-  // Export data (full with items)
+  // Export data (TOP 10 only with items + note)
   const exportOptions = useMemo(() => {
     if (!dadosExport?.equipamentos?.length) return null;
     const columns: ExportColumn[] = [
@@ -106,8 +106,10 @@ export default function RankingEquipamentos() {
       { header: "Valor", key: "valor", width: 15, format: (v: any) => typeof v === "number" ? fmtBRL(v) : v },
     ];
 
+    // Limitar a apenas os 10 primeiros equipamentos
+    const top10 = dadosExport.equipamentos.slice(0, 10);
     const data: Record<string, any>[] = [];
-    for (const equip of dadosExport.equipamentos) {
+    for (const equip of top10) {
       for (const classif of equip.classificacoes) {
         // Itens da classificação
         for (const item of classif.itens) {
@@ -167,16 +169,58 @@ export default function RankingEquipamentos() {
         _isSeparator: true,
       });
     }
-    // Total geral
+    // Total geral (dos 10 primeiros)
+    const totalTop10 = top10.reduce((sum: number, e: any) => sum + (e.totalCusto || 0), 0);
     data.push({
       posicao: "",
-      equipamento: "TOTAL GERAL",
+      equipamento: `TOTAL DOS 10 PRIMEIROS EQUIPAMENTOS`,
       classificacao: "",
       sequencia: "",
       data: "",
       produto: "",
-      valor: dadosExport.totalGeral,
+      valor: totalTop10,
       _isTotal: true,
+    });
+    // Linha em branco
+    data.push({
+      posicao: "",
+      equipamento: "",
+      classificacao: "",
+      sequencia: "",
+      data: "",
+      produto: "",
+      valor: "",
+    });
+    // NOTA DE DESTAQUE
+    data.push({
+      posicao: "⚠️",
+      equipamento: "ATENÇÃO: Este relatório apresenta apenas os 10 equipamentos com maiores gastos.",
+      classificacao: "",
+      sequencia: "",
+      data: "",
+      produto: "",
+      valor: "",
+      _isNota: true,
+    });
+    data.push({
+      posicao: "",
+      equipamento: `Para consultar o ranking completo (${dadosExport.equipamentos.length} equipamentos), acesse:`,
+      classificacao: "",
+      sequencia: "",
+      data: "",
+      produto: "",
+      valor: "",
+      _isNota: true,
+    });
+    data.push({
+      posicao: "",
+      equipamento: `Sistema GEM → Apuração de Custo → Ranking Equipamentos`,
+      classificacao: "",
+      sequencia: "",
+      data: "",
+      produto: "",
+      valor: "",
+      _isNota: true,
     });
 
     return { columns, data };
