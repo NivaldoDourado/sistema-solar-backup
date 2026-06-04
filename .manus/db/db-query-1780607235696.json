@@ -1,0 +1,106 @@
+{
+  "query": "SELECT * FROM equipamento_excluido_tag;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT * FROM equipamento_excluido_tag;",
+  "rows": [
+    {
+      "id": "1",
+      "tag": "QMD 0H48",
+      "descricao": "MB ATEGO 2426",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:42:29"
+    },
+    {
+      "id": "2",
+      "tag": "QMO6E54",
+      "descricao": "MERCEDES",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:42:45"
+    },
+    {
+      "id": "3",
+      "tag": "QMD0H48",
+      "descricao": "MERCEDES MUCK",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:43:52"
+    },
+    {
+      "id": "4",
+      "tag": "QMN1F10",
+      "descricao": "MERCEDES BENZ",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 13:44:47"
+    },
+    {
+      "id": "10",
+      "tag": "SETOR RH",
+      "descricao": "SETOR RECURSOS HUMANOS",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 15:22:01"
+    },
+    {
+      "id": "11",
+      "tag": "RRH 9F10",
+      "descricao": "ford f150 CARRO GUGA",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 17:09:12"
+    },
+    {
+      "id": "12",
+      "tag": "TNW 2I60",
+      "descricao": "RANGER GUGA",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-11 17:09:38"
+    },
+    {
+      "id": "30001",
+      "tag": "ALIMENTADOR AVS01",
+      "descricao": "ALIMENTADOR AVS 4001200 (01) OBS.SERVICO",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-12 12:47:16"
+    },
+    {
+      "id": "30002",
+      "tag": "OUTROS",
+      "descricao": "OUTROS",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-12 12:51:34"
+    },
+    {
+      "id": "30003",
+      "tag": "QUADRICICLO",
+      "descricao": "QUADRICICLO UTV",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-12 12:52:27"
+    },
+    {
+      "id": "30004",
+      "tag": "PENEIRA 02 NOVA H 01",
+      "descricao": "PENEIRA VIBRATORIA 6,00 X 2,40",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-12 12:53:12"
+    },
+    {
+      "id": "30005",
+      "tag": "QUADRICICLO HONDA",
+      "descricao": "QUADRICICLO HONDA",
+      "motivo": "Excluído pelo usuário - outros negócios",
+      "userId": "1",
+      "createdAt": "2026-05-12 12:56:07"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttag\tdescricao\tmotivo\tuserId\tcreatedAt\n1\tQMD 0H48\tMB ATEGO 2426\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:29\n2\tQMO6E54\tMERCEDES\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:42:45\n3\tQMD0H48\tMERCEDES MUCK\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:43:52\n4\tQMN1F10\tMERCEDES BENZ\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 13:44:47\n10\tSETOR RH\tSETOR RECURSOS HUMANOS\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 15:22:01\n11\tRRH 9F10\tford f150 CARRO GUGA\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 17:09:12\n12\tTNW 2I60\tRANGER GUGA\tExcluído pelo usuário - outros negócios\t1\t2026-05-11 17:09:38\n30001\tALIMENTADOR AVS01\tALIMENTADOR AVS 4001200 (01) OBS.SERVICO\tExcluído pelo usuário - outros negócios\t1\t2026-05-12 12:47:16\n30002\tOUTROS\tOUTROS\tExcluído pelo usuário - outros negócios\t1\t2026-05-12 12:51:34\n30003\tQUADRICICLO\tQUADRICICLO UTV\tExcluído pelo usuário - outros negócios\t1\t2026-05-12 12:52:27\n30004\tPENEIRA 02 NOVA H 01\tPENEIRA VIBRATORIA 6,00 X 2,40\tExcluído pelo usuário - outros negócios\t1\t2026-05-12 12:53:12\n30005\tQUADRICICLO HONDA\tQUADRICICLO HONDA\tExcluído pelo usuário - outros negócios\t1\t2026-05-12 12:56:07\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

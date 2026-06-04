@@ -7,11 +7,12 @@ import {
   resumoVendasProduto, avaliacaoGlobal, abastecimento, producao,
   lancamentoCusto, lancamentoSalario, contaCusto,
   itemDespesaImportado, equipamentoExcluidoTag,
-  parteDiaria, parteDiariaItens, servicos,
+  parteDiaria, parteDiariaItens, servicos, equipamentos,
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { calcularRateioMem } from "./rateioMem_calc";
 import { calcularRateioMset } from "./rateioMset_calc";
+import { CORRESPONDENCIAS_APROVADAS, CORRESPONDENCIAS_FORCADAS } from "./importDespesas_correspondencias";
 
 /**
  * Calcula o custo total por grupo/subsetor para um conjunto de períodos
@@ -643,27 +644,61 @@ export const comparativosRouter = router({
       const ids = periodoIds.map(p => p.id);
       const idsSql = sql.join(ids.map(id => sql`${id}`), sql`, `);
 
-      // Buscar tags excluídas do custo
+      // Construir set de tags excluídas (mesma lógica de listByPeriodo no lancamentoCusto_router)
       const tagsExcluidasRows = await db.select().from(equipamentoExcluidoTag);
       const tagsExcluidasSet = new Set(tagsExcluidasRows.map(t => t.tag.toUpperCase()));
 
-      // Buscar lancamentos agrupados por conta e período (com divisor e classificação)
-      const lancRows = await db.select({
+      // Buscar equipamentos com excluidoCusto = 'sim' e mapear para tags
+      const equipExcluidos = await db.select({ id: equipamentos.id })
+        .from(equipamentos)
+        .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
+      const idsExcluidos = new Set(equipExcluidos.map(e => e.id));
+
+      // Mapear IDs excluídos para tags via correspondências
+      const allExcludedTags = new Set(tagsExcluidasSet);
+      for (const [tag, equipId] of Object.entries(CORRESPONDENCIAS_APROVADAS)) {
+        if (idsExcluidos.has(equipId)) {
+          allExcludedTags.add(tag.toUpperCase());
+        }
+      }
+      for (const [tag, { equipamentoId }] of Object.entries(CORRESPONDENCIAS_FORCADAS)) {
+        if (idsExcluidos.has(equipamentoId)) {
+          allExcludedTags.add(tag.toUpperCase());
+        }
+      }
+
+      // Buscar lancamentos INDIVIDUAIS (não agrupados) para filtrar excluídos por tag
+      const lancRowsRaw = await db.select({
         periodoCustoId: lancamentoCusto.periodoCustoId,
-        contaNome: contaCusto.nome,
         divisor: contaCusto.divisor,
         classificacao: contaCusto.classificacao,
-        total: sql<string>`SUM(${lancamentoCusto.valor})`,
+        valor: lancamentoCusto.valor,
+        observacoes: lancamentoCusto.observacoes,
       })
         .from(lancamentoCusto)
         .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
-        .where(sql`${lancamentoCusto.periodoCustoId} IN (${idsSql})`)
-        .groupBy(lancamentoCusto.periodoCustoId, contaCusto.nome, contaCusto.divisor, contaCusto.classificacao);
+        .where(sql`${lancamentoCusto.periodoCustoId} IN (${idsSql})`);
+
+      // Filtrar excluídos (mesma lógica de extractTagFromObservacoes + allExcludedTags)
+      function extractTag(obs: string): string | null {
+        if (!obs.startsWith("[Import]")) return null;
+        const rest = obs.substring(9).trim();
+        const dashIdx = rest.indexOf(" - ");
+        if (dashIdx === -1) return rest.trim().toUpperCase();
+        return rest.substring(0, dashIdx).trim().toUpperCase();
+      }
+
+      const lancRows = lancRowsRaw.filter(l => {
+        const obs = l.observacoes ?? "";
+        if (!obs.startsWith("[Import]")) return true;
+        const tag = extractTag(obs);
+        if (!tag) return true;
+        return !allExcludedTags.has(tag);
+      });
 
       // Buscar salários agrupados por conta e período
       const salRows = await db.select({
         periodoCustoId: lancamentoSalario.periodoCustoId,
-        contaNome: contaCusto.nome,
         divisor: contaCusto.divisor,
         classificacao: contaCusto.classificacao,
         total: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))`,
@@ -671,25 +706,7 @@ export const comparativosRouter = router({
         .from(lancamentoSalario)
         .innerJoin(contaCusto, eq(lancamentoSalario.contaCustoId, contaCusto.id))
         .where(sql`${lancamentoSalario.periodoCustoId} IN (${idsSql})`)
-        .groupBy(lancamentoSalario.periodoCustoId, contaCusto.nome, contaCusto.divisor, contaCusto.classificacao);
-
-      // Calcular equipamentos excluídos por período (para subtrair do custo variável)
-      const excluidos: Record<string, number> = {};
-      if (tagsExcluidasSet.size > 0) {
-        const tagsArr = Array.from(tagsExcluidasSet);
-        const tagsSql = sql.join(tagsArr.map(t => sql`${t}`), sql`, `);
-        const exclRows = await db.select({
-          periodoCustoId: itemDespesaImportado.periodoCustoId,
-          total: sql<string>`SUM(${itemDespesaImportado.custo})`,
-        })
-          .from(itemDespesaImportado)
-          .where(sql`${itemDespesaImportado.periodoCustoId} IN (${idsSql}) AND UPPER(${itemDespesaImportado.equipamentoTag}) IN (${tagsSql})`)
-          .groupBy(itemDespesaImportado.periodoCustoId);
-
-        for (const row of exclRows) {
-          excluidos[String(row.periodoCustoId)] = parseFloat(String(row.total || "0"));
-        }
-      }
+        .groupBy(lancamentoSalario.periodoCustoId, contaCusto.divisor, contaCusto.classificacao);
 
       // Buscar produção e vendas por período
       // Produção: campo producaoTotal do periodo_custo (já preenchido pelo sistema)
@@ -778,6 +795,7 @@ export const comparativosRouter = router({
       // Calcular indicadores por período
       const resultados = periodoIds.map(p => {
         const pid = String(p.id);
+        const pidNum = p.id;
         const per = p.periodo;
         const key = `${per.ano}-${per.mes}`;
 
@@ -793,15 +811,16 @@ export const comparativosRouter = router({
         // Vendas: quantidadeVendida do periodo_custo, fallback resumo_vendas_produto
         const vendas = parseFloat(String(per.quantidadeVendida || "0")) || vendasMap[key] || 0;
 
-        // Agrupar lançamentos por tipo (custo variável vs despesa variável vs despesas indiretas)
+        // Agrupar lançamentos filtrados por tipo
         let totalCustoVariavel = 0;
         let totalDespesaVariavel = 0;
         let totalDespesasIndiretas = 0;
 
-        const allRows = [...lancRows, ...salRows].filter(r => String(r.periodoCustoId) === pid);
-        for (const row of allRows) {
-          const val = parseFloat(String(row.total || "0"));
-          if (val <= 0) continue;
+        // Processar lancamentos individuais (já filtrados por exclusão)
+        for (const row of lancRows) {
+          if (row.periodoCustoId !== pidNum) continue;
+          const val = parseFloat(String(row.valor || "0"));
+          if (val === 0) continue;
           const divisor = row.divisor ?? "producao";
           const classificacao = row.classificacao ?? "custo_variavel";
           if (classificacao === "despesa_variavel" && divisor === "producao") {
@@ -813,10 +832,20 @@ export const comparativosRouter = router({
           }
         }
 
-        // Subtrair equipamentos excluídos do custo variável
-        const totalExcluido = excluidos[pid] ?? 0;
-        if (totalExcluido > 0) {
-          totalCustoVariavel = Math.max(0, totalCustoVariavel - totalExcluido);
+        // Processar salários agrupados
+        for (const row of salRows) {
+          if (String(row.periodoCustoId) !== pid) continue;
+          const val = parseFloat(String(row.total || "0"));
+          if (val === 0) continue;
+          const divisor = row.divisor ?? "producao";
+          const classificacao = row.classificacao ?? "custo_variavel";
+          if (classificacao === "despesa_variavel" && divisor === "producao") {
+            totalDespesasIndiretas += val;
+          } else if (divisor === "vendas") {
+            totalDespesaVariavel += val;
+          } else {
+            totalCustoVariavel += val;
+          }
         }
 
         // Cálculos

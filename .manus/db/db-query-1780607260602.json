@@ -1,0 +1,20 @@
+{
+  "query": "SELECT pc.mes, pc.ano, SUM(ls.valor) as total FROM lancamento_salario ls JOIN periodo_custo pc ON ls.periodoCustoId = pc.id WHERE pc.mes IN (4,5) AND pc.ano = 2026 GROUP BY pc.mes, pc.ano;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, SUM(ls.valor) as total FROM lancamento_salario ls JOIN periodo_custo pc ON ls.periodoCustoId = pc.id WHERE pc.mes IN (4,5) AND pc.ano = 2026 GROUP BY pc.mes, pc.ano;",
+  "rows": [
+    {
+      "mes": "4",
+      "ano": "2026",
+      "total": "836716.76"
+    },
+    {
+      "mes": "5",
+      "ano": "2026",
+      "total": "883690.41"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\ttotal\n4\t2026\t836716.76\n5\t2026\t883690.41\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

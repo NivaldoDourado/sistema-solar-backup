@@ -1,0 +1,13 @@
+{
+  "query": "SELECT SUM(lc.valor) as total_excluido FROM lancamento_custo lc JOIN periodo_custo pc ON lc.periodoCustoId = pc.id WHERE pc.mes = 4 AND pc.ano = 2026 AND lc.observacoes LIKE '[Import]%' AND (UPPER(lc.observacoes) LIKE '%QMD 0H48%' OR UPPER(lc.observacoes) LIKE '%QMO6E54%' OR UPPER(lc.observacoes) LIKE '%QMD0H48%' OR UPPER(lc.observacoes) LIKE '%QMN1F10%' OR UPPER(lc.observacoes) LIKE '%SETOR RH%' OR UPPER(lc.observacoes) LIKE '%RRH 9F10%' OR UPPER(lc.observacoes) LIKE '%TNW 2I60%' OR UPPER(lc.observacoes) LIKE '%ALIMENTADOR AVS01%' OR UPPER(lc.observacoes) LIKE '%OUTROS%' OR UPPER(lc.observacoes) LIKE '%QUADRICICLO%' OR UPPER(lc.observacoes) LIKE '%PENEIRA 02 NOVA H 01%' OR UPPER(lc.observacoes) LIKE '%QUADRICICLO HONDA%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(lc.valor) as total_excluido FROM lancamento_custo lc JOIN periodo_custo pc ON lc.periodoCustoId = pc.id WHERE pc.mes = 4 AND pc.ano = 2026 AND lc.observacoes LIKE '[Import]%' AND (UPPER(lc.observacoes) LIKE '%QMD 0H48%' OR UPPER(lc.observacoes) LIKE '%QMO6E54%' OR UPPER(lc.observacoes) LIKE '%QMD0H48%' OR UPPER(lc.observacoes) LIKE '%QMN1F10%' OR UPPER(lc.observacoes) LIKE '%SETOR RH%' OR UPPER(lc.observacoes) LIKE '%RRH 9F10%' OR UPPER(lc.observacoes) LIKE '%TNW 2I60%' OR UPPER(lc.observacoes) LIKE '%ALIMENTADOR AVS01%' OR UPPER(lc.observacoes) LIKE '%OUTROS%' OR UPPER(lc.observacoes) LIKE '%QUADRICICLO%' OR UPPER(lc.observacoes) LIKE '%PENEIRA 02 NOVA H 01%' OR UPPER(lc.observacoes) LIKE '%QUADRICICLO HONDA%');",
+  "rows": [
+    {
+      "total_excluido": "88379.03"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_excluido\n88379.03\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

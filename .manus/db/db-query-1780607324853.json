@@ -1,0 +1,26 @@
+{
+  "query": "SELECT s.id, s.nome FROM servicos s WHERE UPPER(s.nome) LIKE '%TRANSPORTE DE PEDRA PARA O BRITADOR%' OR UPPER(s.nome) LIKE '%ALIMENTANDO O BRITADOR PRIMARIO%' OR UPPER(s.nome) LIKE '%TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR%' OR UPPER(s.nome) LIKE '%TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT s.id, s.nome FROM servicos s WHERE UPPER(s.nome) LIKE '%TRANSPORTE DE PEDRA PARA O BRITADOR%' OR UPPER(s.nome) LIKE '%ALIMENTANDO O BRITADOR PRIMARIO%' OR UPPER(s.nome) LIKE '%TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR%' OR UPPER(s.nome) LIKE '%TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL%';",
+  "rows": [
+    {
+      "id": "15",
+      "nome": "TRANSPORTE DE PEDRA PARA O BRITADOR"
+    },
+    {
+      "id": "24",
+      "nome": "TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR"
+    },
+    {
+      "id": "29",
+      "nome": "ALIMENTANDO O BRITADOR PRIMARIO"
+    },
+    {
+      "id": "46",
+      "nome": "TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n15\tTRANSPORTE DE PEDRA PARA O BRITADOR\n24\tTRANSP. PEDRA DO ESTOQUE PARA O BRITADOR\n29\tALIMENTANDO O BRITADOR PRIMARIO\n46\tTRANSPORTE DE PEDRA PARA BRITAGEM MOVEL\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

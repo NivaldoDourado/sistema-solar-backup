@@ -1,0 +1,20 @@
+{
+  "query": "SELECT pc.mes, pc.ano, SUM(idi.custo) as total_excluido FROM item_despesa_importado idi JOIN periodo_custo pc ON idi.periodoCustoId = pc.id WHERE pc.mes IN (4,5) AND pc.ano = 2026 AND UPPER(idi.equipamentoTag) IN ('QMD 0H48','QMO6E54','QMD0H48','QMN1F10','SETOR RH','RRH 9F10','TNW 2I60','ALIMENTADOR AVS01','OUTROS','QUADRICICLO','PENEIRA 02 NOVA H 01','QUADRICICLO HONDA') GROUP BY pc.mes, pc.ano;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT pc.mes, pc.ano, SUM(idi.custo) as total_excluido FROM item_despesa_importado idi JOIN periodo_custo pc ON idi.periodoCustoId = pc.id WHERE pc.mes IN (4,5) AND pc.ano = 2026 AND UPPER(idi.equipamentoTag) IN ('QMD 0H48','QMO6E54','QMD0H48','QMN1F10','SETOR RH','RRH 9F10','TNW 2I60','ALIMENTADOR AVS01','OUTROS','QUADRICICLO','PENEIRA 02 NOVA H 01','QUADRICICLO HONDA') GROUP BY pc.mes, pc.ano;",
+  "rows": [
+    {
+      "mes": "5",
+      "ano": "2026",
+      "total_excluido": "32393.61"
+    },
+    {
+      "mes": "4",
+      "ano": "2026",
+      "total_excluido": "78751.29"
+    }
+  ],
+  "messages": [],
+  "stdout": "mes\tano\ttotal_excluido\n5\t2026\t32393.61\n4\t2026\t78751.29\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}
