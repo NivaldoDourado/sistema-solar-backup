@@ -450,6 +450,10 @@ export const importDespesasRouter = router({
         sequencia: z.string(),
         novaClassificacao: z.enum(["lubrificantes", "pecas_desgaste", "outras_despesas", "pecas_reposicao", "combustivel"]),
       })).optional().default([]),
+      itensExcluidos: z.array(z.object({
+        codigoTag: z.string(),
+        sequencia: z.string(),
+      })).optional().default([]),
     }))
     .mutation(async ({ input, ctx }) => {
       const db2 = await getDb();
@@ -500,6 +504,19 @@ export const importDespesasRouter = router({
         .where(sql`${equipamentos.excluidoCusto} = 'sim'`);
       const idsEquipExcluidos = new Set(equipExcluidos.map(e => e.id));
 
+      // ===== LIMPAR DADOS ANTERIORES DA IMPORTAÇÃO DE DESPESAS PARA ESTE PERÍODO =====
+      // Remove lançamentos de custo anteriores que vieram de importação de despesas (observação contém [Import])
+      await db2.delete(lancamentoCusto).where(
+        and(
+          eq(lancamentoCusto.periodoCustoId, periodoId),
+          sql`${lancamentoCusto.observacoes} LIKE '%[Import]%'`
+        )
+      );
+      // Remove itens detalhados anteriores deste período
+      await db2.delete(itemDespesaImportado).where(
+        eq(itemDespesaImportado.periodoCustoId, periodoId)
+      );
+
       // Filtrar equipamentos selecionados (excluindo também os marcados como excluidoCusto)
       const selecionadosTags = new Set(input.equipamentosSelecionados.map(e => e.codigoTag));
       const equipamentosParaImportar = parsed.equipamentos.filter(e => {
@@ -529,12 +546,20 @@ export const importDespesasRouter = router({
       // Buscar conta "Explosivos e Acessórios" para lançamentos de explosivos
       const contaExplosivos = contas.find(c => c.nome.toLowerCase().includes("explosivos"));
 
+      // Build set of excluded items (codigoTag:sequencia)
+      const itensExcluidosSet = new Set<string>();
+      for (const item of (input.itensExcluidos || [])) {
+        itensExcluidosSet.add(`${item.codigoTag}:${item.sequencia}`);
+      }
+
       for (const equip of equipamentosParaImportar) {
         // Verificar se é item de "Explosivos e Acessórios" (conta específica de setor)
         const isExplosivos = TAGS_CONTA_EXPLOSIVOS.some(t => equip.codigoTag.toUpperCase() === t.toUpperCase());
         if (isExplosivos && contaExplosivos) {
           // Lançar como Explosivos e Acessórios (conta específica)
-          const totalEquip = equip.despesas.reduce((sum, d) => sum + d.custo, 0);
+          const totalEquip = equip.despesas
+            .filter(d => !itensExcluidosSet.has(`${equip.codigoTag}:${d.sequencia}`))
+            .reduce((sum, d) => sum + d.custo, 0);
           if (totalEquip > 0) {
             lancamentos.push({
               periodoCustoId: periodoId,
@@ -552,7 +577,9 @@ export const importDespesasRouter = router({
         const setorDestino = TAGS_OUTRAS_DESP_SETOR[equip.codigoTag];
         if (setorDestino && contaOutrasDesp) {
           // Lançar como Outras Despesas de Setor
-          const totalEquip = equip.despesas.reduce((sum, d) => sum + d.custo, 0);
+          const totalEquip = equip.despesas
+            .filter(d => !itensExcluidosSet.has(`${equip.codigoTag}:${d.sequencia}`))
+            .reduce((sum, d) => sum + d.custo, 0);
           if (totalEquip > 0) {
             lancamentos.push({
               periodoCustoId: periodoId,
@@ -584,6 +611,8 @@ export const importDespesasRouter = router({
 
         const porClassificacao = { lubrificantes: 0, pecas_desgaste: 0, pecas_reposicao: 0, outras_despesas: 0, combustivel: 0 };
         for (const desp of equip.despesas) {
+          // Skip excluded items
+          if (itensExcluidosSet.has(`${equip.codigoTag}:${desp.sequencia}`)) continue;
           const effectiveClass = (reclassMap.get(desp.sequencia) || desp.classificacao) as keyof typeof porClassificacao;
           porClassificacao[effectiveClass] += desp.custo * fatorCorrecao;
         }
@@ -661,6 +690,8 @@ export const importDespesasRouter = router({
         }
 
         for (const desp of equip.despesas) {
+          // Skip excluded items in detailed records too
+          if (itensExcluidosSet.has(`${equip.codigoTag}:${desp.sequencia}`)) continue;
           const effectiveClassDetail = reclassMapDetail.get(desp.sequencia) || desp.classificacao;
           itensDetalhados.push({
             periodoCustoId: periodoId,

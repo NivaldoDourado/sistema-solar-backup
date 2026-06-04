@@ -89,6 +89,9 @@ export default function ImportDespesas() {
   // Reclassification overrides: Map<"codigoTag:sequencia", newClassificacao>
   const [reclassificacoes, setReclassificacoes] = useState<Map<string, Classificacao>>(new Map());
 
+  // Item exclusion: Set<"codigoTag:sequencia"> for items to exclude from import
+  const [itensExcluidos, setItensExcluidos] = useState<Set<string>>(new Set());
+
   const parseMutation = trpc.importDespesas.parsePlanilha.useMutation();
   const importMutation = trpc.importDespesas.confirmarImportacao.useMutation();
 
@@ -128,6 +131,7 @@ export default function ImportDespesas() {
       });
       setParseResult(result);
       setReclassificacoes(new Map()); // Reset reclassifications
+      setItensExcluidos(new Set()); // Reset item exclusions
       const inicialSelecionados = new Set<string>();
       result.equipamentos.forEach((e: any) => {
         if (e.selecionado) inicialSelecionados.add(e.codigoTag);
@@ -149,6 +153,12 @@ export default function ImportDespesas() {
         return { codigoTag, sequencia, novaClassificacao };
       });
 
+      // Build item exclusion payload
+      const itensExcluidosPayload = Array.from(itensExcluidos).map(key => {
+        const [codigoTag, sequencia] = key.split(":");
+        return { codigoTag, sequencia };
+      });
+
       const result = await importMutation.mutateAsync({
         fileBase64,
         fileName: file.name,
@@ -156,6 +166,7 @@ export default function ImportDespesas() {
         ano,
         equipamentosSelecionados: Array.from(selecionados).map(tag => ({ codigoTag: tag })),
         reclassificacoes: reclassificacoesPayload,
+        itensExcluidos: itensExcluidosPayload,
       });
       setImportResult(result);
       setStep(3);
@@ -188,7 +199,18 @@ export default function ImportDespesas() {
     return reclassificacoes.get(key) || original;
   };
 
-  // Calculate totals considering reclassifications
+  // Toggle item exclusion
+  const toggleItemExclusao = (codigoTag: string, sequencia: string) => {
+    setItensExcluidos(prev => {
+      const next = new Set(prev);
+      const key = `${codigoTag}:${sequencia}`;
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  // Calculate totals considering reclassifications AND excluded items
   const getEquipTotals = (equip: EquipamentoPreview) => {
     const totals: Record<Classificacao, number> = {
       lubrificantes: 0,
@@ -198,6 +220,8 @@ export default function ImportDespesas() {
       combustivel: 0,
     };
     for (const d of equip.despesas) {
+      // Skip excluded items
+      if (itensExcluidos.has(`${equip.codigoTag}:${d.sequencia}`)) continue;
       const effectiveClass = getEffectiveClassificacao(equip.codigoTag, d.sequencia, d.classificacao);
       totals[effectiveClass] += d.custo;
     }
@@ -237,18 +261,23 @@ export default function ImportDespesas() {
       .sort((a, b) => b.custo - a.custo);
   }, [modalEquip, modalClassificacao]);
 
-  // Resumo dos selecionados (considering reclassifications)
+  // Resumo dos selecionados (considering reclassifications AND excluded items)
   const resumoSelecionados = useMemo(() => {
     if (!parseResult) return null;
     const selected = parseResult.equipamentos.filter((e: EquipamentoPreview) => selecionados.has(e.codigoTag));
     const totals = { total: selected.length, valor: 0, lubrificantes: 0, pecasDesgaste: 0, pecasReposicao: 0, outrasDespesas: 0, combustivel: 0 };
     for (const equip of selected) {
       if (equip.isContaEspecifica) {
-        totals.valor += equip.totalGeral;
+        // For conta específica, subtract excluded items
+        const valorEfetivo = equip.despesas
+          .filter((d: DespesaItem) => !itensExcluidos.has(`${equip.codigoTag}:${d.sequencia}`))
+          .reduce((s: number, d: DespesaItem) => s + d.custo, 0);
+        totals.valor += valorEfetivo;
         continue;
       }
       const t = getEquipTotals(equip);
-      totals.valor += equip.totalGeral;
+      const valorEfetivo = Object.values(t).reduce((a, b) => a + b, 0);
+      totals.valor += valorEfetivo;
       totals.lubrificantes += t.lubrificantes;
       totals.pecasDesgaste += t.pecas_desgaste;
       totals.pecasReposicao += t.pecas_reposicao;
@@ -256,7 +285,7 @@ export default function ImportDespesas() {
       totals.combustivel += t.combustivel;
     }
     return totals;
-  }, [parseResult, selecionados, reclassificacoes]);
+  }, [parseResult, selecionados, reclassificacoes, itensExcluidos]);
 
   return (
     <div className="space-y-6">
@@ -655,50 +684,83 @@ export default function ImportDespesas() {
 
       {/* Modal de Detalhamento de Classificação */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span>{modalEquip?.codigoTag}</span>
+            <DialogTitle className="flex flex-wrap items-center gap-2 text-sm sm:text-base">
+              <span className="font-bold">{modalEquip?.codigoTag}</span>
               <span className="text-muted-foreground">—</span>
-              <span>{modalEquip?.descricao}</span>
+              <span className="truncate">{modalEquip?.descricao}</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               {modalClassificacao && (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${CLASSIFICACAO_COLORS[modalClassificacao]}`}>
                   {CLASSIFICACAO_LABELS[modalClassificacao]}
                 </span>
               )}
               {" "}— {modalItems.length} itens, Total original: {formatCurrency(modalItems.reduce((s, i) => s + i.custo, 0))}
-              {reclassificacoes.size > 0 && " (itens reclassificados aparecem destacados em amarelo)"}
+              {(() => {
+                const excCount = modalItems.filter(i => itensExcluidos.has(`${modalEquip?.codigoTag}:${i.sequencia}`)).length;
+                const activeTotal = modalItems.filter(i => !itensExcluidos.has(`${modalEquip?.codigoTag}:${i.sequencia}`)).reduce((s, i) => s + i.custo, 0);
+                if (excCount > 0) return ` | Excluídos: ${excCount}, Total efetivo: ${formatCurrency(activeTotal)}`;
+                return "";
+              })()}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">Seq</TableHead>
-                  <TableHead className="w-[80px]">Data</TableHead>
-                  <TableHead>Produto</TableHead>
-                  <TableHead className="w-[120px]">Grupo</TableHead>
-                  <TableHead className="w-[60px] text-right">Qtd</TableHead>
-                  <TableHead className="w-[100px] text-right">Valor</TableHead>
-                  <TableHead className="w-[160px] text-center">Reclassificar</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead className="sticky top-0 bg-background z-10">
+                <tr className="border-b">
+                  <th className="p-2 text-left w-[40px]">
+                    <Checkbox
+                      checked={modalItems.every(i => !itensExcluidos.has(`${modalEquip?.codigoTag}:${i.sequencia}`))}
+                      onCheckedChange={(checked) => {
+                        if (!modalEquip) return;
+                        setItensExcluidos(prev => {
+                          const next = new Set(prev);
+                          for (const item of modalItems) {
+                            const key = `${modalEquip.codigoTag}:${item.sequencia}`;
+                            if (checked) next.delete(key);
+                            else next.add(key);
+                          }
+                          return next;
+                        });
+                      }}
+                    />
+                  </th>
+                  <th className="p-2 text-left w-[50px]">Seq</th>
+                  <th className="p-2 text-left w-[70px]">Data</th>
+                  <th className="p-2 text-left">Produto</th>
+                  <th className="p-2 text-right w-[80px]">Valor</th>
+                  <th className="p-2 text-center w-[130px] hidden sm:table-cell">Reclassificar</th>
+                </tr>
+              </thead>
+              <tbody>
                 {modalItems.map((item, idx) => {
                   const key = `${modalEquip?.codigoTag}:${item.sequencia}`;
+                  const isExcluded = itensExcluidos.has(key);
                   const isReclassified = reclassificacoes.has(key);
                   return (
-                    <TableRow key={idx} className={isReclassified ? "bg-amber-50" : ""}>
-                      <TableCell className="text-xs">{item.sequencia}</TableCell>
-                      <TableCell className="text-xs">{item.data}</TableCell>
-                      <TableCell className="text-xs font-medium">{item.produto}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{item.grupoProduto}</TableCell>
-                      <TableCell className="text-xs text-right">{item.quantidade}</TableCell>
-                      <TableCell className="text-xs text-right font-medium">{formatCurrency(item.custo)}</TableCell>
-                      <TableCell className="text-center">
+                    <tr
+                      key={idx}
+                      className={`border-b transition-colors ${
+                        isExcluded ? "bg-red-50 opacity-60 line-through" :
+                        isReclassified ? "bg-amber-50" : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <td className="p-2">
+                        <Checkbox
+                          checked={!isExcluded}
+                          onCheckedChange={() => {
+                            if (modalEquip) toggleItemExclusao(modalEquip.codigoTag, item.sequencia);
+                          }}
+                        />
+                      </td>
+                      <td className="p-2">{item.sequencia}</td>
+                      <td className="p-2">{item.data}</td>
+                      <td className="p-2 font-medium max-w-[200px] sm:max-w-none truncate" title={item.produto}>{item.produto}</td>
+                      <td className="p-2 text-right font-medium whitespace-nowrap">{formatCurrency(item.custo)}</td>
+                      <td className="p-2 text-center hidden sm:table-cell">
                         <Select
                           value={getEffectiveClassificacao(modalEquip?.codigoTag || "", item.sequencia, item.classificacao)}
                           onValueChange={(v) => {
@@ -706,8 +768,9 @@ export default function ImportDespesas() {
                               reclassificarItem(modalEquip.codigoTag, item.sequencia, v as Classificacao);
                             }
                           }}
+                          disabled={isExcluded}
                         >
-                          <SelectTrigger className="h-7 text-xs w-[140px]">
+                          <SelectTrigger className="h-7 text-xs w-[120px]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -718,20 +781,26 @@ export default function ImportDespesas() {
                             ))}
                           </SelectContent>
                         </Select>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between pt-3 border-t gap-2 flex-wrap">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {(() => {
+                const excCount = modalItems.filter(i => itensExcluidos.has(`${modalEquip?.codigoTag}:${i.sequencia}`)).length;
+                return excCount > 0 ? (
+                  <span className="text-red-600 font-medium">{excCount} item(ns) excluído(s)</span>
+                ) : null;
+              })()}
               {reclassificacoes.size > 0 && (
                 <span className="text-amber-600 font-medium">{reclassificacoes.size} item(ns) reclassificado(s)</span>
               )}
-            </p>
+            </div>
             <Button onClick={() => setModalOpen(false)} size="sm">
               Fechar
             </Button>

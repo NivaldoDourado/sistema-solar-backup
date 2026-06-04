@@ -1220,3 +1220,12 @@
 
 ## Fix: Separador visual entre subsetores na exportação PDF/Excel
 - [x] Adicionar linha separadora entre subsetores no relatório exportado (PDF/Excel)
+
+## Bug: Reimportação de despesas acumula em vez de substituir
+- [x] Ao reimportar despesas de equipamentos, substituir dados anteriores do mesmo período (não acumular)
+
+## Feature: Exclusão de itens específicos na revisão de importação
+- [x] Adicionar checkboxes nos itens do modal de revisão para permitir desmarcar itens individuais de uma conta
+
+## Fix: Responsividade do modal de itens na revisão de importação
+- [x] Melhorar layout do modal para não precisar rolar excessivamente (mostrar valor visível sem scroll horizontal)
