@@ -105,7 +105,7 @@ describe("parsePlanilhaFluxo", () => {
     const indiretas = result.contasImportar.find(c => c.contaPrincipalCodigo === "3006");
     expect(indiretas).toBeDefined();
     expect(indiretas!.contaSistema).toBe("Despesas Indiretas");
-    expect(indiretas!.setor).toBe("INDIRETAS");
+    expect(indiretas!.setor).toBe("DESPESAS INDIRETAS");
   });
 
   it("deve ter totalImportar + totalExcluir coerente", () => {

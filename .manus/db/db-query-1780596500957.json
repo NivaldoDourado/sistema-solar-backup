@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, contaPrincipalCodigo, contaPrincipalNome, setor, contaSistema FROM lancamento_fluxo WHERE contaPrincipalCodigo = '3006' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaPrincipalCodigo, contaPrincipalNome, setor, contaSistema FROM lancamento_fluxo WHERE contaPrincipalCodigo = '3006' LIMIT 10;",
+  "rows": [
+    {
+      "id": "30043",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30044",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30045",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30046",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30047",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30048",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30049",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30050",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30051",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    },
+    {
+      "id": "30052",
+      "contaPrincipalCodigo": "3006",
+      "contaPrincipalNome": "DESPESAS INDIRETAS",
+      "setor": "INDIRETAS",
+      "contaSistema": "Despesas Indiretas"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaPrincipalCodigo\tcontaPrincipalNome\tsetor\tcontaSistema\n30043\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30044\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30045\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30046\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30047\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30048\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30049\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30050\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30051\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n30052\t3006\tDESPESAS INDIRETAS\tINDIRETAS\tDespesas Indiretas\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

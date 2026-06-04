@@ -1237,3 +1237,6 @@
 - [x] Adicionar checkboxes nas subcontas na fase de revisão do Fluxo para permitir desmarcar subcontas específicas
 - [x] Subcontas desmarcadas não são importadas (exclusão pontual, não vai para "Contas Excluídas")
 - [x] Recalcular totais ao desmarcar subcontas
+
+## Correspondência 3006-DESPESAS INDIRETAS → setor DESPESAS INDIRETAS
+- [x] Alterar mapeamento da conta 3006 no importador de Fluxo para setor "DESPESAS INDIRETAS" (remover de ADMINISTRAÇÃO)

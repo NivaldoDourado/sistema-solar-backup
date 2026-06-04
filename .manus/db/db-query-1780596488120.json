@@ -1,0 +1,94 @@
+{
+  "query": "SELECT id, nome FROM setores ORDER BY nome;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, nome FROM setores ORDER BY nome;",
+  "rows": [
+    {
+      "id": "1",
+      "nome": "ADMINISTRACAO"
+    },
+    {
+      "id": "2",
+      "nome": "ALIMENTAÇÃO"
+    },
+    {
+      "id": "60002",
+      "nome": "ALMOXARIFADO"
+    },
+    {
+      "id": "30002",
+      "nome": "BRITAGEM MÓVEL"
+    },
+    {
+      "id": "3",
+      "nome": "BRITAGEM PRIMÁRIA"
+    },
+    {
+      "id": "4",
+      "nome": "BRITAGEM QUARTENÁRIA"
+    },
+    {
+      "id": "5",
+      "nome": "BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "6",
+      "nome": "BRITAGEM TERCEÁRIA"
+    },
+    {
+      "id": "7",
+      "nome": "CARGA E TRANSPORTE DE PEDRA DA MINA"
+    },
+    {
+      "id": "8",
+      "nome": "DECAPEAMENTO"
+    },
+    {
+      "id": "9",
+      "nome": "DESMONTE PRIMÁRIO"
+    },
+    {
+      "id": "10",
+      "nome": "DESMONTE SECUNDÁRIO"
+    },
+    {
+      "id": "150002",
+      "nome": "DESPESAS INDIRETAS"
+    },
+    {
+      "id": "120002",
+      "nome": "DIRETORIA"
+    },
+    {
+      "id": "11",
+      "nome": "EXPEDIÇÃO"
+    },
+    {
+      "id": "90002",
+      "nome": "INDIRETAS"
+    },
+    {
+      "id": "12",
+      "nome": "LIMPEZA"
+    },
+    {
+      "id": "13",
+      "nome": "MOVIMENTAÇÃO DE ESTOQUE"
+    },
+    {
+      "id": "60003",
+      "nome": "OFICINA"
+    },
+    {
+      "id": "15",
+      "nome": "OUTROS SERVIÇOS AUXILIARES"
+    },
+    {
+      "id": "14",
+      "nome": "REFEITÓRIO"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tnome\n1\tADMINISTRACAO\n2\tALIMENTAÇÃO\n60002\tALMOXARIFADO\n30002\tBRITAGEM MÓVEL\n3\tBRITAGEM PRIMÁRIA\n4\tBRITAGEM QUARTENÁRIA\n5\tBRITAGEM SECUNDÁRIA\n6\tBRITAGEM TERCEÁRIA\n7\tCARGA E TRANSPORTE DE PEDRA DA MINA\n8\tDECAPEAMENTO\n9\tDESMONTE PRIMÁRIO\n10\tDESMONTE SECUNDÁRIO\n150002\tDESPESAS INDIRETAS\n120002\tDIRETORIA\n11\tEXPEDIÇÃO\n90002\tINDIRETAS\n12\tLIMPEZA\n13\tMOVIMENTAÇÃO DE ESTOQUE\n60003\tOFICINA\n15\tOUTROS SERVIÇOS AUXILIARES\n14\tREFEITÓRIO\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

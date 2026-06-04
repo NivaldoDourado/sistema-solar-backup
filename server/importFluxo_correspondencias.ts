@@ -61,7 +61,7 @@ export const CONTAS_IMPORTAR: ContaFluxoConfig[] = [
     codigo: "3006",
     nome: "DESPESAS INDIRETAS",
     contaSistema: "Despesas Indiretas",
-    setor: "INDIRETAS",
+    setor: "DESPESAS INDIRETAS",
   },
   {
     codigo: "2183",

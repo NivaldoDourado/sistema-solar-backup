@@ -151,7 +151,8 @@ const SETOR_PARA_SUBSETOR: Record<string, { subsetor: string; grupo: string }> =
   "REFEITÓRIO": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
   "LIMPEZA": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
   "ALIMENTAÇÃO": { subsetor: "REFEITÓRIO E LIMPEZA", grupo: "SERVIÇOS AUXILIARES" },
-  "INDIRETAS": { subsetor: "ADMINISTRAÇÃO", grupo: "ADMINISTRAÇÃO" },
+  "INDIRETAS": { subsetor: "DESPESAS INDIRETAS", grupo: "ADMINISTRAÇÃO" },
+  "DESPESAS INDIRETAS": { subsetor: "DESPESAS INDIRETAS", grupo: "ADMINISTRAÇÃO" },
 };
 
 /**
