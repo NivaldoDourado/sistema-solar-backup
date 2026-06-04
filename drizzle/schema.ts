@@ -1189,7 +1189,9 @@ export const reajusteSalario = mysqlTable("reajuste_salario", {
   id: int("id").autoincrement().primaryKey(),
   periodoCustoId: int("periodoCustoId").notNull(), // Período de custo ao qual o reajuste se aplica
   percentual: decimal("percentual", { precision: 6, scale: 2 }).notNull(), // Ex: 15.00 ou -15.00
-  aplicado: mysqlEnum("aplicado", ["sim", "nao"]).default("nao").notNull(), // Se já foi aplicado (gerou lançamentos)
+  percentualSetor: decimal("percentualSetor", { precision: 6, scale: 2 }), // Percentual para salários de setor (Adm/Almox/Ofic/Serv.Aux.)
+  aplicado: mysqlEnum("aplicado", ["sim", "nao"]).default("nao").notNull(), // Se já foi aplicado (gerou lançamentos de operadores)
+  aplicadoSetor: mysqlEnum("aplicadoSetor", ["sim", "nao"]).default("nao").notNull(), // Se já foi aplicado para setores
   observacoes: text("observacoes"),
   userId: int("userId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

@@ -312,6 +312,9 @@ export default function LancamentoSalarios() {
       {/* Reajuste Salarial de Operadores */}
       {periodoId && <ReajusteSalarialSection periodoId={periodoId} periodoLabel={periodoSelecionado ? `${periodoSelecionado.mes}/${periodoSelecionado.ano}` : ""} onApplied={() => refetchLancamentos()} />}
 
+      {/* Reajuste Salarial de Setores (Adm/Almox/Ofic/Serv.Aux.) */}
+      {periodoId && <ReajusteSetorSection periodoId={periodoId} periodoLabel={periodoSelecionado ? `${periodoSelecionado.mes}/${periodoSelecionado.ano}` : ""} onApplied={() => refetchLancamentos()} />}
+
       {/* Tabela de lançamentos */}
       {periodoId && (
         <Card>
@@ -728,6 +731,172 @@ function ReajusteSalarialSection({ periodoId, periodoLabel, onApplied }: { perio
         {showPreview && preview && preview.items.length === 0 && (
           <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
             Nenhum salário de operador encontrado no mês anterior. É necessário ter lançamentos de "Sal.Oper./Enc. Oper." no período anterior para aplicar o reajuste.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// COMPONENTE: Reajuste Salarial de Setores (Adm/Almox/Ofic/Serv.Aux.)
+// ============================================================================
+function ReajusteSetorSection({ periodoId, periodoLabel, onApplied }: { periodoId: number; periodoLabel: string; onApplied: () => void }) {
+  const [percentual, setPercentual] = useState<string>("");
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Query: reajuste existente para este período (mesmo registro, campo percentualSetor)
+  const { data: reajusteExistente, refetch: refetchReajuste } = trpc.salarios.getReajuste.useQuery(
+    { periodoCustoId: periodoId },
+    { enabled: !!periodoId }
+  );
+
+  // Query: preview do reajuste de setores
+  const percentualNum = parseFloat(percentual || (reajusteExistente?.percentualSetor ? String(reajusteExistente.percentualSetor) : "0"));
+  const { data: preview, refetch: refetchPreview } = trpc.salarios.previewReajusteSetor.useQuery(
+    { periodoCustoId: periodoId, percentualSetor: percentualNum },
+    { enabled: showPreview && !isNaN(percentualNum) && percentualNum !== 0 }
+  );
+
+  // Mutations
+  const setReajusteMutation = trpc.salarios.setReajusteSetor.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.action === "created" ? "Percentual de reajuste de setores definido!" : "Percentual de reajuste de setores atualizado!");
+      refetchReajuste();
+      setShowPreview(true);
+      refetchPreview();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const aplicarMutation = trpc.salarios.aplicarReajusteSetor.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Reajuste de setores aplicado! ${result.qtdLancamentos} lançamentos gerados. Total: ${formatCurrency(result.totalNovo)}`);
+      refetchReajuste();
+      onApplied();
+      setShowPreview(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  // Inicializar percentual do reajuste existente
+  useMemo(() => {
+    if (reajusteExistente?.percentualSetor && !percentual) {
+      setPercentual(String(parseFloat(String(reajusteExistente.percentualSetor))));
+    }
+  }, [reajusteExistente]);
+
+  function handleDefinirPercentual() {
+    const pct = parseFloat(percentual);
+    if (isNaN(pct)) {
+      toast.error("Informe um percentual válido.");
+      return;
+    }
+    setReajusteMutation.mutate({
+      periodoCustoId: periodoId,
+      percentualSetor: pct,
+    });
+  }
+
+  function handleAplicar() {
+    aplicarMutation.mutate({ periodoCustoId: periodoId });
+  }
+
+  const isAplicado = reajusteExistente?.aplicadoSetor === "sim";
+
+  return (
+    <Card className="border-emerald-200 bg-emerald-50/30">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-emerald-600" />
+          Reajuste Salarial de Setores — {periodoLabel}
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Informe o percentual de mudança dos salários de setor (Adm./Almox./Ofic./Serv.Aux.) em relação ao mês anterior.
+          {isAplicado && <span className="ml-2 text-green-600 font-medium">✓ Reajuste já aplicado</span>}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-end gap-3">
+          <div className="flex-1 max-w-[200px]">
+            <Label className="text-xs">Percentual (%)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="Ex: 15 ou -10"
+              value={percentual}
+              onChange={(e) => { setPercentual(e.target.value); setShowPreview(false); }}
+              className="mt-1"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDefinirPercentual}
+            disabled={setReajusteMutation.isPending || !percentual}
+          >
+            {setReajusteMutation.isPending ? "Salvando..." : "Definir e Visualizar"}
+          </Button>
+          {showPreview && preview && preview.items.length > 0 && !isAplicado && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={handleAplicar}
+              disabled={aplicarMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {aplicarMutation.isPending ? "Aplicando..." : "Aplicar Reajuste"}
+            </Button>
+          )}
+        </div>
+
+        {isAplicado && (
+          <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3">
+            Reajuste de <strong>{parseFloat(String(reajusteExistente?.percentualSetor ?? 0)) >= 0 ? "+" : ""}{parseFloat(String(reajusteExistente?.percentualSetor ?? 0))}%</strong> já foi aplicado para os salários de setor neste período.
+            Para alterar, defina um novo percentual e aplique novamente (os lançamentos anteriores de Sal.Adm. serão substituídos).
+          </div>
+        )}
+
+        {/* Preview Table */}
+        {showPreview && preview && preview.items.length > 0 && (
+          <div className="border rounded-md overflow-hidden">
+            <div className="bg-muted/50 px-3 py-2 text-xs font-medium flex justify-between">
+              <span>Preview: {preview.items.length} setores | Ref: {(preview as any).mesAnterior}/{(preview as any).anoAnterior}</span>
+              <span>
+                Total anterior: <strong>{formatCurrency(preview.totalAnterior)}</strong> → Novo: <strong className="text-emerald-600">{formatCurrency(preview.totalNovo)}</strong>
+                {" "}({percentualNum >= 0 ? "+" : ""}{percentualNum}%)
+              </span>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/30 sticky top-0">
+                  <tr>
+                    <th className="text-left px-3 py-2">Setor</th>
+                    <th className="text-right px-3 py-2">Valor Anterior</th>
+                    <th className="text-right px-3 py-2">Valor Novo</th>
+                    <th className="text-right px-3 py-2">Diferença</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.items.map((item, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="px-3 py-1.5">{item.setorNome}</td>
+                      <td className="px-3 py-1.5 text-right">{formatCurrency(item.valorAnterior)}</td>
+                      <td className="px-3 py-1.5 text-right font-medium">{formatCurrency(item.valorNovo)}</td>
+                      <td className={`px-3 py-1.5 text-right ${item.diferenca >= 0 ? "text-red-600" : "text-green-600"}`}>
+                        {item.diferenca >= 0 ? "+" : ""}{formatCurrency(item.diferenca)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {showPreview && preview && preview.items.length === 0 && (
+          <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+            Nenhum salário de setor encontrado no mês anterior. É necessário ter lançamentos de "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos" no período anterior para aplicar o reajuste.
           </div>
         )}
       </CardContent>

@@ -1207,3 +1207,9 @@
 - [x] Corrigir contaSistema do grupo 2185-IMPOSTO de "Imp., Trib., Taxas e CEFEM" para "Impostos, CEFEM e Outras Taxas" (nome correto da conta no banco)
 - [x] Corrigir registros existentes em lancamento_fluxo com contaSistema errado
 - [x] Atualizar lancamento_custo para incluir os R$ 388.253,35 do IMPOSTO (total agora R$ 399.694,47)
+
+## Reajuste Salarial para Subcontas de Setor (Sal.Adm./Almox./Ofic./Serv.Aux./Encargos)
+- [x] Implementar reajuste percentual para salários de setor (ADMINISTRAÇÃO, OFICINA, OUTROS SERVIÇOS AUXILIARES, ALMOXARIFADO)
+- [x] Aplicar percentual de reajuste sobre valores do mês anterior (mesma lógica dos operadores)
+- [x] Criar UI para informar o percentual de reajuste de salários de setor
+- [x] Integrar com o cálculo de custo: usar valor reajustado no mês em apuração

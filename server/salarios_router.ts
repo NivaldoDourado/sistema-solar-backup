@@ -503,6 +503,227 @@ export const salariosRouter = router({
       return { items, totalAnterior, totalNovo, mesAnterior, anoAnterior };
     }),
 
+  // ============================
+  // REAJUSTE SALARIAL DE SETORES
+  // ============================
+
+  // Definir/atualizar percentual de reajuste de setores para um período
+  setReajusteSetor: protectedProcedure
+    .use(requirePermission("custos", "create"))
+    .input(z.object({
+      periodoCustoId: z.number(),
+      percentualSetor: z.number().min(-100).max(500),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Verificar se já existe reajuste para este período
+      const [existing] = await db
+        .select()
+        .from(reajusteSalario)
+        .where(eq(reajusteSalario.periodoCustoId, input.periodoCustoId))
+        .limit(1);
+
+      if (existing) {
+        // Atualizar percentualSetor
+        await db.update(reajusteSalario).set({
+          percentualSetor: input.percentualSetor.toFixed(2),
+          aplicadoSetor: "nao", // Reset quando percentual muda
+        }).where(eq(reajusteSalario.id, existing.id));
+        return { id: existing.id, action: "updated" as const };
+      } else {
+        // Criar registro com percentualSetor (percentual de operadores fica 0)
+        const result = await db.insert(reajusteSalario).values({
+          periodoCustoId: input.periodoCustoId,
+          percentual: "0.00",
+          percentualSetor: input.percentualSetor.toFixed(2),
+          userId: ctx.user.id,
+        });
+        return { id: Number(result[0].insertId), action: "created" as const };
+      }
+    }),
+
+  // Aplicar reajuste de setores: gera lançamentos de salário para o período atual baseado no mês anterior
+  aplicarReajusteSetor: protectedProcedure
+    .use(requirePermission("custos", "create"))
+    .input(z.object({ periodoCustoId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Buscar o período atual
+      const [periodoAtual] = await db
+        .select()
+        .from(periodoCusto)
+        .where(eq(periodoCusto.id, input.periodoCustoId))
+        .limit(1);
+      if (!periodoAtual) throw new TRPCError({ code: "NOT_FOUND", message: "Período não encontrado" });
+      if (periodoAtual.fechado === "sim") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Período fechado." });
+      }
+
+      // Buscar o reajuste configurado
+      const [reajuste] = await db
+        .select()
+        .from(reajusteSalario)
+        .where(eq(reajusteSalario.periodoCustoId, input.periodoCustoId))
+        .limit(1);
+      if (!reajuste || !reajuste.percentualSetor) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Nenhum percentual de reajuste de setores configurado para este período." });
+      }
+
+      const percentual = parseFloat(String(reajuste.percentualSetor));
+
+      // Encontrar o período anterior
+      let mesAnterior = periodoAtual.mes - 1;
+      let anoAnterior = periodoAtual.ano;
+      if (mesAnterior === 0) {
+        mesAnterior = 12;
+        anoAnterior = anoAnterior - 1;
+      }
+
+      const [periodoAnterior] = await db
+        .select()
+        .from(periodoCusto)
+        .where(and(
+          eq(periodoCusto.mes, mesAnterior),
+          eq(periodoCusto.ano, anoAnterior)
+        ))
+        .limit(1);
+      if (!periodoAnterior) {
+        throw new TRPCError({ code: "NOT_FOUND", message: `Período anterior (${mesAnterior}/${anoAnterior}) não encontrado.` });
+      }
+
+      // Buscar salários de setor do mês anterior (conta 1 = Sal.Adm./Almox./Ofic./Serv.Aux./Encargos)
+      const salariosAnteriores = await db
+        .select()
+        .from(lancamentoSalario)
+        .where(and(
+          eq(lancamentoSalario.periodoCustoId, periodoAnterior.id),
+          eq(lancamentoSalario.contaCustoId, CONTA_SAL_ADM_ID)
+        ));
+
+      if (salariosAnteriores.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: `Nenhum salário de setor (Sal.Adm./Almox./Ofic./Serv.Aux.) encontrado no período ${mesAnterior}/${anoAnterior}.` });
+      }
+
+      // Excluir lançamentos de Sal.Adm. existentes no período atual (para evitar duplicatas)
+      await db.delete(lancamentoSalario).where(and(
+        eq(lancamentoSalario.periodoCustoId, input.periodoCustoId),
+        eq(lancamentoSalario.contaCustoId, CONTA_SAL_ADM_ID)
+      ));
+
+      // Gerar novos lançamentos com o reajuste aplicado
+      const fator = 1 + (percentual / 100);
+      const novosLancamentos = salariosAnteriores.map(sal => ({
+        periodoCustoId: input.periodoCustoId,
+        contaCustoId: CONTA_SAL_ADM_ID,
+        valor: (parseFloat(String(sal.valor)) * fator).toFixed(2),
+        equipamentoId: null as number | null,
+        setorId: sal.setorId,
+        descricao: sal.descricao ?? null,
+        observacoes: `Reajuste de ${percentual >= 0 ? "+" : ""}${percentual}% sobre ${mesAnterior}/${anoAnterior}`,
+        userId: ctx.user.id,
+      }));
+
+      // Inserir em batch
+      for (const lancamento of novosLancamentos) {
+        await db.insert(lancamentoSalario).values(lancamento);
+      }
+
+      // Marcar reajuste de setor como aplicado
+      await db.update(reajusteSalario).set({ aplicadoSetor: "sim" }).where(eq(reajusteSalario.id, reajuste.id));
+
+      const totalAnterior = salariosAnteriores.reduce((sum, s) => sum + parseFloat(String(s.valor)), 0);
+      const totalNovo = totalAnterior * fator;
+
+      return {
+        success: true,
+        qtdLancamentos: novosLancamentos.length,
+        totalAnterior,
+        totalNovo,
+        percentual,
+      };
+    }),
+
+  // Preview do reajuste de setores (sem aplicar)
+  previewReajusteSetor: protectedProcedure
+    .use(requirePermission("custos", "view"))
+    .input(z.object({
+      periodoCustoId: z.number(),
+      percentualSetor: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { items: [], totalAnterior: 0, totalNovo: 0 };
+
+      // Buscar o período atual
+      const [periodoAtual] = await db
+        .select()
+        .from(periodoCusto)
+        .where(eq(periodoCusto.id, input.periodoCustoId))
+        .limit(1);
+      if (!periodoAtual) return { items: [], totalAnterior: 0, totalNovo: 0 };
+
+      // Encontrar o período anterior
+      let mesAnterior = periodoAtual.mes - 1;
+      let anoAnterior = periodoAtual.ano;
+      if (mesAnterior === 0) {
+        mesAnterior = 12;
+        anoAnterior = anoAnterior - 1;
+      }
+
+      const [periodoAnterior] = await db
+        .select()
+        .from(periodoCusto)
+        .where(and(
+          eq(periodoCusto.mes, mesAnterior),
+          eq(periodoCusto.ano, anoAnterior)
+        ))
+        .limit(1);
+      if (!periodoAnterior) return { items: [], totalAnterior: 0, totalNovo: 0 };
+
+      // Buscar salários de setor do mês anterior (conta 1)
+      const salariosAnteriores = await db
+        .select({
+          id: lancamentoSalario.id,
+          valor: lancamentoSalario.valor,
+          setorId: lancamentoSalario.setorId,
+          descricao: lancamentoSalario.descricao,
+        })
+        .from(lancamentoSalario)
+        .where(and(
+          eq(lancamentoSalario.periodoCustoId, periodoAnterior.id),
+          eq(lancamentoSalario.contaCustoId, CONTA_SAL_ADM_ID)
+        ))
+        .orderBy(desc(lancamentoSalario.valor));
+
+      if (salariosAnteriores.length === 0) return { items: [], totalAnterior: 0, totalNovo: 0 };
+
+      // Buscar nomes dos setores
+      const secs = await db.select({ id: setores.id, nome: setores.nome }).from(setores);
+      const setorMap = new Map(secs.map(s => [s.id, s.nome ?? `Setor ${s.id}`]));
+
+      const fator = 1 + (input.percentualSetor / 100);
+      const items = salariosAnteriores.map(sal => {
+        const valorAnterior = parseFloat(String(sal.valor));
+        const valorNovo = valorAnterior * fator;
+        return {
+          setorId: sal.setorId,
+          setorNome: sal.setorId ? setorMap.get(sal.setorId) ?? `Setor #${sal.setorId}` : "Sem setor",
+          valorAnterior,
+          valorNovo,
+          diferenca: valorNovo - valorAnterior,
+        };
+      });
+
+      const totalAnterior = items.reduce((sum, i) => sum + i.valorAnterior, 0);
+      const totalNovo = items.reduce((sum, i) => sum + i.valorNovo, 0);
+
+      return { items, totalAnterior, totalNovo, mesAnterior, anoAnterior };
+    }),
+
   // Resumo de salários por período (total por conta)
   resumoPorPeriodo: protectedProcedure
     .use(requirePermission("custos", "view"))

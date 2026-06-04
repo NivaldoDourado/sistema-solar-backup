@@ -1,0 +1,46 @@
+{
+  "query": "SELECT ls.id, ls.periodoCustoId, ls.contaCustoId, ls.setorId, s.nome as setorNome, ls.valor, ls.observacoes FROM lancamento_salario ls LEFT JOIN setores s ON ls.setorId = s.id WHERE ls.contaCustoId = 1 ORDER BY ls.periodoCustoId DESC, ls.setorId LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT ls.id, ls.periodoCustoId, ls.contaCustoId, ls.setorId, s.nome as setorNome, ls.valor, ls.observacoes FROM lancamento_salario ls LEFT JOIN setores s ON ls.setorId = s.id WHERE ls.contaCustoId = 1 ORDER BY ls.periodoCustoId DESC, ls.setorId LIMIT 20;",
+  "rows": [
+    {
+      "id": "29",
+      "periodoCustoId": "60001",
+      "contaCustoId": "1",
+      "setorId": "1",
+      "setorNome": "ADMINISTRACAO",
+      "valor": "136236.51",
+      "observacoes": "NULL"
+    },
+    {
+      "id": "33",
+      "periodoCustoId": "60001",
+      "contaCustoId": "1",
+      "setorId": "15",
+      "setorNome": "OUTROS SERVIÇOS AUXILIARES",
+      "valor": "107117.11",
+      "observacoes": "NULL"
+    },
+    {
+      "id": "32",
+      "periodoCustoId": "60001",
+      "contaCustoId": "1",
+      "setorId": "60002",
+      "setorNome": "ALMOXARIFADO",
+      "valor": "69906.65",
+      "observacoes": "NULL"
+    },
+    {
+      "id": "31",
+      "periodoCustoId": "60001",
+      "contaCustoId": "1",
+      "setorId": "60003",
+      "setorNome": "OFICINA",
+      "valor": "112456.78",
+      "observacoes": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tperiodoCustoId\tcontaCustoId\tsetorId\tsetorNome\tvalor\tobservacoes\n29\t60001\t1\t1\tADMINISTRACAO\t136236.51\tNULL\n33\t60001\t1\t15\tOUTROS SERVIÇOS AUXILIARES\t107117.11\tNULL\n32\t60001\t1\t60002\tALMOXARIFADO\t69906.65\tNULL\n31\t60001\t1\t60003\tOFICINA\t112456.78\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}
