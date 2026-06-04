@@ -1240,3 +1240,13 @@
 
 ## Correspondência 3006-DESPESAS INDIRETAS → setor DESPESAS INDIRETAS
 - [x] Alterar mapeamento da conta 3006 no importador de Fluxo para setor "DESPESAS INDIRETAS" (remover de ADMINISTRAÇÃO)
+
+## Relatório Ranking de Equipamentos por Gastos
+- [x] Criar backend procedure para listar equipamentos com despesas (Lub, Desg, Rep, Outras) em ordem decrescente
+- [x] Criar página frontend com drill-down (sintético → analítico por classificação → itens)
+- [x] Separadores entre classificações de despesas e subtotais no final de cada
+- [x] Exportação Excel com itens detalhados, separadores e subtotais
+- [x] Exportação PDF com itens detalhados, separadores e subtotais
+- [x] Impressão do relatório
+- [x] Envio por WhatsApp
+- [x] Registrar rota e adicionar ao menu de navegação no grupo Apuração

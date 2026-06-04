@@ -26,6 +26,7 @@ import PeriodoCusto from "./pages/PeriodoCusto";
 import ApuracaoCusto from "./pages/ApuracaoCusto";
 import CustoSetor from "./pages/CustoSetor";
 import CustoSetorAnalitico from "./pages/CustoSetorAnalitico";
+import RankingEquipamentos from "./pages/RankingEquipamentos";
 import ImportacaoCusto from "./pages/ImportacaoCusto";
 import AvaliacaoGlobal from "./pages/AvaliacaoGlobal";
 import ComparativosHistoricos from "./pages/ComparativosHistoricos";
@@ -181,6 +182,13 @@ function Router() {
         <DashboardLayout>
           <ProtectedRoute module="custos">
             <CustoSetorAnalitico />
+          </ProtectedRoute>
+        </DashboardLayout>
+      </Route>
+      <Route path={"/ranking-equipamentos"}>
+        <DashboardLayout>
+          <ProtectedRoute module="custos">
+            <RankingEquipamentos />
           </ProtectedRoute>
         </DashboardLayout>
       </Route>

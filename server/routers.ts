@@ -24,6 +24,7 @@ import { validacaoFechamentoRouter } from "./validacaoFechamento_router";
 import { contaExcluidaRouter } from "./contaExcluida_router";
 import { dashboardConfigRouter } from "./dashboardConfig_router";
 import { simulacaoParcialRouter } from "./simulacaoParcial_router";
+import { rankingEquipamentosRouter } from "./rankingEquipamentos_router";
 import { z } from "zod";
 import { getDb } from "./db";
 import {
@@ -3540,6 +3541,7 @@ export const appRouter = router({
   validacaoFechamento: validacaoFechamentoRouter,
   contaExcluida: contaExcluidaRouter,
   authLocal: authLocalRouter,
+  rankingEquipamentos: rankingEquipamentosRouter,
 
   // ============================================================================
   // MÓDULO DE PEÇAS DE DESGASTE

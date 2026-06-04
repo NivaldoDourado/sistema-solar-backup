@@ -59,6 +59,7 @@ import {
   List,
   Receipt,
   Calculator,
+  Trophy,
 } from "lucide-react";
 import React, { CSSProperties, useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -104,6 +105,7 @@ export default function DashboardLayout({
     { icon: BarChart3, label: "Apuração de Custo", path: "/apuracao-custo", module: "custos" as const },
     { icon: PieChart, label: "Custo por Setor", path: "/custo-setor", module: "custos" as const },
     { icon: BarChart3, label: "Relatório Analítico", path: "/custo-setor-analitico", module: "custos" as const },
+    { icon: Trophy, label: "Ranking Equipamentos", path: "/ranking-equipamentos", module: "custos" as const },
     { icon: Calculator, label: "Rateio MEM", path: "/rateio-mem", module: "custos" as const },
     { icon: List, label: "Itens Detalhados", path: "/itens-despesa", module: "custos" as const },
     // --- Relatórios e Análises ---
