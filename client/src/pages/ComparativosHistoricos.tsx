@@ -13,8 +13,12 @@ import {
   TrendingUp, TrendingDown, BarChart3, DollarSign, Truck, Fuel,
   Factory, ShoppingCart, AlertCircle, Download, FileText, CalendarDays, X, Plus, Loader2
 } from "lucide-react";
-import { exportToExcel, exportToPDF } from "@/lib/export-utils";
+import { exportToExcel, exportToPDF, exportMultiTableToExcel, exportMultiTableToPDF, printMultiTable, type MultiTableSection } from "@/lib/export-utils";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { MessageCircle } from "lucide-react";
 
 const ANO_ATUAL = new Date().getFullYear();
@@ -836,6 +840,90 @@ export default function ComparativosHistoricos() {
             </CardContent>
           </Card>
 
+          {/* Botão consolidado - exportar as 3 tabelas juntas */}
+          {planoCustoData && planoCustoData.contas.length > 0 && setoresData && setoresData.setores.length > 0 && (() => {
+            const labels = planoCustoData.labels;
+            // Seção 1: Plano de Custo
+            const planoCols = [
+              { header: "Conta / Descrição", key: "descricao", width: 30 },
+              ...labels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+              { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+            ];
+            const planoData = planoCustoData.contas.map(c => {
+              const row: Record<string, any> = { descricao: c.descricao, total: c.total };
+              c.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+              return row;
+            });
+            const planoTotal: Record<string, any> = { descricao: "TOTAL GERAL" };
+            labels.forEach((_: string, i: number) => { planoTotal[`p${i}`] = planoCustoData.contas.reduce((s, c) => s + c.valores[i], 0); });
+            planoTotal.total = planoCustoData.contas.reduce((s, c) => s + c.total, 0);
+            planoData.push(planoTotal);
+
+            // Seção 2: Setores
+            const setoresLabels = setoresData.labels;
+            const setoresCols = [
+              { header: "Setor / Grupo", key: "grupoNome", width: 25 },
+              ...setoresLabels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${fmt(v)}` : "—" })),
+              { header: "Total", key: "total", width: 18, format: (v: number) => `R$ ${fmt(v)}` },
+            ];
+            const setoresRows = setoresData.setores.map(s => {
+              const row: Record<string, any> = { grupoNome: s.grupoNome, total: s.total };
+              s.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+              return row;
+            });
+            const setoresTotal: Record<string, any> = { grupoNome: "TOTAL GERAL" };
+            setoresLabels.forEach((_: string, i: number) => { setoresTotal[`p${i}`] = setoresData.setores.reduce((s, c) => s + c.valores[i], 0); });
+            setoresTotal.total = setoresData.setores.reduce((s, c) => s + c.total, 0);
+            setoresRows.push(setoresTotal);
+
+            // Seção 3: Indicadores
+            const indLabels = indicadoresData?.labels ?? labels;
+            const indCols = [
+              { header: "Indicador", key: "descricao", width: 30 },
+              ...indLabels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${v.toFixed(2).replace(".", ",")}` : "—" })),
+            ];
+            const indData = (indicadoresData?.indicadores ?? []).map(ind => {
+              const row: Record<string, any> = { descricao: ind.descricao };
+              ind.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+              return row;
+            });
+
+            const sections: MultiTableSection[] = [
+              { title: "Comparativo por Plano de Custo", columns: planoCols, data: planoData },
+              { title: "Comparativo por Setores", columns: setoresCols, data: setoresRows },
+              { title: "Comparativo de Indicadores (R$/t)", columns: indCols, data: indData },
+            ];
+
+            const subtitleText = `Períodos: ${labels.join(", ")}`;
+
+            return (
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Exportar Relatório Consolidado (3 tabelas)
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Exportar como</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => exportMultiTableToExcel({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
+                      <FileText className="h-4 w-4 text-green-600" /> Excel (.xlsx)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => exportMultiTableToPDF({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
+                      <FileText className="h-4 w-4 text-red-600" /> PDF
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => printMultiTable({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
+                      <FileText className="h-4 w-4 text-blue-600" /> Imprimir
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            );
+          })()}
+
           {/* Tabela Comparativa por Plano de Custo */}
           <Card>
             <CardHeader className="pb-2">
@@ -1029,10 +1117,35 @@ export default function ComparativosHistoricos() {
           {/* Tabela Comparativa de Indicadores (Custo/t) */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-                Comparativo de Indicadores (R$/t)
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-purple-600" />
+                    Comparativo de Indicadores (R$/t)
+                  </CardTitle>
+                  <CardDescription>Indicadores de custo por tonelada nos períodos selecionados</CardDescription>
+                </div>
+                {indicadoresData && indicadoresData.indicadores.length > 0 && (() => {
+                  const labels = indicadoresData.labels;
+                  const cols = [
+                    { header: "Indicador", key: "descricao", width: 30 },
+                    ...labels.map((l: string, i: number) => ({ header: l, key: `p${i}`, width: 16, format: (v: number) => v > 0 ? `R$ ${v.toFixed(2).replace(".", ",")}` : "—" })),
+                  ];
+                  const data = indicadoresData.indicadores.map(ind => {
+                    const row: Record<string, any> = { descricao: ind.descricao };
+                    ind.valores.forEach((v: number, i: number) => { row[`p${i}`] = v; });
+                    return row;
+                  });
+                  return (
+                    <DashboardExportMenu
+                      title="Comparativo de Indicadores (R$/t)"
+                      subtitle={`Períodos: ${labels.join(", ")}`}
+                      filename="comparativo_indicadores"
+                      exportOptions={{ columns: cols, data }}
+                    />
+                  );
+                })()}
+              </div>
             </CardHeader>
             <CardContent>
               {loadingIndicadores ? (

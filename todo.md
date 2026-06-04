@@ -1269,3 +1269,7 @@
 ## Bug Fix: Comparativo Indicadores - producaoTotal zero para períodos Método Caminhões
 - [x] Corrigir comparativoIndicadores para buscar produção via Método Caminhões (parte_diaria_itens) quando producaoTotal do periodo_custo está vazio/zero (a partir de abril/2026)
 - [x] Corrigir discrepância nos indicadores do Comparativo Multi-período vs Apuração de Custo: reescrever exclusão para filtrar lancamento_custo individualmente por tag (mesma lógica de listByPeriodo) em vez de usar itemDespesaImportado
+
+## Comparativo Multi-período: Exportação de Indicadores
+- [x] Adicionar botão de exportação PDF/Excel na tabela "Comparativo de Indicadores (R$/t)"
+- [x] Adicionar botão consolidado na parte superior para exportar as 3 tabelas em um único relatório

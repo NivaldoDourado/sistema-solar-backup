@@ -851,6 +851,218 @@ export function printData(options: ExportOptions) {
   }
 }
 
+// ── Multi-table export (consolidated) ─────────────────────────────────────────
+
+export interface MultiTableSection {
+  title: string;
+  columns: ExportColumn[];
+  data: Record<string, any>[];
+}
+
+export interface MultiTableExportOptions {
+  reportTitle: string;
+  subtitle?: string;
+  filename: string;
+  sections: MultiTableSection[];
+}
+
+export function exportMultiTableToExcel(opts: MultiTableExportOptions) {
+  const { reportTitle, subtitle, filename, sections } = opts;
+  const wsData: any[][] = [];
+  const merges: any[] = [];
+
+  // Find max columns across all sections for merging header
+  const maxCols = Math.max(...sections.map(s => s.columns.length), 1);
+
+  // Header
+  wsData.push([SYSTEM_NAME_LINE1]);
+  merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: maxCols - 1 } });
+  wsData.push([SYSTEM_NAME_LINE2]);
+  merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: maxCols - 1 } });
+  wsData.push([reportTitle]);
+  merges.push({ s: { r: 2, c: 0 }, e: { r: 2, c: maxCols - 1 } });
+  if (subtitle) {
+    wsData.push([subtitle]);
+    merges.push({ s: { r: 3, c: 0 }, e: { r: 3, c: maxCols - 1 } });
+  }
+  wsData.push([`Gerado em: ${new Date().toLocaleDateString("pt-BR")} as ${new Date().toLocaleTimeString("pt-BR")}`]);
+  merges.push({ s: { r: wsData.length - 1, c: 0 }, e: { r: wsData.length - 1, c: maxCols - 1 } });
+  wsData.push([]); // blank
+
+  for (const section of sections) {
+    // Section title
+    const titleRow = wsData.length;
+    wsData.push([section.title]);
+    merges.push({ s: { r: titleRow, c: 0 }, e: { r: titleRow, c: section.columns.length - 1 } });
+    // Column headers
+    wsData.push(section.columns.map(c => c.header));
+    // Data rows
+    for (const row of section.data) {
+      wsData.push(section.columns.map(col => {
+        const raw = row[col.key];
+        if (col.format) return col.format(raw);
+        return raw ?? "";
+      }));
+    }
+    wsData.push([]); // blank between sections
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws["!merges"] = merges;
+  ws["!cols"] = Array.from({ length: maxCols }, () => ({ wch: 18 }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Comparativo Consolidado");
+  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, `${filename}.xlsx`);
+}
+
+export async function exportMultiTableToPDF(opts: MultiTableExportOptions) {
+  const { reportTitle, subtitle, filename, sections } = opts;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
+  const logoW = 17, logoH = 18;
+  if (logoBase64) {
+    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
+  }
+
+  let curY = 12;
+  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 80, 160);
+  doc.text(SYSTEM_NAME_LINE1, 14, curY); curY += 6;
+  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
+  doc.text(SYSTEM_NAME_LINE2, 14, curY); curY += 7;
+  doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+  doc.text(reportTitle, 14, curY); curY += 6;
+  if (subtitle) {
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text(subtitle, 14, curY); curY += 6;
+  }
+  doc.setFontSize(8); doc.setFont("helvetica", "italic"); doc.setTextColor(100, 100, 100);
+  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} as ${new Date().toLocaleTimeString("pt-BR")}`, 14, curY);
+  curY += 8;
+
+  for (let si = 0; si < sections.length; si++) {
+    const section = sections[si];
+
+    // Section title
+    doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 60, 120);
+    doc.text(section.title, 14, curY); curY += 5;
+
+    const headers = section.columns.map(c => c.header);
+    const body = section.data.map(row => section.columns.map(col => {
+      const raw = row[col.key];
+      if (col.format) return col.format(raw);
+      return raw ?? "";
+    }));
+
+    autoTable(doc, {
+      head: [headers],
+      body,
+      startY: curY,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold", fontSize: 8 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 14, right: 14 },
+      didDrawPage: (data: any) => {
+        const pc = doc.getNumberOfPages();
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+        doc.text(`Pagina ${data.pageNumber} de ${pc}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 10);
+      },
+    });
+
+    curY = (doc as any).lastAutoTable.finalY + 10;
+
+    // If not last section and not enough space, add new page
+    if (si < sections.length - 1 && curY > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      curY = 20;
+    }
+  }
+
+  doc.save(`${filename}.pdf`);
+}
+
+export function printMultiTable(opts: MultiTableExportOptions) {
+  const { reportTitle, subtitle, sections } = opts;
+  const now = new Date();
+  const timestamp = `Gerado em: ${now.toLocaleDateString("pt-BR")} as ${now.toLocaleTimeString("pt-BR")}`;
+
+  const sectionsHtml = sections.map(section => {
+    const headersHtml = section.columns.map(c => `<th>${c.header}</th>`).join("");
+    const rowsHtml = section.data.map(row =>
+      `<tr>${section.columns.map(col => {
+        const raw = row[col.key];
+        const val = col.format ? col.format(raw) : (raw ?? "");
+        return `<td>${val}</td>`;
+      }).join("")}</tr>`
+    ).join("");
+    return `
+      <h3 style="margin-top:16px;margin-bottom:4px;color:#1e3c78;font-size:12px;">${section.title}</h3>
+      <table>
+        <thead><tr>${headersHtml}</tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    `;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>${reportTitle}</title>
+  <style>
+    @page { size: landscape; margin: 10mm 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #333; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .header-left { flex: 1; }
+    .system-name { font-size: 12px; font-weight: bold; color: #1e50a0; }
+    .empresa { font-size: 10px; color: #3c3c3c; margin-top: 2px; }
+    .titulo { font-size: 16px; font-weight: bold; color: #000; margin-top: 4px; }
+    .subtitulo { font-size: 11px; color: #333; margin-top: 2px; }
+    .timestamp { font-size: 8px; color: #666; font-style: italic; margin-top: 2px; }
+    .logo { width: 60px; height: auto; }
+    h3 { page-break-after: avoid; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 12px; }
+    th { background: #2980b3; color: #fff; font-weight: bold; font-size: 9px; padding: 4px 6px; text-align: left; }
+    td { padding: 3px 6px; font-size: 9px; border-bottom: 1px solid #e5e5e5; }
+    tr:nth-child(even) td { background: #f5f5f5; }
+    .footer { margin-top: 8px; font-size: 8px; color: #666; text-align: center; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="system-name">${SYSTEM_NAME_LINE1}</div>
+      <div class="empresa">${SYSTEM_NAME_LINE2}</div>
+      <div class="titulo">${reportTitle}</div>
+      ${subtitle ? `<div class="subtitulo">${subtitle}</div>` : ""}
+      <div class="timestamp">${timestamp}</div>
+    </div>
+    <img src="${LOGO_CDN_URL}" class="logo" crossorigin="anonymous" />
+  </div>
+  ${sectionsHtml}
+  <div class="footer">${SYSTEM_NAME_LINE1}</div>
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  const img = printWindow.document.querySelector("img");
+  if (img && !img.complete) {
+    img.onload = () => { printWindow.print(); };
+    img.onerror = () => { printWindow.print(); };
+  } else {
+    setTimeout(() => printWindow.print(), 300);
+  }
+}
+
 /**
  * Impressão do relatório de Apuração de Custo (multi-seção com KPIs).
  * Usa RelatorioExportOptions (mesmo formato do PDF/Excel do relatório).
