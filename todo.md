@@ -1191,3 +1191,8 @@
 - [x] Integrar o reajuste no cálculo de custo: aplicar % sobre salários do mês anterior (somente equipamentos)
 - [x] Criar UI para o usuário informar o percentual de reajuste no módulo de Apropriação de Custo
 - [x] Garantir que salários de setores (Diretoria, Administração, etc.) NÃO sejam afetados pelo reajuste
+
+## Bug: Importação de Vendas PDF - "spawn pdftotext ENOENT"
+- [x] Substituir pdftotext (binário do sistema) por biblioteca Node.js para leitura de PDF
+- [x] Extrair período automaticamente do conteúdo do PDF (campo "Período: DD/MM/YYYY a DD/MM/YYYY")
+- [x] Remover necessidade de selecionar período manualmente antes de importar

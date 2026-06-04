@@ -1,22 +1,15 @@
 /**
  * Rota REST para importação do PDF "Resumo de Vendas (Produto)" exportado do ERP.
- * Usa pdftotext (poppler-utils) para extração de texto — mais confiável que pdf-parse.
+ * Usa pdf-parse (Node.js) para extração de texto — compatível com deploy sem binários do sistema.
  * Persiste na tabela resumo_vendas_produto, substituindo dados do mesmo período.
  */
 import { Router } from "express";
 import multer from "multer";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import { writeFile, unlink } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
-import { randomBytes } from "crypto";
 import { getDb } from "./db";
 import { resumoVendasProduto } from "../drizzle/schema";
 import { and, gte, lte } from "drizzle-orm";
 import { sdk } from "./_core/sdk";
 
-const execFileAsync = promisify(execFile);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -35,16 +28,13 @@ function parseBRNumber(s: string): number {
   return isNaN(n) ? 0 : n;
 }
 
-/** Extrai texto de um PDF usando pdftotext (poppler-utils) */
+/** Extrai texto de um PDF usando pdf-parse (Node.js puro) */
 async function pdfToText(buffer: Buffer): Promise<string> {
-  const tmpFile = join(tmpdir(), `solar_venda_${randomBytes(8).toString("hex")}.pdf`);
-  try {
-    await writeFile(tmpFile, buffer);
-    const { stdout } = await execFileAsync("pdftotext", ["-layout", tmpFile, "-"], { maxBuffer: 10 * 1024 * 1024 });
-    return stdout;
-  } finally {
-    await unlink(tmpFile).catch(() => {});
-  }
+  const { PDFParse } = await import("pdf-parse");
+  const parser: any = new PDFParse({ data: new Uint8Array(buffer) });
+  await parser.load();
+  const result = await parser.getText();
+  return result.text;
 }
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
@@ -67,7 +57,7 @@ interface CabecalhoPDF {
 /**
  * Extrai cabeçalho e linhas do texto do PDF.
  *
- * O pdftotext -layout preserva colunas. Estrutura do PDF:
+ * Estrutura do PDF "Resumo de Vendas (Produto)":
  *   Período:  01/04/2026 a 30/04/2026
  *   ...
  *   Produto       Grupo          Marca        Valor          Quant         Vl.Médio
@@ -75,7 +65,8 @@ interface CabecalhoPDF {
  *   ...
  *   Total:                                    7.588.173,9000 93.271,0000   81,3562
  *
- * Com -layout, cada produto aparece em UMA linha com colunas alinhadas por espaços.
+ * Com pdf-parse, o texto pode não preservar colunas perfeitamente,
+ * mas os números BR no final de cada linha são consistentes.
  */
 export function parseResumoVendasPDF(text: string): { cabecalho: CabecalhoPDF; linhas: LinhaVenda[] } {
   const lines = text.split("\n").map(l => l.trimEnd()).filter(l => l.trim());
@@ -91,23 +82,21 @@ export function parseResumoVendasPDF(text: string): { cabecalho: CabecalhoPDF; l
       periodoInicio = parseDateBR(mPeriodo[1]);
       periodoFim = parseDateBR(mPeriodo[2]);
     }
-    const mSetor = line.match(/^Setor[:\s]+(.+)$/i);
+    const mSetor = line.match(/Setor[:\s]+(.+?)(?:\s{2,}|$)/i);
     if (mSetor) setor = mSetor[1].trim();
   }
 
   // ── Linhas de produto ──
-  // Com -layout, cada linha de produto tem 3 números BR no final (valor, quant, vlMedio)
   const linhas: LinhaVenda[] = [];
-  const numBR = /([\d.]+,\d+)/g;
 
   // Linhas a ignorar
-  const SKIP = /^(Produto|Grupo|Marca|Valor|Quant|Vl\.M|Total:|Emitido|P[áa]gina|Vendedor|Per[ií]odo|Setor|Cliente|Descontar|Incluir|S[eé]rie|Produto:|SOLAR PEDREIRA|Resumo|NÃO|SIM|TODOS|BALCAO|Usuario|28-)/i;
+  const SKIP = /^(Produto|Grupo|Marca|Valor|Quant|Vl\.M|Total:|Emitido|P[áa]gina|Vendedor|Per[ií]odo|Setor|Cliente|Descontar|Incluir|S[eé]rie|Produto:|SOLAR PEDREIRA|Resumo|NÃO|SIM|TODOS|BALCAO|Usuario|28-|Incluir Outras)/i;
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || SKIP.test(trimmed)) continue;
 
-    // Encontrar todos os números BR na linha
+    // Encontrar todos os números BR na linha (formato: 1.234,5678 ou 123,45)
     const numPat = /([\d]{1,3}(?:\.\d{3})*,\d+)/g;
     const matches: RegExpExecArray[] = [];
     let mx: RegExpExecArray | null;
@@ -130,7 +119,7 @@ export function parseResumoVendasPDF(text: string): { cabecalho: CabecalhoPDF; l
 
     // Separar produto, grupo e marca
     // Grupos/marcas têm padrão "N - TEXTO" ou "N - TEXTO/TEXTO"
-    // Dividir por 2+ espaços (layout preservado pelo pdftotext -layout)
+    // Dividir por 2+ espaços
     const partes = resto.split(/\s{2,}/).map(p => p.trim()).filter(Boolean);
 
     let produto = "";
@@ -191,7 +180,7 @@ export function registerImportacaoVendasRoute(app: any) {
       const db = await getDb();
       if (!db) return res.status(500).json({ error: "Banco de dados indisponível" });
 
-      // Extrair texto do PDF via pdftotext
+      // Extrair texto do PDF via pdf-parse
       let pdfText = "";
       try {
         pdfText = await pdfToText(req.file.buffer);
