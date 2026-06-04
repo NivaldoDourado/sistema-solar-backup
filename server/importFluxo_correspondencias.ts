@@ -132,7 +132,6 @@ export const CONTAS_EXCLUIR: string[] = [
  * CONTAS INDIVIDUAIS A EXCLUIR (mesmo que estejam dentro de uma conta importada)
  */
 export const CONTAS_INDIVIDUAIS_EXCLUIR: string[] = [
-  "2068", // OUTRAS DESP. ADM (compra de areia, não entra no custo)
   "2304", // PAGAMENTO EMPRESTIMO
   "2081", // GNRE (excluído por decisão da diretoria - mai/26)
 ];
