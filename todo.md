@@ -1229,3 +1229,11 @@
 
 ## Fix: Responsividade do modal de itens na revisão de importação
 - [x] Melhorar layout do modal para não precisar rolar excessivamente (mostrar valor visível sem scroll horizontal)
+
+## Fluxo Realizado: Substituição na reimportação
+- [x] Implementar delete-before-insert na confirmação de importação do Fluxo Realizado (mesma lógica das despesas de equipamentos) — JÁ EXISTIA no código
+
+## Fluxo Realizado: Exclusão de subcontas individuais na revisão
+- [x] Adicionar checkboxes nas subcontas na fase de revisão do Fluxo para permitir desmarcar subcontas específicas
+- [x] Subcontas desmarcadas não são importadas (exclusão pontual, não vai para "Contas Excluídas")
+- [x] Recalcular totais ao desmarcar subcontas

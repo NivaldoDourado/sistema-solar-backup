@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,10 @@ export default function ImportFluxo() {
   const [parsed, setParsed] = useState<any>(null);
   const [importResult, setImportResult] = useState<any>(null);
   const [expandedContas, setExpandedContas] = useState<Set<string>>(new Set());
+
+  // Subcontas excluídas temporariamente (apenas neste período, não vai para "Contas Excluídas")
+  // Key format: "contaPrincipalCodigo::subcontaCodigo"
+  const [subcontasExcluidas, setSubcontasExcluidas] = useState<Set<string>>(new Set());
 
   // Dialog de gerenciamento de contas excluídas
   const [showExcluidas, setShowExcluidas] = useState(false);
@@ -87,6 +92,7 @@ export default function ImportFluxo() {
 
       const result = await parseMutation.mutateAsync({ fileBase64: base64 });
       setParsed(result);
+      setSubcontasExcluidas(new Set()); // Reset exclusões temporárias
       setStep(2);
       toast.success(`Planilha processada: ${result.contasImportar.length} contas para importar`);
     } catch (err: any) {
@@ -94,13 +100,34 @@ export default function ImportFluxo() {
     }
   };
 
+  // Calcular totais efetivos (descontando subcontas excluídas temporariamente)
+  const { totalImportarEfetivo, contasImportarFiltradas } = useMemo(() => {
+    if (!parsed) return { totalImportarEfetivo: 0, contasImportarFiltradas: [] };
+
+    const filtradas = parsed.contasImportar.map((conta: any) => {
+      const subcontasFiltradas = conta.subcontas.filter((sub: any) => {
+        const key = `${conta.contaPrincipalCodigo}::${sub.codigo}`;
+        return !subcontasExcluidas.has(key);
+      });
+      const valorEfetivo = subcontasFiltradas.reduce((sum: number, s: any) => sum + s.valor, 0);
+      return {
+        ...conta,
+        subcontas: subcontasFiltradas,
+        valorTotal: valorEfetivo,
+      };
+    });
+
+    const total = filtradas.reduce((sum: number, c: any) => sum + c.valorTotal, 0);
+    return { totalImportarEfetivo: total, contasImportarFiltradas: filtradas };
+  }, [parsed, subcontasExcluidas]);
+
   const handleConfirmar = async () => {
     if (!periodoAtual || !parsed) return;
 
     try {
       const result = await importMutation.mutateAsync({
         periodoCustoId: periodoAtual.id,
-        contasImportar: parsed.contasImportar,
+        contasImportar: contasImportarFiltradas,
       });
       setImportResult(result);
       setStep(3);
@@ -119,6 +146,31 @@ export default function ImportFluxo() {
     });
   };
 
+  const toggleSubcontaExcluida = (contaCodigo: string, subCodigo: string) => {
+    setSubcontasExcluidas(prev => {
+      const next = new Set(prev);
+      const key = `${contaCodigo}::${subCodigo}`;
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleAllSubcontas = (contaCodigo: string, subcontas: any[], allExcluded: boolean) => {
+    setSubcontasExcluidas(prev => {
+      const next = new Set(prev);
+      for (const sub of subcontas) {
+        const key = `${contaCodigo}::${sub.codigo}`;
+        if (allExcluded) {
+          next.delete(key); // Re-incluir todas
+        } else {
+          next.add(key); // Excluir todas
+        }
+      }
+      return next;
+    });
+  };
+
   const handleAdicionarExcluida = () => {
     if (!novaCodigo.trim() || !novaNome.trim()) {
       toast.error("Código e Nome são obrigatórios");
@@ -133,6 +185,11 @@ export default function ImportFluxo() {
 
   const totalImportar = parsed?.totalImportar || 0;
   const totalExcluir = parsed?.totalExcluir || 0;
+
+  // Contar subcontas excluídas por conta principal
+  const getExcluidasCount = (contaCodigo: string, subcontas: any[]) => {
+    return subcontas.filter((sub: any) => subcontasExcluidas.has(`${contaCodigo}::${sub.codigo}`)).length;
+  };
 
   return (
     <div className="space-y-6">
@@ -262,8 +319,13 @@ export default function ImportFluxo() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <p className="text-sm text-green-700 font-medium">Total a Importar</p>
-                  <p className="text-xl font-bold text-green-800">{formatCurrency(totalImportar)}</p>
+                  <p className="text-xl font-bold text-green-800">{formatCurrency(totalImportarEfetivo)}</p>
                   <p className="text-xs text-green-600">{parsed.contasImportar.length} contas</p>
+                  {subcontasExcluidas.size > 0 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ({subcontasExcluidas.size} subconta(s) desmarcada(s): -{formatCurrency(totalImportar - totalImportarEfetivo)})
+                    </p>
+                  )}
                 </div>
                 <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                   <p className="text-sm text-red-700 font-medium">Total Excluído</p>
@@ -272,12 +334,24 @@ export default function ImportFluxo() {
                 </div>
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-700 font-medium">Total Saídas</p>
-                  <p className="text-xl font-bold text-blue-800">{formatCurrency(totalImportar + totalExcluir)}</p>
+                  <p className="text-xl font-bold text-blue-800">{formatCurrency(totalImportarEfetivo + totalExcluir)}</p>
                   <p className="text-xs text-blue-600">Importar + Excluir</p>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Info sobre exclusão temporária */}
+          {subcontasExcluidas.size > 0 && (
+            <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800">
+              <Info className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                <strong>{subcontasExcluidas.size} subconta(s) desmarcada(s)</strong> nesta importação. 
+                Elas não serão importadas neste período, mas continuarão disponíveis em importações futuras 
+                (não são adicionadas à lista de "Contas Excluídas" permanentes).
+              </span>
+            </div>
+          )}
 
           {/* Contas a Importar */}
           <Card>
@@ -288,94 +362,130 @@ export default function ImportFluxo() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {parsed.contasImportar.map((conta: any) => (
-                <div key={conta.contaPrincipalCodigo} className="border rounded-lg">
-                  <div
-                    className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
-                    onClick={() => toggleExpand(conta.contaPrincipalCodigo)}
-                  >
-                    <div className="flex items-center gap-3">
-                      {expandedContas.has(conta.contaPrincipalCodigo) ?
-                        <ChevronDown className="h-4 w-4" /> :
-                        <ChevronRight className="h-4 w-4" />
-                      }
-                      <div>
-                        <p className="font-medium">
-                          {conta.contaPrincipalCodigo}-{conta.contaPrincipalNome}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <Badge variant="outline" className="text-xs">
-                            <Banknote className="h-3 w-3 mr-1" />
-                            {conta.contaSistema}
-                          </Badge>
-                          <Badge variant="secondary" className="text-xs">
-                            <Building2 className="h-3 w-3 mr-1" />
-                            {conta.setor}
-                          </Badge>
+              {parsed.contasImportar.map((conta: any) => {
+                const exclCount = getExcluidasCount(conta.contaPrincipalCodigo, conta.subcontas);
+                const valorEfetivo = conta.subcontas
+                  .filter((sub: any) => !subcontasExcluidas.has(`${conta.contaPrincipalCodigo}::${sub.codigo}`))
+                  .reduce((sum: number, s: any) => sum + s.valor, 0);
+
+                return (
+                  <div key={conta.contaPrincipalCodigo} className="border rounded-lg">
+                    <div
+                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
+                      onClick={() => toggleExpand(conta.contaPrincipalCodigo)}
+                    >
+                      <div className="flex items-center gap-3">
+                        {expandedContas.has(conta.contaPrincipalCodigo) ?
+                          <ChevronDown className="h-4 w-4" /> :
+                          <ChevronRight className="h-4 w-4" />
+                        }
+                        <div>
+                          <p className="font-medium">
+                            {conta.contaPrincipalCodigo}-{conta.contaPrincipalNome}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Badge variant="outline" className="text-xs">
+                              <Banknote className="h-3 w-3 mr-1" />
+                              {conta.contaSistema}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              <Building2 className="h-3 w-3 mr-1" />
+                              {conta.setor}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-700">{formatCurrency(conta.valorTotal)}</p>
-                      <p className="text-xs text-muted-foreground">{conta.subcontas.length} itens</p>
-                    </div>
-                  </div>
-
-                  {expandedContas.has(conta.contaPrincipalCodigo) && (
-                    <div className="border-t px-3 pb-3">
-                      <table className="w-full text-sm mt-2">
-                        <thead>
-                          <tr className="text-muted-foreground text-xs">
-                            <th className="text-left py-1">Código</th>
-                            <th className="text-left py-1">Nome</th>
-                            <th className="text-left py-1">Setor</th>
-                            <th className="text-right py-1">Valor</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {conta.subcontas.map((sub: any, idx: number) => (
-                            <tr key={idx} className="border-t border-dashed">
-                              <td className="py-1.5 text-muted-foreground">{sub.codigo}</td>
-                              <td className="py-1.5">
-                                {sub.nome}
-                                {sub.isRateio && (
-                                  <Badge variant="outline" className="ml-2 text-xs">
-                                    <Zap className="h-3 w-3 mr-1" />
-                                    Rateio {Math.round((sub.percentualRateio || 0) * 100)}%
-                                  </Badge>
-                                )}
-                              </td>
-                              <td className="py-1.5">
-                                {sub.setor !== conta.setor && (
-                                  <Badge variant="secondary" className="text-xs">{sub.setor}</Badge>
-                                )}
-                              </td>
-                              <td className="py-1.5 text-right font-medium">{formatCurrency(sub.valor)}</td>
-                            </tr>
-                          ))}
-                          {conta.excluidas?.length > 0 && (
-                            <>
-                              <tr className="border-t">
-                                <td colSpan={4} className="py-1.5 text-xs font-medium text-red-600">
-                                  Excluídas desta conta:
-                                </td>
-                              </tr>
-                              {conta.excluidas.map((exc: any, idx: number) => (
-                                <tr key={`exc-${idx}`} className="text-red-500 line-through opacity-60">
-                                  <td className="py-1">{exc.codigo}</td>
-                                  <td className="py-1">{exc.nome}</td>
-                                  <td className="py-1 text-xs">{exc.motivo}</td>
-                                  <td className="py-1 text-right">{formatCurrency(exc.valor)}</td>
-                                </tr>
-                              ))}
-                            </>
+                      <div className="text-right">
+                        <p className={`font-bold ${exclCount > 0 ? "text-orange-600" : "text-green-700"}`}>
+                          {formatCurrency(valorEfetivo)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {conta.subcontas.length} itens
+                          {exclCount > 0 && (
+                            <span className="text-orange-500 ml-1">({exclCount} desmarcado(s))</span>
                           )}
-                        </tbody>
-                      </table>
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {expandedContas.has(conta.contaPrincipalCodigo) && (
+                      <div className="border-t px-3 pb-3">
+                        <table className="w-full text-sm mt-2">
+                          <thead>
+                            <tr className="text-muted-foreground text-xs">
+                              <th className="text-left py-1 w-8">
+                                <Checkbox
+                                  checked={exclCount === 0}
+                                  onCheckedChange={() => {
+                                    const allExcluded = exclCount === conta.subcontas.length;
+                                    toggleAllSubcontas(conta.contaPrincipalCodigo, conta.subcontas, allExcluded);
+                                  }}
+                                />
+                              </th>
+                              <th className="text-left py-1">Código</th>
+                              <th className="text-left py-1">Nome</th>
+                              <th className="text-left py-1">Setor</th>
+                              <th className="text-right py-1">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {conta.subcontas.map((sub: any, idx: number) => {
+                              const isExcluida = subcontasExcluidas.has(`${conta.contaPrincipalCodigo}::${sub.codigo}`);
+                              return (
+                                <tr
+                                  key={idx}
+                                  className={`border-t border-dashed ${isExcluida ? "opacity-40 line-through bg-red-50" : ""}`}
+                                >
+                                  <td className="py-1.5">
+                                    <Checkbox
+                                      checked={!isExcluida}
+                                      onCheckedChange={() => toggleSubcontaExcluida(conta.contaPrincipalCodigo, sub.codigo)}
+                                    />
+                                  </td>
+                                  <td className="py-1.5 text-muted-foreground">{sub.codigo}</td>
+                                  <td className="py-1.5">
+                                    {sub.nome}
+                                    {sub.isRateio && (
+                                      <Badge variant="outline" className="ml-2 text-xs">
+                                        <Zap className="h-3 w-3 mr-1" />
+                                        Rateio {Math.round((sub.percentualRateio || 0) * 100)}%
+                                      </Badge>
+                                    )}
+                                  </td>
+                                  <td className="py-1.5">
+                                    {sub.setor !== conta.setor && (
+                                      <Badge variant="secondary" className="text-xs">{sub.setor}</Badge>
+                                    )}
+                                  </td>
+                                  <td className="py-1.5 text-right font-medium">{formatCurrency(sub.valor)}</td>
+                                </tr>
+                              );
+                            })}
+                            {conta.excluidas?.length > 0 && (
+                              <>
+                                <tr className="border-t">
+                                  <td colSpan={5} className="py-1.5 text-xs font-medium text-red-600">
+                                    Excluídas desta conta (permanentemente):
+                                  </td>
+                                </tr>
+                                {conta.excluidas.map((exc: any, idx: number) => (
+                                  <tr key={`exc-${idx}`} className="text-red-500 line-through opacity-60">
+                                    <td className="py-1"></td>
+                                    <td className="py-1">{exc.codigo}</td>
+                                    <td className="py-1">{exc.nome}</td>
+                                    <td className="py-1 text-xs">{exc.motivo}</td>
+                                    <td className="py-1 text-right">{formatCurrency(exc.valor)}</td>
+                                  </tr>
+                                ))}
+                              </>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 
@@ -411,7 +521,7 @@ export default function ImportFluxo() {
 
           {/* Botões */}
           <div className="flex justify-between">
-            <Button variant="outline" onClick={() => { setStep(1); setParsed(null); setFile(null); }}>
+            <Button variant="outline" onClick={() => { setStep(1); setParsed(null); setFile(null); setSubcontasExcluidas(new Set()); }}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
@@ -457,7 +567,7 @@ export default function ImportFluxo() {
               </span>
             </div>
 
-            <Button variant="outline" onClick={() => { setStep(1); setParsed(null); setFile(null); setImportResult(null); }}>
+            <Button variant="outline" onClick={() => { setStep(1); setParsed(null); setFile(null); setImportResult(null); setSubcontasExcluidas(new Set()); }}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Nova Importação
             </Button>
