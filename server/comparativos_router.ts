@@ -609,6 +609,205 @@ export const comparativosRouter = router({
     }),
 
   /**
+   * Comparativo multi-período de indicadores: Custo/t (Produção), Custo/t (Vendas), C.M. s/ DI, C.M. c/ DI
+   */
+  comparativoIndicadores: protectedProcedure
+    .input(z.object({
+      periodos: z.array(z.object({ mes: z.number().int(), ano: z.number().int() })).min(1).max(12),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const { periodos } = input;
+
+      // Buscar os periodo_custo IDs correspondentes
+      const allPeriodos = await db.select().from(periodoCusto);
+      const periodoMap: Record<string, typeof allPeriodos[0]> = {};
+      for (const p of allPeriodos) {
+        periodoMap[`${p.ano}-${p.mes}`] = p;
+      }
+
+      const periodoIds: { label: string; id: number; periodo: typeof allPeriodos[0] }[] = [];
+      for (const p of periodos) {
+        const key = `${p.ano}-${p.mes}`;
+        const per = periodoMap[key];
+        if (per) {
+          periodoIds.push({ label: `${String(p.mes).padStart(2, "0")}/${p.ano}`, id: per.id, periodo: per });
+        }
+      }
+
+      if (periodoIds.length === 0) return { labels: [], indicadores: [] };
+
+      const ids = periodoIds.map(p => p.id);
+      const idsSql = sql.join(ids.map(id => sql`${id}`), sql`, `);
+
+      // Buscar tags excluídas do custo
+      const tagsExcluidasRows = await db.select().from(equipamentoExcluidoTag);
+      const tagsExcluidasSet = new Set(tagsExcluidasRows.map(t => t.tag.toUpperCase()));
+
+      // Buscar lancamentos agrupados por conta e período (com divisor e classificação)
+      const lancRows = await db.select({
+        periodoCustoId: lancamentoCusto.periodoCustoId,
+        contaNome: contaCusto.nome,
+        divisor: contaCusto.divisor,
+        classificacao: contaCusto.classificacao,
+        total: sql<string>`SUM(${lancamentoCusto.valor})`,
+      })
+        .from(lancamentoCusto)
+        .innerJoin(contaCusto, eq(lancamentoCusto.contaCustoId, contaCusto.id))
+        .where(sql`${lancamentoCusto.periodoCustoId} IN (${idsSql})`)
+        .groupBy(lancamentoCusto.periodoCustoId, contaCusto.nome, contaCusto.divisor, contaCusto.classificacao);
+
+      // Buscar salários agrupados por conta e período
+      const salRows = await db.select({
+        periodoCustoId: lancamentoSalario.periodoCustoId,
+        contaNome: contaCusto.nome,
+        divisor: contaCusto.divisor,
+        classificacao: contaCusto.classificacao,
+        total: sql<string>`CAST(SUM(${lancamentoSalario.valor}) AS DECIMAL(14,2))`,
+      })
+        .from(lancamentoSalario)
+        .innerJoin(contaCusto, eq(lancamentoSalario.contaCustoId, contaCusto.id))
+        .where(sql`${lancamentoSalario.periodoCustoId} IN (${idsSql})`)
+        .groupBy(lancamentoSalario.periodoCustoId, contaCusto.nome, contaCusto.divisor, contaCusto.classificacao);
+
+      // Calcular equipamentos excluídos por período (para subtrair do custo variável)
+      const excluidos: Record<string, number> = {};
+      if (tagsExcluidasSet.size > 0) {
+        const tagsArr = Array.from(tagsExcluidasSet);
+        const tagsSql = sql.join(tagsArr.map(t => sql`${t}`), sql`, `);
+        const exclRows = await db.select({
+          periodoCustoId: itemDespesaImportado.periodoCustoId,
+          total: sql<string>`SUM(${itemDespesaImportado.custo})`,
+        })
+          .from(itemDespesaImportado)
+          .where(sql`${itemDespesaImportado.periodoCustoId} IN (${idsSql}) AND UPPER(${itemDespesaImportado.equipamentoTag}) IN (${tagsSql})`)
+          .groupBy(itemDespesaImportado.periodoCustoId);
+
+        for (const row of exclRows) {
+          excluidos[String(row.periodoCustoId)] = parseFloat(String(row.total || "0"));
+        }
+      }
+
+      // Buscar produção e vendas por período
+      // Produção: campo producaoTotal do periodo_custo (já preenchido pelo sistema)
+      // Vendas: campo quantidadeVendida do periodo_custo
+      // Fallback: tabela resumo_vendas_produto
+      const vendasRows = await db.select({
+        mes: sql<number>`MONTH(${resumoVendasProduto.periodoInicio})`,
+        ano: sql<number>`YEAR(${resumoVendasProduto.periodoInicio})`,
+        totalQuantidade: sql<string>`SUM(${resumoVendasProduto.quantidade})`,
+      })
+        .from(resumoVendasProduto)
+        .where(sql`${resumoVendasProduto.periodoInicio} >= ${sql.raw(`'${Math.min(...periodos.map(p => p.ano))}-01-01'`)} AND ${resumoVendasProduto.periodoInicio} <= ${sql.raw(`'${Math.max(...periodos.map(p => p.ano))}-12-31'`)}`) 
+        .groupBy(
+          sql.raw("YEAR(`periodoInicio`)"),
+          sql.raw("MONTH(`periodoInicio`)")
+        );
+      const vendasMap: Record<string, number> = {};
+      for (const row of vendasRows) {
+        vendasMap[`${row.ano}-${row.mes}`] = parseFloat(String(row.totalQuantidade || "0"));
+      }
+
+      // Buscar produção da tabela producao (legado)
+      const producaoRows = await db.select({
+        mes: sql<number>`MONTH(${producao.data})`,
+        ano: sql<number>`YEAR(${producao.data})`,
+        totalProducao: sql<string>`SUM(${producao.quantidade})`,
+      })
+        .from(producao)
+        .where(sql`${producao.data} >= ${sql.raw(`'${Math.min(...periodos.map(p => p.ano))}-01-01'`)} AND ${producao.data} <= ${sql.raw(`'${Math.max(...periodos.map(p => p.ano))}-12-31'`)}`) 
+        .groupBy(
+          sql.raw("YEAR(`data`)"),
+          sql.raw("MONTH(`data`)")
+        );
+      const producaoMap: Record<string, number> = {};
+      for (const row of producaoRows) {
+        producaoMap[`${row.ano}-${row.mes}`] = parseFloat(String(row.totalProducao || "0"));
+      }
+
+      // Calcular indicadores por período
+      const resultados = periodoIds.map(p => {
+        const pid = String(p.id);
+        const per = p.periodo;
+        const key = `${per.ano}-${per.mes}`;
+
+        // Produção: producaoTotal do periodo_custo, fallback tabela producao
+        const producaoTotal = parseFloat(String(per.producaoTotal || "0")) || producaoMap[key] || 0;
+        // Vendas: quantidadeVendida do periodo_custo, fallback resumo_vendas_produto
+        const vendas = parseFloat(String(per.quantidadeVendida || "0")) || vendasMap[key] || 0;
+
+        // Agrupar lançamentos por tipo (custo variável vs despesa variável vs despesas indiretas)
+        let totalCustoVariavel = 0;
+        let totalDespesaVariavel = 0;
+        let totalDespesasIndiretas = 0;
+
+        const allRows = [...lancRows, ...salRows].filter(r => String(r.periodoCustoId) === pid);
+        for (const row of allRows) {
+          const val = parseFloat(String(row.total || "0"));
+          if (val <= 0) continue;
+          const divisor = row.divisor ?? "producao";
+          const classificacao = row.classificacao ?? "custo_variavel";
+          if (classificacao === "despesa_variavel" && divisor === "producao") {
+            totalDespesasIndiretas += val;
+          } else if (divisor === "vendas") {
+            totalDespesaVariavel += val;
+          } else {
+            totalCustoVariavel += val;
+          }
+        }
+
+        // Subtrair equipamentos excluídos do custo variável
+        const totalExcluido = excluidos[pid] ?? 0;
+        if (totalExcluido > 0) {
+          totalCustoVariavel = Math.max(0, totalCustoVariavel - totalExcluido);
+        }
+
+        // Cálculos
+        const custoPorTonProducao = producaoTotal > 0 ? totalCustoVariavel / producaoTotal : 0;
+        const custoPorTonVendas = vendas > 0 ? totalDespesaVariavel / vendas : 0;
+        const custoPorTonDI = producaoTotal > 0 ? totalDespesasIndiretas / producaoTotal : 0;
+        const custoMedio = custoPorTonProducao + custoPorTonVendas;
+        const custoMedioComDI = custoMedio + custoPorTonDI;
+
+        return {
+          custoPorTonProducao,
+          custoPorTonVendas,
+          custoMedio,
+          custoMedioComDI,
+          producaoTotal,
+          vendas,
+        };
+      });
+
+      // Montar indicadores como array de linhas
+      const indicadores = [
+        {
+          descricao: "Custo/t (Produ\u00e7\u00e3o)",
+          valores: resultados.map(r => r.custoPorTonProducao),
+        },
+        {
+          descricao: "Custo/t (Vendas)",
+          valores: resultados.map(r => r.custoPorTonVendas),
+        },
+        {
+          descricao: "C.M. s/ Despesas Indiretas",
+          valores: resultados.map(r => r.custoMedio),
+        },
+        {
+          descricao: "C.M. c/ Desp. Indiretas",
+          valores: resultados.map(r => r.custoMedioComDI),
+        },
+      ];
+
+      return {
+        labels: periodoIds.map(p => p.label),
+        indicadores,
+      };
+    }),
+
+  /**
    * Evolução de combustível (litros e custo) por mês
    */
   evolucaoCombustivel: protectedProcedure

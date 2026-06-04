@@ -1260,3 +1260,8 @@
 ## Ranking Equipamentos: Limitar exportação a 10 primeiros
 - [x] Limitar exportação PDF/Excel para apenas os 10 primeiros equipamentos do ranking
 - [x] Adicionar nota de destaque no final do relatório informando que demais equipamentos podem ser consultados em "Apuração de Custo" → "Ranking Equipamentos" no sistema GEM
+
+## Comparativo Multi-período: Percentuais de variação e tabela de indicadores
+- [x] Mostrar percentual de mudança entre períodos na tabela "Comparativo por Plano de Custo" (verde = redução, vermelho = aumento)
+- [x] Mostrar percentual de mudança entre períodos na tabela "Comparativo por Setores" (verde = redução, vermelho = aumento)
+- [x] Criar terceira tabela com comparativos de "Custo/t (Produção)", "Custo/t (Vendas)", "C.M. s/ Despesas Indiretas" e "C.M. c/ Desp. Indiretas" com mesma lógica de percentual

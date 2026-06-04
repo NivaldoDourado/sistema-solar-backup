@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, BarChart3, DollarSign, Truck, Fuel,
-  Factory, ShoppingCart, AlertCircle, Download, FileText, CalendarDays, X, Plus
+  Factory, ShoppingCart, AlertCircle, Download, FileText, CalendarDays, X, Plus, Loader2
 } from "lucide-react";
 import { exportToExcel, exportToPDF } from "@/lib/export-utils";
 import { DashboardExportMenu } from "@/components/DashboardExportMenu";
@@ -97,6 +97,20 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
+/** Calcula e exibe o percentual de variação entre dois valores.
+ *  Verde = redução (bom), Vermelho = aumento (ruim) */
+function VariacaoPct({ atual, anterior }: { atual: number; anterior: number }) {
+  if (!anterior || anterior === 0 || !atual) return null;
+  const pct = ((atual - anterior) / Math.abs(anterior)) * 100;
+  if (Math.abs(pct) < 0.1) return null;
+  const isReduction = pct < 0;
+  return (
+    <span className={`text-[10px] font-semibold ml-1 ${isReduction ? "text-emerald-600" : "text-red-600"}`}>
+      {isReduction ? "▼" : "▲"}{Math.abs(pct).toFixed(1)}%
+    </span>
+  );
+}
+
 function KpiCard({ title, value, sub, icon: Icon, trend, color }: {
   title: string; value: string; sub?: string;
   icon: any; trend?: number; color: string;
@@ -161,6 +175,10 @@ export default function ComparativosHistoricos() {
     { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
   );
   const { data: setoresData, isLoading: loadingSetores } = trpc.comparativos.comparativoSetores.useQuery(
+    { periodos: periodosSelecionados },
+    { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
+  );
+  const { data: indicadoresData, isLoading: loadingIndicadores } = trpc.comparativos.comparativoIndicadores.useQuery(
     { periodos: periodosSelecionados },
     { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
   );
@@ -878,6 +896,9 @@ export default function ComparativosHistoricos() {
                         {conta.valores.map((v, j) => (
                           <td key={j} className="py-2 px-3 text-right font-mono text-foreground">
                             {v > 0 ? `R$ ${fmt(v)}` : "—"}
+                            {j > 0 && v > 0 && conta.valores[j - 1] > 0 && (
+                              <VariacaoPct atual={v} anterior={conta.valores[j - 1]} />
+                            )}
                           </td>
                         ))}
                         <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
@@ -890,9 +911,13 @@ export default function ComparativosHistoricos() {
                       <td className="py-2 px-3 text-red-800">TOTAL GERAL</td>
                       {planoCustoData.labels.map((_, j) => {
                         const totalCol = planoCustoData.contas.reduce((s, c) => s + c.valores[j], 0);
+                        const totalColAnterior = j > 0 ? planoCustoData.contas.reduce((s, c) => s + c.valores[j - 1], 0) : 0;
                         return (
                           <td key={j} className="py-2 px-3 text-right font-mono text-red-700">
                             R$ {fmt(totalCol)}
+                            {j > 0 && totalCol > 0 && totalColAnterior > 0 && (
+                              <VariacaoPct atual={totalCol} anterior={totalColAnterior} />
+                            )}
                           </td>
                         );
                       })}
@@ -966,6 +991,9 @@ export default function ComparativosHistoricos() {
                         {setor.valores.map((v, j) => (
                           <td key={j} className="py-2 px-3 text-right font-mono text-foreground">
                             {v > 0 ? `R$ ${fmt(v)}` : "—"}
+                            {j > 0 && v > 0 && setor.valores[j - 1] > 0 && (
+                              <VariacaoPct atual={v} anterior={setor.valores[j - 1]} />
+                            )}
                           </td>
                         ))}
                         <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
@@ -978,9 +1006,13 @@ export default function ComparativosHistoricos() {
                       <td className="py-2 px-3 text-red-800">TOTAL GERAL</td>
                       {setoresData.labels.map((_, j) => {
                         const totalCol = setoresData.setores.reduce((s, c) => s + c.valores[j], 0);
+                        const totalColAnterior = j > 0 ? setoresData.setores.reduce((s, c) => s + c.valores[j - 1], 0) : 0;
                         return (
                           <td key={j} className="py-2 px-3 text-right font-mono text-red-700">
                             R$ {fmt(totalCol)}
+                            {j > 0 && totalCol > 0 && totalColAnterior > 0 && (
+                              <VariacaoPct atual={totalCol} anterior={totalColAnterior} />
+                            )}
                           </td>
                         );
                       })}
@@ -988,6 +1020,51 @@ export default function ComparativosHistoricos() {
                         R$ {fmt(setoresData.setores.reduce((s, c) => s + c.total, 0))}
                       </td>
                     </tr>
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Tabela Comparativa de Indicadores (Custo/t) */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-purple-600" />
+                Comparativo de Indicadores (R$/t)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingIndicadores ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : !indicadoresData || indicadoresData.indicadores.length === 0 ? (
+                <EmptyState message="Nenhum dado de indicadores disponível para os períodos selecionados" />
+              ) : (
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-purple-200 bg-purple-50">
+                      <th className="text-left py-2 px-3 font-semibold text-purple-800 min-w-[220px]">Indicador</th>
+                      {indicadoresData.labels.map(l => (
+                        <th key={l} className="text-right py-2 px-3 font-semibold text-purple-800 min-w-[110px]">{l}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {indicadoresData.indicadores.map((ind, i) => (
+                      <tr key={ind.descricao} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                        <td className="py-2 px-3 font-medium text-foreground">{ind.descricao}</td>
+                        {ind.valores.map((v, j) => (
+                          <td key={j} className="py-2 px-3 text-right font-mono text-foreground">
+                            {v > 0 ? `R$ ${v.toFixed(2).replace(".", ",")}` : "—"}
+                            {j > 0 && v > 0 && ind.valores[j - 1] > 0 && (
+                              <VariacaoPct atual={v} anterior={ind.valores[j - 1]} />
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               )}
