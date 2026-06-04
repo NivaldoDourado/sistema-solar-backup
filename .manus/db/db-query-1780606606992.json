@@ -1,0 +1,13 @@
+{
+  "query": "SELECT SUM(quantidade) as total FROM resumo_vendas_produto WHERE periodoInicio >= '2026-05-01' AND periodoInicio <= '2026-05-31';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT SUM(quantidade) as total FROM resumo_vendas_produto WHERE periodoInicio >= '2026-05-01' AND periodoInicio <= '2026-05-31';",
+  "rows": [
+    {
+      "total": "79219.7000"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n79219.7000\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

@@ -7,6 +7,7 @@ import {
   resumoVendasProduto, avaliacaoGlobal, abastecimento, producao,
   lancamentoCusto, lancamentoSalario, contaCusto,
   itemDespesaImportado, equipamentoExcluidoTag,
+  parteDiaria, parteDiariaItens, servicos,
 } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { calcularRateioMem } from "./rateioMem_calc";
@@ -727,14 +728,68 @@ export const comparativosRouter = router({
         producaoMap[`${row.ano}-${row.mes}`] = parseFloat(String(row.totalProducao || "0"));
       }
 
+      // Produção Método Caminhões (a partir de abril/2026)
+      // Buscar serviços de transporte para britador
+      const CORTE_ANO = 2026;
+      const CORTE_MES = 4;
+      const servicosData = await db.select().from(servicos);
+      const servicosBritagemFixa = servicosData.filter(s =>
+        s.nome.toUpperCase().includes('TRANSPORTE DE PEDRA PARA O BRITADOR') ||
+        s.nome.toUpperCase().includes('ALIMENTANDO O BRITADOR PRIMARIO') ||
+        s.nome.toUpperCase().includes('TRANSP. PEDRA DO ESTOQUE PARA O BRITADOR')
+      ).map(s => s.id);
+      const servicosBritagemMovel = servicosData.filter(s =>
+        s.nome.toUpperCase().includes('TRANSPORTE DE PEDRA PARA BRITAGEM MOVEL')
+      ).map(s => s.id);
+      const servicosCaminhoes = [...servicosBritagemFixa, ...servicosBritagemMovel];
+
+      // Para períodos >= abril/2026, calcular produção via Método Caminhões
+      const producaoMetodoCaminhoes: Record<string, number> = {};
+      const periodosMetodoCaminhoes = periodos.filter(
+        p => p.ano > CORTE_ANO || (p.ano === CORTE_ANO && p.mes >= CORTE_MES)
+      );
+      if (periodosMetodoCaminhoes.length > 0 && servicosCaminhoes.length > 0) {
+        // Buscar todos os itens de parte diária com serviços de caminhões no período
+        const minAno = Math.min(...periodosMetodoCaminhoes.map(p => p.ano));
+        const maxAno = Math.max(...periodosMetodoCaminhoes.map(p => p.ano));
+        const allItens = await db
+          .select({
+            servicoId: parteDiariaItens.servicoId,
+            producaoVal: parteDiariaItens.producao,
+            data: parteDiaria.data,
+          })
+          .from(parteDiariaItens)
+          .innerJoin(parteDiaria, eq(parteDiariaItens.parteDiariaId, parteDiaria.id))
+          .where(sql`${parteDiaria.data} >= ${sql.raw(`'${minAno}-01-01'`)} AND ${parteDiaria.data} <= ${sql.raw(`'${maxAno}-12-31'`)}`);
+
+        // Filtrar por serviços de caminhões e agrupar por mês/ano
+        for (const item of allItens) {
+          if (!servicosCaminhoes.includes(item.servicoId)) continue;
+          const itemDate = item.data instanceof Date ? item.data : new Date(String(item.data));
+          const mes = itemDate.getMonth() + 1;
+          const ano = itemDate.getFullYear();
+          // Verificar se este período usa método caminhões
+          if (ano < CORTE_ANO || (ano === CORTE_ANO && mes < CORTE_MES)) continue;
+          const key = `${ano}-${mes}`;
+          producaoMetodoCaminhoes[key] = (producaoMetodoCaminhoes[key] ?? 0) + parseFloat(String(item.producaoVal || "0"));
+        }
+      }
+
       // Calcular indicadores por período
       const resultados = periodoIds.map(p => {
         const pid = String(p.id);
         const per = p.periodo;
         const key = `${per.ano}-${per.mes}`;
 
-        // Produção: producaoTotal do periodo_custo, fallback tabela producao
-        const producaoTotal = parseFloat(String(per.producaoTotal || "0")) || producaoMap[key] || 0;
+        // Produção: producaoTotal do periodo_custo, fallback Método Caminhões (>=abr/26), fallback tabela producao
+        const usarMetodoCaminhoes = per.ano > CORTE_ANO || (per.ano === CORTE_ANO && per.mes >= CORTE_MES);
+        let producaoTotal = parseFloat(String(per.producaoTotal || "0"));
+        if (!producaoTotal && usarMetodoCaminhoes) {
+          producaoTotal = producaoMetodoCaminhoes[key] || 0;
+        }
+        if (!producaoTotal) {
+          producaoTotal = producaoMap[key] || 0;
+        }
         // Vendas: quantidadeVendida do periodo_custo, fallback resumo_vendas_produto
         const vendas = parseFloat(String(per.quantidadeVendida || "0")) || vendasMap[key] || 0;
 

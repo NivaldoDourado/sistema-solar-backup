@@ -1265,3 +1265,6 @@
 - [x] Mostrar percentual de mudança entre períodos na tabela "Comparativo por Plano de Custo" (verde = redução, vermelho = aumento)
 - [x] Mostrar percentual de mudança entre períodos na tabela "Comparativo por Setores" (verde = redução, vermelho = aumento)
 - [x] Criar terceira tabela com comparativos de "Custo/t (Produção)", "Custo/t (Vendas)", "C.M. s/ Despesas Indiretas" e "C.M. c/ Desp. Indiretas" com mesma lógica de percentual
+
+## Bug Fix: Comparativo Indicadores - producaoTotal zero para períodos Método Caminhões
+- [x] Corrigir comparativoIndicadores para buscar produção via Método Caminhões (parte_diaria_itens) quando producaoTotal do periodo_custo está vazio/zero (a partir de abril/2026)
