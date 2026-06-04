@@ -294,10 +294,12 @@ function SubsetorCard({
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs opacity-75">{fmtPct(pctTotal)} do total</span>
-          <span className="font-mono text-base">{fmtBRL(subsetor.totalSubsetor)}</span>
-        </div>
+        {!expanded && (
+          <div className="flex items-center gap-4">
+            <span className="text-xs opacity-75">{fmtPct(pctTotal)} do total</span>
+            <span className="font-mono text-base">{fmtBRL(subsetor.totalSubsetor)}</span>
+          </div>
+        )}
       </button>
 
       {expanded && (
@@ -435,11 +437,11 @@ function SubsetorCard({
             </div>
           )}
 
-          {/* Resumo do subsetor */}
-          <div className={`rounded-md border ${paleta.border} px-4 py-3 flex items-center justify-between`}>
+          {/* Subtotal do subsetor - sempre no final */}
+          <div className={`rounded-md border-2 ${paleta.border} px-4 py-3 flex items-center justify-between ${paleta.bg}`}>
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-semibold">Total do Setor: {subsetor.subsetorNome}</span>
+              <span className="text-sm font-bold">SUBTOTAL: {subsetor.subsetorNome}</span>
             </div>
             <div className="flex items-center gap-4">
               {subsetor.totalEquipamentos > 0 && (
@@ -452,7 +454,8 @@ function SubsetorCard({
                   Desp.: {fmtBRL(subsetor.totalDespesasEspecificas)}
                 </span>
               )}
-              <span className="text-base font-bold font-mono">{fmtBRL(subsetor.totalSubsetor)}</span>
+              <span className="text-lg font-bold font-mono">{fmtBRL(subsetor.totalSubsetor)}</span>
+              <span className="text-xs text-muted-foreground font-medium">{fmtPct(pctTotal)} do total</span>
             </div>
           </div>
         </div>
@@ -691,18 +694,6 @@ export default function CustoSetorAnalitico() {
     const rows: Record<string, any>[] = [];
     for (const grupo of grupos) {
       for (const sub of grupo.subsetores) {
-        rows.push({
-          grupo: grupo.grupoNome,
-          subsetor: sub.subsetorNome,
-          tipo: "SUBSETOR",
-          equipamento: "",
-          salOper: "",
-          lubrif: "",
-          pecasDesgaste: "",
-          pecasReposicao: "",
-          outras: "",
-          total: fmtBRL(sub.totalSubsetor),
-        });
         const equipsOrdenados = [...sub.equipamentos].sort(
           (a, b) => parseFloat(b.totalDespesasEquipamento ?? "0") - parseFloat(a.totalDespesasEquipamento ?? "0")
         );
@@ -734,6 +725,19 @@ export default function CustoSetorAnalitico() {
             total: fmtBRL(parseFloat(desp.valor ?? "0")),
           });
         }
+        // Subtotal do subsetor no final
+        rows.push({
+          grupo: grupo.grupoNome,
+          subsetor: sub.subsetorNome,
+          tipo: "SUBTOTAL SETOR",
+          equipamento: "",
+          salOper: "",
+          lubrif: "",
+          pecasDesgaste: "",
+          pecasReposicao: "",
+          outras: "",
+          total: fmtBRL(sub.totalSubsetor),
+        });
       }
       rows.push({
         grupo: grupo.grupoNome,
@@ -960,23 +964,32 @@ export default function CustoSetorAnalitico() {
             </CardHeader>
 
             {isExpanded && (
-              <CardContent className="p-4 space-y-2">
+              <CardContent className="p-4 space-y-0">
                 {subsetoresOrdenados
                   .filter((sub: SubsetorData) => !filtroSubsetor || sub.subsetorNome === filtroSubsetor)
-                  .map((sub: SubsetorData) => {
+                  .map((sub: SubsetorData, idx: number, arr: SubsetorData[]) => {
                   const isDestaque = !!filtroSubsetor && sub.subsetorNome === filtroSubsetor;
                   return (
-                    <SubsetorCard
-                      key={sub.subsetorNome}
-                      subsetor={sub}
-                      totalGeral={totalGeral}
-                      paleta={paleta}
-                      filtroContaCampo={filtroContaCampo || undefined}
-                      isDestaque={isDestaque}
-                      setRef={isDestaque ? setSubsetorRef(sub.subsetorNome) : undefined}
-                      onDrillDownEquip={handleDrillDownEquip}
-                      onDrillDownDespesa={handleDrillDownDespesa}
-                    />
+                    <div key={sub.subsetorNome}>
+                      {/* Separador visual entre subsetores */}
+                      {idx > 0 && (
+                        <div className="my-4 flex items-center gap-3">
+                          <div className={`flex-1 h-0.5 ${paleta.dot.replace('bg-', 'bg-')}/30`} style={{ background: `linear-gradient(to right, transparent, currentColor, transparent)`, color: 'var(--border)' }}></div>
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2">Próximo Setor</span>
+                          <div className={`flex-1 h-0.5`} style={{ background: `linear-gradient(to right, transparent, currentColor, transparent)`, color: 'var(--border)' }}></div>
+                        </div>
+                      )}
+                      <SubsetorCard
+                        subsetor={sub}
+                        totalGeral={totalGeral}
+                        paleta={paleta}
+                        filtroContaCampo={filtroContaCampo || undefined}
+                        isDestaque={isDestaque}
+                        setRef={isDestaque ? setSubsetorRef(sub.subsetorNome) : undefined}
+                        onDrillDownEquip={handleDrillDownEquip}
+                        onDrillDownDespesa={handleDrillDownDespesa}
+                      />
+                    </div>
                   );
                 })}
 

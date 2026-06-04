@@ -1,0 +1,24 @@
+Observations from visual inspection of the Relatório Analítico:
+
+1. SUBTOTAL is now at the BOTTOM of each subsetor (after equipamentos + despesas específicas) ✓
+   - "SUBTOTAL: ADMINISTRAÇÃO" appears after all equipment and specific expenses
+   - "SUBTOTAL: EXPEDIÇÃO" appears after all equipment and specific expenses
+   - "SUBTOTAL: MOV. DE ESTOQUE" appears after all equipment
+
+2. SEPARATOR between subsetores is visible ✓
+   - "PRÓXIMO SETOR" text separator appears between EXPEDIÇÃO and MOV. DE ESTOQUE subsetores
+   - The separator has a horizontal line with text in the middle
+
+3. The header button now only shows the total when collapsed (not expanded) ✓
+   - When expanded, the header just shows the name and badge count
+
+4. The TOTAL DO GRUPO bar (red) remains at the very end of each grupo ✓
+
+The layout is now correct:
+- Subsetor header (name only when expanded)
+- Equipment table with subtotal row
+- Specific expenses table with subtotal row
+- SUBTOTAL bar for the subsetor (at the bottom)
+- Separator line "Próximo Setor"
+- Next subsetor...
+- TOTAL DO GRUPO (red bar)

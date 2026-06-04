@@ -1213,3 +1213,7 @@
 - [x] Aplicar percentual de reajuste sobre valores do mês anterior (mesma lógica dos operadores)
 - [x] Criar UI para informar o percentual de reajuste de salários de setor
 - [x] Integrar com o cálculo de custo: usar valor reajustado no mês em apuração
+
+## Melhoria Relatório Analítico - Separação de Subsetores
+- [x] Mover subtotal de cada subsetor para o final da lista (não no início)
+- [x] Adicionar separador visual claro entre subsetores
