@@ -1279,3 +1279,7 @@
 
 ## Relatório PDF Apuração de Custo: Adicionar Custo/t
 - [x] Adicionar "Custo/t (Produção)" e "Custo/t (Vendas)" no cabeçalho do relatório PDF da Apuração de Custo
+
+## Comparativo Multi-período: Gráfico de Linha
+- [x] Criar gráfico de linha com "Custo/t (Produção)" e "C.M. s/ Despesas Indiretas" abaixo da tabela de Indicadores
+- [x] Incluir o gráfico na exportação consolidada das 3 tabelas (PDF e Imprimir)

@@ -864,6 +864,8 @@ export interface MultiTableExportOptions {
   subtitle?: string;
   filename: string;
   sections: MultiTableSection[];
+  chartImageBase64?: string;
+  chartTitle?: string;
 }
 
 export function exportMultiTableToExcel(opts: MultiTableExportOptions) {
@@ -982,6 +984,23 @@ export async function exportMultiTableToPDF(opts: MultiTableExportOptions) {
     }
   }
 
+  // Add chart image if provided
+  if (opts.chartImageBase64) {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const chartW = pageWidth - 28;
+    const chartH = 70;
+    if (curY + chartH + 15 > pageHeight - 15) {
+      doc.addPage();
+      curY = 20;
+    }
+    if (opts.chartTitle) {
+      doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 60, 120);
+      doc.text(opts.chartTitle, 14, curY); curY += 6;
+    }
+    doc.addImage(opts.chartImageBase64, "PNG", 14, curY, chartW, chartH);
+    curY += chartH + 10;
+  }
+
   doc.save(`${filename}.pdf`);
 }
 
@@ -1046,6 +1065,10 @@ export function printMultiTable(opts: MultiTableExportOptions) {
     <img src="${LOGO_CDN_URL}" class="logo" crossorigin="anonymous" />
   </div>
   ${sectionsHtml}
+  ${opts.chartImageBase64 ? `
+    <h3 style="margin-top:16px;margin-bottom:4px;color:#1e3c78;font-size:12px;">${opts.chartTitle || "Gr\u00e1fico"}</h3>
+    <img src="${opts.chartImageBase64}" style="width:100%;max-height:250px;object-fit:contain;" />
+  ` : ""}
   <div class="footer">${SYSTEM_NAME_LINE1}</div>
 </body>
 </html>`;

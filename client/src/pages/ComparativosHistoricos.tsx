@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -157,6 +157,8 @@ export default function ComparativosHistoricos() {
   ]);
   const [novoPeriodoMes, setNovoPeriodoMes] = useState(4);
   const [novoPeriodoAno, setNovoPeriodoAno] = useState(ANO_ATUAL);
+
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const { data: serieData, isLoading: loadingSerie } = trpc.comparativos.serieHistorica.useQuery(
     { anoInicio, anoFim },
@@ -911,11 +913,27 @@ export default function ComparativosHistoricos() {
                     <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => exportMultiTableToExcel({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
                       <FileText className="h-4 w-4 text-green-600" /> Excel (.xlsx)
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => exportMultiTableToPDF({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={async () => {
+                      let chartImageBase64: string | undefined;
+                      if (chartRef.current) {
+                        const html2canvas = (await import("html2canvas")).default;
+                        const canvas = await html2canvas(chartRef.current, { backgroundColor: "#ffffff", scale: 2 });
+                        chartImageBase64 = canvas.toDataURL("image/png");
+                      }
+                      exportMultiTableToPDF({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
+                    }}>
                       <FileText className="h-4 w-4 text-red-600" /> PDF
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => printMultiTable({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={async () => {
+                      let chartImageBase64: string | undefined;
+                      if (chartRef.current) {
+                        const html2canvas = (await import("html2canvas")).default;
+                        const canvas = await html2canvas(chartRef.current, { backgroundColor: "#ffffff", scale: 2 });
+                        chartImageBase64 = canvas.toDataURL("image/png");
+                      }
+                      printMultiTable({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
+                    }}>
                       <FileText className="h-4 w-4 text-blue-600" /> Imprimir
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -1183,6 +1201,66 @@ export default function ComparativosHistoricos() {
               )}
             </CardContent>
           </Card>
+
+          {/* Gráfico de Linha: Custo/t (Produção) e C.M. s/ Despesas Indiretas */}
+          {indicadoresData && indicadoresData.indicadores.length > 0 && (() => {
+            const custoTonProd = indicadoresData.indicadores.find(i => i.descricao.includes("Produ"));
+            const cmSemDI = indicadoresData.indicadores.find(i => i.descricao.includes("s/ Despesas"));
+            if (!custoTonProd && !cmSemDI) return null;
+            const chartData = indicadoresData.labels.map((label, idx) => ({
+              periodo: label,
+              custoTonProducao: custoTonProd?.valores[idx] ?? 0,
+              cmSemDI: cmSemDI?.valores[idx] ?? 0,
+            }));
+            return (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-blue-600" />
+                    Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas
+                  </CardTitle>
+                  <CardDescription>Comparativo gráfico dos indicadores ao longo dos períodos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div ref={chartRef} className="w-full">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <LineChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `R$ ${v.toFixed(0)}`} />
+                        <Tooltip
+                          formatter={(value: number, name: string) => [
+                            `R$ ${value.toFixed(2).replace(".", ",")}`,
+                            name === "custoTonProducao" ? "Custo/t (Produção)" : "C.M. s/ Desp. Indiretas"
+                          ]}
+                          labelStyle={{ fontWeight: "bold" }}
+                        />
+                        <Legend
+                          formatter={(value) => value === "custoTonProducao" ? "Custo/t (Produção)" : "C.M. s/ Desp. Indiretas"}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="custoTonProducao"
+                          stroke="#3b82f6"
+                          strokeWidth={2.5}
+                          dot={{ r: 5, fill: "#3b82f6" }}
+                          activeDot={{ r: 7 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cmSemDI"
+                          stroke="#10b981"
+                          strokeWidth={2.5}
+                          dot={{ r: 5, fill: "#10b981" }}
+                          activeDot={{ r: 7 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </TabsContent>
       </Tabs>
     </div>
