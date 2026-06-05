@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total_items, SUM(CAST(custo AS DECIMAL(12,2))) as total_valor FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT COUNT(*) as total_items, SUM(CAST(custo AS DECIMAL(12,2))) as total_valor FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1);",
+  "rows": [
+    {
+      "total_items": "1554",
+      "total_valor": "1054718.87"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_items\ttotal_valor\n1554\t1054718.87\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

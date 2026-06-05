@@ -1,0 +1,35 @@
+{
+  "query": "SELECT equipamentoTag, COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) GROUP BY equipamentoTag ORDER BY total DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT equipamentoTag, COUNT(*) as cnt, SUM(CAST(custo AS DECIMAL(12,2))) as total FROM item_despesa_importado WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) GROUP BY equipamentoTag ORDER BY total DESC LIMIT 5;",
+  "rows": [
+    {
+      "equipamentoTag": "EXPLOSIVOS",
+      "cnt": "28",
+      "total": "141644.43"
+    },
+    {
+      "equipamentoTag": "944 C",
+      "cnt": "47",
+      "total": "100884.87"
+    },
+    {
+      "equipamentoTag": "L 566",
+      "cnt": "57",
+      "total": "85685.75"
+    },
+    {
+      "equipamentoTag": "ESCAVADEIRA R938",
+      "cnt": "62",
+      "total": "54047.86"
+    },
+    {
+      "equipamentoTag": "JC1200 01",
+      "cnt": "43",
+      "total": "49150.85"
+    }
+  ],
+  "messages": [],
+  "stdout": "equipamentoTag\tcnt\ttotal\nEXPLOSIVOS\t28\t141644.43\n944 C\t47\t100884.87\nL 566\t57\t85685.75\nESCAVADEIRA R938\t62\t54047.86\nJC1200 01\t43\t49150.85\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

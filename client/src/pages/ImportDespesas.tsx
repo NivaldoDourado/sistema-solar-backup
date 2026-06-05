@@ -93,6 +93,7 @@ export default function ImportDespesas() {
   const [itensExcluidos, setItensExcluidos] = useState<Set<string>>(new Set());
 
   const parseMutation = trpc.importDespesas.parsePlanilha.useMutation();
+  const utils = trpc.useUtils();
   const importMutation = trpc.importDespesas.confirmarImportacao.useMutation();
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,6 +175,12 @@ export default function ImportDespesas() {
       setImportResult(result);
       setStep(3);
       toast.success(`Importação concluída: ${result.totalLancamentos} lançamentos criados`);
+      // Invalidar caches para que outras páginas reflitam os novos dados
+      utils.lancamentoCusto.invalidate();
+      utils.custoSetor.invalidate();
+      utils.comparativos.invalidate();
+      utils.rankingEquipamentos.invalidate();
+      utils.importDespesas.invalidate();
     } catch (err: any) {
       toast.error("Erro na importação: " + (err.message || "Erro desconhecido"));
     }

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, contaCustoId, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND observacoes LIKE '%[Import]%' AND observacoes LIKE '%OUTROS%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaCustoId, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND observacoes LIKE '%[Import]%' AND observacoes LIKE '%OUTROS%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "270103",
+      "contaCustoId": "7",
+      "valor": "4497.70",
+      "observacoes": "[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "270236",
+      "contaCustoId": "7",
+      "valor": "747.87",
+      "observacoes": "[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tvalor\tobservacoes\n270103\t7\t4497.70\t[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS\n270236\t7\t747.87\t[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS\n",
+  "stderr": "",
+  "execution_time_ms": 307
+}

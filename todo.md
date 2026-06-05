@@ -1273,3 +1273,6 @@
 ## Comparativo Multi-período: Exportação de Indicadores
 - [x] Adicionar botão de exportação PDF/Excel na tabela "Comparativo de Indicadores (R$/t)"
 - [x] Adicionar botão consolidado na parte superior para exportar as 3 tabelas em um único relatório
+
+## Bug Fix: Reimportação de Despesas não atualiza valores
+- [x] Investigar e corrigir reimportação de despesas que não remove lançamentos antigos ao reimportar (valores permanecem iguais mesmo removendo itens da planilha) - Causa: cache tRPC não invalidado após importação

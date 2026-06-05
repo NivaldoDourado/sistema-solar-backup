@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, contaCustoId, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND observacoes NOT LIKE '%[Import]%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, contaCustoId, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND observacoes NOT LIKE '%[Import]%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "240715",
+      "contaCustoId": "10",
+      "valor": "73004.14",
+      "observacoes": "[Fluxo] 5537-CONSULTORIA"
+    },
+    {
+      "id": "240716",
+      "contaCustoId": "4",
+      "valor": "68169.35",
+      "observacoes": "[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS"
+    },
+    {
+      "id": "240717",
+      "contaCustoId": "2",
+      "valor": "399694.47",
+      "observacoes": "[Fluxo] 5540-DESPESAS FINANCEIRAS; 2185-IMPOSTO"
+    },
+    {
+      "id": "240718",
+      "contaCustoId": "9",
+      "valor": "74021.83",
+      "observacoes": "[Fluxo] 3006-DESPESAS INDIRETAS"
+    },
+    {
+      "id": "240719",
+      "contaCustoId": "5",
+      "valor": "158933.48",
+      "observacoes": "[Fluxo] 2183-ENERGIA ELÉTRICA"
+    },
+    {
+      "id": "240720",
+      "contaCustoId": "30002",
+      "valor": "2444.12",
+      "observacoes": "[Fluxo] 2160-FROTA"
+    },
+    {
+      "id": "240721",
+      "contaCustoId": "30003",
+      "valor": "32000.00",
+      "observacoes": "[Fluxo] 2184-COMISSÃO DE VENDAS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcontaCustoId\tvalor\tobservacoes\n240715\t10\t73004.14\t[Fluxo] 5537-CONSULTORIA\n240716\t4\t68169.35\t[Fluxo] 2037-DESPESAS ADMINISTRATIVAS; 5539-LICENÇAS E DOCUMENTOS AMBIENTAIS\n240717\t2\t399694.47\t[Fluxo] 5540-DESPESAS FINANCEIRAS; 2185-IMPOSTO\n240718\t9\t74021.83\t[Fluxo] 3006-DESPESAS INDIRETAS\n240719\t5\t158933.48\t[Fluxo] 2183-ENERGIA ELÉTRICA\n240720\t30002\t2444.12\t[Fluxo] 2160-FROTA\n240721\t30003\t32000.00\t[Fluxo] 2184-COMISSÃO DE VENDAS\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

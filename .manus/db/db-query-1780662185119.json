@@ -1,0 +1,65 @@
+{
+  "query": "SELECT id, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND contaCustoId = 7 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT id, valor, observacoes FROM lancamento_custo WHERE periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1) AND contaCustoId = 7 ORDER BY id;",
+  "rows": [
+    {
+      "id": "270006",
+      "valor": "294.90",
+      "observacoes": "[Import] ALMOXARIFADO - ALMOXARIFADO | Outras Desp. Setor → ALMOXARIFADO"
+    },
+    {
+      "id": "270035",
+      "valor": "185.00",
+      "observacoes": "[Import] CANTINA - CANTINA | Outras Desp. Setor → REFEITÓRIO"
+    },
+    {
+      "id": "270051",
+      "valor": "1828.56",
+      "observacoes": "[Import] GEORGE MACHADO - GEORGE MACHADO | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "270102",
+      "valor": "703.93",
+      "observacoes": "[Import] MATERIAL DE CONSUMO - MATERIAL DE CONSUMO | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "270103",
+      "valor": "4497.70",
+      "observacoes": "[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS"
+    },
+    {
+      "id": "270120",
+      "valor": "193.73",
+      "observacoes": "[Import] OBRA ALMOXARIFADO - OBRA SALA ALMOXARIFADO/REUNIAO | Outras Desp. Setor → ALMOXARIFADO"
+    },
+    {
+      "id": "270124",
+      "valor": "5160.27",
+      "observacoes": "[Import] OFICINA - OFICINA | Outras Desp. Setor → OFICINA"
+    },
+    {
+      "id": "270125",
+      "valor": "2305.15",
+      "observacoes": "[Import] OFICINABRITAGEM - OFICINA - BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA"
+    },
+    {
+      "id": "270186",
+      "valor": "80.33",
+      "observacoes": "[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "270235",
+      "valor": "2339.05",
+      "observacoes": "[Import] TNZ8B89 - DONA MARGARIDA | Outras Desp. Setor → ADMINISTRAÇÃO"
+    },
+    {
+      "id": "270236",
+      "valor": "747.87",
+      "observacoes": "[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tvalor\tobservacoes\n270006\t294.90\t[Import] ALMOXARIFADO - ALMOXARIFADO | Outras Desp. Setor → ALMOXARIFADO\n270035\t185.00\t[Import] CANTINA - CANTINA | Outras Desp. Setor → REFEITÓRIO\n270051\t1828.56\t[Import] GEORGE MACHADO - GEORGE MACHADO | Outras Desp. Setor → ADMINISTRAÇÃO\n270102\t703.93\t[Import] MATERIAL DE CONSUMO - MATERIAL DE CONSUMO | Outras Desp. Setor → ADMINISTRAÇÃO\n270103\t4497.70\t[Import] MATERIAL EPI - EPI | Outras Desp. Setor → OUTROS SERVIÇOS\n270120\t193.73\t[Import] OBRA ALMOXARIFADO - OBRA SALA ALMOXARIFADO/REUNIAO | Outras Desp. Setor → ALMOXARIFADO\n270124\t5160.27\t[Import] OFICINA - OFICINA | Outras Desp. Setor → OFICINA\n270125\t2305.15\t[Import] OFICINABRITAGEM - OFICINA - BRITAGEM | Outras Desp. Setor → BRITAGEM SECUNDÁRIA\n270186\t80.33\t[Import] SETOR RH - SETOR RECURSOS HUMANOS | Outras Desp. Setor → ADMINISTRAÇÃO\n270235\t2339.05\t[Import] TNZ8B89 - DONA MARGARIDA | Outras Desp. Setor → ADMINISTRAÇÃO\n270236\t747.87\t[Import] TORNEARIA - TORNEARIA | Outras Desp. Setor → OUTROS SERVIÇOS\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}
