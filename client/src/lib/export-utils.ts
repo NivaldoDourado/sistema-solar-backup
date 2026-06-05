@@ -21,6 +21,18 @@ export interface ExportOptions {
 const LOGO_CDN_URL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663227720411/Us3Q3oBA5LqqATDWwyHq5k/LogoDouradoGestao_005e6bc5.png";
 
+// Pre-load logo at module level so export functions can be synchronous
+let _cachedLogoBase64: string | null = null;
+(async () => {
+  try {
+    const response = await fetch(LOGO_CDN_URL);
+    const blob = await response.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => { _cachedLogoBase64 = reader.result as string; };
+    reader.readAsDataURL(blob);
+  } catch { /* ignore */ }
+})();
+
 const SYSTEM_NAME_LINE1 = "GEM - Gestão Estratégica em Mineração";
 const SYSTEM_NAME_LINE2 = "SOLAR PEDREIRA";
 
@@ -112,15 +124,12 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
-export async function exportToPDF(options: ExportOptions) {
+export function exportToPDF(options: ExportOptions) {
   const { title, subtitle, columns, data, filename } = options;
-
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-
   const pageWidth = doc.internal.pageSize.getWidth();
-
-  // Load logo
-  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
+  // Use cached logo
+  const logoBase64 = _cachedLogoBase64;
 
   // ── Logo (top-right) ─────────────────────────────────────────────────────
   // Original logo is roughly square (428×470 px). Reduced to ~60% of original size.
@@ -269,10 +278,15 @@ export async function exportToPDF(options: ExportOptions) {
     },
   });
 
-  doc.save(`${filename}.pdf`);
+  const pdfDataUri = doc.output('datauristring', { filename: `${filename}.pdf` });
+  const pdfLink = document.createElement('a');
+  pdfLink.href = pdfDataUri;
+  pdfLink.download = `${filename}.pdf`;
+  document.body.appendChild(pdfLink);
+  pdfLink.click();
+  document.body.removeChild(pdfLink);
 }
-
-// Helper formatters
+// Helper formatterss
 export const formatters = {
   date: (value: any) => formatDateBR(String(value || "")),
   decimal: (value: any) =>
@@ -434,17 +448,14 @@ export function exportRelatorioToExcel(opts: RelatorioExportOptions) {
 }
 
 // ── PDF ───────────────────────────────────────────────────────────────────────
-export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
+export function exportRelatorioToPDF(opts: RelatorioExportOptions) {
   const { titulo, periodo, empresa, kpis, secoes, filename } = opts;
-
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
-
   // Logo (compacto, ~60% do tamanho original)
-  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
   const logoW = 12, logoH = 13;
-  if (logoBase64) {
-    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 5, logoW, logoH);
+  if (_cachedLogoBase64) {
+    doc.addImage(_cachedLogoBase64, "PNG", pageWidth - logoW - 10, 5, logoW, logoH);
   }
 
   // Cabeçalho textual (compacto)
@@ -585,9 +596,14 @@ export async function exportRelatorioToPDF(opts: RelatorioExportOptions) {
     doc.text(SYSTEM_NAME_LINE1, 12, doc.internal.pageSize.getHeight() - 7);
   }
 
-  doc.save(`${filename}.pdf`);
+  const pdfDataUri2 = doc.output('datauristring', { filename: `${filename}.pdf` });
+  const pdfLink2 = document.createElement('a');
+  pdfLink2.href = pdfDataUri2;
+  pdfLink2.download = `${filename}.pdf`;
+  document.body.appendChild(pdfLink2);
+  pdfLink2.click();
+  document.body.removeChild(pdfLink2);
 }
-
 // ── Função auxiliar: desenhar página de gráfico donut ──────────────────────────
 function drawDonutPage(
   doc: jsPDF,
@@ -920,15 +936,14 @@ export function exportMultiTableToExcel(opts: MultiTableExportOptions) {
   saveAs(blob, `${filename}.xlsx`);
 }
 
-export async function exportMultiTableToPDF(opts: MultiTableExportOptions) {
+export function exportMultiTableToPDF(opts: MultiTableExportOptions) {
   const { reportTitle, subtitle, filename, sections } = opts;
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  const logoBase64 = await loadImageAsBase64(LOGO_CDN_URL);
   const logoW = 17, logoH = 18;
-  if (logoBase64) {
-    doc.addImage(logoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
+  if (_cachedLogoBase64) {
+    doc.addImage(_cachedLogoBase64, "PNG", pageWidth - logoW - 10, 6, logoW, logoH);
   }
 
   let curY = 12;
@@ -1001,7 +1016,13 @@ export async function exportMultiTableToPDF(opts: MultiTableExportOptions) {
     curY += chartH + 10;
   }
 
-  doc.save(`${filename}.pdf`);
+  const pdfDataUri3 = doc.output('datauristring', { filename: `${filename}.pdf` });
+  const pdfLink3 = document.createElement('a');
+  pdfLink3.href = pdfDataUri3;
+  pdfLink3.download = `${filename}.pdf`;
+  document.body.appendChild(pdfLink3);
+  pdfLink3.click();
+  document.body.removeChild(pdfLink3);
 }
 
 export function printMultiTable(opts: MultiTableExportOptions) {

@@ -1283,3 +1283,4 @@
 ## Comparativo Multi-período: Gráfico de Linha
 - [x] Criar gráfico de linha com "Custo/t (Produção)" e "C.M. s/ Despesas Indiretas" abaixo da tabela de Indicadores
 - [x] Incluir o gráfico na exportação consolidada das 3 tabelas (PDF e Imprimir)
+- [x] Corrigir botão "Exportar Relatório Consolidado" que não funcionava (PDF 0 bytes) - funções PDF tornadas síncronas com logo pré-carregado em cache

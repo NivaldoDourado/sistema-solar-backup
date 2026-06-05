@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -159,6 +159,7 @@ export default function ComparativosHistoricos() {
   const [novoPeriodoAno, setNovoPeriodoAno] = useState(ANO_ATUAL);
 
   const chartRef = useRef<HTMLDivElement>(null);
+  const [chartImageBase64Cached, setChartImageBase64Cached] = useState<string | undefined>(undefined);
 
   const { data: serieData, isLoading: loadingSerie } = trpc.comparativos.serieHistorica.useQuery(
     { anoInicio, anoFim },
@@ -188,6 +189,31 @@ export default function ComparativosHistoricos() {
     { periodos: periodosSelecionados },
     { enabled: periodosSelecionados.length > 0 && activeTab === "comparativo" }
   );
+
+  // Pre-capture chart image whenever the chart data changes
+  useEffect(() => {
+    if (!chartRef.current) { setChartImageBase64Cached(undefined); return; }
+    const svgEl = chartRef.current.querySelector("svg");
+    if (!svgEl) { setChartImageBase64Cached(undefined); return; }
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = svgEl.clientWidth * 2;
+      canvas.height = svgEl.clientHeight * 2;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      setChartImageBase64Cached(canvas.toDataURL("image/png"));
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); setChartImageBase64Cached(undefined); };
+    img.src = url;
+  }, [indicadoresData]);
 
   const addPeriodo = useCallback(() => {
     const exists = periodosSelecionados.some(p => p.mes === novoPeriodoMes && p.ano === novoPeriodoAno);
@@ -913,26 +939,14 @@ export default function ComparativosHistoricos() {
                     <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => exportMultiTableToExcel({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections })}>
                       <FileText className="h-4 w-4 text-green-600" /> Excel (.xlsx)
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={async () => {
-                      let chartImageBase64: string | undefined;
-                      if (chartRef.current) {
-                        const html2canvas = (await import("html2canvas")).default;
-                        const canvas = await html2canvas(chartRef.current, { backgroundColor: "#ffffff", scale: 2 });
-                        chartImageBase64 = canvas.toDataURL("image/png");
-                      }
-                      exportMultiTableToPDF({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => {
+                      exportMultiTableToPDF({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64: chartImageBase64Cached, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
                     }}>
                       <FileText className="h-4 w-4 text-red-600" /> PDF
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={async () => {
-                      let chartImageBase64: string | undefined;
-                      if (chartRef.current) {
-                        const html2canvas = (await import("html2canvas")).default;
-                        const canvas = await html2canvas(chartRef.current, { backgroundColor: "#ffffff", scale: 2 });
-                        chartImageBase64 = canvas.toDataURL("image/png");
-                      }
-                      printMultiTable({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => {
+                      printMultiTable({ reportTitle: "Comparativo Multi-período (Consolidado)", subtitle: subtitleText, filename: "comparativo_consolidado", sections, chartImageBase64: chartImageBase64Cached, chartTitle: "Evolução: Custo/t (Produção) e C.M. s/ Despesas Indiretas" });
                     }}>
                       <FileText className="h-4 w-4 text-blue-600" /> Imprimir
                     </DropdownMenuItem>
