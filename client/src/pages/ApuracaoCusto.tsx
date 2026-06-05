@@ -831,6 +831,8 @@ export default function ApuracaoCusto() {
                   { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
                   { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
                   { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "Custo/t (Produ\u00e7\u00e3o)", value: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "\u2014" },
+                  { label: "Custo/t (Vendas)", value: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "\u2014" },
                   { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
                   { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
                 ];
@@ -890,6 +892,8 @@ export default function ApuracaoCusto() {
                   { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "—" },
                   { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
                   { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "Custo/t (Produ\u00e7\u00e3o)", value: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "\u2014" },
+                  { label: "Custo/t (Vendas)", value: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "\u2014" },
                   { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
                   { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
                 ];
@@ -953,6 +957,8 @@ export default function ApuracaoCusto() {
                   { label: "Vendas (t)", value: relatorio.vendas > 0 ? fmt(relatorio.vendas) + " t" : "-" },
                   { label: "Total Desp. s/ Desp. Indiretas", value: "R$ " + fmt(relatorio.totalCustoVariavel + relatorio.totalDespesaVariavel) },
                   { label: "Total Desp. c/ Despesas Indiretas", value: "R$ " + fmt(relatorio.totalGeral) },
+                  { label: "Custo/t (Produ\u00e7\u00e3o)", value: relatorio.producao > 0 ? "R$ " + fmt(relatorio.custoPorTonProducao) : "\u2014" },
+                  { label: "Custo/t (Vendas)", value: relatorio.vendas > 0 ? "R$ " + fmt(relatorio.custoPorTonVendas) : "\u2014" },
                   { label: "C.M. s/ Despesas Indiretas", value: "R$ " + fmt(relatorio.custoMedio) },
                   { label: "C.M. c/ Desp. Indiretas", value: "R$ " + fmt(relatorio.custoMedioComDI) },
                 ];

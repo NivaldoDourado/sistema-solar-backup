@@ -1,0 +1,76 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'item_despesa_importado' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'item_despesa_importado' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "periodoCustoId"
+    },
+    {
+      "COLUMN_NAME": "lancamentoCustoId"
+    },
+    {
+      "COLUMN_NAME": "equipamentoTag"
+    },
+    {
+      "COLUMN_NAME": "equipamentoDescricao"
+    },
+    {
+      "COLUMN_NAME": "equipamentoSistemaId"
+    },
+    {
+      "COLUMN_NAME": "classificacao"
+    },
+    {
+      "COLUMN_NAME": "sequencia"
+    },
+    {
+      "COLUMN_NAME": "data"
+    },
+    {
+      "COLUMN_NAME": "produto"
+    },
+    {
+      "COLUMN_NAME": "grupoProduto"
+    },
+    {
+      "COLUMN_NAME": "quantidade"
+    },
+    {
+      "COLUMN_NAME": "custo"
+    },
+    {
+      "COLUMN_NAME": "centroCusto"
+    },
+    {
+      "COLUMN_NAME": "hodometro"
+    },
+    {
+      "COLUMN_NAME": "intervalo"
+    },
+    {
+      "COLUMN_NAME": "horaPorLitro"
+    },
+    {
+      "COLUMN_NAME": "litrosPorHora"
+    },
+    {
+      "COLUMN_NAME": "observacoes"
+    },
+    {
+      "COLUMN_NAME": "userId"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nperiodoCustoId\nlancamentoCustoId\nequipamentoTag\nequipamentoDescricao\nequipamentoSistemaId\nclassificacao\nsequencia\ndata\nproduto\ngrupoProduto\nquantidade\ncusto\ncentroCusto\nhodometro\nintervalo\nhoraPorLitro\nlitrosPorHora\nobservacoes\nuserId\ncreatedAt\nupdatedAt\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

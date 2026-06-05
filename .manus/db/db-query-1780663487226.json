@@ -1,0 +1,9 @@
+{
+  "query": "SELECT lc.id, lc.observacoes, lc.valor\nFROM lancamento_custo lc\nWHERE lc.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1)\nAND lc.observacoes LIKE '%[Import] OUTROS%'\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c3LmngRrF41Xu1n.5228a318e2e3 --database Us3Q3oBA5LqqATDWwyHq5k --execute SELECT lc.id, lc.observacoes, lc.valor\nFROM lancamento_custo lc\nWHERE lc.periodoCustoId = (SELECT id FROM periodo_custo WHERE mes = 5 AND ano = 2026 LIMIT 1)\nAND lc.observacoes LIKE '%[Import] OUTROS%'\nLIMIT 5;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 261
+}
