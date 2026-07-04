@@ -111,7 +111,7 @@ export const validacaoFechamentoRouter = router({
       items.push({
         id: "salarios",
         nome: "Salários Operacionais",
-        descricao: "Lançamento manual de salários (Sal.Oper., Sal.Adm., Sal.Diretoria)",
+        descricao: "Lançamento manual de salários (Sal.Oper., Sal.Adm., Salário da Diretoria)",
         status: qtdSalarios > 0 ? "completo" : "pendente",
         detalhes: qtdSalarios > 0
           ? `${qtdSalarios} lançamentos`

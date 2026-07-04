@@ -1330,3 +1330,10 @@
 - [x] Excluir RRF6C70 (BASCALANTE) da importação
 - [x] Corrigir mecanismo de exclusão: usar tabela correspondencia_tag (tipo='excluir') em vez de equipamento_excluido_tag (que NÃO é verificada pelo importDespesas_router)
 - [x] Inserir todas as 12 tags excluídas na correspondencia_tag (incluindo variantes TC02/TC03 com/sem espaço)
+
+### Salário da Diretoria - Importação via Fluxo Realizado (junho/2026+)
+- [x] Renomear conta "Sal. Diretoria/Pró-Labore" para "Salário da Diretoria" (banco conta_custo id=12)
+- [x] Adicionar contas 23173/23172/23171 como EXCECOES_IMPORTAR dentro da conta-pai 2149 (excluída), mapeando para "Salário da Diretoria" no setor ADMINISTRAÇÃO
+- [x] Aplicar teto R$25.000 por subconta durante importação
+- [x] Garantir que o drill-down analítico mostre as 3 subcontas individuais com seus valores
+- [x] Testar importação e visualização na Apuração de Custo

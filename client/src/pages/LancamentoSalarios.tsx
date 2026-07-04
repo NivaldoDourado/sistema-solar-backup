@@ -287,7 +287,7 @@ export default function LancamentoSalarios() {
                   <Users className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Sal. Diretoria/Pró-Labore</p>
+                  <p className="text-xs text-muted-foreground">Salário da Diretoria</p>
                   <p className="text-lg font-semibold">{formatCurrency(resumo.totalSalDiretoria)}</p>
                 </div>
               </div>

@@ -337,8 +337,8 @@ export const comparativosRouter = router({
 
       // Mapeamento de nomes de conta para labels amigáveis no comparativo
       const CONTA_LABELS: Record<string, string> = {
-        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
-        "Sal. Diretoria/Pró-Labore": "Sal.Adm./Diretoria/Pró-Labore/Encargos",
+        "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos": "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos",
+        "Salário da Diretoria": "Salário da Diretoria",
         "Sal.Oper./Enc. Oper.": "Sal.Oper./Enc.Oper.",
         "RH - Salários da Operação": "Sal.Oper./Enc.Oper.",
         "Impostos, CEFEM e Outras Taxas": "Imp., Trib., Taxas e CEFEM",

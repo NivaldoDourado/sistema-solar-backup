@@ -214,25 +214,47 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
       );
 
       if (excecoes.length > 0) {
-        // Importar as exceções separadamente
+        // Agrupar exceções por contaSistema para consolidar (ex: 3 salários → 1 conta "Salário da Diretoria")
+        const excecoesPorContaSistema = new Map<string, typeof excecoes>();
         for (const exc of excecoes) {
           const config = EXCECOES_IMPORTAR.find(e => e.codigo === exc.codigo)!;
-          contasImportar.push({
-            contaPrincipalCodigo: exc.codigo,
-            contaPrincipalNome: exc.nome,
-            contaSistema: config.contaSistema,
-            setor: config.setor,
-            valorTotal: exc.valor || 0,
-            subcontas: [{
+          const key = config.contaSistema;
+          if (!excecoesPorContaSistema.has(key)) excecoesPorContaSistema.set(key, []);
+          excecoesPorContaSistema.get(key)!.push(exc);
+        }
+
+        for (const [contaSistema, excsGrupo] of Array.from(excecoesPorContaSistema.entries())) {
+          const configRef = EXCECOES_IMPORTAR.find(e => e.contaSistema === contaSistema)!;
+          const subcontas: ContaImportPreview["subcontas"] = [];
+          let valorTotal = 0;
+
+          for (const exc of excsGrupo) {
+            let valor = exc.valor || 0;
+            // Aplicar teto de valor
+            const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
+            if (tetoConfig && valor > tetoConfig.teto) {
+              valor = tetoConfig.teto;
+            }
+            subcontas.push({
               codigo: exc.codigo,
               nome: exc.nome,
               nivel: exc.nivel,
-              valor: exc.valor || 0,
-              setor: config.setor,
+              valor,
+              setor: configRef.setor,
               isRateio: false,
               percentualRateio: null,
               observacoes: exc.observacoes,
-            }],
+            });
+            valorTotal += valor;
+          }
+
+          contasImportar.push({
+            contaPrincipalCodigo: excsGrupo[0].codigo,
+            contaPrincipalNome: contaSistema,
+            contaSistema,
+            setor: configRef.setor,
+            valorTotal,
+            subcontas,
             excluidas: [],
           });
         }

@@ -434,7 +434,7 @@ export const custoSetorRasRouter = router({
             valor: parseFloat(sal.valor),
             descricao: sal.contaCustoId === CONTA_SAL_ADM_ID
               ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos [Manual]"
-              : "Sal. Diretoria/Pró-Labore [Manual]",
+              : "Salário da Diretoria [Manual]",
           });
         }
       }

@@ -346,6 +346,12 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
       // Verificar exceções
       const excecao = EXCECOES_IMPORTAR.find(e => e.codigo === conta.codigo);
       if (!excecao) continue;
+      // Aplicar teto de valor
+      let valorExc = conta.valor!;
+      const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
+      if (tetoExc && valorExc > tetoExc.teto) {
+        valorExc = tetoExc.teto;
+      }
       itens.push({
         contaPrincipalCodigo: conta.codigo,
         contaPrincipalNome: conta.nome,
@@ -354,7 +360,7 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
         contaCodigo: conta.codigo,
         contaNome: conta.nome,
         nivel: conta.nivel,
-        valor: conta.valor!,
+        valor: valorExc,
         observacoes: conta.observacoes,
       });
       contasSet.add(excecao.contaSistema);

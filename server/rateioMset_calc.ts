@@ -1,7 +1,7 @@
 /**
  * Rateio MSET on-the-fly — calcula despesas de setores a partir dos dados já importados:
  *   1. lancamento_fluxo  → Energia, Consultorias, Desp. Administrativas, Frota, etc.
- *   2. lancamento_salario → Sal.Adm./Almox./Ofic./Serv.Aux./Encargos e Sal. Diretoria/Pró-Labore por setor
+ *   2. lancamento_salario → Sal.Adm./Almox./Ofic./Serv.Aux./Encargos e Salário da Diretoria por setor
  *   3. lancamento_imposto → Impostos, CEFEM e Outras Taxas por setor
  *
  * O resultado é um array de despesas no mesmo shape de custo_setor_despesa,
@@ -203,7 +203,7 @@ export async function calcularRateioMset(periodoCustoId: number): Promise<Rateio
 
       const descricao = sal.contaCustoId === CONTA_SAL_ADM_ID
         ? "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos"
-        : "Sal. Diretoria/Pró-Labore";
+        : "Salário da Diretoria";
 
       ordemGlobal++;
       despesas.push({

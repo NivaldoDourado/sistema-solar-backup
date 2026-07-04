@@ -144,6 +144,7 @@ export default function ApuracaoCusto() {
     "Despesas Indiretas": "Despesas Indiretas",
     "Frota/Man.Pat./Seg./Out.": "Frota/Man.Pat./Seg./Out.",
     "Comissão de Vendas": "Comissão de Vendas",
+    "Salário da Diretoria": "Salário da Diretoria",
   };
 
   const { data: periodos } = trpc.periodoCusto.list.useQuery();
@@ -207,10 +208,10 @@ export default function ApuracaoCusto() {
   );
 
   // Identificar contas de salário para drill-down específico
-  const CONTAS_SALARIO = new Set(["Sal.Oper./Enc. Oper.", "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos", "Sal. Diretoria/Pró-Labore"]);
+  const CONTAS_SALARIO = new Set(["Sal.Oper./Enc. Oper.", "Sal.Adm./Almox./Ofic./Serv.Aux./Encargos"]);
   const isSalario = drillDown ? CONTAS_SALARIO.has(drillDown.contaNome) : false;
   const contaSalarioId = drillDown?.contaNome === "Sal.Oper./Enc. Oper." ? 30004
-    : drillDown?.contaNome === "Sal. Diretoria/Pró-Labore" ? 12
+    : drillDown?.contaNome === "Salário da Diretoria" ? 12
     : drillDown?.contaNome?.includes("Sal.Adm.") ? 1 : 0;
 
   // Drill-down salários: detalhe por destino (equipamento ou setor)

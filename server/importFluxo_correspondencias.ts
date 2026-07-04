@@ -157,6 +157,24 @@ export const EXCECOES_IMPORTAR: ContaFluxoConfig[] = [
     contaSistema: "Comissão de Vendas",
     setor: "EXPEDIÇÃO",
   },
+  {
+    codigo: "23173",
+    nome: "SALARIO AUGUSTO CESAR",
+    contaSistema: "Salário da Diretoria",
+    setor: "ADMINISTRAÇÃO",
+  },
+  {
+    codigo: "23172",
+    nome: "SALARIO GEORGE MACHADO",
+    contaSistema: "Salário da Diretoria",
+    setor: "ADMINISTRAÇÃO",
+  },
+  {
+    codigo: "23171",
+    nome: "SALARIO NOEL JUNIOR",
+    contaSistema: "Salário da Diretoria",
+    setor: "ADMINISTRAÇÃO",
+  },
 ];
 
 /**
