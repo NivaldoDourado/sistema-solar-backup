@@ -8,6 +8,7 @@ import {
   CONTAS_IMPORTAR,
   CONTAS_EXCLUIR,
   CONTAS_INDIVIDUAIS_EXCLUIR,
+  CONTAS_TETO_VALOR,
   EXCECOES_IMPORTAR,
   extrairCodigoNome,
   detectarNivel,
@@ -288,6 +289,12 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
           motivo: "Excluída individualmente",
         });
         continue;
+      }
+
+      // Aplicar teto de valor (a partir de jun/26)
+      const tetoConfig = CONTAS_TETO_VALOR[conta.codigo];
+      if (tetoConfig && conta.valor > tetoConfig.teto) {
+        conta.valor = tetoConfig.teto;
       }
 
       // Determinar setor (pode ter rateio especial para energia)

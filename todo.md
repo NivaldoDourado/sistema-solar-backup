@@ -1284,3 +1284,44 @@
 - [x] Criar gráfico de linha com "Custo/t (Produção)" e "C.M. s/ Despesas Indiretas" abaixo da tabela de Indicadores
 - [x] Incluir o gráfico na exportação consolidada das 3 tabelas (PDF e Imprimir)
 - [x] Corrigir botão "Exportar Relatório Consolidado" que não funcionava (PDF 0 bytes) - funções PDF tornadas síncronas com logo pré-carregado em cache
+
+## Regras de Apuração de Custo - Junho/2026 em diante
+
+### Despesas de Equipamentos - Novas Correspondências
+- [x] ALMOXARIFADOOFICINA → Correspondência "Outras Desp. Setor → ALMOXARIFADO"
+- [x] OEQ 6268 (LANCER) → Cadastrar equipamento com Setor = "OFICINA"
+- [x] QMK7C36 (NISSA/KICKS SV CVT) → Cadastrar equipamento com Setor = "ADMINISTRAÇÃO"
+- [x] TNU2H07 (VOLKSWAGEN TCROSS) → Cadastrar equipamento com Setor = "ADMINISTRAÇÃO"
+- [x] TRATOR D4E (TRATOR ESTEIRA D-4E) → Cadastrar equipamento com Setor = "OUTROS SERVIÇOS"
+
+### Despesas de Equipamentos - Exclusões (outro negócio)
+- [x] Excluir HMQ6155 (MERCEDES BENZ 1634) da importação
+- [x] Excluir QKV 4F39 MB (M.BENZ ATRON 2324) da importação
+- [x] Excluir QMD 0H48 (MB ATEGO 2426) da importação
+- [x] Excluir QMD0H48 (MERCEDES MUCK) da importação
+- [x] Excluir RKM 1C68 (MB ATEGO 2426) da importação
+- [x] Excluir TC01 (OM100 RM) da importação
+- [x] Excluir TC02 (OM100/RM) da importação
+- [x] Excluir TC03 (OM100/RM) da importação
+- [x] Excluir TC04 (H3800 01 RM) da importação
+
+### Fluxo Realizado - Contas Excluídas a partir de junho/26
+- [x] Excluir conta 7047-DIRETORIA DIST. LUCRO MAX
+- [x] Excluir conta 7067-CURSO MEDICINA VICTÓRIA
+- [x] Excluir conta 23174-SALARIO MAX
+- [x] Excluir conta 625-CONDOMINIO
+- [x] Excluir conta 5502-CONSULTAS, TERAPIA E REMÉDIOS
+- [x] Excluir conta 7007-DESPESAS CASA FAZENDA
+- [x] Excluir conta 7008-DESPESAS FAZENDA JEREMOABO
+- [x] Excluir conta 7010-EMPREGADOS DOMESTICOS
+- [x] Excluir conta 2083-ENERGIA
+- [x] Excluir conta 5535-ESPECIE - DH
+- [x] Excluir conta 5403-FIGUEIREDO L
+- [x] Excluir conta 6009-OUTROS
+- [x] Excluir conta 1011-PLANO DE SAUDE
+- [x] Excluir conta 6005-TELEFONE - SKY
+
+### Fluxo Realizado - Teto de R$25.000 por conta
+- [x] Aplicar teto R$25.000 na conta 23173-SALARIO AUGUSTO CESAR
+- [x] Aplicar teto R$25.000 na conta 23172-SALARIO GEORGE MACHADO
+- [x] Aplicar teto R$25.000 na conta 23171-SALARIO NOEL JUNIOR

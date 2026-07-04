@@ -23,6 +23,7 @@ import {
   CONTAS_IMPORTAR,
   CONTAS_EXCLUIR,
   CONTAS_INDIVIDUAIS_EXCLUIR,
+  CONTAS_TETO_VALOR,
   EXCECOES_IMPORTAR,
   extrairCodigoNome,
   detectarNivel,
@@ -366,6 +367,12 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
 
     // Verificar exclusões individuais
     if (todasExclusoesIndividuais.includes(conta.codigo)) continue;
+
+    // Aplicar teto de valor (a partir de jun/26)
+    const tetoConfig = CONTAS_TETO_VALOR[conta.codigo];
+    if (tetoConfig && conta.valor !== null && conta.valor > tetoConfig.teto) {
+      conta.valor = tetoConfig.teto;
+    }
 
     // Determinar setor (rateio de energia se aplicável)
     let setor = config.setor;

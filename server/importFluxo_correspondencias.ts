@@ -137,6 +137,16 @@ export const CONTAS_INDIVIDUAIS_EXCLUIR: string[] = [
 ];
 
 /**
+ * CONTAS COM TETO DE VALOR (a partir de junho/2026)
+ * Quando o valor da conta ultrapassar o teto, será considerado apenas o valor máximo definido.
+ */
+export const CONTAS_TETO_VALOR: Record<string, { nome: string; teto: number }> = {
+  "23173": { nome: "SALARIO AUGUSTO CESAR", teto: 25000 },
+  "23172": { nome: "SALARIO GEORGE MACHADO", teto: 25000 },
+  "23171": { nome: "SALARIO NOEL JUNIOR", teto: 25000 },
+};
+
+/**
  * EXCEÇÕES: contas que estão dentro de uma conta excluída mas devem ser importadas
  * Ex: 2184-COMISSÃO DE VENDAS está dentro de 2149-SALARIO E ENCARGOS PESSOAL
  */
