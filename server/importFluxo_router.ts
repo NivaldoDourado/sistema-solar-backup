@@ -200,17 +200,72 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
   // Processar contas principais
   const contasPrincipaisUnicas = Array.from(new Set(contasParsed.map(c => c.contaPrincipalCodigo)));
 
+  // Conjunto para rastrear exceções já processadas (evitar duplicatas)
+  const excecoesJaProcessadas = new Set<string>();
+
   for (const codigoPrincipal of contasPrincipaisUnicas) {
     const contasDessaPrincipal = contasParsed.filter(c => c.contaPrincipalCodigo === codigoPrincipal);
     if (contasDessaPrincipal.length === 0) continue;
 
     const nomePrincipal = contasDessaPrincipal[0].contaPrincipalNome;
 
+    // Caso especial: a conta principal É uma exceção (apareceu como nível 1 na planilha)
+    // Ex: 23173 aparece com 5 espaços de indentação, tornando-se sua própria principal
+    const excecaoComoPrincipal = EXCECOES_IMPORTAR.find(e => e.codigo === codigoPrincipal);
+    if (excecaoComoPrincipal) {
+      // Marcar como processada
+      excecoesJaProcessadas.add(codigoPrincipal);
+      // Pegar o valor (pode ser nível 1 com valor direto, ou soma das subcontas)
+      let valorExc = contasDessaPrincipal
+        .filter(c => c.valor !== null && c.valor !== 0)
+        .reduce((sum, c) => sum + (c.valor || 0), 0);
+      // Aplicar teto
+      const tetoConfig = CONTAS_TETO_VALOR[codigoPrincipal];
+      if (tetoConfig && valorExc > tetoConfig.teto) {
+        valorExc = tetoConfig.teto;
+      }
+      // Agrupar com outras exceções do mesmo contaSistema (será consolidado depois)
+      const existente = contasImportar.find(ci => ci.contaSistema === excecaoComoPrincipal.contaSistema);
+      if (existente) {
+        existente.subcontas.push({
+          codigo: codigoPrincipal,
+          nome: nomePrincipal,
+          nivel: 1,
+          valor: valorExc,
+          setor: excecaoComoPrincipal.setor,
+          isRateio: false,
+          percentualRateio: null,
+          observacoes: null,
+        });
+        existente.valorTotal += valorExc;
+      } else {
+        contasImportar.push({
+          contaPrincipalCodigo: codigoPrincipal,
+          contaPrincipalNome: excecaoComoPrincipal.contaSistema,
+          contaSistema: excecaoComoPrincipal.contaSistema,
+          setor: excecaoComoPrincipal.setor,
+          valorTotal: valorExc,
+          subcontas: [{
+            codigo: codigoPrincipal,
+            nome: nomePrincipal,
+            nivel: 1,
+            valor: valorExc,
+            setor: excecaoComoPrincipal.setor,
+            isRateio: false,
+            percentualRateio: null,
+            observacoes: null,
+          }],
+          excluidas: [],
+        });
+      }
+      continue;
+    }
+
     // Verificar se a conta principal deve ser excluída
     if (CONTAS_EXCLUIR.includes(codigoPrincipal)) {
-      // Verificar exceções dentro da conta excluída
+      // Verificar exceções dentro da conta excluída (excluindo as já processadas como principal)
       const excecoes = contasDessaPrincipal.filter(c =>
-        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo)
+        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo) && !excecoesJaProcessadas.has(c.codigo)
       );
 
       if (excecoes.length > 0) {
@@ -221,12 +276,13 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
           const key = config.contaSistema;
           if (!excecoesPorContaSistema.has(key)) excecoesPorContaSistema.set(key, []);
           excecoesPorContaSistema.get(key)!.push(exc);
+          excecoesJaProcessadas.add(exc.codigo);
         }
 
         for (const [contaSistema, excsGrupo] of Array.from(excecoesPorContaSistema.entries())) {
           const configRef = EXCECOES_IMPORTAR.find(e => e.contaSistema === contaSistema)!;
-          const subcontas: ContaImportPreview["subcontas"] = [];
-          let valorTotal = 0;
+          // Verificar se já existe um grupo para esse contaSistema (pode ter sido criado pelo caso "exceção como principal")
+          const existente = contasImportar.find(ci => ci.contaSistema === contaSistema);
 
           for (const exc of excsGrupo) {
             let valor = exc.valor || 0;
@@ -235,7 +291,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
             if (tetoConfig && valor > tetoConfig.teto) {
               valor = tetoConfig.teto;
             }
-            subcontas.push({
+            const subconta = {
               codigo: exc.codigo,
               nome: exc.nome,
               nivel: exc.nivel,
@@ -244,19 +300,23 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
               isRateio: false,
               percentualRateio: null,
               observacoes: exc.observacoes,
-            });
-            valorTotal += valor;
+            };
+            if (existente) {
+              existente.subcontas.push(subconta);
+              existente.valorTotal += valor;
+            } else {
+              // Criar novo grupo
+              contasImportar.push({
+                contaPrincipalCodigo: excsGrupo[0].codigo,
+                contaPrincipalNome: contaSistema,
+                contaSistema,
+                setor: configRef.setor,
+                valorTotal: valor,
+                subcontas: [subconta],
+                excluidas: [],
+              });
+            }
           }
-
-          contasImportar.push({
-            contaPrincipalCodigo: excsGrupo[0].codigo,
-            contaPrincipalNome: contaSistema,
-            contaSistema,
-            setor: configRef.setor,
-            valorTotal,
-            subcontas,
-            excluidas: [],
-          });
         }
       }
 

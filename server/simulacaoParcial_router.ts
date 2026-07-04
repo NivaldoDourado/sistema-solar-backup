@@ -341,6 +341,29 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
   const contasSet = new Set<string>();
 
   for (const conta of contasParsed) {
+    // Caso especial: a conta principal É uma exceção (apareceu como nível 1 na planilha)
+    const excecaoComoPrincipal = EXCECOES_IMPORTAR.find(e => e.codigo === conta.contaPrincipalCodigo);
+    if (excecaoComoPrincipal && conta.contaPrincipalCodigo === conta.codigo) {
+      let valorExc = conta.valor!;
+      const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
+      if (tetoExc && valorExc > tetoExc.teto) {
+        valorExc = tetoExc.teto;
+      }
+      itens.push({
+        contaPrincipalCodigo: conta.codigo,
+        contaPrincipalNome: conta.nome,
+        contaSistema: excecaoComoPrincipal.contaSistema,
+        setor: excecaoComoPrincipal.setor,
+        contaCodigo: conta.codigo,
+        contaNome: conta.nome,
+        nivel: conta.nivel,
+        valor: valorExc,
+        observacoes: conta.observacoes,
+      });
+      contasSet.add(excecaoComoPrincipal.contaSistema);
+      continue;
+    }
+
     // Verificar se a conta principal deve ser excluída
     if (CONTAS_EXCLUIR.includes(conta.contaPrincipalCodigo)) {
       // Verificar exceções
@@ -364,6 +387,29 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
         observacoes: conta.observacoes,
       });
       contasSet.add(excecao.contaSistema);
+      continue;
+    }
+
+    // Verificar se a conta é uma exceção (subconta de excluída que não foi detectada como tal)
+    const excecaoSub = EXCECOES_IMPORTAR.find(e => e.codigo === conta.codigo);
+    if (excecaoSub) {
+      let valorExc = conta.valor!;
+      const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
+      if (tetoExc && valorExc > tetoExc.teto) {
+        valorExc = tetoExc.teto;
+      }
+      itens.push({
+        contaPrincipalCodigo: conta.codigo,
+        contaPrincipalNome: conta.nome,
+        contaSistema: excecaoSub.contaSistema,
+        setor: excecaoSub.setor,
+        contaCodigo: conta.codigo,
+        contaNome: conta.nome,
+        nivel: conta.nivel,
+        valor: valorExc,
+        observacoes: conta.observacoes,
+      });
+      contasSet.add(excecaoSub.contaSistema);
       continue;
     }
 
