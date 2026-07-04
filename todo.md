@@ -1325,3 +1325,8 @@
 - [x] Aplicar teto R$25.000 na conta 23173-SALARIO AUGUSTO CESAR
 - [x] Aplicar teto R$25.000 na conta 23172-SALARIO GEORGE MACHADO
 - [x] Aplicar teto R$25.000 na conta 23171-SALARIO NOEL JUNIOR
+
+### Despesas de Equipamentos - Correção do mecanismo de exclusão
+- [x] Excluir RRF6C70 (BASCALANTE) da importação
+- [x] Corrigir mecanismo de exclusão: usar tabela correspondencia_tag (tipo='excluir') em vez de equipamento_excluido_tag (que NÃO é verificada pelo importDespesas_router)
+- [x] Inserir todas as 12 tags excluídas na correspondencia_tag (incluindo variantes TC02/TC03 com/sem espaço)
