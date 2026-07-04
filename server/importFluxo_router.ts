@@ -337,8 +337,56 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
     // Verificar se a conta principal está na lista de importação
     const config = CONTAS_IMPORTAR.find(c => c.codigo === codigoPrincipal);
     if (!config) {
-      // Conta não mapeada - excluir (entradas, etc.)
+      // Antes de excluir tudo, verificar se há exceções dentro desta conta não mapeada
+      const excecoesNaoMapeada = contasDessaPrincipal.filter(c =>
+        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo) && !excecoesJaProcessadas.has(c.codigo)
+      );
+      if (excecoesNaoMapeada.length > 0) {
+        const excPorContaSistema = new Map<string, typeof excecoesNaoMapeada>();
+        for (const exc of excecoesNaoMapeada) {
+          const cfg = EXCECOES_IMPORTAR.find(e => e.codigo === exc.codigo)!;
+          const key = cfg.contaSistema;
+          if (!excPorContaSistema.has(key)) excPorContaSistema.set(key, []);
+          excPorContaSistema.get(key)!.push(exc);
+          excecoesJaProcessadas.add(exc.codigo);
+        }
+        for (const [contaSistema, excsGrupo] of Array.from(excPorContaSistema.entries())) {
+          const cfgRef = EXCECOES_IMPORTAR.find(e => e.contaSistema === contaSistema)!;
+          const existente = contasImportar.find(ci => ci.contaSistema === contaSistema);
+          for (const exc of excsGrupo) {
+            let valor = exc.valor || 0;
+            const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
+            if (tetoConfig && valor > tetoConfig.teto) valor = tetoConfig.teto;
+            const subconta = {
+              codigo: exc.codigo,
+              nome: exc.nome,
+              nivel: exc.nivel,
+              valor,
+              setor: cfgRef.setor,
+              isRateio: false,
+              percentualRateio: null,
+              observacoes: exc.observacoes,
+            };
+            if (existente) {
+              existente.subcontas.push(subconta);
+              existente.valorTotal += valor;
+            } else {
+              contasImportar.push({
+                contaPrincipalCodigo: exc.codigo,
+                contaPrincipalNome: contaSistema,
+                contaSistema,
+                setor: cfgRef.setor,
+                valorTotal: valor,
+                subcontas: [subconta],
+                excluidas: [],
+              });
+            }
+          }
+        }
+      }
+      // Conta não mapeada - excluir (entradas, etc.) - sem as exceções
       const totalExcluido = contasDessaPrincipal
+        .filter(c => !EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo))
         .filter(c => c.nivel === 2 || (c.nivel === 1 && c.valor !== null))
         .reduce((sum, c) => sum + (c.valor || 0), 0);
       if (totalExcluido > 0) {

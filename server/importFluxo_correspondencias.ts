@@ -124,6 +124,7 @@ export const CONTAS_EXCLUIR: string[] = [
   "2196", // INVESTIMENTOS/EMPRESTIMOS
   "2169", // PRODUÇÃO-BRITAGEM / MANUTENÇÃO-OFICINA (já importado pela outra planilha)
   "2149", // SALARIO E ENCARGOS PESSOAL (será lançado manualmente - Passo 2)
+  "7120", // DESPESAS DIRETORIA (exceto salários da diretoria que são exceção)
   "5513", // RECEITAS DIVERSAS (entrada)
   "1005", // RECEITAS VENDAS (entrada)
 ];
