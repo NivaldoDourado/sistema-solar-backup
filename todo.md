@@ -1337,3 +1337,9 @@
 - [x] Aplicar teto R$25.000 por subconta durante importação
 - [x] Garantir que o drill-down analítico mostre as 3 subcontas individuais com seus valores
 - [x] Testar importação e visualização na Apuração de Custo
+
+### Ranking Equipamentos - Correções visuais no relatório
+- [x] Destacar subtotais das contas (ex: "SUBTOTAL LUBRIFICANTES") com estilo similar ao subtotal de setor (fundo azul claro, negrito)
+- [x] Remover linhas "% % % % % % % % % % % % % % %" do relatório
+- [x] Dar mais destaque ao total do equipamento (ex: "TOTAL: CATERPILLAR 966R") similar ao total de grupo/setor
+- [x] Remover linhas "%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P" do relatório

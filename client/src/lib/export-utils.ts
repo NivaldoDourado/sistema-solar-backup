@@ -55,12 +55,15 @@ function formatDateBR(dateStr: string): string {
 export function exportToExcel(options: ExportOptions) {
   const { title, subtitle, columns, data, filename } = options;
 
+  // Filter out hidden columns (width === 0) for Excel
+  const xlsColumns = columns.filter(c => c.width !== 0);
+
   // Create header rows
-  const headerRow = columns.map((col) => col.header);
+  const headerRow = xlsColumns.map((col) => col.header);
 
   // Create data rows
   const dataRows = data.map((row) =>
-    columns.map((col) => {
+    xlsColumns.map((col) => {
       const raw = row[col.key];
       if (col.format) return col.format(raw);
       return raw ?? "";
@@ -80,18 +83,18 @@ export function exportToExcel(options: ExportOptions) {
   const ws = XLSX.utils.aoa_to_sheet(wsData);
 
   // Set column widths
-  ws["!cols"] = columns.map((col) => ({ wch: col.width || 18 }));
+  ws["!cols"] = xlsColumns.map((col) => ({ wch: col.width || 18 }));
 
   // Merge header rows across all columns
   ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: columns.length - 1 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: columns.length - 1 } },
-    { s: { r: 2, c: 0 }, e: { r: 2, c: columns.length - 1 } },
+    { s: { r: 0, c: 0 }, e: { r: 0, c: xlsColumns.length - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: xlsColumns.length - 1 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: xlsColumns.length - 1 } },
   ];
   if (subtitle) {
     ws["!merges"].push({
       s: { r: 3, c: 0 },
-      e: { r: 3, c: columns.length - 1 },
+      e: { r: 3, c: xlsColumns.length - 1 },
     });
   }
 
@@ -184,9 +187,11 @@ export function exportToPDF(options: ExportOptions) {
   curY += 6;
 
   // ── Table ─────────────────────────────────────────────────────────────────
-  const headers = columns.map((col) => col.header);
+  // Filter out hidden columns (width === 0) for PDF
+  const pdfColumns = columns.filter(c => c.width !== 0);
+  const headers = pdfColumns.map((col) => col.header);
   const body = data.map((row) =>
-    columns.map((col) => formatValue(row[col.key], col))
+    pdfColumns.map((col) => formatValue(row[col.key], col))
   );
 
   // Identificar linhas de "TOTAL GRUPO", "SUBTOTAL SETOR" e "_isNota" para destaque
@@ -793,15 +798,20 @@ export function printData(options: ExportOptions) {
   const now = new Date();
   const timestamp = `Gerado em: ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR")}`;
 
+  // Filter out hidden columns (width === 0) for print
+  const visibleColumns = columns.filter(c => c.width !== 0);
   const rows = data
     .map(
       (row) =>
-        `<tr>${columns
+        `<tr>${visibleColumns
           .map((col) => {
             const val = col.format ? col.format(row[col.key]) : (row[col.key] ?? "");
             const isTotalGrupo = row["tipo"] === "TOTAL GRUPO";
+            const isSubtotalSetor = row["tipo"] === "SUBTOTAL SETOR";
             const style = isTotalGrupo
               ? 'style="background:#fee2e2;color:#991b1b;font-weight:bold;border-bottom:2px solid #b91c1c"'
+              : isSubtotalSetor
+              ? 'style="background:#dbeafe;color:#1e40af;font-weight:bold;border-bottom:2px solid #2563eb"'
               : "";
             return `<td ${style}>${val}</td>`;
           })
@@ -846,7 +856,7 @@ export function printData(options: ExportOptions) {
     <img src="${LOGO_CDN_URL}" class="logo" crossorigin="anonymous" />
   </div>
   <table>
-    <thead><tr>${columns.map((c) => `<th>${c.header}</th>`).join("")}</tr></thead>
+    <thead><tr>${visibleColumns.map((c) => `<th>${c.header}</th>`).join("")}</tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="footer">${SYSTEM_NAME_LINE1}</div>

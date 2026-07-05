@@ -104,6 +104,7 @@ export default function RankingEquipamentos() {
       { header: "Data", key: "data", width: 10 },
       { header: "Produto", key: "produto", width: 40 },
       { header: "Valor", key: "valor", width: 15, format: (v: any) => typeof v === "number" ? fmtBRL(v) : v },
+      { header: "", key: "tipo", width: 0 },
     ];
 
     // Limitar a apenas os 10 primeiros equipamentos
@@ -121,32 +122,23 @@ export default function RankingEquipamentos() {
             data: item.data || "",
             produto: item.produto,
             valor: item.custo,
+            tipo: "",
           });
         }
-        // Subtotal da classificação
+        // Subtotal da classificação (estilo azul como subtotal de setor)
         data.push({
           posicao: "",
           equipamento: "",
-          classificacao: `SUBTOTAL ${classif.label.toUpperCase()}`,
+          classificacao: "",
           sequencia: "",
           data: "",
-          produto: "",
+          produto: `SUBTOTAL ${classif.label.toUpperCase()}`,
           valor: classif.totalCusto,
+          tipo: "SUBTOTAL SETOR",
           _isSubtotal: true,
         });
-        // Separador
-        data.push({
-          posicao: "",
-          equipamento: "",
-          classificacao: "───────────────",
-          sequencia: "",
-          data: "",
-          produto: "",
-          valor: "",
-          _isSeparator: true,
-        });
       }
-      // Total do equipamento
+      // Total do equipamento (estilo vermelho como total de grupo)
       data.push({
         posicao: "",
         equipamento: `TOTAL: ${equip.descricao}`,
@@ -155,18 +147,8 @@ export default function RankingEquipamentos() {
         data: "",
         produto: "",
         valor: equip.totalCusto,
+        tipo: "TOTAL GRUPO",
         _isTotal: true,
-      });
-      // Separador entre equipamentos
-      data.push({
-        posicao: "",
-        equipamento: "════════════════════════════════",
-        classificacao: "",
-        sequencia: "",
-        data: "",
-        produto: "",
-        valor: "",
-        _isSeparator: true,
       });
     }
     // Total geral (dos 10 primeiros)
@@ -179,6 +161,7 @@ export default function RankingEquipamentos() {
       data: "",
       produto: "",
       valor: totalTop10,
+      tipo: "TOTAL GRUPO",
       _isTotal: true,
     });
     // Linha em branco
@@ -190,6 +173,7 @@ export default function RankingEquipamentos() {
       data: "",
       produto: "",
       valor: "",
+      tipo: "",
     });
     // NOTA DE DESTAQUE
     data.push({
@@ -200,6 +184,7 @@ export default function RankingEquipamentos() {
       data: "",
       produto: "",
       valor: "",
+      tipo: "",
       _isNota: true,
     });
 
