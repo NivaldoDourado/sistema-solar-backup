@@ -207,7 +207,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
     const contasDessaPrincipal = contasParsed.filter(c => c.contaPrincipalCodigo === codigoPrincipal);
     if (contasDessaPrincipal.length === 0) continue;
 
-    const nomePrincipal = contasDessaPrincipal[0].contaPrincipalNome;
+    let nomePrincipal = contasDessaPrincipal[0].contaPrincipalNome;
 
     // Caso especial: a conta principal É uma exceção (apareceu como nível 1 na planilha)
     // Ex: 23173 aparece com 5 espaços de indentação, tornando-se sua própria principal
@@ -221,8 +221,15 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
         .reduce((sum, c) => sum + (c.valor || 0), 0);
       // Aplicar teto
       const tetoConfig = CONTAS_TETO_VALOR[codigoPrincipal];
-      if (tetoConfig && valorExc > tetoConfig.teto) {
-        valorExc = tetoConfig.teto;
+      if (tetoConfig) {
+        if (tetoConfig.valorFixo !== undefined) {
+          valorExc = tetoConfig.valorFixo;
+        } else if (valorExc > tetoConfig.teto) {
+          valorExc = tetoConfig.teto;
+        }
+        if (tetoConfig.nomeOverride) {
+          nomePrincipal = tetoConfig.nomeOverride;
+        }
       }
       // Agrupar com outras exceções do mesmo contaSistema (será consolidado depois)
       const existente = contasImportar.find(ci => ci.contaSistema === excecaoComoPrincipal.contaSistema);
@@ -288,8 +295,15 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
             let valor = exc.valor || 0;
             // Aplicar teto de valor
             const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
-            if (tetoConfig && valor > tetoConfig.teto) {
-              valor = tetoConfig.teto;
+            if (tetoConfig) {
+              if (tetoConfig.valorFixo !== undefined) {
+                valor = tetoConfig.valorFixo;
+              } else if (valor > tetoConfig.teto) {
+                valor = tetoConfig.teto;
+              }
+              if (tetoConfig.nomeOverride) {
+                exc.nome = tetoConfig.nomeOverride;
+              }
             }
             const subconta = {
               codigo: exc.codigo,
@@ -356,7 +370,16 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
           for (const exc of excsGrupo) {
             let valor = exc.valor || 0;
             const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
-            if (tetoConfig && valor > tetoConfig.teto) valor = tetoConfig.teto;
+            if (tetoConfig) {
+              if (tetoConfig.valorFixo !== undefined) {
+                valor = tetoConfig.valorFixo;
+              } else if (valor > tetoConfig.teto) {
+                valor = tetoConfig.teto;
+              }
+              if (tetoConfig.nomeOverride) {
+                exc.nome = tetoConfig.nomeOverride;
+              }
+            }
             const subconta = {
               codigo: exc.codigo,
               nome: exc.nome,
@@ -423,8 +446,15 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
 
       // Aplicar teto de valor (a partir de jun/26)
       const tetoConfig = CONTAS_TETO_VALOR[conta.codigo];
-      if (tetoConfig && conta.valor > tetoConfig.teto) {
-        conta.valor = tetoConfig.teto;
+      if (tetoConfig) {
+        if (tetoConfig.valorFixo !== undefined) {
+          conta.valor = tetoConfig.valorFixo;
+        } else if (conta.valor > tetoConfig.teto) {
+          conta.valor = tetoConfig.teto;
+        }
+        if (tetoConfig.nomeOverride) {
+          conta.nome = tetoConfig.nomeOverride;
+        }
       }
 
       // Determinar setor (pode ter rateio especial para energia)

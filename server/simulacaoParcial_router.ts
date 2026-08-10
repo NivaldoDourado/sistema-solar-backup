@@ -346,8 +346,15 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
     if (excecaoComoPrincipal && conta.contaPrincipalCodigo === conta.codigo) {
       let valorExc = conta.valor!;
       const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
-      if (tetoExc && valorExc > tetoExc.teto) {
-        valorExc = tetoExc.teto;
+      if (tetoExc) {
+        if (tetoExc.valorFixo !== undefined) {
+          valorExc = tetoExc.valorFixo;
+        } else if (valorExc > tetoExc.teto) {
+          valorExc = tetoExc.teto;
+        }
+        if (tetoExc.nomeOverride) {
+          conta.nome = tetoExc.nomeOverride;
+        }
       }
       itens.push({
         contaPrincipalCodigo: conta.codigo,
@@ -372,8 +379,15 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
       // Aplicar teto de valor
       let valorExc = conta.valor!;
       const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
-      if (tetoExc && valorExc > tetoExc.teto) {
-        valorExc = tetoExc.teto;
+      if (tetoExc) {
+        if (tetoExc.valorFixo !== undefined) {
+          valorExc = tetoExc.valorFixo;
+        } else if (valorExc > tetoExc.teto) {
+          valorExc = tetoExc.teto;
+        }
+        if (tetoExc.nomeOverride) {
+          conta.nome = tetoExc.nomeOverride;
+        }
       }
       itens.push({
         contaPrincipalCodigo: conta.codigo,
@@ -395,8 +409,15 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
     if (excecaoSub) {
       let valorExc = conta.valor!;
       const tetoExc = CONTAS_TETO_VALOR[conta.codigo];
-      if (tetoExc && valorExc > tetoExc.teto) {
-        valorExc = tetoExc.teto;
+      if (tetoExc) {
+        if (tetoExc.valorFixo !== undefined) {
+          valorExc = tetoExc.valorFixo;
+        } else if (valorExc > tetoExc.teto) {
+          valorExc = tetoExc.teto;
+        }
+        if (tetoExc.nomeOverride) {
+          conta.nome = tetoExc.nomeOverride;
+        }
       }
       itens.push({
         contaPrincipalCodigo: conta.codigo,
@@ -422,8 +443,15 @@ function parsePlanilhaFluxoParcial(buffer: Buffer, extraExcluidos: string[] = []
 
     // Aplicar teto de valor (a partir de jun/26)
     const tetoConfig = CONTAS_TETO_VALOR[conta.codigo];
-    if (tetoConfig && conta.valor !== null && conta.valor > tetoConfig.teto) {
-      conta.valor = tetoConfig.teto;
+    if (tetoConfig && conta.valor !== null) {
+      if (tetoConfig.valorFixo !== undefined) {
+        conta.valor = tetoConfig.valorFixo;
+      } else if (conta.valor > tetoConfig.teto) {
+        conta.valor = tetoConfig.teto;
+      }
+      if (tetoConfig.nomeOverride) {
+        conta.nome = tetoConfig.nomeOverride;
+      }
     }
 
     // Determinar setor (rateio de energia se aplicável)
