@@ -1343,3 +1343,10 @@
 - [x] Remover linhas "% % % % % % % % % % % % % % %" do relatório
 - [x] Dar mais destaque ao total do equipamento (ex: "TOTAL: CATERPILLAR 966R") similar ao total de grupo/setor
 - [x] Remover linhas "%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P" do relatório
+
+### Tela de Manutenção (Futuro)
+- [ ] Criar tabela no banco para controlar status de manutenção (ativo/inativo, mensagem, horário início/fim)
+- [ ] Implementar página /maintenance com design profissional
+- [ ] Criar middleware global para interceptar requisições e redirecionar para /maintenance quando ativo
+- [ ] Adicionar exceção para admin (acesso mesmo durante manutenção)
+- [ ] Interface de controle no dashboard para ativar/desativar manutenção e editar mensagem

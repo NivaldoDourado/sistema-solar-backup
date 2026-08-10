@@ -145,6 +145,7 @@ export const CONTAS_TETO_VALOR: Record<string, { nome: string; teto: number }> =
   "23173": { nome: "SALARIO AUGUSTO CESAR", teto: 25000 },
   "23172": { nome: "SALARIO GEORGE MACHADO", teto: 25000 },
   "23171": { nome: "SALARIO NOEL JUNIOR", teto: 25000 },
+  "23174": { nome: "SALARIO MARGARIDA", teto: 20000 },
 };
 
 /**
@@ -173,6 +174,12 @@ export const EXCECOES_IMPORTAR: ContaFluxoConfig[] = [
   {
     codigo: "23171",
     nome: "SALARIO NOEL JUNIOR",
+    contaSistema: "Salário da Diretoria",
+    setor: "ADMINISTRAÇÃO",
+  },
+  {
+    codigo: "23174",
+    nome: "SALARIO MARGARIDA",
     contaSistema: "Salário da Diretoria",
     setor: "ADMINISTRAÇÃO",
   },
