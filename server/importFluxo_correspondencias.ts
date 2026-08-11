@@ -21,6 +21,8 @@ export interface ContaFluxoConfig {
   setor: string;
   /** Se tem rateio especial (ex: energia) */
   rateioEspecial?: RateioEspecial[];
+  /** Vigência: mês/ano a partir do qual esta configuração entra em vigor (formato "YYYY-MM") */
+  vigenciaInicio?: string;
 }
 
 export interface RateioEspecial {
@@ -127,6 +129,7 @@ export const CONTAS_EXCLUIR: string[] = [
   "7120", // DESPESAS DIRETORIA (exceto salários da diretoria que são exceção)
   "5513", // RECEITAS DIVERSAS (entrada)
   "1005", // RECEITAS VENDAS (entrada)
+  "5512", // DESPESA / LAVAJATO (valores já existem na importação de Despesas de Equipamentos - jul/26+)
 ];
 
 /**
@@ -141,11 +144,11 @@ export const CONTAS_INDIVIDUAIS_EXCLUIR: string[] = [
  * CONTAS COM TETO DE VALOR (a partir de junho/2026)
  * Quando o valor da conta ultrapassar o teto, será considerado apenas o valor máximo definido.
  */
-export const CONTAS_TETO_VALOR: Record<string, { nome: string; teto: number; valorFixo?: number; nomeOverride?: string }> = {
+export const CONTAS_TETO_VALOR: Record<string, { nome: string; teto: number; valorFixo?: number; nomeOverride?: string; vigenciaInicio?: string }> = {
   "23173": { nome: "SALARIO AUGUSTO CESAR", teto: 25000, valorFixo: 25000 },
   "23172": { nome: "SALARIO GEORGE MACHADO", teto: 25000, valorFixo: 25000 },
   "23171": { nome: "SALARIO NOEL JUNIOR", teto: 25000, valorFixo: 25000 },
-  "23174": { nome: "SALARIO MARGARIDA", teto: 20000, valorFixo: 20000, nomeOverride: "SALARIO MARGARIDA" },
+  "23174": { nome: "SALARIO MARGARIDA", teto: 20000, valorFixo: 20000, nomeOverride: "SALARIO MARGARIDA", vigenciaInicio: "2026-08" },
 };
 
 /**
@@ -182,6 +185,7 @@ export const EXCECOES_IMPORTAR: ContaFluxoConfig[] = [
     nome: "SALARIO MARGARIDA",
     contaSistema: "Salário da Diretoria",
     setor: "ADMINISTRAÇÃO",
+    vigenciaInicio: "2026-08",
   },
 ];
 

@@ -197,6 +197,19 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
   const contasImportar: ContaImportPreview[] = [];
   const contasExcluir: { codigo: string; nome: string; valorTotal: number }[] = [];
 
+  // Converter periodo ("Julho/2026") para "YYYY-MM" para verificação de vigência
+  const mesesMap: Record<string, string> = {
+    "Janeiro": "01", "Fevereiro": "02", "Março": "03", "Abril": "04",
+    "Maio": "05", "Junho": "06", "Julho": "07", "Agosto": "08",
+    "Setembro": "09", "Outubro": "10", "Novembro": "11", "Dezembro": "12",
+  };
+  let periodoYYYYMM = "";
+  if (periodo) {
+    const [mesNome, ano] = periodo.split("/");
+    const mesNum = mesesMap[mesNome] || "";
+    if (mesNum && ano) periodoYYYYMM = `${ano}-${mesNum}`;
+  }
+
   // Processar contas principais
   const contasPrincipaisUnicas = Array.from(new Set(contasParsed.map(c => c.contaPrincipalCodigo)));
 
@@ -212,7 +225,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
     // Caso especial: a conta principal É uma exceção (apareceu como nível 1 na planilha)
     // Ex: 23173 aparece com 5 espaços de indentação, tornando-se sua própria principal
     const excecaoComoPrincipal = EXCECOES_IMPORTAR.find(e => e.codigo === codigoPrincipal);
-    if (excecaoComoPrincipal) {
+    if (excecaoComoPrincipal && (!excecaoComoPrincipal.vigenciaInicio || periodoYYYYMM >= excecaoComoPrincipal.vigenciaInicio)) {
       // Marcar como processada
       excecoesJaProcessadas.add(codigoPrincipal);
       // Pegar o valor (pode ser nível 1 com valor direto, ou soma das subcontas)
@@ -221,7 +234,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
         .reduce((sum, c) => sum + (c.valor || 0), 0);
       // Aplicar teto
       const tetoConfig = CONTAS_TETO_VALOR[codigoPrincipal];
-      if (tetoConfig) {
+      if (tetoConfig && (!tetoConfig.vigenciaInicio || periodoYYYYMM >= tetoConfig.vigenciaInicio)) {
         if (tetoConfig.valorFixo !== undefined) {
           valorExc = tetoConfig.valorFixo;
         } else if (valorExc > tetoConfig.teto) {
@@ -272,7 +285,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
     if (CONTAS_EXCLUIR.includes(codigoPrincipal)) {
       // Verificar exceções dentro da conta excluída (excluindo as já processadas como principal)
       const excecoes = contasDessaPrincipal.filter(c =>
-        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo) && !excecoesJaProcessadas.has(c.codigo)
+        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo && (!e.vigenciaInicio || periodoYYYYMM >= e.vigenciaInicio)) && !excecoesJaProcessadas.has(c.codigo)
       );
 
       if (excecoes.length > 0) {
@@ -295,7 +308,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
             let valor = exc.valor || 0;
             // Aplicar teto de valor
             const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
-            if (tetoConfig) {
+            if (tetoConfig && (!tetoConfig.vigenciaInicio || periodoYYYYMM >= tetoConfig.vigenciaInicio)) {
               if (tetoConfig.valorFixo !== undefined) {
                 valor = tetoConfig.valorFixo;
               } else if (valor > tetoConfig.teto) {
@@ -353,7 +366,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
     if (!config) {
       // Antes de excluir tudo, verificar se há exceções dentro desta conta não mapeada
       const excecoesNaoMapeada = contasDessaPrincipal.filter(c =>
-        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo) && !excecoesJaProcessadas.has(c.codigo)
+        EXCECOES_IMPORTAR.some(e => e.codigo === c.codigo && (!e.vigenciaInicio || periodoYYYYMM >= e.vigenciaInicio)) && !excecoesJaProcessadas.has(c.codigo)
       );
       if (excecoesNaoMapeada.length > 0) {
         const excPorContaSistema = new Map<string, typeof excecoesNaoMapeada>();
@@ -370,7 +383,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
           for (const exc of excsGrupo) {
             let valor = exc.valor || 0;
             const tetoConfig = CONTAS_TETO_VALOR[exc.codigo];
-            if (tetoConfig) {
+            if (tetoConfig && (!tetoConfig.vigenciaInicio || periodoYYYYMM >= tetoConfig.vigenciaInicio)) {
               if (tetoConfig.valorFixo !== undefined) {
                 valor = tetoConfig.valorFixo;
               } else if (valor > tetoConfig.teto) {
@@ -446,7 +459,7 @@ export function parsePlanilhaFluxo(buffer: Buffer, extraExcluidos: string[] = []
 
       // Aplicar teto de valor (a partir de jun/26)
       const tetoConfig = CONTAS_TETO_VALOR[conta.codigo];
-      if (tetoConfig) {
+      if (tetoConfig && (!tetoConfig.vigenciaInicio || periodoYYYYMM >= tetoConfig.vigenciaInicio)) {
         if (tetoConfig.valorFixo !== undefined) {
           conta.valor = tetoConfig.valorFixo;
         } else if (conta.valor > tetoConfig.teto) {
